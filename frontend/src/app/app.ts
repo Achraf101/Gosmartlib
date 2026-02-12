@@ -1,12 +1,11 @@
 import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { hello } from './hello/hello';
+import { NavBar } from './nav-bar/nav-bar';
 import { ButtonModule } from 'primeng/button';
 
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, hello, ButtonModule],
+  imports: [ButtonModule, NavBar],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
