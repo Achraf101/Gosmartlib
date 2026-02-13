@@ -3,7 +3,7 @@ import { ButtonModule } from 'primeng/button';
 
 @Component({
     selector: 'button-demo',
-    templateUrl: './Hello.html',
+    templateUrl: './hello.html',
     imports: [ButtonModule]
 })
 export class hello {
