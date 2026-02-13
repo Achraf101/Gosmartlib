@@ -1,0 +1,51 @@
+services:
+  frontend:
+    container_name: frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - certbot:/etc/letsencrypt
+      - certbot:/var/www/certbot
+
+
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - certbot:/etc/letsencrypt
+      - certbot:/var/www/certbot
+    command: certonly --webroot -w /var/www/certbot --keep-until-expiring --email brechtvanackerstudent@gmail.com -d gosmartlib.tech --agree-tos
+
+
+  db:
+    image: mysql:9.6.0
+    container_name: db
+    restart: always
+    volumes:
+      - db-data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    expose:
+      - 3306
+
+
+  backend:
+    depends_on:
+      - db
+    container_name: backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+
+
+volumes:
+  certbot:
+  db-data:
