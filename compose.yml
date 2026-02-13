@@ -49,5 +49,7 @@ services:
 volumes:
   certbot:
     name: certbot
+    external: true
   db-data:
     name: db-data
+    external: true
