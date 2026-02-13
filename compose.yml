@@ -48,4 +48,6 @@ services:
 
 volumes:
   certbot:
+    name: certbot
   db-data:
+    name: db-data
