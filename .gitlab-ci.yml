@@ -1,4 +1,19 @@
-hello_world_job:
-  stage: test
+stages:
+  - deploy
+
+variables:
+  GIT_STRATEGY: fetch
+
+deploy_project:
+  stage: deploy
   script:
-    - echo "Hello, World!"
+    - cd $CI_PROJECT_DIR
+
+    # add gitlab secrets to env so it is accessible by docker
+    - echo "MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD" > .env
+    - echo "MYSQL_DATABASE=$MYSQL_DATABASE" >> .env
+    - echo "MYSQL_USER=$MYSQL_USER" >> .env
+    - echo "MYSQL_PASSWORD=$MYSQL_PASSWORD" >> .env
+
+    # deploy using docker compose
+    - docker compose --env-file .env up -d --build
