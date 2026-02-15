@@ -1,1 +1,11 @@
-<p-button label="Hello" />
+<p-button label="inspect" (click)="showMessage()"/>
+
+
+<h2>Messages</h2>
+<ul>
+    @for(user of (users) ?? []; track $index){
+        <li>
+            {{user.name}}: {{user.tekst}}
+        </li>
+    }
+</ul>
