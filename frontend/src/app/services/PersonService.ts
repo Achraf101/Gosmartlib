@@ -8,10 +8,7 @@ import { Person } from '../models/interfaces';
 })
 export class PersonService {
   
-  // Communicate with the real backend.
-  private apiUrl = `https://gosmartlib.tech/api/hello`;
-  // Communicate with test backend.
-  private testApiUrl = 'http://localhost:8080/api/hello';
+  private apiUrl = `/api/hello`;
 
   constructor(private http: HttpClient) {}
 

@@ -10,6 +10,7 @@ import be.ap.backend.controller.dto.PersonDTO;
 @CrossOrigin(origins = "https://gosmartlib.tech")
 // Accept test frontend.
 // @CrossOrigin(origins = "http://localhost:4200")
+
 @RestController
 public class Hello {
     @GetMapping(path = "/hello")
