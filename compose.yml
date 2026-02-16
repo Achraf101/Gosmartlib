@@ -19,7 +19,7 @@ services:
     volumes:
       - certbot:/etc/letsencrypt
       - certbot:/var/www/certbot
-    command: certonly --webroot -w /var/www/certbot --keep-until-expiring --email brechtvanackerstudent@gmail.com -d gosmartlib.tech --agree-tos
+    command: certonly --webroot -w /var/www/certbot --keep-until-expiring --email ${CERTBOT_EMAIL} -d gosmartlib.tech --agree-tos
 
 
   db:
@@ -41,6 +41,11 @@ services:
     depends_on:
       - db
     container_name: backend
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     build:
       context: ./backend
       dockerfile: Dockerfile
