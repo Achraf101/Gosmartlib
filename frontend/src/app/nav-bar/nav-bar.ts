@@ -4,12 +4,8 @@ import { MenuItem } from 'primeng/api';
 
 @Component({
   selector: 'app-nav-bar',
+  templateUrl: './nav-bar.html',
   imports: [MenubarModule],
-    template: `
-        <div class="card">
-            <p-menubar [model]="items" />
-        </div>
-    `,
   styleUrl: './nav-bar.css',
 })
 export class NavBar implements OnInit {
