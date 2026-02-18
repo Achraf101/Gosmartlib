@@ -19,8 +19,6 @@ RUN ng build --configuration=production
 
 FROM nginx:1.29.5
 
-# first remove the old html files
-RUN rm -rf /usr/share/nginx/html/*
 
 # Copy custom HTML / static files into Nginx
 COPY --from=build /app/dist/frontend/browser /usr/share/nginx/html
