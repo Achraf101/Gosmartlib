@@ -15,5 +15,7 @@ deploy_project:
     - echo "MYSQL_USER=$MYSQL_USER" >> .env
     - echo "MYSQL_PASSWORD=$MYSQL_PASSWORD" >> .env
 
+    - echo "CERTBOT_EMAIL=$CERTBOT_EMAIL" >> .env
+
     # deploy using docker compose
     - docker compose --env-file .env up -d --build
