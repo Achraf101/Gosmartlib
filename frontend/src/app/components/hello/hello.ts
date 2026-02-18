@@ -1,14 +1,25 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
+import { HelloService } from '../../services/hello';
+import { Hello } from '../../models/hello';
+import { MessageService } from 'primeng/api';
 
 @Component({
-    selector: 'app-hello',
-    templateUrl: './hello.html',
-    styleUrl: './hello.css',
-    imports: [ButtonModule]
+  selector: 'app-hello',
+  templateUrl: './hello.html',
+  styleUrl: './hello.css',
+  imports: [ButtonModule],
 })
-export class hello {
+export class HelloComponent {
 
-    constructor() {}
+  hellos: Hello[] = [];
 
+  constructor(private helloService: HelloService) {}
+
+  ngOnInit(): void {
+    this.helloService.getAll().subscribe({
+      next: hellos => this.hellos = hellos,
+      error: err => console.log(err)
+    });
+  }
 }

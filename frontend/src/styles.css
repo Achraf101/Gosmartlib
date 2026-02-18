@@ -2,6 +2,7 @@
 @import 'primeicons/primeicons.css';
 
 body{
+    margin: 0;
     font-family: "Lexend", sans-serif;
     font-optical-sizing: auto;
     font-weight: 400;

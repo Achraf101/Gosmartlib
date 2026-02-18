@@ -1,61 +1,92 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { MenubarModule } from 'primeng/menubar';
-import { MenuItem } from 'primeng/api';
+import { MenuItem, MessageService } from 'primeng/api';
+
+import { HelloService } from '../../services/hello';
+import { Hello } from '../../models/hello';
 
 @Component({
   selector: 'app-nav-bar',
+  standalone: true,
   templateUrl: './nav-bar.html',
   imports: [MenubarModule],
   styleUrl: './nav-bar.css',
 })
-export class NavBar implements OnInit {
-    items: MenuItem[] | undefined;
-    ngOnInit() {
-        this.items = [
-            {
-                label: 'Home',
-                icon: 'pi pi-home'
-            },
-            {
-                label: 'Features',
-                icon: 'pi pi-star'
-            },
-            {
-                label: 'Projects',
-                icon: 'pi pi-search',
-                items: [
-                    {
-                        label: 'Components',
-                        icon: 'pi pi-bolt'
-                    },
-                    {
-                        label: 'Blocks',
-                        icon: 'pi pi-server'
-                    },
-                    {
-                        label: 'UI Kit',
-                        icon: 'pi pi-pencil'
-                    },
-                    {
-                        label: 'Templates',
-                        icon: 'pi pi-palette',
-                        items: [
-                            {
-                                label: 'Apollo',
-                                icon: 'pi pi-palette'
-                            },
-                            {
-                                label: 'Ultima',
-                                icon: 'pi pi-palette'
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                label: 'Contact',
-                icon: 'pi pi-envelope'
-            }
-        ];
-    }
+export class NavBar {
+  items: MenuItem[] | undefined;
+
+  private messageService = inject(MessageService);
+  private helloService = inject(HelloService);
+  loadHellos(): void {
+    this.helloService.getAll().subscribe({
+      next: (data: Hello[]) => {
+        this.messageService.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: data[0].msg,
+            life: 3000,
+          });
+      },
+      error: (err) => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Probleem met het opvragen van de data',
+          life: 3000,
+        });
+      },
+    });
+  }
+
+  ngOnInit() {
+    this.items = [
+      {
+        label: 'Home',
+        icon: 'pi pi-home',
+      },
+      {
+        label: 'Features',
+        icon: 'pi pi-star',
+      },
+      {
+        label: 'Projects',
+        icon: 'pi pi-search',
+        items: [
+          {
+            label: 'Components',
+            icon: 'pi pi-bolt',
+          },
+          {
+            label: 'Blocks',
+            icon: 'pi pi-server',
+          },
+          {
+            label: 'UI Kit',
+            icon: 'pi pi-pencil',
+          },
+          {
+            label: 'Templates',
+            icon: 'pi pi-palette',
+            items: [
+              {
+                label: 'Apollo',
+                icon: 'pi pi-palette',
+              },
+              {
+                label: 'Ultima',
+                icon: 'pi pi-palette',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        label: 'Test',
+        icon: 'pi pi-play-circle',
+        command: () => {
+          this.loadHellos();
+        },
+      },
+    ];
+  }
 }

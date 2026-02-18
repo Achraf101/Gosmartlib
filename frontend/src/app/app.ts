@@ -1,12 +1,12 @@
 import { Component, signal } from '@angular/core';
-import { NavBar } from './nav-bar/nav-bar';
-import { hello } from './hello/hello';
+import { NavBar } from './components/nav-bar/nav-bar';
 import { ButtonModule } from 'primeng/button';
+import { Toast } from "primeng/toast";
 
 
 @Component({
   selector: 'app-root',
-  imports: [ButtonModule, NavBar, hello],
+  imports: [ButtonModule, NavBar, Toast],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
