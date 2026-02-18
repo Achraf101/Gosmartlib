@@ -1,15 +1,17 @@
 package be.ap.backend.controller;
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import be.ap.backend.controller.dto.PersonDTO;
-
+import be.ap.backend.dto.HelloDto;
 
 @RestController
+@RequestMapping("hello")
 public class Hello {
-    @GetMapping(path = "/hello")
-    public PersonDTO[] getHello() { 
-        return new PersonDTO[]{new PersonDTO("Jefke", "Hallo iedereen"), new PersonDTO("Jaenine", "Tof dat je er bent!")};
+
+    @GetMapping
+    public HelloDto[] getHello() {
+        return new HelloDto[] { new HelloDto("Backend en database werkt") };
     }
 }
