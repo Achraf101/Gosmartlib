@@ -41,6 +41,8 @@ services:
     depends_on:
       - db
     container_name: backend
+    volumes:
+      - maven-repo:/root/.m2
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
@@ -58,4 +60,7 @@ volumes:
     external: true
   db-data:
     name: db-data
+    external: true
+  maven-repo:
+    name: maven-repo
     external: true
