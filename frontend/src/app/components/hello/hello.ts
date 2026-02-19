@@ -2,7 +2,6 @@ import { Component, inject } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { HelloService } from '../../services/hello';
 import { Hello } from '../../models/hello';
-import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-hello',
