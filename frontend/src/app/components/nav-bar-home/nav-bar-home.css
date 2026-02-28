@@ -10,7 +10,7 @@
   height: 40px;
   object-fit: contain;
   mix-blend-mode: multiply;
-  filter: brightness(1);
+  
 }
 
 .header-right {
