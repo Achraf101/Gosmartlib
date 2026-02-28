@@ -1,45 +1,51 @@
 package be.ap.backend.service;
 
-import be.ap.backend.mapper.BookMapper;
-import be.ap.backend.model.BookDTO;
-import be.ap.backend.repository.BookRepository;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import be.ap.backend.entity.Book;
+import be.ap.backend.repository.BookRepository;
 
 @Service
 public class BookService {
 
     private final BookRepository bookRepository;
-    private final BookMapper bookMapper;
 
-    public BookService(BookRepository bookRepository, BookMapper bookMapper) {
+    public BookService(BookRepository bookRepository) {
         this.bookRepository = bookRepository;
-        this.bookMapper = bookMapper;
     }
 
-    public List<BookDTO> getAllBooks() {
-        return bookRepository.findAll()
-            .stream()
-            .map(book -> bookMapper.toDTO(book, null, null))
-            .collect(Collectors.toList());
+    public Book addBook(Book book) {
+        return bookRepository.save(book);
     }
 
-    public List<BookDTO> getFeaturedBooks() {
+    public List<Book> getAllBooks() {
+        return bookRepository.findAll();
+    }
+
+    public Book getBookById(long id) {
+        Optional<Book> book = bookRepository.findById(id);
+        if (book.isPresent()) {
+            return book.get();
+        }
+        return null;
+    }
+
+    public List<Book> getFeaturedBooks() {
         return bookRepository.findAll()
             .stream()
             .limit(4)
-            .map(book -> bookMapper.toDTO(book, null, null))
             .collect(Collectors.toList());
     }
 
-    public List<BookDTO> searchBooks(String query) {
+    public List<Book> searchBooks(String query) {
         String q = query.toLowerCase();
         return bookRepository.findAll()
             .stream()
             .filter(book -> book.getTitle() != null && book.getTitle().toLowerCase().contains(q))
-            .map(book -> bookMapper.toDTO(book, null, null))
             .collect(Collectors.toList());
     }
 }

@@ -1,7 +1,7 @@
 package be.ap.backend.seeder;
 
-import be.ap.backend.entity.*;
-import be.ap.backend.repository.*;
+import be.ap.backend.entity.Book;
+import be.ap.backend.repository.BookRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
@@ -9,63 +9,15 @@ import org.springframework.stereotype.Component;
 public class DataSeeder implements CommandLineRunner {
 
     private final BookRepository bookRepository;
-    private final AuthorRepository authorRepository;
-    private final GenreRepository genreRepository;
-    private final PublisherRepository publisherRepository;
-    private final LanguageRepository languageRepository;
 
-    public DataSeeder(BookRepository bookRepository,
-                      AuthorRepository authorRepository,
-                      GenreRepository genreRepository,
-                      PublisherRepository publisherRepository,
-                      LanguageRepository languageRepository) {
+    public DataSeeder(BookRepository bookRepository) {
         this.bookRepository = bookRepository;
-        this.authorRepository = authorRepository;
-        this.genreRepository = genreRepository;
-        this.publisherRepository = publisherRepository;
-        this.languageRepository = languageRepository;
     }
 
     @Override
     public void run(String... args) {
-        // Alleen seeden als er nog geen boeken zijn
         if (bookRepository.count() > 0) return;
 
-        // --- Talen ---
-        Language nl = new Language(); nl.setName("Nederlands"); nl.setCode("nl");
-        Language en = new Language(); en.setName("Engels"); en.setCode("en");
-        languageRepository.save(nl);
-        languageRepository.save(en);
-
-        // --- Uitgevers ---
-        Publisher lannoo = new Publisher(); lannoo.setName("Lannoo");
-        Publisher abrams = new Publisher(); abrams.setName("Abrams Books");
-        Publisher bloom  = new Publisher(); bloom.setName("Bloomsbury");
-        publisherRepository.save(lannoo);
-        publisherRepository.save(abrams);
-        publisherRepository.save(bloom);
-
-        // --- Auteurs ---
-        Author rindert = new Author(); rindert.setName("Rindert Kromhout");
-        Author kinney  = new Author(); kinney.setName("Jeff Kinney");
-        Author wiggs   = new Author(); wiggs.setName("Susan Wiggs");
-        Author rowling = new Author(); rowling.setName("J.K. Rowling");
-        authorRepository.save(rindert);
-        authorRepository.save(kinney);
-        authorRepository.save(wiggs);
-        authorRepository.save(rowling);
-
-        // --- Genres ---
-        Genre jeugd   = new Genre(); jeugd.setName("Jeugd");
-        Genre humor   = new Genre(); humor.setName("Humor");
-        Genre roman   = new Genre(); roman.setName("Roman");
-        Genre fantasy = new Genre(); fantasy.setName("Fantasy");
-        genreRepository.save(jeugd);
-        genreRepository.save(humor);
-        genreRepository.save(roman);
-        genreRepository.save(fantasy);
-
-        // --- Boeken ---
         Book b1 = new Book();
         b1.setTitle("Het TikTok Kamp");
         b1.setIsbn("9789401480123");
@@ -76,9 +28,6 @@ public class DataSeeder implements CommandLineRunner {
         b1.setRatingCount(120);
         b1.setAgeStart((byte) 10);
         b1.setAgeEnd((byte) 14);
-        b1.setPublisherId(lannoo.getId());
-        b1.setLanguageId(nl.getId());
-        b1.setBookAuthorId(rindert.getId());
         bookRepository.save(b1);
 
         Book b2 = new Book();
@@ -91,9 +40,6 @@ public class DataSeeder implements CommandLineRunner {
         b2.setRatingCount(850);
         b2.setAgeStart((byte) 9);
         b2.setAgeEnd((byte) 13);
-        b2.setPublisherId(abrams.getId());
-        b2.setLanguageId(nl.getId());
-        b2.setBookAuthorId(kinney.getId());
         bookRepository.save(b2);
 
         Book b3 = new Book();
@@ -106,9 +52,6 @@ public class DataSeeder implements CommandLineRunner {
         b3.setRatingCount(310);
         b3.setAgeStart((byte) 16);
         b3.setAgeEnd((byte) 99);
-        b3.setPublisherId(lannoo.getId());
-        b3.setLanguageId(nl.getId());
-        b3.setBookAuthorId(wiggs.getId());
         bookRepository.save(b3);
 
         Book b4 = new Book();
@@ -121,9 +64,6 @@ public class DataSeeder implements CommandLineRunner {
         b4.setRatingCount(2400);
         b4.setAgeStart((byte) 11);
         b4.setAgeEnd((byte) 99);
-        b4.setPublisherId(bloom.getId());
-        b4.setLanguageId(en.getId());
-        b4.setBookAuthorId(rowling.getId());
         bookRepository.save(b4);
     }
 }

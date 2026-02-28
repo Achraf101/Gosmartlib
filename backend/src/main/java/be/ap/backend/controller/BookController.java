@@ -1,15 +1,20 @@
 package be.ap.backend.controller;
 
-import be.ap.backend.model.BookDTO;
-import be.ap.backend.service.BookService;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
-@RestController
-@RequestMapping("/books")
-@CrossOrigin(origins = "*")
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import be.ap.backend.entity.Book;
+import be.ap.backend.service.BookService;
+
+@Controller
+@RequestMapping("book")
 public class BookController {
 
     private final BookService bookService;
@@ -18,24 +23,28 @@ public class BookController {
         this.bookService = bookService;
     }
 
-    // GET /api/books — alle boeken
     @GetMapping
-    public ResponseEntity<List<BookDTO>> getAllBooks() {
-        return ResponseEntity.ok(bookService.getAllBooks());
+    public @ResponseBody List<Book> getAllBooks() {
+        return bookService.getAllBooks();
     }
 
-    // GET /api/books/featured — eerste 4 boeken voor startscherm
+    @GetMapping(params = "id")
+    public @ResponseBody Book getBookById(@RequestParam long id) {
+        return bookService.getBookById(id);
+    }
+
+    @PostMapping
+    public @ResponseBody Book addBook(@RequestBody Book book) {
+        return bookService.addBook(book);
+    }
+
     @GetMapping("/featured")
-    public ResponseEntity<List<BookDTO>> getFeaturedBooks() {
-        return ResponseEntity.ok(bookService.getFeaturedBooks());
+    public @ResponseBody List<Book> getFeaturedBooks() {
+        return bookService.getFeaturedBooks();
     }
 
-    // GET /api/books/search?q=harry
     @GetMapping("/search")
-    public ResponseEntity<List<BookDTO>> searchBooks(@RequestParam String q) {
-        if (q == null || q.isBlank()) {
-            return ResponseEntity.ok(bookService.getAllBooks());
-        }
-        return ResponseEntity.ok(bookService.searchBooks(q));
+    public @ResponseBody List<Book> searchBooks(@RequestParam String q) {
+        return bookService.searchBooks(q);
     }
 }
