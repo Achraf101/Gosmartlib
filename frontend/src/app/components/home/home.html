@@ -1,7 +1,7 @@
 <app-nav-bar-home></app-nav-bar-home>
 <div class="home-container">
 
-  <!-- Hero sectie met zoekbalk -->
+
    <div class="hero-wrapper">
   <section class="hero">
     <div class="hero-overlay"></div>
@@ -31,13 +31,13 @@
   </section>
   </div>
 
-  <!-- In de kijker sectie -->
+
   <section class="spotlight-section">
     <div class="section-tabs">
       <button class="tab active">In de kijker</button>
     </div>
 
-    <!-- Loading state -->
+  
     <div class="loading" *ngIf="isLoading">
       <div class="loading-grid">
         <div class="book-card skeleton" *ngFor="let i of [1,2,3,4]">
@@ -48,12 +48,12 @@
       </div>
     </div>
 
-    <!-- Error state -->
+
     <div class="error-msg" *ngIf="error && !isLoading">
       {{ error }}
     </div>
 
-    <!-- Boeken -->
+
     <div class="books-grid" *ngIf="!isLoading && !error">
       <div class="book-card" *ngFor="let book of featuredBooks; let i = index">
         <div class="book-cover" [style.background-color]="getCoverColor(i)">
@@ -70,7 +70,6 @@
       </div>
     </div>
 
-    <!-- Leeg -->
     <div class="empty-msg" *ngIf="!isLoading && !error && featuredBooks.length === 0">
       Geen boeken gevonden.
     </div>
