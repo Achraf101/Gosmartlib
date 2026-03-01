@@ -2,17 +2,27 @@
    HOME COMPONENT STYLES
    ============================== */
 
+
+
+
 .home-container {
   width: 100%;
 }
 
+.hero-wrapper {
+  padding: 1rem 1.5rem 0 1.5rem;
+}
+
 /* ---- HERO ---- */
 .hero {
+  border-radius: 10px;
+  
   position: relative;
   width: 100%;
-  min-height: 220px;
-  background: url('/assets/hero-bg.jpg') center/cover no-repeat;
-  background-color: #4a3728;
+  min-height: 320px;
+  background: url('https://www.teachermagazine.com/assets/images/teacher/Researching-education-5-further-readings-on-school-libraries.jpg');
+  background-size: cover;
+  background-position: center 50%;
   display: flex;
   align-items: center;
   justify-content: center;

@@ -2,6 +2,7 @@
 <div class="home-container">
 
   <!-- Hero sectie met zoekbalk -->
+   <div class="hero-wrapper">
   <section class="hero">
     <div class="hero-overlay"></div>
     <div class="hero-content">
@@ -28,6 +29,7 @@
       </form>
     </div>
   </section>
+  </div>
 
   <!-- In de kijker sectie -->
   <section class="spotlight-section">
@@ -55,12 +57,7 @@
     <div class="books-grid" *ngIf="!isLoading && !error">
       <div class="book-card" *ngFor="let book of featuredBooks; let i = index">
         <div class="book-cover" [style.background-color]="getCoverColor(i)">
-          <img
-            *ngIf="book.cover"
-            [src]="book.cover"
-            [alt]="book.title"
-            class="cover-img"
-          />
+          <img *ngIf="book.cover" [src]="book.cover" [alt]="book.title" class="cover-img" (error)="book.cover = ''" />
           <span class="book-initial" *ngIf="!book.cover">
             {{ book.title.charAt(0) }}
           </span>

@@ -28,18 +28,23 @@ export class HomeComponent implements OnInit {
   constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
-    this.http.get<Book[]>(`http://localhost:8080/api/book/featured`).subscribe({
-      next: (books) => {
-        this.featuredBooks = books;
-        this.isLoading = false;
-      },
-      error: (err) => {
-        console.error('Fout bij laden van boeken:', err);
-        this.error = 'Boeken konden niet worden geladen.';
-        this.isLoading = false;
-      },
-    });
-  }
+  this.http.get<Book[]>(`http://localhost:8080/api/book/featured`).subscribe({
+    next: (books) => {
+      this.featuredBooks = books;
+      this.isLoading = false;
+    },
+    error: (err) => {
+      console.error('Fout bij laden van boeken:', err);
+      this.featuredBooks = [
+        { id: 1, title: 'Het TikTok Kamp', cover: 'https://standaarduitgeverij.be/cover/cover.php?isbn=9789493236554' },
+        { id: 2, title: 'Het Leven Van Een Loser', cover: 'https://www.boekhandelpardoes.be/assets/uploads/2019/03/9789026125690.jpg' },
+        { id: 3, title: 'Romantische Kerst', cover: 'https://media.s-bol.com/R6gLwk2lrzKY/550x825.jpg' },
+        { id: 4, title: 'Harry Potter And The Goblet Of Fire', cover: 'https://covers.openlibrary.org/b/isbn/9780439139595-L.jpg' }
+      ];
+      this.isLoading = false;
+    },
+  });
+}
 
   getCoverColor(index: number): string {
     return this.coverColors[index % this.coverColors.length];
