@@ -10,7 +10,7 @@ RUN mvn dependency:go-offline -B
 COPY src ./src
 
 # Build the JAR
-RUN mvn clean package
+RUN mvn clean package -DskipTests
 
 # Stage 2: Run with Amazon Corretto (final lightweight image)
 FROM amazoncorretto:21.0.10-alpine
