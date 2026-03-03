@@ -22,4 +22,5 @@ deploy_project:
     # - echo $DB_URL
 
     # deploy using docker compose
+    - docker compose config
     - docker compose up -d --build
