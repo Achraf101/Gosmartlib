@@ -1,10 +1,9 @@
 package be.ap.backend.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 @Entity
+@Table(name = "hello")
 public class Hello {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
