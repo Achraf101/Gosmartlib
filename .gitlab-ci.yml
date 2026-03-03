@@ -19,7 +19,7 @@ deploy_project:
     - echo "DB_URL=$DB_URL" >> .env
 
     - echo "CERTBOT_EMAIL=$CERTBOT_EMAIL" >> .env
-    - echo $DB_UPDATE
+    - echo $DB_URL
 
     # deploy using docker compose
     - docker compose --env-file .env up -d --build
