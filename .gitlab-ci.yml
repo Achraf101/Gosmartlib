@@ -16,6 +16,7 @@ deploy_project:
     - echo "MYSQL_DATABASE=$MYSQL_DATABASE" >> .env
     - echo "MYSQL_USER=$MYSQL_USER" >> .env
     - echo "MYSQL_PASSWORD=$MYSQL_PASSWORD" >> .env
+    - echo "DB_URL=$DB_URL" >> .env
 
     - echo "CERTBOT_EMAIL=$CERTBOT_EMAIL" >> .env
 
