@@ -22,4 +22,4 @@ deploy_project:
     # - echo $DB_URL
 
     # deploy using docker compose
-    - docker compose up -d --build --no-cache
+    - docker compose up -d --no-cache
