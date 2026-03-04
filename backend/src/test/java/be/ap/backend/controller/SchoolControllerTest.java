@@ -32,7 +32,7 @@ class SchoolControllerTest {
         inputSchool.setName("Test School");
 
         School savedSchool = new School();
-        savedSchool.setId(1);
+        savedSchool.setId(1L);
         savedSchool.setName("Test School");
 
         when(schoolService.addSchool(inputSchool)).thenReturn(savedSchool);
