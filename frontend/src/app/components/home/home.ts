@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { NavBarHomeComponent } from '../nav-bar-home/nav-bar-home';
+import { Footer } from "../footer/footer";
 
 interface Book {
   id: number;
@@ -13,15 +14,13 @@ interface Book {
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterModule, NavBarHomeComponent],
+  imports: [CommonModule, RouterModule, NavBarHomeComponent, Footer],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
 export class HomeComponent implements OnInit {
   searchQuery: string = '';
   featuredBooks: Book[] = [];
-
-  private coverColors = ['#2c3e6b', '#e8d5a3', '#8b1a1a', '#1a3a1a'];
 
   constructor(private http: HttpClient) {}
 
@@ -42,11 +41,7 @@ export class HomeComponent implements OnInit {
     });
   }
 
-  getCoverColor(index: number): string {
-    return this.coverColors[index % this.coverColors.length];
-  }
-
-  onSearch(event: Event) {
+   onSearch(event: Event) {
     event.preventDefault();
     if (!this.searchQuery.trim()) return;
     console.log('Zoeken naar:', this.searchQuery);
