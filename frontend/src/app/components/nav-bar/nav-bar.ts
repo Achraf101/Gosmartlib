@@ -12,20 +12,21 @@ import { Hello } from '../../models/hello';
   imports: [MenubarModule],
   styleUrl: './nav-bar.css',
 })
-export class NavBar {
+export class NavBar implements OnInit {
   items: MenuItem[] | undefined;
 
   private messageService = inject(MessageService);
   private helloService = inject(HelloService);
+
   loadHellos(): void {
     this.helloService.getAll().subscribe({
       next: (data: Hello[]) => {
         this.messageService.add({
-            severity: 'success',
-            summary: 'Success',
-            detail: data[0].msg,
-            life: 3000,
-          });
+          severity: 'success',
+          summary: 'Success',
+          detail: data[0].msg,
+          life: 3000,
+        });
       },
       error: (err) => {
         this.messageService.add({
@@ -43,6 +44,12 @@ export class NavBar {
       {
         label: 'Home',
         icon: 'pi pi-home',
+        routerLink: '/',
+      },
+      {
+        label: 'Catalogus',
+        icon: 'pi pi-book',
+        routerLink: '/catalogus',
       },
       {
         label: 'Features',
