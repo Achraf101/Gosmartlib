@@ -1,3 +1,21 @@
-<div class="card">
-    <p-menubar [model]="items" />
-</div>
+<header class="header">
+  <div class="header-left">
+    <img src="https://go-antwerpen.be/wp-content/uploads/2021/11/logo_go_antwerpen.svg" alt="GO! Antwerpen" class="logo" />
+  </div>
+  <div class="header-right">
+    <button class="icon-btn">
+      <i class="pi pi-bell" style="font-size: 1.2rem;"></i>
+    </button>
+    <div class="user-info">
+      <i class="pi pi-user"></i>
+      <span>Jeroen De Vos</span>
+    </div>
+  </div>
+</header>
+
+<nav class="nav">
+  <a routerLink="/startpagina" routerLinkActive="active" class="nav-link">Startpagina</a>
+  <a routerLink="/catalogus" class="nav-link">Catalogus</a>
+  <a routerLink="/uitleningen" class="nav-link">Mijn uitleningen</a>
+  <a routerLink="/leeslijst" class="nav-link">Mijn leeslijst &amp; favorieten</a>
+</nav>
