@@ -1,60 +1,41 @@
 <app-nav-bar-home></app-nav-bar-home>
 <div class="home-container">
 
-
-   <div class="hero-wrapper">
-  <section class="hero">
-    <div class="hero-overlay"></div>
-    <div class="hero-content">
-      <form class="search-form" (submit)="onSearch($event)">
-        <div class="search-wrapper">
-          <input
-            type="text"
-            class="search-input"
-            placeholder="Titel, auteur, genre, onderwerp"
-            [value]="searchQuery"
-            (input)="onSearchInput($event)"
-          />
-          <button type="submit" class="search-btn">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-              fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="11" cy="11" r="8"/>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-            </svg>
-          </button>
-        </div>
-        <a routerLink="/catalogus" class="catalogus-btn">
-          Bekijk catalogus &rsaquo;
-        </a>
-      </form>
-    </div>
-  </section>
+  <div class="hero-wrapper">
+    <section class="hero">
+      <div class="hero-overlay"></div>
+      <div class="hero-content">
+        <form class="search-form" (submit)="onSearch($event)">
+          <div class="search-wrapper">
+            <input
+              type="text"
+              class="search-input"
+              placeholder="Titel, auteur, genre, onderwerp"
+              [value]="searchQuery"
+              (input)="onSearchInput($event)"
+            />
+            <button type="submit" class="search-btn">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+            </button>
+          </div>
+          <a routerLink="/catalogus" class="catalogus-btn">
+            Bekijk catalogus &rsaquo;
+          </a>
+        </form>
+      </div>
+    </section>
   </div>
-
 
   <section class="spotlight-section">
     <div class="section-tabs">
       <button class="tab active">In de kijker</button>
     </div>
 
-  
-    <div class="loading" *ngIf="isLoading">
-      <div class="loading-grid">
-        <div class="book-card skeleton" *ngFor="let i of [1,2,3,4]">
-          <div class="book-cover skeleton-cover"></div>
-          <div class="skeleton-line"></div>
-          <div class="skeleton-line short"></div>
-        </div>
-      </div>
-    </div>
-
-
-    <div class="error-msg" *ngIf="error && !isLoading">
-      {{ error }}
-    </div>
-
-
-    <div class="books-grid" *ngIf="!isLoading && !error">
+    <div class="books-grid">
       <div class="book-card" *ngFor="let book of featuredBooks; let i = index">
         <div class="book-cover" [style.background-color]="getCoverColor(i)">
           <img *ngIf="book.cover" [src]="book.cover" [alt]="book.title" class="cover-img" (error)="book.cover = ''" />
@@ -64,13 +45,11 @@
         </div>
         <div class="book-info">
           <h3 class="book-title">{{ book.title }}</h3>
-          <p class="book-author"></p>
-          <p class="book-genre"></p>
         </div>
       </div>
     </div>
 
-    <div class="empty-msg" *ngIf="!isLoading && !error && featuredBooks.length === 0">
+    <div class="empty-msg" *ngIf="featuredBooks.length === 0">
       Geen boeken gevonden.
     </div>
   </section>
@@ -105,7 +84,6 @@
       <p>GO! Scholengroep Antwerpen</p>
       <p>Thonetlaan 106A</p>
       <p>2050 Antwerpen</p>
-      <p></p>
       <a href="mailto:secretariaat@go-antwerpen.be">secretariaat@go-antwerpen.be</a>
     </div>
 
