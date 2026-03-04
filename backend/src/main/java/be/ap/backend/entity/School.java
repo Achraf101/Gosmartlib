@@ -6,7 +6,9 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.Data;
 
+@Data
 @Entity
 @Table(name = "school")
 public class School {
@@ -32,22 +34,4 @@ public class School {
     private Long smartschoolId;
 
     public School() {}
-
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-
-    public String getAdres() { return adres; }
-    public void setAdres(String adres) { this.adres = adres; }
-
-    public String getContact() { return contact; }
-    public void setContact(String contact) { this.contact = contact; }
-
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
-
-    public Long getSmartschoolId() { return smartschoolId; }
-    public void setSmartschoolId(Long smartschoolId) { this.smartschoolId = smartschoolId; }
 }
