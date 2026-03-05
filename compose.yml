@@ -48,7 +48,8 @@ services:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      DB_URL: jdbc:mysql://db:3306/${MYSQL_DATABASE}
+      DB_UPDATE: ${DB_UPDATE}
+      DB_URL: ${DB_URL}
     build:
       context: ./backend
       dockerfile: Dockerfile

@@ -1,16 +1,12 @@
 package be.ap.backend.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
 import lombok.Data;
 
-@Data
 @Entity
 @Table(name = "school")
+@Data
 public class School {
 
     @Id
@@ -18,7 +14,7 @@ public class School {
     @Column(name = "id", unique = true)
     private Long id;
 
-    @Column(nullable = true, length = 500, name = "name")
+    @Column(nullable = false, length = 255, name = "name")
     private String name;
 
     @Column(nullable = true, length = 500, name = "adres")
@@ -30,8 +26,13 @@ public class School {
     @Column(nullable = true, length = 1000, name = "description")
     private String description;
 
-    @Column(nullable = true, name = "smartschool_id")
-    private Long smartschoolId;
+    public School() {
+    }
 
-    public School() {}
+    public School(String name, String adres, String contact, String description) {
+        this.name = name;
+        this.adres = adres;
+        this.contact = contact;
+        this.description = description;
+    }
 }

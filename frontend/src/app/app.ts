@@ -6,7 +6,7 @@ import { RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-root',
-  imports: [ButtonModule, PrimeNgNavBar, Toast, RouterOutlet, PrimeNgNavBar],
+  imports: [ButtonModule, PrimeNgNavBar, Toast, RouterOutlet],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })
