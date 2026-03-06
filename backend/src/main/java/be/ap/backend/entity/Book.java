@@ -1,275 +1,280 @@
 package be.ap.backend.entity;
 
 import java.time.Year;
+import java.util.Set;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "book",
-    indexes = {
-        @Index(name = "index_books_isbn", columnList = "isbn"),
+@Table(name = "book", indexes = {
+        @Index(name = "index_books_isbn", columnList = "isbn", unique = true),
         @Index(name = "index_books_title", columnList = "title")
 
-    }
-)
+})
 public class Book {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
 
-    @Column(nullable = true, length = 13, unique = true, name = "isbn")
-    private String isbn;
-    
+    @ManyToOne
+    @JoinColumn(name = "book_type_id")
+    private BookType bookType;
+
     @Column(length = 255, name = "title")
-    private 
-    String title;
+    private String title;
 
-    @Column(nullable = true,  name = "book_author_id")
-    private long bookAuthorId;
+    @ManyToMany
+    @JoinTable(name = "book_genre", joinColumns = @JoinColumn(name = "book_id"), inverseJoinColumns = @JoinColumn(name = "genre_id"))
+    private Set<Genre> genres;
 
-    @Column(nullable = true, name = "publisher_id")
-    private long publisherId;
+    @Column(nullable = true, length = 13, name = "isbn")
+    private String isbn;
+
+    @Column(name = "series_id")
+    private Long seriesId;
+
+    @Column(name = "series_count")
+    private int seriesCount;
+
+    @ManyToOne
+    @JoinColumn(nullable = true, name = "author_id")
+    private Author author;
+
+    @OneToMany(mappedBy = "book")
+    private Set<BookContributor> contributors;
+
+    @ManyToOne
+    @JoinColumn(name = "publisher_id")
+    private Publisher publisher;
 
     @Column(nullable = true, length = 1000, name = "description")
     private String description;
-    
+
     @Column(name = "fiction")
     private Boolean fiction;
-    
+
     @Column(nullable = true, name = "published")
     private Year published;
-    
+
     @Column(nullable = true, length = 255, name = "cover")
     private String cover;
-    
-    @Column(name = "language_id")
-    private long languageId;
-    
+
+    @ManyToOne
+    private Language language;
+
     @Column(nullable = true, name = "age_start")
     private byte ageStart;
-    
+
     @Column(nullable = true, name = "age_end")
     private byte ageEnd;
-    
+
     @Column(nullable = true, name = "pages")
     private int pages;
-    
+
     @Column(name = "rating")
-    private int rating = 0;
-    
+    private int rating;
+
     @Column(name = "rating_count")
-    private int ratingCount = 0;
-    
+    private int ratingCount;
+
     @Column(nullable = true, name = "font_size")
-    private byte fontSize;
-    
+    @Enumerated(EnumType.STRING)
+    private FontSize fontSize;
+
     @Column(nullable = true, name = "school_id")
     private long schoolId;
 
-
-    public Book(String isbn, String title, long bookAuthorId, long publisherId, String description, Boolean fiction,
-            Year published, String cover, long languageId, byte ageStart, byte ageEnd, int pages, byte fontSize, long schoolId) {
-        this.isbn = isbn;
-        this.title = title;
-        this.bookAuthorId = bookAuthorId;
-        this.publisherId = publisherId;
-        this.description = description;
-        this.fiction = fiction;
-        this.published = published;
-        this.cover = cover;
-        this.languageId = languageId;
-        this.ageStart = ageStart;
-        this.ageEnd = ageEnd;
-        this.pages = pages;
-        this.fontSize = fontSize;
-        this.schoolId = schoolId;
-    }
-
-
-    public Book(String title, Boolean fiction, long languageId) {
-        this.title = title;
-        this.fiction = fiction;
-        this.languageId = languageId;
-    }
-
-
     public Book() {
     }
-
 
     public Long getId() {
         return id;
     }
 
-
     public void setId(Long id) {
         this.id = id;
     }
 
-
-    public String getIsbn() {
-        return isbn;
+    public BookType getBookType() {
+        return bookType;
     }
 
-
-    public void setIsbn(String isbn) {
-        this.isbn = isbn;
+    public void setBookType(BookType bookType) {
+        this.bookType = bookType;
     }
-
 
     public String getTitle() {
         return title;
     }
 
-
     public void setTitle(String title) {
         this.title = title;
     }
 
-
-    public long getBookAuthorId() {
-        return bookAuthorId;
+    public Set<Genre> getGenres() {
+        return genres;
     }
 
-
-    public void setBookAuthorId(long bookAuthorId) {
-        this.bookAuthorId = bookAuthorId;
+    public void setGenres(Set<Genre> genres) {
+        this.genres = genres;
     }
 
-
-    public long getPublisherId() {
-        return publisherId;
+    public String getIsbn() {
+        return isbn;
     }
 
-
-    public void setPublisherId(long publisherId) {
-        this.publisherId = publisherId;
+    public void setIsbn(String isbn) {
+        this.isbn = isbn;
     }
 
+    public Long getSeriesId() {
+        return seriesId;
+    }
+
+    public void setSeriesId(Long seriesId) {
+        this.seriesId = seriesId;
+    }
+
+    public int getSeriesCount() {
+        return seriesCount;
+    }
+
+    public void setSeriesCount(int seriesCount) {
+        this.seriesCount = seriesCount;
+    }
+
+    public Author getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(Author author) {
+        this.author = author;
+    }
+
+    public Set<BookContributor> getContributors() {
+        return contributors;
+    }
+
+    public void setContributors(Set<BookContributor> contributors) {
+        this.contributors = contributors;
+    }
+
+    public Publisher getPublisher() {
+        return publisher;
+    }
+
+    public void setPublisher(Publisher publisher) {
+        this.publisher = publisher;
+    }
 
     public String getDescription() {
         return description;
     }
 
-
     public void setDescription(String description) {
         this.description = description;
     }
-
 
     public Boolean getFiction() {
         return fiction;
     }
 
-
     public void setFiction(Boolean fiction) {
         this.fiction = fiction;
     }
-
 
     public Year getPublished() {
         return published;
     }
 
-
     public void setPublished(Year published) {
         this.published = published;
     }
-
 
     public String getCover() {
         return cover;
     }
 
-
     public void setCover(String cover) {
         this.cover = cover;
     }
 
-
-    public long getLanguageId() {
-        return languageId;
+    public Language getLanguage() {
+        return language;
     }
 
-
-    public void setLanguageId(long languageId) {
-        this.languageId = languageId;
+    public void setLanguage(Language language) {
+        this.language = language;
     }
-
 
     public byte getAgeStart() {
         return ageStart;
     }
 
-
     public void setAgeStart(byte ageStart) {
         this.ageStart = ageStart;
     }
-
 
     public byte getAgeEnd() {
         return ageEnd;
     }
 
-
     public void setAgeEnd(byte ageEnd) {
         this.ageEnd = ageEnd;
     }
-
 
     public int getPages() {
         return pages;
     }
 
-
     public void setPages(int pages) {
         this.pages = pages;
     }
-
 
     public int getRating() {
         return rating;
     }
 
-
     public void setRating(int rating) {
         this.rating = rating;
     }
-
 
     public int getRatingCount() {
         return ratingCount;
     }
 
-
     public void setRatingCount(int ratingCount) {
         this.ratingCount = ratingCount;
     }
 
-
-    public byte getFontSize() {
+    public FontSize getFontSize() {
         return fontSize;
     }
 
-
-    public void setFontSize(byte fontSize) {
+    public void setFontSize(FontSize fontSize) {
         this.fontSize = fontSize;
     }
-
 
     public long getSchoolId() {
         return schoolId;
     }
 
-
     public void setSchoolId(long schoolId) {
         this.schoolId = schoolId;
     }
+
 }

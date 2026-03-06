@@ -12,23 +12,26 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "publisher", indexes = { @Index(name = "index_publisher_name", columnList = "name", unique = true) })
-public class Publisher {
+@Table(name = "author", indexes = { @Index(name = "index_genre_name", columnList = "name", unique = true) })
+public class Author {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
 
-    @OneToMany(mappedBy = "publisher")
+    @OneToMany(mappedBy = "author")
     private Set<Book> books;
+
+    @OneToMany(mappedBy = "author")
+    private Set<BookContributor> contributors;
 
     @Column(length = 255, name = "name", nullable = false)
     private String name;
 
-    @Column(length = 255, name = "description")
+    @Column(length = 1000, name = "description")
     private String description;
 
-    public Publisher() {
+    public Author() {
     }
 
     public Long getId() {
@@ -44,7 +47,7 @@ public class Publisher {
     }
 
     public void setName(String name) {
-        this.name = name;
+        this.name = name.trim();
     }
 
     public String getDescription() {
@@ -52,7 +55,7 @@ public class Publisher {
     }
 
     public void setDescription(String description) {
-        this.description = description;
+        this.description = description == null ? null : description.trim();
     }
 
 }
