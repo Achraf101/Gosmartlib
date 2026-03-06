@@ -24,7 +24,6 @@ export interface BookResult extends BookBase {
   published?: number;
   description?: string;
   genre?: Genre[];
-  available: boolean;
 }
 
 export interface BookDetail extends BookBase {

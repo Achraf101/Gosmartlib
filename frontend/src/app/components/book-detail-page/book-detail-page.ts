@@ -40,7 +40,7 @@ export class BookDetailPage implements OnInit {
     });
 
     const requests = Array.from({ length: 8 }, () => {
-      const randomId = Math.floor(Math.random() * 16);
+      const randomId = Math.floor(Math.random() * 1);
       return this.service.getById(randomId);
     });
 
