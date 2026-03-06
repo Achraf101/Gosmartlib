@@ -10,20 +10,10 @@ http:
     type: json
     data: |-
       {
-              "isbn": 9780394747231,
-              "title": "Maus I: A Survivor's Tale: My Father Bleeds History",
-              "book_author_id": 1,
-              "publisher_id": 1,
-              "description":"The bestselling first installment of the graphic novel acclaimed as “the most affecting and successful narrative ever done about the Holocaust” (Wall Street Journal) and “the first masterpiece in comic book history” (The New Yorker) • PULITZER PRIZE WINNER • One of Variety’s “Banned and Challenged Books Everyone Should Read” A brutally moving work of art—widely hailed as the greatest graphic novel ever written—Maus recounts the chilling experiences of the author’s father during the Holocaust, with Jews drawn as wide-eyed mice and Nazis as menacing cats. Maus is a haunting tale within a tale, weaving the author’s account of his tortured relationship with his aging father into an astonishing retelling of one of history's most unspeakable tragedies. It is an unforgettable story of survival and a disarming look at the legacy of trauma.",
-              "fiction": true,
-              "published": 1986,
-              "cover": "https://m.media-amazon.com/images/I/A1pUyqvAOwL._SY522_.jpg",
-              "language_id": 3,
-              "age_start": 16,
-              "age_end": 99,
-              "pages": 160,
-              "font_size": 12,
-              "school_id": 6
+              "title": "something titly",
+        "fiction": true,
+        "bookType": 1,
+        "language": 1
       }
   auth: inherit
 

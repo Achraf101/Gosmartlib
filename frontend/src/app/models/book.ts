@@ -3,11 +3,12 @@ import { Genre } from './genre';
 import { Language } from './language';
 import { Publisher } from './publisher';
 import { Series } from './series';
+import { BookType } from './book-type';
 
 export interface BookBase {
   id: number;
   title: string;
-  author: Author;
+  author?: Author;
   cover?: string;
 }
 
@@ -16,15 +17,18 @@ export interface BookCard extends BookBase {}
 
 // the item displayed after search
 export interface BookResult extends BookBase {
+  book_type: BookType;
   series?: Series;
   series_count?: number;
   language?: Language;
   published?: number;
   description?: string;
   genre?: Genre[];
+  available: boolean;
 }
 
 export interface BookDetail extends BookBase {
+  book_type: BookType;
   isbn?: string;
   series?: Series;
   series_count?: number;
@@ -42,14 +46,14 @@ export interface BookDetail extends BookBase {
   font_size?: string;
   rating_total: number;
   rating_count: number;
-  school_id?: number;
+  school?: number;
   added: string;
 }
 
 export interface CreateBook {
+  book_type: number;
   title: string;
-  author?: number | null;
-  // author?: number | null;
+  author?: number;
   cover?: string;
   isbn?: string;
   series?: number;
@@ -58,16 +62,14 @@ export interface CreateBook {
   publisher?: number;
   genre?: number[];
   description?: string;
-  fiction: boolean | null;
-  // fiction: boolean | null;
+  fiction: boolean;
   published?: number;
-  language: number | null;
-  // language: number | null;
+  language: number;
   age_start?: number;
   age_end?: number;
   pages?: number;
   font_size?: string;
-  school: boolean;
+  school?: boolean;
 }
 
 // interface to search with filters

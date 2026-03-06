@@ -1,4 +1,4 @@
-export interface Genre {
+export interface BookType {
   id: number;
   name: string;
 }
