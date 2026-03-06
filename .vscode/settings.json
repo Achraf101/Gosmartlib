@@ -3,6 +3,18 @@
   "[java]": {
     "editor.tabSize": 4
   },
+  "[typescript]": {
+    "editor.tabSize": 2
+  },
+  "[html]": {
+    "editor.tabSize": 2
+  },
+  "[css]": {
+    "editor.tabSize": 2
+  },
+  "[javascript]": {
+    "editor.tabSize": 2
+  },
   "editor.insertSpaces": true,
   "editor.detectIndentation": false
 }
