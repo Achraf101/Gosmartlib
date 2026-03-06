@@ -28,7 +28,8 @@ public class Book {
     private String isbn;
     
     @Column(length = 255, name = "title")
-    private String title;
+    private 
+    String title;
 
     @Column(nullable = true,  name = "book_author_id")
     private long bookAuthorId;
@@ -71,6 +72,25 @@ public class Book {
     
     @Column(nullable = true, name = "school_id")
     private long schoolId;
+
+
+    public Book(String isbn, String title, long bookAuthorId, long publisherId, String description, Boolean fiction,
+            Year published, String cover, long languageId, byte ageStart, byte ageEnd, int pages, byte fontSize, long schoolId) {
+        this.isbn = isbn;
+        this.title = title;
+        this.bookAuthorId = bookAuthorId;
+        this.publisherId = publisherId;
+        this.description = description;
+        this.fiction = fiction;
+        this.published = published;
+        this.cover = cover;
+        this.languageId = languageId;
+        this.ageStart = ageStart;
+        this.ageEnd = ageEnd;
+        this.pages = pages;
+        this.fontSize = fontSize;
+        this.schoolId = schoolId;
+    }
 
 
     public Book(String title, Boolean fiction, long languageId) {
