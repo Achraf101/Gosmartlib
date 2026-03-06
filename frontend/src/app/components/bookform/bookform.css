@@ -1,0 +1,55 @@
+.author-name, .author-desc {
+  display: flex;
+  margin-bottom: 1rem;
+}
+
+.btns {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+
+.container {
+  width: 50rem;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  margin-top: 60px;
+}
+
+.inputitem {
+  margin-bottom: 1rem;
+}
+
+.dropdowns {
+  display: flex;
+}
+
+.select {
+  flex-grow: 1;
+}
+
+.select:nth-child(1) {
+  margin-right: 40px !important;
+}
+
+#author {
+  margin-right: auto;
+}
+
+.narrow {
+  width: 3.5rem;
+}
+
+.language {
+  width: calc((100% - 50px) / 2);
+}
+
+.save {
+  display: flex;
+  justify-content: right;
+}
+
+.subtext {
+  color: var(--p-button-text-secondary-color);
+}

@@ -12,7 +12,7 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
-    providePrimeNG({ translation: nl, theme: { preset: Aura } }),
+    providePrimeNG({ translation: nl, theme: { preset: Aura, options: { darkModeSelector: '' } } }),
     MessageService
   ]
 };

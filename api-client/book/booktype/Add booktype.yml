@@ -1,0 +1,21 @@
+info:
+  name: Add booktype
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: http://localhost:8080/api/booktype
+  body:
+    type: json
+    data: |-
+      {
+        "name": "Strip"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

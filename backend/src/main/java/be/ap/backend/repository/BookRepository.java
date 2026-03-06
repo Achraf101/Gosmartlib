@@ -1,9 +1,12 @@
 package be.ap.backend.repository;
 
-import be.ap.backend.entity.Book;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import java.util.List;
 
-@Repository
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import be.ap.backend.entity.Book;
+
 public interface BookRepository extends JpaRepository<Book, Long> {
+    List<Book> findBy();
+
 }

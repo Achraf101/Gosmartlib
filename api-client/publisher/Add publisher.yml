@@ -1,0 +1,22 @@
+info:
+  name: Add publisher
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: http://localhost:8080/api/publisher
+  body:
+    type: json
+    data: |-
+      {
+        "name": "Penguin books",
+        "description": "Famous books..."
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
