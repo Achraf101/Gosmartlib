@@ -1,0 +1,129 @@
+body {
+  display: flex;
+}
+
+article {
+  display: inline-block;
+  padding: 40px;
+}
+
+* {
+  border-radius: 10px;
+}
+
+#book-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 25px;
+  border: 1px solid var(--p-menubar-border-color);
+  width: 70vw;
+  margin-left: 15vw;
+  position: relative;
+  margin-top: 5vh;
+}
+
+#stars p {
+  display: inline-block;
+  margin-left: 15px;
+}
+
+.bookmark {
+  position: absolute;
+  right: 20px;
+  top: 5px;
+}
+
+.bookmark:hover {
+  cursor: pointer;
+}
+
+p-image {
+  height: 300px;
+}
+
+tr > td:nth-child(1) {
+  display: flex;
+  align-items: center;
+}
+
+tr > td:nth-child(1) img {
+  margin-left: 20px;
+  margin-right: 20px;
+  height: 100px;
+}
+
+table {
+  border-radius: 0;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+table caption {
+  caption-side: top;
+  text-align: left;
+}
+
+th {
+  border-radius: 0;
+  background-color: var(--p-sky-700);
+  color: white;
+  padding: 10px;
+}
+
+table td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+#book-available {
+  border: 1px solid var(--p-menubar-border-color);
+  width: 70vw;
+  margin-left: 15vw;
+}
+
+#book-available table {
+  border: 1px solid var(--p-menubar-border-color);
+  border-top: none;
+
+  background-color: var(--p-amber-50);
+}
+
+#book-detail table {
+  width: 50vw;
+  margin-left: 15vw;
+}
+
+#book-detail table tr {
+  line-height: 40px;
+}
+
+.box {
+  margin-bottom: 1em;
+  padding: 20px;
+}
+
+#book-detail table tr td:nth-child(2) {
+  color: var(--p-button-text-secondary-color);
+}
+
+#related-books-book {
+  display: flex;
+  overflow-x: auto;
+  gap: 10px;
+  width: 80%;
+  margin-left: 10%;
+}
+
+#related-books-book .book-card {
+  width: 300px;
+  flex-shrink: 0;
+  border: 1px solid var(--p-menubar-border-color);
+}
+
+#related-books img {
+  display: block;
+  height: 200px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  margin-left: 20px;
+}
