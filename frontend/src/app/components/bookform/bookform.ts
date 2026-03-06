@@ -65,8 +65,8 @@ export class BookformComponent {
     contributors: new FormControl<number[]>([], maxEntries(5)),
     publisher: new FormControl<number | null>(null),
 
-    fiction: new FormControl<boolean>(false, Validators.required),
-    genre: new FormControl<number[]>([], maxEntries(5)),
+    fiction: new FormControl<boolean>(true, Validators.required),
+    genres: new FormControl<number[]>([], maxEntries(5)),
 
     description: new FormControl<string | null>(null),
 

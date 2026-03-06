@@ -85,10 +85,10 @@
       <div class="inputitem">
         <div>Kies er één*:</div>
         <br />
-        <p-radiobutton id="non-fiction" [value]="false" name="fiction" formControlName="fiction" />
-        <label for="non-fiction"> Non-fictie</label><br /><br />
         <p-radiobutton id="fiction" [value]="true" name="fiction" formControlName="fiction" />
-        <label for="fiction"> Fictie</label><br />
+        <label for="fiction"> Fictie</label><br /><br />
+        <p-radiobutton id="non-fiction" [value]="false" name="fiction" formControlName="fiction" />
+        <label for="non-fiction"> Non-fictie</label><br />
       </div>
       <div class="inputitem dropdowns">
         <p-select
@@ -104,7 +104,7 @@
         <p-multiselect
           display="chip"
           [options]="genres"
-          formControlName="genre"
+          formControlName="genres"
           placeholder="Genre(s) (optioneel)"
           [selectionLimit]="5"
           optionLabel="name"
