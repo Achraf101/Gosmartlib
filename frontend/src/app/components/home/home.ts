@@ -25,7 +25,7 @@ export class HomeComponent implements OnInit {
   constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
-    this.http.get<Book[]>(`http://localhost:8080/api/book/featured`).subscribe({
+    this.http.get<Book[]>(`/api/book/featured`).subscribe({
       next: (books) => {
         this.featuredBooks = books;
       },
