@@ -5,8 +5,7 @@ import { BookformComponent } from './components/bookform/bookform';
 import { CatalogueComponent } from './components/catalogue/catalogue';
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'startpagina', pathMatch: 'full' },
-  { path: '', component: HomeComponent },
+  { path: '', component: HomeComponent, pathMatch: 'full' },
   { path: 'catalogus', component: CatalogueComponent },
   {
     path: 'boek',

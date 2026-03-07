@@ -1,10 +1,14 @@
 <header class="header">
   <div class="header-left">
-    <img src="https://go-antwerpen.be/wp-content/uploads/2021/11/logo_go_antwerpen.svg" alt="GO! Antwerpen" class="logo" />
+    <img
+      src="https://go-antwerpen.be/wp-content/uploads/2021/11/logo_go_antwerpen.svg"
+      alt="GO! Antwerpen"
+      class="logo"
+    />
   </div>
   <div class="header-right">
     <button class="icon-btn">
-      <i class="pi pi-bell" style="font-size: 1.2rem;"></i>
+      <i class="pi pi-bell" style="font-size: 1.2rem"></i>
     </button>
     <div class="user-info">
       <i class="pi pi-user"></i>
@@ -14,8 +18,17 @@
 </header>
 
 <nav class="nav">
-  <a routerLink="/" routerLinkActive="active" class="nav-link">Startpagina</a>
-  <a routerLink="/catalogus" class="nav-link">Catalogus</a>
-  <a routerLink="/uitleningen" class="nav-link">Mijn uitleningen</a>
-  <a routerLink="/leeslijst" class="nav-link">Mijn leeslijst &amp; favorieten</a>
+  <a
+    routerLink="/"
+    routerLinkActive="active"
+    [routerLinkActiveOptions]="{ exact: true }"
+    class="nav-link"
+    >Startpagina</a
+  >
+  <a routerLink="/catalogus" routerLinkActive="active" class="nav-link">Catalogus</a>
+  <a routerLink="/boek/toevoegen" routerLinkActive="active" class="nav-link">Boek toevoegen</a>
+  <a routerLink="/uitleningen" routerLinkActive="active" class="nav-link">Mijn uitleningen</a>
+  <a routerLink="/leeslijst" routerLinkActive="active" class="nav-link"
+    >Mijn leeslijst &amp; favorieten</a
+  >
 </nav>
