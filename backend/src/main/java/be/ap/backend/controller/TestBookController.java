@@ -6,19 +6,19 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import be.ap.backend.entity.Book;
-import be.ap.backend.service.BookService;
+import be.ap.backend.entity.TestBook;
+import be.ap.backend.service.TestBookService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("book")
+@RequestMapping("test-book")
 @RequiredArgsConstructor
-public class BookController {
+public class TestBookController {
 
-    private final BookService bookService;
+    private final TestBookService testBookService;
 
     @GetMapping
-    public Page<Book> getBooks(Pageable pageable) {
-        return bookService.getBooks(pageable);
+    public Page<TestBook> getBooks(Pageable pageable) {
+        return testBookService.getBooks(pageable);
     }
 }

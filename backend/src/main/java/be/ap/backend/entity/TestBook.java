@@ -14,14 +14,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "book", indexes = {
-        @Index(name = "index_books_isbn", columnList = "isbn"),
-        @Index(name = "index_books_title", columnList = "title")
+@Table(name = "test_book", indexes = {
+        @Index(name = "index_test_books_isbn", columnList = "isbn"),
+        @Index(name = "index_test_books_title", columnList = "title")
 })
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Book {
+public class TestBook {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", unique = true)
