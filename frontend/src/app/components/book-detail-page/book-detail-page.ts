@@ -18,8 +18,10 @@ export class BookDetailPage implements OnInit {
   book$!: Observable<BookDetail | null>;
   error = '';
   ratingValue = 0;
+  ratingValueStars = 0;
   relatedBooks$!: Observable<BookResult[] | null>;
   bookmarked = false;
+  genresString = '';
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -36,18 +38,21 @@ export class BookDetailPage implements OnInit {
     );
 
     this.book$.forEach((book) => {
-      this.ratingValue = book?.rating_total! / book?.rating_count!;
+      this.ratingValue = Math.round((book?.rating_total! / book?.rating_count!) * 10) / 10;
+      this.ratingValueStars = Math.round(this.ratingValue);
+
+      this.genresString = (book?.genres || []).map((i) => i.name).join(', ');
     });
 
-    const requests = Array.from({ length: 8 }, () => {
-      const randomId = Math.floor(Math.random() * 1);
+    const requests = Array.from({ length: 16 }, () => {
+      const randomId = Math.ceil(Math.random() * 4);
       return this.service.getById(randomId);
     });
 
     this.relatedBooks$ = forkJoin(requests);
   }
 
-  public bookMarkClicked() {
+  public bookMark() {
     this.bookmarked = !this.bookmarked;
   }
 }

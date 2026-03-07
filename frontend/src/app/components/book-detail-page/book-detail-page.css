@@ -1,5 +1,10 @@
-body {
+.detail-container {
   display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-flow: column;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 article {
@@ -17,7 +22,6 @@ article {
   gap: 25px;
   border: 1px solid var(--p-menubar-border-color);
   width: 70vw;
-  margin-left: 15vw;
   position: relative;
   margin-top: 5vh;
 }
@@ -39,6 +43,22 @@ article {
 
 p-image {
   height: 300px;
+}
+
+.no-cover {
+  background-color: var(--p-zinc-400);
+  aspect-ratio: 3/4;
+  color: var(--p-primary-50);
+  text-align: center;
+  font-size: large;
+  font-weight: 900;
+  align-content: center;
+  height: 200px;
+}
+
+.no-cover p {
+  transform: rotate(-35deg);
+  user-select: none;
 }
 
 tr > td:nth-child(1) {
@@ -78,7 +98,6 @@ table td {
 #book-available {
   border: 1px solid var(--p-menubar-border-color);
   width: 70vw;
-  margin-left: 15vw;
 }
 
 #book-available table {
@@ -88,18 +107,22 @@ table td {
   background-color: var(--p-amber-50);
 }
 
-#book-detail table {
-  width: 50vw;
-  margin-left: 15vw;
-}
-
 #book-detail table tr {
   line-height: 40px;
+}
+
+#book-detail table tr td:nth-child(2) {
+  text-align: left;
+}
+
+#book-detail {
+  width: 70vw;
 }
 
 .box {
   margin-bottom: 1em;
   padding: 20px;
+  max-width: 1800px;
 }
 
 #book-detail table tr td:nth-child(2) {
@@ -115,9 +138,12 @@ table td {
 }
 
 #related-books-book .book-card {
-  width: 300px;
+  width: 180px;
+  min-height: 220px;
   flex-shrink: 0;
   border: 1px solid var(--p-menubar-border-color);
+  text-align: center;
+  align-content: center;
 }
 
 #related-books img {
@@ -125,5 +151,17 @@ table td {
   height: 200px;
   margin-top: 10px;
   margin-bottom: 10px;
-  margin-left: 20px;
+}
+
+#related-books .book-card * {
+  display: inline-block;
+  margin: 0 auto;
+}
+
+#related-books .book-card p {
+  color: var(--p-button-text-secondary-color);
+}
+
+#related-books > h2 {
+  margin-left: 10%;
 }

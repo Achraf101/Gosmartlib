@@ -33,7 +33,6 @@ public class BookService {
     public Book saveBook(CreateBookDTO dto) {
 
         Book book = new Book();
-        book.setId(null);
 
         // required fields
         book.setTitle(dto.getTitle());
@@ -57,7 +56,6 @@ public class BookService {
             Set<Genre> genres = dto.getGenres().stream()
                     .map(id -> entityManager.find(Genre.class, id))
                     .collect(Collectors.toSet());
-
             book.setGenres(genres);
         }
 

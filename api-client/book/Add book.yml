@@ -10,10 +10,14 @@ http:
     type: json
     data: |-
       {
+<<<<<<< HEAD
               "title": "something titly",
         "fiction": true,
         "bookType": 1,
         "language": 1
+=======
+        
+>>>>>>> origin/main
       }
   auth: inherit
 

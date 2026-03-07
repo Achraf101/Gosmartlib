@@ -1,0 +1,292 @@
+<div class="container">
+  <div class="bookform">
+    <form [formGroup]="bookForm">
+      <div class="inputitem">
+        <p-iftalabel>
+          <label for="title">Titel*</label>
+          <input
+            id="title"
+            fluid
+            type="text"
+            class="input"
+            autofocus
+            pInputText
+            formControlName="title"
+          />
+        </p-iftalabel>
+      </div>
+      <div class="inputitem">
+        <p-iftalabel>
+          <label for="description">Beschrijving (optioneel)</label>
+          <textarea
+            id="description"
+            formControlName="description"
+            pTextarea
+            rows="8"
+            fluid
+            autoResize="true"
+            maxlength="1000"
+          ></textarea>
+        </p-iftalabel>
+      </div>
+      <div class="inputitem dropdowns">
+        <p-select
+          [options]="authors"
+          [filter]="true"
+          filterBy="name"
+          optionLabel="name"
+          optionValue="id"
+          formControlName="author"
+          placeholder="Auteur (optioneel)"
+          class="select"
+          [showClear]="true"
+          id="author"
+        >
+          <ng-template #footer>
+            <div class="p-3">
+              <p-button
+                label="Nieuwe auteur"
+                fluid
+                severity="secondary"
+                text
+                size="small"
+                icon="pi pi-plus"
+                (click)="authorFormVisible = true"
+              />
+            </div>
+          </ng-template>
+        </p-select>
+        <p-select
+          [options]="publishers"
+          [filter]="true"
+          filterBy="name"
+          optionLabel="name"
+          optionValue="id"
+          formControlName="publisher"
+          placeholder="Uitgever (optioneel)"
+          class="select"
+          [showClear]="true"
+        >
+          <ng-template #footer>
+            <div class="p-3">
+              <p-button
+                label="Nieuwe uitgever"
+                fluid
+                severity="secondary"
+                text
+                size="small"
+                icon="pi pi-plus"
+                (click)="publisherFormVisible = true"
+              />
+            </div>
+          </ng-template>
+        </p-select>
+      </div>
+      <div class="inputitem">
+        <div>Kies er één*:</div>
+        <br />
+        <p-radiobutton id="fiction" [value]="true" name="fiction" formControlName="fiction" />
+        <label for="fiction"> Fictie</label><br /><br />
+        <p-radiobutton id="non-fiction" [value]="false" name="fiction" formControlName="fiction" />
+        <label for="non-fiction"> Non-fictie</label><br />
+      </div>
+      <div class="inputitem dropdowns">
+        <p-select
+          [options]="bookTypes"
+          [filter]="true"
+          filterBy="name"
+          optionLabel="name"
+          optionValue="id"
+          formControlName="book_type"
+          placeholder="Book type*"
+          class="select"
+        />
+        <p-multiselect
+          display="chip"
+          [options]="genres"
+          formControlName="genres"
+          placeholder="Genre(s) (optioneel)"
+          [selectionLimit]="5"
+          optionLabel="name"
+          optionValue="id"
+          showToggleAll="false"
+          [showClear]="true"
+          class="select"
+        />
+      </div>
+      <div class="inputitem">
+        <p-iftalabel>
+          <label for="published">Jaar van uitgave</label>
+          <input id="published" type="number" pInputText formControlName="published" />
+        </p-iftalabel>
+      </div>
+      <div class="inputitem">
+        <p-iftalabel>
+          <label for="isbn">Isbn (optioneel)</label>
+          <input id="isbn" type="text" class="input" pInputText formControlName="isbn" />
+        </p-iftalabel>
+      </div>
+      <div class="inputitem">
+        <p-select
+          [options]="languages"
+          formControlName="language"
+          optionValue="id"
+          optionLabel="name"
+          placeholder="Taal*"
+          class="language"
+        />
+      </div>
+      <div class="inputitem">
+        <label for="age-min">Leeftijd berijk</label><br /><br />
+        <input
+          pInputText
+          id="age-min"
+          class="num"
+          type="text"
+          formControlName="age_start"
+          placeholder="12"
+          class="narrow"
+        />
+        <span>-</span>
+        <input
+          pInputText
+          type="text"
+          class="num"
+          class="narrow"
+          formControlName="age_end"
+          placeholder="14"
+        />
+        <span> Jaar</span>
+      </div>
+      <div class="inputitem">
+        <p-iftalabel>
+          <label for="pages">Aantal pagina's</label>
+          <input type="number" id="pages" formControlName="pages" pInputText />
+        </p-iftalabel>
+      </div>
+      <div class="inputitem">
+        <p-select
+          [options]="font_sizes"
+          formControlName="font_size"
+          optionValue="value"
+          optionLabel="name"
+          placeholder="Lettergrote (optioneel)"
+          [showClear]="true"
+        />
+      </div>
+      <div class="inputitem">
+        <p>
+          Enkel zichtbaar voor deze school?*<br /><span class="subtext"
+            >(dit verbergt het boek voor andere scholen)</span
+          >
+        </p>
+        <p-radiobutton id="school-no" [value]="false" name="school" formControlName="school" />
+        <label for="school-no">Nee</label><br /><br />
+        <p-radiobutton id="school-yes" [value]="true" name="school" formControlName="school" />
+        <label for="school-yes">Ja</label>
+      </div>
+      <div class="inputitem save">
+        <p-button class="btn" label="Opslaan" severity="primary" (click)="addBook()" />
+      </div>
+    </form>
+  </div>
+</div>
+<div>
+  <form [formGroup]="authorForm">
+    <div>
+      <p-dialog
+        header="Nieuwe auteur"
+        [modal]="true"
+        [(visible)]="authorFormVisible"
+        [style]="{ width: '30rem' }"
+        resizable="false"
+      >
+        <div>
+          <p-iftalabel>
+            <label for="author-name">Naam*</label>
+            <input
+              pInputText
+              id="author-name"
+              formControlName="name"
+              autocomplete="off"
+              class="author-name"
+              fluid
+            />
+          </p-iftalabel>
+        </div>
+        <div>
+          <p-iftalabel>
+            <label for="description">Beschrijving (optioneel)</label>
+            <textarea
+              rows="5"
+              cols="40"
+              formControlName="description"
+              class="author-description"
+              fluid
+              pTextarea
+            ></textarea>
+          </p-iftalabel>
+        </div>
+        <div class="btns">
+          <p-button
+            class="btn"
+            label="Annuleer"
+            severity="secondary"
+            (click)="authorFormVisible = false"
+          />
+          <p-button class="btn" label="Opslaan" (click)="addAuthor()" />
+        </div>
+      </p-dialog>
+    </div>
+  </form>
+</div>
+<div>
+  <form [formGroup]="publisherForm">
+    <div>
+      <p-dialog
+        header="Nieuwe uitgever"
+        [modal]="true"
+        [(visible)]="publisherFormVisible"
+        [style]="{ width: '30rem' }"
+        resizable="false"
+      >
+        <div>
+          <p-iftalabel>
+            <label for="pub-name">Naam*</label>
+            <input
+              pInputText
+              id="pub-name"
+              autocomplete="off"
+              formControlName="name"
+              class="author-name"
+              fluid
+            />
+          </p-iftalabel>
+        </div>
+        <div>
+          <p-iftalabel>
+            <label for="description">Beschrijving (optioneel)</label>
+            <textarea
+              rows="5"
+              cols="40"
+              class="author-desc"
+              formControlName="description"
+              fluid
+              pTextarea
+              maxlength="255"
+            ></textarea>
+          </p-iftalabel>
+        </div>
+        <div class="btns">
+          <p-button
+            class="btn"
+            label="Annuleer"
+            severity="secondary"
+            (click)="publisherFormVisible = false"
+          />
+          <p-button class="btn" label="Opslaan" (click)="addPublisher()" />
+        </div>
+      </p-dialog>
+    </div>
+  </form>
+</div>

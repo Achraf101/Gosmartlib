@@ -22,3 +22,5 @@ export class HelloComponent {
     });
   }
 }
+
+export type { Hello };

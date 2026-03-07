@@ -33,7 +33,7 @@ export interface BookDetail extends BookBase {
   series_count?: number;
   contributors?: Author[];
   publisher?: Publisher;
-  genre?: Genre[];
+  genres?: Genre[];
   description?: string;
   fiction: boolean;
   published?: number;

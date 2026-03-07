@@ -31,7 +31,7 @@ public class BookController {
      * 
      * @return List of books
      */
-    @GetMapping()
+    @GetMapping
     public List<Book> getAll() {
         return bookRepository.findBy();
     }
@@ -47,7 +47,7 @@ public class BookController {
      * @param dto Book dto
      * @return ReponseEntity of type Book
      */
-    @PostMapping()
+    @PostMapping
     public Book addBook(@RequestBody CreateBookDTO dto) {
         Book savedBook = bookService.saveBook(dto);
         return savedBook;

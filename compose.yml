@@ -27,7 +27,7 @@ services:
     container_name: db
     restart: always
     volumes:
-      - db-data:/var/lib/mysql
+      - /var/lib/mysql
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
@@ -48,7 +48,8 @@ services:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      DB_URL: jdbc:mysql://db:3306/${MYSQL_DATABASE}
+      DB_UPDATE: ${DB_UPDATE}
+      DB_URL: ${DB_URL}
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -57,9 +58,6 @@ services:
 volumes:
   certbot:
     name: certbot
-    external: true
-  db-data:
-    name: db-data
     external: true
   maven-repo:
     name: maven-repo
