@@ -8,16 +8,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import be.ap.backend.entity.Hello;
 import be.ap.backend.repository.HelloRepository;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("hello")
+@RequiredArgsConstructor
 public class HelloController {
 
     private final HelloRepository helloRepository;
-
-    public HelloController(HelloRepository helloRepository) {
-        this.helloRepository = helloRepository;
-    }
 
     @GetMapping
     public List<Hello> getHello() {

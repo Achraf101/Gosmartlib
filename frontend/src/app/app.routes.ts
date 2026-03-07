@@ -9,6 +9,7 @@ export const routes: Routes = [
   { path: '', component: HomeComponent },
   { path: 'school/toevoegen', component: SchoolComponent },
   { path: 'boek/toevoegen', component: BookformComponent },
+    { path: 'catalogus', component: CatalogueComponent },
   { path: 'boek/:id', component: BookDetailPage },
 
   // {
