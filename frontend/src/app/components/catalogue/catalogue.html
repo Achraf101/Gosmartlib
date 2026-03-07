@@ -48,5 +48,13 @@
         </div>
       }
     </div>
+
+    <p-paginator
+      [first]="currentPage * rows"
+      [rows]="rows"
+      [totalRecords]="totalRecords"
+      [rowsPerPageOptions]="[5, 10, 20]"
+      (onPageChange)="onPageChange($event)"
+    />
   }
 </div>
