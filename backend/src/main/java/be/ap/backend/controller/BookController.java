@@ -1,11 +1,10 @@
 package be.ap.backend.controller;
 
-import java.util.List;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -42,6 +41,11 @@ public class BookController {
             @RequestParam(defaultValue = "5") int size) {
         Pageable pageable = PageRequest.of(page, size);
         return bookRepository.findAll(pageable);
+    }
+
+    @GetMapping("/{id}")
+    public Book getById(@PathVariable Long id){
+        return bookRepository.findById(id).orElse(null);
     }
 
     /**

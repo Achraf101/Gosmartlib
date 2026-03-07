@@ -28,7 +28,6 @@ export interface BookResult extends BookBase {
   pages?: number;
   rating?: number;
   rating_count?: number;
-  available: boolean;
 }
 
 export interface BookDetail extends BookBase {
@@ -38,7 +37,7 @@ export interface BookDetail extends BookBase {
   series_count?: number;
   contributors?: Author[];
   publisher?: Publisher;
-  genre?: Genre[];
+  genres?: Genre[];
   description?: string;
   fiction: boolean;
   published?: number;

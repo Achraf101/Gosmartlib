@@ -69,7 +69,7 @@ public class BookService {
 
         if (dto.getFontSize() != null)
             book.setFontSize(dto.getFontSize());
-
+        
         if (dto.getDescription() != null)
             book.setDescription(dto.getDescription());
 

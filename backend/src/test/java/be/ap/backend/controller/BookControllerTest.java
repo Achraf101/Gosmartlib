@@ -2,16 +2,24 @@ package be.ap.backend.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import be.ap.backend.dto.CreateBookDTO;
 import be.ap.backend.entity.Book;
+import be.ap.backend.repository.BookRepository;
 import be.ap.backend.service.BookService;
 
 @SpringBootTest
@@ -19,6 +27,9 @@ public class BookControllerTest {
 
     @MockitoBean
     private BookService service;
+
+    @MockitoBean
+    private BookRepository repository;
 
     @Autowired
     private BookController controller;
@@ -44,5 +55,47 @@ public class BookControllerTest {
         assertEquals("Test book", result.getTitle());
 
         verify(service, times(1)).saveBook(inputBook);
+    }
+
+    @Test
+    void givenBooksExist_whenGetAll_thenReturnBooks() {
+
+    Book book1 = new Book();
+    book1.setId(1L);
+    book1.setTitle("Book 1");
+
+    Book book2 = new Book();
+    book2.setId(2L);
+    book2.setTitle("Book 2");
+
+    List<Book> books = List.of(book1, book2);
+    Page<Book> page = new PageImpl<>(books);
+
+    when(repository.findAll(any(Pageable.class))).thenReturn(page);
+
+    Page<Book> result = controller.getAll(1, 5);
+
+    assertEquals(2, result.getContent().size());
+    assertEquals("Book 1", result.getContent().get(0).getTitle());
+    assertEquals("Book 2", result.getContent().get(1).getTitle());
+
+    verify(repository, times(1)).findAll(any(Pageable.class));
+    }
+
+    @Test
+    void givenBookId_whenGetById_thenReturnBook() {
+
+        Book book = new Book();
+        book.setId(1L);
+        book.setTitle("Test Book");
+
+        when(repository.findById(1L)).thenReturn(Optional.of(book));
+
+        Book result = controller.getById(1L);
+
+        assertNotNull(result);
+        assertEquals("Test Book", result.getTitle());
+
+        verify(repository, times(1)).findById(1L);
     }
 }
