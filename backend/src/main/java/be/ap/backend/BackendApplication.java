@@ -5,11 +5,13 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+import be.ap.backend.entity.Author;
 import be.ap.backend.entity.Book;
 import be.ap.backend.entity.BookType;
 import be.ap.backend.entity.Genre;
 import be.ap.backend.entity.Hello;
 import be.ap.backend.entity.Language;
+import be.ap.backend.repository.AuthorRepository;
 import be.ap.backend.repository.BookRepository;
 import be.ap.backend.repository.BookTypeRepository;
 import be.ap.backend.repository.GenreRepository;
@@ -24,15 +26,17 @@ public class BackendApplication implements CommandLineRunner {
     private final LanguageRepository languageRepository;
     private final BookTypeRepository bookTypeRepository;
     private final BookRepository bookRepository;
+    private final AuthorRepository authorRepository;
 
     public BackendApplication(HelloRepository helloRepository, LanguageRepository languageRepository,
             BookTypeRepository bookTypeRepository, GenreRepository genreRepository,
-            BookRepository bookRepository) {
+            BookRepository bookRepository, AuthorRepository authorRepository) {
         this.helloRepository = helloRepository;
         this.languageRepository = languageRepository;
         this.bookTypeRepository = bookTypeRepository;
         this.genreRepository = genreRepository;
         this.bookRepository = bookRepository;
+        this.authorRepository = authorRepository;
     }
 
     public static void main(String[] args) {
@@ -60,29 +64,49 @@ public class BackendApplication implements CommandLineRunner {
         genreRepository.save(new Genre("Fantasie"));
 
         if (bookRepository.count() == 0) {
-            bookRepository.save(createSampleBook("Jip en Janneke",
-                    "De avonturen van twee kleuters die samen de wereld ontdekken.",
-                    true, Year.of(1953), 160, boek, nl));
-            bookRepository.save(createSampleBook("Pluk van de Petteflet",
-                    "Pluk woont in de Petteflet en beleeft avonturen met zijn vrienden.",
-                    true, Year.of(1971), 176, boek, nl));
+            Author tonke = createAuthor("Tonke Dragt");
+            Author thea = createAuthor("Thea Beckman");
+            Author jk = createAuthor("J.K. Rowling");
+            Author rima = createAuthor("Rima Orie");
+            Author benno = createAuthor("Benno Barnard");
+
+            bookRepository.save(createSampleBook("De brief voor de koning",
+                    "Vijf jongelingen moeten, voordat ze tot ridder geslagen worden, de nacht biddend en wakend doorbrengen. Eén van hen hoort een noodkreet van buiten en gaat op onderzoek uit. Met deze daad bewijst hij pas een echte ridder te zijn. ",
+                    true, Year.of(1962), 449, boek, nl, tonke,
+                    "https://webservices.bibliotheek.be/index.php?func=cover&ISBN=9789025873530&VLACCnr=10565678&CDR=&EAN=&ISMN=&EBS=&coversize=large"));
+            bookRepository.save(createSampleBook("Harry Potter en de vuurbeker",
+                    "Als tovenaar-in-de-dop Harry Potter deelneemt aan een internationaal tovenaarstoernooi, dreigt er onverwacht gevaar. ",
+                    true, Year.of(2000), 546, boek, nl, jk,
+                    "https://webservices.bibliotheek.be/index.php?func=cover&ISBN=9789076174204&VLACCnr=10542926&CDR=&EAN=&ISMN=&EBS=&coversize=large"));
             bookRepository.save(createSampleBook("Kruistocht in Spijkerbroek",
-                    "Dolf reist terug in de tijd naar de Kinderkruistocht van 1212.",
-                    true, Year.of(1973), 264, boek, nl));
-            bookRepository.save(createSampleBook("Oorlogsgeheimen",
-                    "Een jongen ontdekt geheimen uit de Tweede Wereldoorlog.",
-                    true, Year.of(2002), 200, boek, nl));
-            bookRepository.save(createSampleBook("Minoes",
-                    "Een kat verandert in een vrouw en helpt een verlegen journalist.",
-                    true, Year.of(1970), 176, boek, nl));
-            bookRepository.save(createSampleBook("De Griezelbus",
-                    "Onnoval schrijft enge verhalen die echt lijken te worden.",
-                    true, Year.of(1988), 144, boek, nl));
+                    "Dolf Wega belandt door een tijdmachine plotseling in de kinderkruistocht van 1212. Omdat hij niet meer terug kan naar de 20e eeuw , besluit hij ongeveer 8000 kinderen te volgen op hun gevaarlijke tocht over de Alpen naar Genua, waar een wonder zal gebeuren. ",
+                    true, Year.of(1973), 264, boek, nl, thea,
+                    "https://webservices.bibliotheek.be/index.php?func=cover&ISBN=9789060691670&VLACCnr=10420689&CDR=&EAN=&ISMN=&EBS=&coversize=large"));
+            bookRepository.save(createSampleBook("Geef me de ruimte!",
+                    "De lotgevallen van een Vlaams meisje dat van huis wegloopt en in het middeleeuwse Frankrijk een zwervend, avontuurlijk bestaan gaat leiden als vrouw van een vrijgevochten troubadour. ",
+                    true, Year.of(1976), 406, boek, nl, thea,
+                    "https://webservices.bibliotheek.be/index.php?func=cover&ISBN=9789056377298&VLACCnr=10559524&CDR=&EAN=&ISMN=&EBS=&coversize=large"));
+            bookRepository.save(createSampleBook("De Zwendelprins",
+                    "Simran (17) werkt als keukenhulp in het paleis van de maharadja van Suryan als ze wordt ontvoerd door een mysterieuze prins uit het noordelijke Fengart. Al snel blijkt dat Simran niet zomaar kan terugkeren naar haar oude leven. Wat volgt is een groot avontuur dwars door de bergen en de woestijn, waarin Simran zichzelf en haar eigen cultuur beter leert kennen. ",
+                    true, Year.of(2019), 399, boek, nl, rima,
+                    "https://webservices.bibliotheek.be/index.php?func=cover&ISBN=9789048860333&VLACCnr=10313312&CDR=&EAN=&ISMN=&EBS=&coversize=large"));
+            bookRepository.save(createSampleBook(
+                    "Een geschiedenis van België voornieuwsgierige kinderen (en hun ouders)",
+                    "Geschiedenis van Belgie͏̈ vanaf 1830 tot 2003 in hoofdlijnen. ",
+                    true, Year.of(2012), 319, boek, nl, benno,
+                    "https://webservices.bibliotheek.be/index.php?func=cover&ISBN=9789045048031&VLACCnr=10412649&CDR=&EAN=&ISMN=&EBS=&coversize=large"));
         }
     }
 
+    private Author createAuthor(String name) {
+        Author author = new Author();
+        author.setName(name);
+        return authorRepository.save(author);
+    }
+
     private Book createSampleBook(String title, String description, boolean fiction,
-            Year published, int pages, BookType bookType, Language language) {
+            Year published, int pages, BookType bookType, Language language, Author author,
+            String cover) {
         Book book = new Book();
         book.setTitle(title);
         book.setDescription(description);
@@ -91,6 +115,8 @@ public class BackendApplication implements CommandLineRunner {
         book.setPages(pages);
         book.setBookType(bookType);
         book.setLanguage(language);
+        book.setAuthor(author);
+        book.setCover(cover);
         return book;
     }
 }
