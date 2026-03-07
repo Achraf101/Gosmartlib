@@ -19,8 +19,11 @@
           <div class="book-info">
             <h2 class="book-title">{{ book.title }}</h2>
             <div class="book-subtitle">
+              @if (book.author) {
+                <span>{{ book.author.name }}</span>
+              }
               @if (book.published) {
-                <span>{{ book.published }}</span>
+                <span> · {{ book.published }}</span>
               }
               @if (book.pages) {
                 <span> · {{ book.pages }} pagina's</span>
@@ -28,10 +31,12 @@
             </div>
             <p class="book-description">{{ book.description }}</p>
             <div class="book-meta">
-              <p-tag
-                [value]="book.fiction ? 'Fictie' : 'Non-fictie'"
-                [severity]="book.fiction ? 'info' : 'success'"
-              />
+              @if (book.fiction !== undefined && book.fiction !== null) {
+                <p-tag
+                  [value]="book.fiction ? 'Fictie' : 'Non-fictie'"
+                  [severity]="book.fiction ? 'info' : 'success'"
+                />
+              }
               @if (book.rating) {
                 <span class="book-rating">
                   <i class="pi pi-star-fill"></i> {{ book.rating }}/5
@@ -43,13 +48,5 @@
         </div>
       }
     </div>
-
-    <p-paginator
-      [rows]="rows"
-      [totalRecords]="totalRecords"
-      [rowsPerPageOptions]="[5, 10, 20]"
-      [first]="first"
-      (onPageChange)="onPageChange($event)"
-    />
   }
 </div>

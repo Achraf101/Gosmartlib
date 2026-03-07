@@ -24,6 +24,10 @@ export interface BookResult extends BookBase {
   published?: number;
   description?: string;
   genre?: Genre[];
+  fiction?: boolean;
+  pages?: number;
+  rating?: number;
+  rating_count?: number;
   available: boolean;
 }
 

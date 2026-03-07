@@ -8,7 +8,6 @@ export const routes: Routes = [
   { path: '', redirectTo: 'startpagina', pathMatch: 'full' },
   { path: '', component: HomeComponent },
   { path: 'catalogus', component: CatalogueComponent },
-  { path: 'school/toevoegen', component: SchoolComponent },
   {
     path: 'boek',
     component: BookformComponent,
@@ -19,4 +18,5 @@ export const routes: Routes = [
       },
     ],
   },
+  { path: 'school/toevoegen', component: SchoolComponent },
 ];
