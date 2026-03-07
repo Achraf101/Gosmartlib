@@ -7,10 +7,11 @@ import { ImageModule } from 'primeng/image';
 import { AsyncPipe } from '@angular/common';
 import { RatingModule } from 'primeng/rating';
 import { FormsModule } from '@angular/forms';
+import { NavBarComponent } from "../nav-bar/nav-bar";
 
 @Component({
   selector: 'app-book-detail-page',
-  imports: [AsyncPipe, ImageModule, RatingModule, FormsModule],
+  imports: [AsyncPipe, ImageModule, RatingModule, FormsModule, NavBarComponent],
   templateUrl: './book-detail-page.html',
   styleUrl: './book-detail-page.css',
 })
