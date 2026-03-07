@@ -1,11 +1,12 @@
 import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { NavBar } from './components/nav-bar/nav-bar';
+import { PrimeNgNavBar } from './components/primeng-navbar/primeng-navbar';
+import { ButtonModule } from 'primeng/button';
 import { Toast } from 'primeng/toast';
+import { RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, NavBar, Toast],
+  imports: [ButtonModule, PrimeNgNavBar, Toast, RouterOutlet],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })

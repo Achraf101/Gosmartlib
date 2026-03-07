@@ -1,4 +1,22 @@
 import { Routes } from '@angular/router';
+import { HomeComponent } from './components/home/home';
+import { SchoolComponent } from './components/school/school';
+import { BookformComponent } from './components/bookform/bookform';
 import { CatalogueComponent } from './components/catalogue/catalogue';
 
-export const routes: Routes = [{ path: 'catalogus', component: CatalogueComponent }];
+export const routes: Routes = [
+  { path: '', redirectTo: 'startpagina', pathMatch: 'full' },
+  { path: '', component: HomeComponent },
+  { path: 'catalogus', component: CatalogueComponent },
+  { path: 'school/toevoegen', component: SchoolComponent },
+  {
+    path: 'boek',
+    component: BookformComponent,
+    children: [
+      {
+        path: 'toevoegen',
+        component: BookformComponent,
+      },
+    ],
+  },
+];

@@ -1,0 +1,4 @@
+.char-counter {
+  color: var(--p-surface-500);
+  text-align: right;
+}
