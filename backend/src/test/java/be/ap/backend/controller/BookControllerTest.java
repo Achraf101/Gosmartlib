@@ -2,6 +2,7 @@ package be.ap.backend.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -12,6 +13,9 @@ import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import be.ap.backend.dto.CreateBookDTO;
 import be.ap.backend.entity.Book;
@@ -56,23 +60,26 @@ public class BookControllerTest {
     @Test
     void givenBooksExist_whenGetAll_thenReturnBooks() {
 
-        Book book1 = new Book();
-        book1.setId(1L);
-        book1.setTitle("Book 1");
+    Book book1 = new Book();
+    book1.setId(1L);
+    book1.setTitle("Book 1");
 
-        Book book2 = new Book();
-        book2.setId(2L);
-        book2.setTitle("Book 2");
+    Book book2 = new Book();
+    book2.setId(2L);
+    book2.setTitle("Book 2");
 
-        when(repository.findBy()).thenReturn(List.of(book1, book2));
+    List<Book> books = List.of(book1, book2);
+    Page<Book> page = new PageImpl<>(books);
 
-        List<Book> result = controller.getAll();
+    when(repository.findAll(any(Pageable.class))).thenReturn(page);
 
-        assertEquals(2, result.size());
-        assertEquals("Book 1", result.get(0).getTitle());
-        assertEquals("Book 2", result.get(1).getTitle());
+    Page<Book> result = controller.getAll(1, 5);
 
-        verify(repository, times(1)).findBy();
+    assertEquals(2, result.getContent().size());
+    assertEquals("Book 1", result.getContent().get(0).getTitle());
+    assertEquals("Book 2", result.getContent().get(1).getTitle());
+
+    verify(repository, times(1)).findAll(any(Pageable.class));
     }
 
     @Test
