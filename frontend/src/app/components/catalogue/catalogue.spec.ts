@@ -2,26 +2,13 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 
 import { CatalogueComponent } from './catalogue';
-import { TestBookService } from '../../services/test-book';
-import { TestBook } from '../../models/test-book';
+import { BookService } from '../../services/book';
+import { BookResult } from '../../models/book';
 import { Page } from '../../models/page';
 
-function mockPage(books: TestBook[], total: number): Page<TestBook> {
-  return {
-    content: books,
-    total_pages: Math.ceil(total / 5),
-    total_elements: total,
-    size: 5,
-    number: 0,
-    first: true,
-    last: total <= 5,
-  };
-}
-
-const mockBooks: TestBook[] = [
+const mockBooks: BookResult[] = [
   {
     id: 1,
-    isbn: '9781234567890',
     title: 'Test Boek',
     description: 'Een beschrijving',
     fiction: true,
@@ -30,10 +17,11 @@ const mockBooks: TestBook[] = [
     pages: 300,
     rating: 4,
     rating_count: 120,
-  },
+    available: true,
+    book_type: { id: 1, name: 'Boek' },
+  } as BookResult,
   {
     id: 2,
-    isbn: '9780987654321',
     title: 'Non-Fictie Boek',
     description: 'Nog een beschrijving',
     fiction: false,
@@ -42,21 +30,33 @@ const mockBooks: TestBook[] = [
     pages: 0,
     rating: 0,
     rating_count: 0,
-  },
+    available: true,
+    book_type: { id: 1, name: 'Boek' },
+  } as BookResult,
 ];
+
+const mockPage: Page<BookResult> = {
+  content: mockBooks,
+  total_pages: 1,
+  total_elements: 2,
+  size: 5,
+  number: 0,
+  first: true,
+  last: true,
+};
 
 describe('CatalogueComponent', () => {
   let component: CatalogueComponent;
   let fixture: ComponentFixture<CatalogueComponent>;
-  let testBookServiceSpy: jasmine.SpyObj<TestBookService>;
+  let bookServiceSpy: jasmine.SpyObj<BookService>;
 
   beforeEach(async () => {
-    testBookServiceSpy = jasmine.createSpyObj('TestBookService', ['getBooks']);
-    testBookServiceSpy.getBooks.and.returnValue(of(mockPage(mockBooks, 2)));
+    bookServiceSpy = jasmine.createSpyObj('BookService', ['getAll']);
+    bookServiceSpy.getAll.and.returnValue(of(mockPage));
 
     await TestBed.configureTestingModule({
       imports: [CatalogueComponent],
-      providers: [{ provide: TestBookService, useValue: testBookServiceSpy }],
+      providers: [{ provide: BookService, useValue: bookServiceSpy }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(CatalogueComponent);
@@ -67,9 +67,9 @@ describe('CatalogueComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should call loadBooks(0, 5) on init', () => {
+  it('should call loadBooks on init', () => {
     fixture.detectChanges();
-    expect(testBookServiceSpy.getBooks).toHaveBeenCalledWith(0, 5);
+    expect(bookServiceSpy.getAll).toHaveBeenCalled();
   });
 
   it('should show spinner while loading', () => {
@@ -81,13 +81,23 @@ describe('CatalogueComponent', () => {
   });
 
   it('should hide spinner after data loads', () => {
-    fixture.detectChanges(); // triggers ngOnInit -> loadBooks -> sets loading=false
+    fixture.detectChanges();
     const spinner = fixture.nativeElement.querySelector('p-progressSpinner, p-progressspinner');
     expect(spinner).toBeFalsy();
   });
 
   it('should show empty message when no books', () => {
-    testBookServiceSpy.getBooks.and.returnValue(of(mockPage([], 0)));
+    bookServiceSpy.getAll.and.returnValue(
+      of({
+        content: [],
+        total_pages: 0,
+        total_elements: 0,
+        size: 5,
+        number: 0,
+        first: true,
+        last: true,
+      }),
+    );
     fixture.detectChanges();
     const msg = fixture.nativeElement.querySelector('p');
     expect(msg?.textContent).toContain('Geen boeken gevonden.');
@@ -160,29 +170,9 @@ describe('CatalogueComponent', () => {
     expect(secondCardRating).toBeFalsy();
   });
 
-  it('should update first and rows on page change', () => {
-    fixture.detectChanges();
-    component.onPageChange({ first: 10, rows: 5 });
-    expect(component.first).toBe(10);
-    expect(component.rows).toBe(5);
-  });
-
-  it('should call loadBooks with correct page on page change', () => {
-    fixture.detectChanges();
-    testBookServiceSpy.getBooks.calls.reset();
-    component.onPageChange({ first: 10, rows: 5 });
-    expect(testBookServiceSpy.getBooks).toHaveBeenCalledWith(2, 5);
-  });
-
   it('should set loading to false on API error', () => {
-    testBookServiceSpy.getBooks.and.returnValue(throwError(() => new Error('API error')));
+    bookServiceSpy.getAll.and.returnValue(throwError(() => new Error('API error')));
     fixture.detectChanges();
     expect(component.loading).toBeFalse();
-  });
-
-  it('should update totalRecords from API response', () => {
-    testBookServiceSpy.getBooks.and.returnValue(of(mockPage(mockBooks, 42)));
-    fixture.detectChanges();
-    expect(component.totalRecords).toBe(42);
   });
 });

@@ -4,11 +4,12 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { PaginatorModule, PaginatorState } from 'primeng/paginator';
 import { BookService } from '../../services/book';
 import { BookResult } from '../../models/book';
+import { NavBarComponent } from '../nav-bar/nav-bar';
 
 @Component({
   selector: 'app-catalogue',
   standalone: true,
-  imports: [TagModule, ProgressSpinnerModule, PaginatorModule],
+  imports: [TagModule, ProgressSpinnerModule, PaginatorModule, NavBarComponent],
   templateUrl: './catalogue.html',
   styleUrl: './catalogue.css',
 })
