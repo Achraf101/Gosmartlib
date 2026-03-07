@@ -171,7 +171,7 @@
       <div id="related-books-book">
         @if (relatedBooks$ | async; as books) {
           @for (book of books; track $index) {
-            <div class="book-card">
+            <div class="book-card" routerLink="/boek/{{ book.id }}">
               <h3>{{ book.title }}</h3>
               @if (book.cover == null) {
                 <div class="no-cover"><p>GEEN COVER</p></div>

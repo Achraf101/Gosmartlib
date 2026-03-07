@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { catchError, forkJoin, Observable, of, switchMap } from 'rxjs';
 import { BookService } from '../../services/book-service';
 import { BookDetail, BookResult } from '../../models/book';
@@ -11,7 +11,7 @@ import { NavBarComponent } from "../nav-bar/nav-bar";
 
 @Component({
   selector: 'app-book-detail-page',
-  imports: [AsyncPipe, ImageModule, RatingModule, FormsModule, NavBarComponent],
+  imports: [AsyncPipe, ImageModule, RatingModule, FormsModule, NavBarComponent, RouterLink],
   templateUrl: './book-detail-page.html',
   styleUrl: './book-detail-page.css',
 })

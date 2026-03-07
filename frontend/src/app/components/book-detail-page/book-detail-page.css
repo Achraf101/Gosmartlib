@@ -153,6 +153,7 @@ table td {
   border: 1px solid var(--p-menubar-border-color);
   text-align: center;
   align-content: center;
+  cursor: pointer;
 }
 
 #related-books img {
