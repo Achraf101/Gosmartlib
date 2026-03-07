@@ -5,11 +5,12 @@ import { PaginatorModule, PaginatorState } from 'primeng/paginator';
 import { BookService } from '../../services/book';
 import { BookResult } from '../../models/book';
 import { NavBarComponent } from '../nav-bar/nav-bar';
+import { RouterLink } from "@angular/router";
 
 @Component({
   selector: 'app-catalogue',
   standalone: true,
-  imports: [TagModule, ProgressSpinnerModule, PaginatorModule, NavBarComponent],
+  imports: [TagModule, ProgressSpinnerModule, PaginatorModule, NavBarComponent, RouterLink],
   templateUrl: './catalogue.html',
   styleUrl: './catalogue.css',
 })
