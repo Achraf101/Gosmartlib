@@ -1,0 +1,40 @@
+<section class="spotlight-section">
+  <div class="section-tabs">
+    <button class="tab" [class.active]="activeTab === 'featured'" (click)="setTab('featured')">In de kijker</button>
+    <button class="tab" [class.active]="activeTab === 'monthly'" (click)="setTab('monthly')">Boek van de maand</button>
+  </div>
+
+  <div class="books-grid" *ngIf="activeTab === 'featured'">
+    <div class="book-card" *ngFor="let book of featuredBooks">
+      <div class="book-cover">
+        <img *ngIf="book.cover" [src]="book.cover" [alt]="book.title" class="cover-img" (error)="book.cover = ''" />
+        <span class="book-initial" *ngIf="!book.cover">{{ book.title.charAt(0) }}</span>
+      </div>
+      <div class="book-info">
+        <h3 class="book-title">{{ book.title }}</h3>
+        <p class="book-author" *ngIf="book.author">{{ book.author.name }}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="monthly-book" *ngIf="activeTab === 'monthly' && monthlyBook">
+  <div class="monthly-cover">
+    <img *ngIf="monthlyBook.cover" [src]="monthlyBook.cover" [alt]="monthlyBook.title" class="cover-img" (error)="monthlyBook.cover = ''" />
+    <span class="book-initial" *ngIf="!monthlyBook.cover">{{ monthlyBook.title.charAt(0) }}</span>
+  </div>
+  <div class="monthly-info">
+    <p><strong>Titel:</strong> {{ monthlyBook.title }}</p>
+    <p><strong>Auteur:</strong> {{ monthlyBook.author?.name }}</p>
+    <p><strong>Beschrijving:</strong> {{ monthlyBook.description }}</p>
+    <p><strong>Genre:</strong> {{ monthlyBook.genres?.[0]?.name }}</p>
+    <p><strong>Pagina's:</strong> {{ monthlyBook.pages }}</p>
+  </div>
+</div>
+
+  <div class="empty-msg" *ngIf="activeTab === 'featured' && featuredBooks.length === 0">
+    Geen boeken gevonden.
+  </div>
+  <div class="empty-msg" *ngIf="activeTab === 'monthly' && !monthlyBook">
+    Geen boek van de maand gevonden.
+  </div>
+</section>

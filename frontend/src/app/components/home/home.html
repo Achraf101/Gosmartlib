@@ -26,29 +26,7 @@
     </section>
   </div>
 
-  <section class="spotlight-section">
-    <div class="section-tabs">
-      <button class="tab active">In de kijker</button>
-    </div>
-
-    <div class="books-grid">
-      <div class="book-card" *ngFor="let book of featuredBooks; let i = index">
-        <div class="book-cover">
-          <img *ngIf="book.cover" [src]="book.cover" [alt]="book.title" class="cover-img" (error)="book.cover = ''" />
-          <span class="book-initial" *ngIf="!book.cover">
-            {{ book.title.charAt(0) }}
-          </span>
-        </div>
-        <div class="book-info">
-          <h3 class="book-title">{{ book.title }}</h3>
-        </div>
-      </div>
-    </div>
-
-    <div class="empty-msg" *ngIf="featuredBooks.length === 0">
-      Geen boeken gevonden.
-    </div>
-  </section>
+<app-book-section></app-book-section>
 
 </div>
 <app-footer></app-footer>

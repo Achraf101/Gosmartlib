@@ -113,4 +113,11 @@ public class BookService {
             .max(Comparator.comparingInt(Book::getRating))
             .orElse(null);
     }
+
+    public List<Book> getFeaturedBooks() {
+    return bookRepository.findAll()
+        .stream()
+        .limit(4)
+        .collect(Collectors.toList());
+}
 }
