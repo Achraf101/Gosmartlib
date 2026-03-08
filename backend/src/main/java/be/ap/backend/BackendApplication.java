@@ -46,6 +46,8 @@ public class BackendApplication implements CommandLineRunner {
     @Override
     public void run(String... args) {
 
+        if (bookRepository.count() > 0) return;
+
         helloRepository.save(new Hello("Database en API werken."));
 
         Language nl = languageRepository.save(new Language("Nederlands", "nl"));
