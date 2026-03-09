@@ -24,4 +24,6 @@ public class Section {
 
     @Column(name = "hidden")
     private boolean hidden;
+
+    public Section(){};
 }

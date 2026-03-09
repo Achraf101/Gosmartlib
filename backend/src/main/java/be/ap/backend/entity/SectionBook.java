@@ -23,4 +23,6 @@ public class SectionBook {
 
     @Column(name = "ranking")
     private short ranking;
+
+    public SectionBook(){};
 }
