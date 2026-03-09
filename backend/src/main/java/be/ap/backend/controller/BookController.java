@@ -56,11 +56,6 @@ public List<Book> getFeaturedBooks() {
         return bookRepository.findById(id).orElse(null);
     }
 
-    @GetMapping("/monthly")
-    public Book getMonthlyBook() {
-        return bookService.getMonthlyBook();
-}
-
     /**
      * Saves a book via the dto
      * 

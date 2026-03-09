@@ -1,9 +1,7 @@
 package be.ap.backend.service;
 
-import java.time.LocalDateTime;
-import java.util.Comparator;
+
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -17,9 +15,7 @@ import be.ap.backend.entity.BookContributor;
 import be.ap.backend.entity.BookType;
 import be.ap.backend.entity.Genre;
 import be.ap.backend.entity.Language;
-import be.ap.backend.entity.Review;
 import be.ap.backend.repository.BookRepository;
-import be.ap.backend.repository.ReviewRepository;
 import jakarta.persistence.EntityManager;
 
 @Service
@@ -27,12 +23,12 @@ public class BookService {
 
     private final BookRepository bookRepository;
     private final EntityManager entityManager;
-    private final ReviewRepository reviewRepository;
+    
 
-    public BookService(BookRepository bookRepository, EntityManager entityManager, ReviewRepository reviewRepository) {
+    public BookService(BookRepository bookRepository, EntityManager entityManager) {
         this.bookRepository = bookRepository;
         this.entityManager = entityManager;
-        this.reviewRepository = reviewRepository;
+      
     }
 
     public Book saveBook(CreateBookDTO dto) {
@@ -90,28 +86,6 @@ public class BookService {
         }
 
         return bookRepository.save(book);
-    }
-
-    public Book getMonthlyBook() {
-        LocalDateTime thirtyDaysAgo = LocalDateTime.now().minusDays(30);
-        List<Review> recentReviews = reviewRepository.findRecentReviews(thirtyDaysAgo);
-
-        if (!recentReviews.isEmpty()) {
-            return recentReviews.stream()
-                .collect(Collectors.groupingBy(Review::getBookId,
-                    Collectors.averagingDouble(r -> r.getRating())))
-                .entrySet().stream()
-                .max(Map.Entry.comparingByValue())
-                .flatMap(entry -> bookRepository.findById(entry.getKey()))
-                .orElse(getFallbackBook());
-        }
-        return getFallbackBook();
-    }
-
-    private Book getFallbackBook() {
-        return bookRepository.findAll().stream()
-            .max(Comparator.comparingInt(Book::getRating))
-            .orElse(null);
     }
 
     public List<Book> getFeaturedBooks() {
