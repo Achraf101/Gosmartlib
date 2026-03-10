@@ -2,6 +2,24 @@
 <div class="catalogue-container">
   <h1>Catalogus</h1>
 
+  <form class="search-bar" (submit)="$event.preventDefault(); onSearch()">
+    <div class="search-wrapper">
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Zoek op titel, auteur of genre..."
+        [(ngModel)]="searchQuery"
+        name="search"
+      />
+      <button type="submit" class="search-btn">
+        <i class="pi pi-search"></i>
+      </button>
+    </div>
+    @if (searchQuery) {
+      <button type="button" class="clear-btn" (click)="clearSearch()">Wis zoekopdracht</button>
+    }
+  </form>
+
   @if (loading) {
     <div class="loading-container">
       <p-progressSpinner />
