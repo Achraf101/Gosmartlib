@@ -1,8 +1,7 @@
 package be.ap.backend.controller;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import java.util.List;
+
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -11,12 +10,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import java.util.List;
 
 import be.ap.backend.dto.CreateBookDTO;
 import be.ap.backend.entity.Book;
 import be.ap.backend.repository.BookRepository;
 import be.ap.backend.service.BookService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 @RestController
 @RequestMapping("book")
@@ -31,13 +32,6 @@ public class BookController {
         this.bookService = bookService;
     }
 
-    /**
-     * Gives all the books (paginated)
-     * 
-     * @param page Page number (0-based)
-     * @param size Page size
-     * @return Page of books
-     */
     @GetMapping
     public Page<Book> getAll(
             @RequestParam(defaultValue = "0") int page,
@@ -46,25 +40,18 @@ public class BookController {
         return bookRepository.findAll(pageable);
     }
 
-    @GetMapping("/featured")
-public List<Book> getFeaturedBooks() {
-    return bookService.getFeaturedBooks();
-}
-
     @GetMapping("/{id}")
-    public Book getById(@PathVariable Long id){
+    public Book getById(@PathVariable Long id) {
         return bookRepository.findById(id).orElse(null);
     }
 
-    /**
-     * Saves a book via the dto
-     * 
-     * @param dto Book dto
-     * @return ReponseEntity of type Book
-     */
+    @GetMapping("/featured")
+    public List<Book> getFeaturedBooks() {
+        return bookService.getFeaturedBooks();
+    }
+
     @PostMapping
     public Book addBook(@RequestBody CreateBookDTO dto) {
-        Book savedBook = bookService.saveBook(dto);
-        return savedBook;
+        return bookService.saveBook(dto);
     }
 }
