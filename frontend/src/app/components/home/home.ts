@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { NavBarComponent } from '../nav-bar/nav-bar';
 import { Footer } from '../footer/footer';
@@ -22,7 +22,10 @@ export class HomeComponent implements OnInit {
   searchQuery: string = '';
   featuredBooks: Book[] = [];
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+  ) {}
 
   ngOnInit(): void {
     this.http.get<Book[]>(`/api/book/featured`).subscribe({
@@ -60,7 +63,7 @@ export class HomeComponent implements OnInit {
   onSearch(event: Event) {
     event.preventDefault();
     if (!this.searchQuery.trim()) return;
-    console.log('Zoeken naar:', this.searchQuery);
+    this.router.navigate(['/catalogus'], { queryParams: { q: this.searchQuery.trim() } });
   }
 
   onSearchInput(event: Event) {
