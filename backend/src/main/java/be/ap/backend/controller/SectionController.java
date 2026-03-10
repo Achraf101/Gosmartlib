@@ -9,7 +9,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("section")
-@CrossOrigin(origins = "http://localhost:4200")
 public class SectionController {
 
     private final SectionService sectionService;

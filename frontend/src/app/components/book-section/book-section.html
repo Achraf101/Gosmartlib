@@ -9,7 +9,6 @@
     </button>
   </div>
 
-  <!-- In de kijker: grid van boeken -->
   <div class="books-grid" *ngIf="activeSection && books.length > 1">
     <div class="book-card" *ngFor="let book of books" [routerLink]="['/boek', book.id]">
       <div class="book-cover">
@@ -23,7 +22,6 @@
     </div>
   </div>
 
-  <!-- Boek van de maand: 1 boek groot -->
    <div class="monthly-book" *ngIf="activeSection && books.length === 1" [routerLink]="['/boek', books[0].id]" style="cursor: pointer;">
   <div class="monthly-book" *ngIf="activeSection && books.length === 1">
     <div class="monthly-cover">
