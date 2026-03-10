@@ -1,11 +1,17 @@
 <section class="spotlight-section">
   <div class="section-tabs">
-    <button class="tab" [class.active]="activeTab === 'featured'" (click)="setTab('featured')">In de kijker</button>
-    <button class="tab" [class.active]="activeTab === 'monthly'" (click)="setTab('monthly')">Boek van de maand</button>
+    <button
+      class="tab"
+      *ngFor="let section of sections"
+      [class.active]="activeSection?.id === section.id"
+      (click)="selectSection(section)">
+      {{ section.title }}
+    </button>
   </div>
 
-  <div class="books-grid" *ngIf="activeTab === 'featured'">
-    <div class="book-card" *ngFor="let book of featuredBooks">
+  <!-- In de kijker: grid van boeken -->
+  <div class="books-grid" *ngIf="activeSection && books.length > 1">
+    <div class="book-card" *ngFor="let book of books" [routerLink]="['/boek', book.id]">
       <div class="book-cover">
         <img *ngIf="book.cover" [src]="book.cover" [alt]="book.title" class="cover-img" (error)="book.cover = ''" />
         <span class="book-initial" *ngIf="!book.cover">{{ book.title.charAt(0) }}</span>
@@ -17,24 +23,24 @@
     </div>
   </div>
 
-  <div class="monthly-book" *ngIf="activeTab === 'monthly' && monthlyBook">
-  <div class="monthly-cover">
-    <img *ngIf="monthlyBook.cover" [src]="monthlyBook.cover" [alt]="monthlyBook.title" class="cover-img" (error)="monthlyBook.cover = ''" />
-    <span class="book-initial" *ngIf="!monthlyBook.cover">{{ monthlyBook.title.charAt(0) }}</span>
+  <!-- Boek van de maand: 1 boek groot -->
+   <div class="monthly-book" *ngIf="activeSection && books.length === 1" [routerLink]="['/boek', books[0].id]" style="cursor: pointer;">
+  <div class="monthly-book" *ngIf="activeSection && books.length === 1">
+    <div class="monthly-cover">
+      <img *ngIf="books[0].cover" [src]="books[0].cover" [alt]="books[0].title" class="cover-img" (error)="books[0].cover = ''" />
+      <span class="book-initial" *ngIf="!books[0].cover">{{ books[0].title.charAt(0) }}</span>
+    </div>
+    <div class="monthly-info">
+      <p><strong>Titel:</strong> {{ books[0].title }}</p>
+      <p *ngIf="books[0].author"><strong>Auteur:</strong> {{ books[0].author.name }}</p>
+      <p *ngIf="books[0].description"><strong>Beschrijving:</strong> {{ books[0].description }}</p>
+      <p *ngIf="books[0].genres && books[0].genres.length > 0"><strong>Genre:</strong> {{ books[0].genres[0].name }}</p>
+      <p *ngIf="books[0].pages"><strong>Pagina's:</strong> {{ books[0].pages }}</p>
+    </div>
   </div>
-  <div class="monthly-info">
-    <p><strong>Titel:</strong> {{ monthlyBook.title }}</p>
-    <p><strong>Auteur:</strong> {{ monthlyBook.author?.name }}</p>
-    <p><strong>Beschrijving:</strong> {{ monthlyBook.description }}</p>
-    <p><strong>Genre:</strong> {{ monthlyBook.genres?.[0]?.name }}</p>
-    <p><strong>Pagina's:</strong> {{ monthlyBook.pages }}</p>
   </div>
-</div>
 
-  <div class="empty-msg" *ngIf="activeTab === 'featured' && featuredBooks.length === 0">
+  <div class="empty-msg" *ngIf="books.length === 0">
     Geen boeken gevonden.
-  </div>
-  <div class="empty-msg" *ngIf="activeTab === 'monthly' && !monthlyBook">
-    Geen boek van de maand gevonden.
   </div>
 </section>
