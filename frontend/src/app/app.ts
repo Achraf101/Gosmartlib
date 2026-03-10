@@ -6,7 +6,7 @@ import { RouterOutlet, RouterLinkWithHref } from '@angular/router';
 
 @Component({
   selector: 'app-root',
-  imports: [ButtonModule, NavBar, Toast, RouterOutlet, RouterLinkWithHref],
+  imports: [ButtonModule, NavBar, Toast, RouterOutlet],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })
