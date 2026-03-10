@@ -37,6 +37,7 @@
 .book-card {
   display: flex;
   flex-direction: column;
+  cursor: pointer;
 }
 
 .book-cover {
