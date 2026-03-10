@@ -44,8 +44,17 @@ public class BookController {
     }
 
     @GetMapping("/{id}")
-    public Book getById(@PathVariable Long id){
+    public Book getById(@PathVariable Long id) {
         return bookRepository.findById(id).orElse(null);
+    }
+
+    @GetMapping("/search/{query}")
+    public Page<Book> search(
+            @PathVariable String query,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return bookRepository.search(query, pageable);
     }
 
     /**
