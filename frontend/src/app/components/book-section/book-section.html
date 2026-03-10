@@ -1,3 +1,5 @@
+<p-toast></p-toast>
+
 <section class="spotlight-section">
   <div class="section-tabs">
     <button
@@ -22,8 +24,7 @@
     </div>
   </div>
 
-   <div class="monthly-book" *ngIf="activeSection && books.length === 1" [routerLink]="['/boek', books[0].id]" style="cursor: pointer;">
-  <div class="monthly-book" *ngIf="activeSection && books.length === 1">
+  <div class="monthly-book" *ngIf="activeSection && books.length === 1" [routerLink]="['/boek', books[0].id]" style="cursor: pointer;">
     <div class="monthly-cover">
       <img *ngIf="books[0].cover" [src]="books[0].cover" [alt]="books[0].title" class="cover-img" (error)="books[0].cover = ''" />
       <span class="book-initial" *ngIf="!books[0].cover">{{ books[0].title.charAt(0) }}</span>
@@ -35,7 +36,6 @@
       <p *ngIf="books[0].genres && books[0].genres.length > 0"><strong>Genre:</strong> {{ books[0].genres[0].name }}</p>
       <p *ngIf="books[0].pages"><strong>Pagina's:</strong> {{ books[0].pages }}</p>
     </div>
-  </div>
   </div>
 
   <div class="empty-msg" *ngIf="books.length === 0">
