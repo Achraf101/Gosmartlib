@@ -1,6 +1,11 @@
 package be.ap.backend.entity;
 
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
+import lombok.Data;
 
 import lombok.Data;
 
@@ -25,6 +30,11 @@ public class School {
 
     @Column(nullable = true, length = 1000, name = "description")
     private String description;
+
+    // One school has many campuses
+    @OneToMany(mappedBy = "school", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<Campus> campuses;
 
     public School() {
     }
