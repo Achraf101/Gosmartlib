@@ -21,7 +21,7 @@ public class SectionService {
     }
 
     public List<Section> getAllSections() {
-        return sectionRepository.findAll();
+         return sectionRepository.findByHiddenFalseOrderByRankingAsc();
     }
 
     public List<Book> getBooksBySection(Long sectionId) {
