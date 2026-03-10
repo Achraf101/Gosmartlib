@@ -1,7 +1,6 @@
 package be.ap.backend.service;
 
 
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -88,10 +87,4 @@ public class BookService {
         return bookRepository.save(book);
     }
 
-    public List<Book> getFeaturedBooks() {
-    return bookRepository.findAll()
-        .stream()
-        .limit(4)
-        .collect(Collectors.toList());
-}
 }

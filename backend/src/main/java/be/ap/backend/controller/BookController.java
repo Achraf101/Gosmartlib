@@ -1,6 +1,6 @@
 package be.ap.backend.controller;
 
-import java.util.List;
+
 
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -43,11 +43,6 @@ public class BookController {
     @GetMapping("/{id}")
     public Book getById(@PathVariable Long id) {
         return bookRepository.findById(id).orElse(null);
-    }
-
-    @GetMapping("/featured")
-    public List<Book> getFeaturedBooks() {
-        return bookService.getFeaturedBooks();
     }
 
     @PostMapping
