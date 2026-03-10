@@ -2,6 +2,8 @@ package be.ap.backend.entity;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -28,6 +30,7 @@ public class School {
 
     // One school has many campuses
     @OneToMany(mappedBy = "school", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<Campus> campuses;
 
     public School() {

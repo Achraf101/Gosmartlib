@@ -1,5 +1,7 @@
 package be.ap.backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -21,8 +23,9 @@ public class Campus {
     @Column(name = "borrow_limit", nullable = false)
     private int borrowLimit;
 
-    @ManyToOne
-    @JoinColumn(name = "school_id", nullable = false)
+    @ManyToOne()
+    @JoinColumn(name = "school_id")
+    @JsonIgnore
     private School school;
 
     // Constructors

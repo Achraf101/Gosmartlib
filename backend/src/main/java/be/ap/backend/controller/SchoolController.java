@@ -1,5 +1,7 @@
 package be.ap.backend.controller;
 
+import java.util.List;
+
 import org.springframework.web.bind.annotation.*;
 import be.ap.backend.entity.School;
 import be.ap.backend.service.SchoolService;
@@ -16,5 +18,10 @@ public class SchoolController {
     @PostMapping
     public School addSchool(@RequestBody School school) {
         return schoolService.addSchool(school);
+    }
+
+    @GetMapping
+    public List<School> getAll() {
+        return schoolService.getAll();
     }
 }
