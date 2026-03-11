@@ -18,10 +18,12 @@ export class BookService {
     return this.apiService.get<Page<BookResult>>(this.endpoint, params);
   }
 
-  getFiltered(query: string, filters: BookFilter): Observable<BookResult[]> {
-    // transform bookfilter to http params using eg: genre=1,2,3 (spring boot supports this)
-    // params: HttpParams;
-    return this.apiService.get<BookResult[]>(`${this.endpoint}/search/${query}` /*params*/);
+  search(query: string, page: number = 0, size: number = 5): Observable<Page<BookResult>> {
+    const params = new HttpParams().set('page', page.toString()).set('size', size.toString());
+    return this.apiService.get<Page<BookResult>>(
+      `${this.endpoint}/search/${encodeURIComponent(query)}`,
+      params,
+    );
   }
 
   getById(id: number): Observable<BookDetail> {

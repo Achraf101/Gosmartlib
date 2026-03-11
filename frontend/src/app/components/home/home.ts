@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { NavBarComponent } from '../nav-bar/nav-bar';
 import { Footer } from '../footer/footer';
 import { BookSectionComponent } from '../book-section/book-section';
@@ -15,10 +15,12 @@ import { BookSectionComponent } from '../book-section/book-section';
 export class HomeComponent {
   searchQuery: string = '';
 
+  constructor(private router: Router) {}
+
   onSearch(event: Event) {
     event.preventDefault();
     if (!this.searchQuery.trim()) return;
-    console.log('Zoeken naar:', this.searchQuery);
+    this.router.navigate(['/catalogus'], { queryParams: { q: this.searchQuery.trim() } });
   }
 
   onSearchInput(event: Event) {
