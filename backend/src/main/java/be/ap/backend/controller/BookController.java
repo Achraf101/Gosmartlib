@@ -23,7 +23,6 @@ import org.springframework.data.domain.Pageable;
 
 @RestController
 @RequestMapping("book")
-@CrossOrigin(origins = "http://localhost:4200")
 public class BookController {
 
     private final BookRepository bookRepository;
