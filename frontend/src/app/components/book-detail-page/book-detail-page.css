@@ -1,7 +1,7 @@
 :host {
   display: block;
   background-color: #f5f5f0;
-  background-image: url('https://i.pinimg.com/736x/9f/67/32/9f67321f068bebf87cddc663b12bc904.jpg');
+  background-image: url('/assets/book-bg.jpg');
   background-repeat: repeat;
   min-height: 100vh;
 }
@@ -42,7 +42,8 @@ article {
 .bookmark {
   position: absolute;
   right: 20px;
-  top: 5px;
+  top: 20px;
+  font-size: 1.3rem;
 }
 
 .bookmark:hover {
@@ -144,6 +145,11 @@ table td {
   gap: 10px;
   width: 80%;
   margin-left: 10%;
+}
+
+.book-card-title {
+  font-weight: 700;
+  padding-bottom: 1rem;
 }
 
 #related-books-book .book-card {

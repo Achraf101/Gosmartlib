@@ -13,7 +13,9 @@ export interface BookBase {
 }
 
 // optionally add fields later
-export interface BookCard extends BookBase {}
+export interface BookCard extends BookBase {
+  author_name?: String;
+}
 
 // the item displayed after search
 export interface BookResult extends BookBase {

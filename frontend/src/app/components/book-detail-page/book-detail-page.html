@@ -2,7 +2,7 @@
 @if (error) {
   <p class="error">{{ error }}</p>
 }
-@if (book$ | async; as book) {
+@if (book) {
   <div class="detail-container">
     <div id="book-info" class="box">
       <div id="book-info-image">
@@ -165,26 +165,30 @@
         }
       </table>
     </div>
-
-    <div id="related-books" class="box">
-      <h2>geïnteresseerd?</h2>
-      <div id="related-books-book">
-        @if (relatedBooks$ | async; as books) {
-          @for (book of books; track $index) {
-            <div class="book-card" routerLink="/boek/{{ book.id }}">
-              <h3>{{ book.title }}</h3>
-              @if (book.cover == null) {
-                <div class="no-cover"><p>GEEN COVER</p></div>
-              } @else {
-                <img src="{{ book.cover }}" alt="book cover" class="cover" />
-              }
-              <p>{{ book.author?.name }}</p>
-            </div>
+    @if (book.author) {
+      <div id="related-books" class="box">
+        <h2>Meer van auteur {{ book.author.name }}</h2>
+        <div id="related-books-book">
+          @if (relatedBooks) {
+            @for (bookCard of relatedBooks; track bookCard.id) {
+              <div class="book-card" routerLink="/boek/{{ bookCard.id }}" (click)="scrollTop()">
+                <div class="book-card-header">
+                  <p class="book-card-title">{{ bookCard.title }}</p>
+                </div>
+                @if (book.cover == null) {
+                  <div class="no-cover"><p>GEEN COVER</p></div>
+                } @else {
+                  <img src="{{ bookCard.cover }}" alt="book cover" class="cover" />
+                }
+                <p>{{ bookCard.author_name }}</p>
+              </div>
+            }
           }
-        }
+        </div>
       </div>
-    </div>
+    }
   </div>
+
 } @else {
   <p>Geen boeken gevonden.</p>
 }

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { ApiService } from './api';
 import { Observable } from 'rxjs';
-import { BookDetail, BookFilter, BookResult, CreateBook } from '../models/book';
+import { BookCard, BookDetail, BookFilter, BookResult, CreateBook } from '../models/book';
 import { Page } from '../models/page';
 import { HttpParams } from '@angular/common/http';
 
@@ -26,6 +26,11 @@ export class BookService {
 
   getById(id: number): Observable<BookDetail> {
     return this.apiService.get<BookDetail>(`${this.endpoint}/${id}`);
+  }
+
+  // gets similar books
+  getRelated(id: number): Observable<BookCard[]> {
+    return this.apiService.get<BookCard[]>(`${this.endpoint}/${id}/related`);
   }
 
   // receives book detail with id, etc
