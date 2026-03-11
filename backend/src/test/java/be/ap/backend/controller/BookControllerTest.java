@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -101,6 +102,44 @@ public class BookControllerTest {
         assertEquals("Test Book", result.getTitle());
 
         verify(repository, times(1)).findById(1L);
+    }
+
+    @Test
+    void givenSearchQuery_whenSearch_thenReturnMatchingBooks() {
+        // Arrange
+        Book book1 = new Book();
+        book1.setId(1L);
+        book1.setTitle("Harry Potter");
+
+        List<Book> books = List.of(book1);
+        Page<Book> page = new PageImpl<>(books);
+
+        when(repository.search(eq("Harry"), any(Pageable.class))).thenReturn(page);
+
+        // Act
+        Page<Book> result = controller.search("Harry", 0, 5);
+
+        // Assert
+        assertEquals(1, result.getContent().size());
+        assertEquals("Harry Potter", result.getContent().get(0).getTitle());
+
+        verify(repository, times(1)).search(eq("Harry"), any(Pageable.class));
+    }
+
+    @Test
+    void givenNoMatch_whenSearch_thenReturnEmptyPage() {
+        // Arrange
+        Page<Book> emptyPage = new PageImpl<>(List.of());
+
+        when(repository.search(eq("nonexistent"), any(Pageable.class))).thenReturn(emptyPage);
+
+        // Act
+        Page<Book> result = controller.search("nonexistent", 0, 5);
+
+        // Assert
+        assertEquals(0, result.getContent().size());
+
+        verify(repository, times(1)).search(eq("nonexistent"), any(Pageable.class));
     }
 
     @Test

@@ -1,16 +1,25 @@
 import { Component, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { TagModule } from 'primeng/tag';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { PaginatorModule, PaginatorState } from 'primeng/paginator';
 import { BookService } from '../../services/book';
 import { BookResult } from '../../models/book';
 import { NavBarComponent } from '../nav-bar/nav-bar';
-import { RouterLink } from "@angular/router";
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-catalogue',
   standalone: true,
-  imports: [TagModule, ProgressSpinnerModule, PaginatorModule, NavBarComponent, RouterLink],
+  imports: [
+    FormsModule,
+    TagModule,
+    ProgressSpinnerModule,
+    PaginatorModule,
+    NavBarComponent,
+    RouterLink,
+  ],
   templateUrl: './catalogue.html',
   styleUrl: './catalogue.css',
 })
@@ -20,18 +29,30 @@ export class CatalogueComponent implements OnInit {
   totalRecords = 0;
   rows = 5;
   currentPage = 0;
+  searchQuery = '';
 
   readonly placeholder = 'https://placehold.co/150x220/e2e8f0/64748b?text=Geen+Cover';
 
-  constructor(private bookService: BookService) {}
+  constructor(
+    private bookService: BookService,
+    private route: ActivatedRoute,
+  ) {}
 
   ngOnInit(): void {
-    this.loadBooks();
+    this.route.queryParams.subscribe((params) => {
+      this.searchQuery = params['q'] || '';
+      this.currentPage = 0;
+      this.loadBooks();
+    });
   }
 
   loadBooks(): void {
     this.loading = true;
-    this.bookService.getAll(this.currentPage, this.rows).subscribe({
+    const request = this.searchQuery.trim()
+      ? this.bookService.search(this.searchQuery.trim(), this.currentPage, this.rows)
+      : this.bookService.getAll(this.currentPage, this.rows);
+
+    request.subscribe({
       next: (page) => {
         this.books = page.content;
         this.totalRecords = page.total_elements;
@@ -41,6 +62,17 @@ export class CatalogueComponent implements OnInit {
         this.loading = false;
       },
     });
+  }
+
+  onSearch(): void {
+    this.currentPage = 0;
+    this.loadBooks();
+  }
+
+  clearSearch(): void {
+    this.searchQuery = '';
+    this.currentPage = 0;
+    this.loadBooks();
   }
 
   onPageChange(event: PaginatorState): void {

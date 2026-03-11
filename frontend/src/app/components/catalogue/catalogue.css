@@ -19,6 +19,71 @@ h1 {
   color: #7a1e2e;
 }
 
+.search-bar {
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.search-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-bar .search-input {
+  width: 100%;
+  padding: 0.75rem 3rem 0.75rem 1rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  outline: none;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  color: #333;
+}
+
+.search-bar .search-input:focus {
+  border-color: #7a1e2e;
+  box-shadow: 0 0 0 2px rgba(122, 30, 46, 0.15);
+}
+
+.search-bar .search-input::placeholder {
+  color: #999;
+}
+
+.search-bar .search-btn {
+  position: absolute;
+  right: 0.6rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #888;
+  display: flex;
+  align-items: center;
+  padding: 0.25rem;
+  font-size: 1rem;
+}
+
+.search-bar .search-btn:hover {
+  color: #7a1e2e;
+}
+
+.clear-btn {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  color: #7a1e2e;
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.clear-btn:hover {
+  color: #5e1622;
+}
+
 .loading-container {
   display: flex;
   justify-content: center;
