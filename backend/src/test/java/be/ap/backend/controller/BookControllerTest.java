@@ -2,11 +2,13 @@ package be.ap.backend.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,6 +19,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
+import be.ap.backend.dto.BookCardDTO;
 import be.ap.backend.dto.CreateBookDTO;
 import be.ap.backend.entity.Book;
 import be.ap.backend.repository.BookRepository;
@@ -60,26 +64,26 @@ public class BookControllerTest {
     @Test
     void givenBooksExist_whenGetAll_thenReturnBooks() {
 
-    Book book1 = new Book();
-    book1.setId(1L);
-    book1.setTitle("Book 1");
+        Book book1 = new Book();
+        book1.setId(1L);
+        book1.setTitle("Book 1");
 
-    Book book2 = new Book();
-    book2.setId(2L);
-    book2.setTitle("Book 2");
+        Book book2 = new Book();
+        book2.setId(2L);
+        book2.setTitle("Book 2");
 
-    List<Book> books = List.of(book1, book2);
-    Page<Book> page = new PageImpl<>(books);
+        List<Book> books = List.of(book1, book2);
+        Page<Book> page = new PageImpl<>(books);
 
-    when(repository.findAll(any(Pageable.class))).thenReturn(page);
+        when(repository.findAll(any(Pageable.class))).thenReturn(page);
 
-    Page<Book> result = controller.getAll(1, 5);
+        Page<Book> result = controller.getAll(1, 5);
 
-    assertEquals(2, result.getContent().size());
-    assertEquals("Book 1", result.getContent().get(0).getTitle());
-    assertEquals("Book 2", result.getContent().get(1).getTitle());
+        assertEquals(2, result.getContent().size());
+        assertEquals("Book 1", result.getContent().get(0).getTitle());
+        assertEquals("Book 2", result.getContent().get(1).getTitle());
 
-    verify(repository, times(1)).findAll(any(Pageable.class));
+        verify(repository, times(1)).findAll(any(Pageable.class));
     }
 
     @Test
@@ -97,5 +101,42 @@ public class BookControllerTest {
         assertEquals("Test Book", result.getTitle());
 
         verify(repository, times(1)).findById(1L);
+    }
+
+    @Test
+    void testGetRelatedBooks_Success() {
+        Long bookId = 1L;
+
+        // Mock related books
+        List<BookCardDTO> relatedBooks = List.of(
+                new BookCardDTO(2L, "Title 1", "cover", "Jan"),
+                new BookCardDTO(2L, "Title 2", "cover", "Jan"));
+
+        // Mock repository behavior
+        when(repository.findRelated(bookId)).thenReturn(relatedBooks);
+
+        // Call controller method
+        List<BookCardDTO> result = repository.findRelated(bookId);
+
+        // Assertions
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals("Title 1", result.get(0).getTitle());
+        assertEquals("Title 2", result.get(1).getTitle());
+    }
+
+    @Test
+    void testGetRelatedBooks_Empty() {
+        Long bookId = 1L;
+
+        // Mock repository behavior: no related books
+        when(repository.findRelated(bookId)).thenReturn(Collections.emptyList());
+
+        // Call controller method
+        List<BookCardDTO> result = repository.findRelated(bookId);
+
+        // Assertions
+        assertNotNull(result);
+        assertTrue(result.isEmpty(), "Expected empty list when no related books exist");
     }
 }
