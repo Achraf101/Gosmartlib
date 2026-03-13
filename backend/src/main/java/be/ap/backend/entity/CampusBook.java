@@ -7,6 +7,7 @@ import lombok.*;
 @Table(name = "campus_book")
 @NoArgsConstructor
 @AllArgsConstructor
+@Data
 public class CampusBook {
 
     @Id
