@@ -1,5 +1,7 @@
 package be.ap.backend.service;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +31,10 @@ public class CampusService {
         }
 
         return campusRepository.save(campus);
+    }
+
+    public Optional<Campus> findById(Long id) {
+        return campusRepository.findById(id);
     }
 
 }
