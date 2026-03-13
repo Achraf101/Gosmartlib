@@ -8,14 +8,13 @@ import org.springframework.web.bind.annotation.RestController;
 import be.ap.backend.dto.CampusDTO;
 import be.ap.backend.entity.Campus;
 import be.ap.backend.service.CampusService;
-import be.ap.backend.service.SchoolService;
 
 @RestController
 @RequestMapping("campus")
 public class CampusController {
     private final CampusService campusService;
 
-    public CampusController(CampusService campusService, SchoolService schoolService) {
+    public CampusController(CampusService campusService) {
         this.campusService = campusService;
     }
 
