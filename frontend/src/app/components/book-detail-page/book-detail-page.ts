@@ -50,7 +50,14 @@ export class BookDetailPage implements OnInit {
 
   public loadBook() {
     this.bookService.getById(this.bookId).subscribe({
-      next: (book) => (this.book = book),
+      next: (book) => {
+        this.book = book;
+        this.ratingValue =
+          Math.round((this.book?.rating_total! / this.book?.rating_count!) * 10) / 10;
+        this.ratingValueStars = Math.round(this.ratingValue);
+
+        this.genresString = (this.book?.genres || []).map((i) => i.name).join(', ');
+      },
       error: (err) => {
         this.messageService.add({
           severity: 'error',
@@ -60,11 +67,6 @@ export class BookDetailPage implements OnInit {
         });
       },
     });
-
-    this.ratingValue = Math.round((this.book?.rating_total! / this.book?.rating_count!) * 10) / 10;
-    this.ratingValueStars = Math.round(this.ratingValue);
-
-    this.genresString = (this.book?.genres || []).map((i) => i.name).join(', ');
 
     this.bookService.getRelated(this.bookId).subscribe({
       next: (relatedBooks) => (this.relatedBooks = relatedBooks),

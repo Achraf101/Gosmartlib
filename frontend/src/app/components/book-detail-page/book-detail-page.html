@@ -175,7 +175,7 @@
                 <div class="book-card-header">
                   <p class="book-card-title">{{ bookCard.title }}</p>
                 </div>
-                @if (book.cover == null) {
+                @if (bookCard.cover == null) {
                   <div class="no-cover"><p>GEEN COVER</p></div>
                 } @else {
                   <img src="{{ bookCard.cover }}" alt="book cover" class="cover" />
@@ -188,7 +188,6 @@
       </div>
     }
   </div>
-
 } @else {
   <p>Geen boeken gevonden.</p>
 }
