@@ -6,6 +6,18 @@
   min-height: 100vh;
 }
 
+* {
+  border-radius: 10px;
+}
+
+.show-desktop {
+  display: none;
+}
+
+.show-mobile {
+  display: inline-block;
+}
+
 .detail-container {
   display: flex;
   justify-content: center;
@@ -15,23 +27,15 @@
   overflow-x: hidden;
 }
 
-article {
-  display: inline-block;
-  padding: 40px;
-}
-
-* {
-  border-radius: 10px;
-}
-
 #book-info {
   display: flex;
   align-items: flex-start;
-  gap: 25px;
+  gap: 10px;
   border: 1px solid var(--p-menubar-border-color);
   width: 70vw;
   position: relative;
   margin-top: 5vh;
+  flex-flow: column;
 }
 
 #stars p {
@@ -75,7 +79,8 @@ tr > td:nth-child(1) {
   align-items: center;
 }
 
-tr > td:nth-child(1) img {
+tr > td:nth-child(1) img,
+#book-available .no-cover {
   margin-left: 20px;
   margin-right: 20px;
   height: 100px;
@@ -114,6 +119,7 @@ table td {
   border-top: none;
 
   background-color: var(--p-amber-50);
+  font-size: small;
 }
 
 #book-detail table tr {
@@ -122,6 +128,7 @@ table td {
 
 #book-detail table tr td:nth-child(2) {
   text-align: left;
+  width: 70%;
 }
 
 #book-detail {
@@ -180,4 +187,23 @@ table td {
 
 #related-books {
   width: 70%;
+}
+
+@media (width>800px) {
+  .show-desktop {
+    display: inline-block;
+  }
+
+  .show-mobile {
+    display: none;
+  }
+
+  #book-info {
+    flex-flow: row;
+    gap: 25px;
+  }
+
+  #book-available table {
+    font-size: medium;
+  }
 }

@@ -5,6 +5,18 @@
 @if (book) {
   <div class="detail-container">
     <div id="book-info" class="box">
+      <h2 class="show-mobile">{{ book.title }}</h2>
+      <h3 class="show-mobile">
+        @if (book.author != null) {
+          {{ book.author.name }} (auteur)
+        }
+        @for (contributor of book.contributors; track $index) {
+          , {{ contributor }}
+        }
+        @if (book.contributors && book.contributors.length > 0) {
+          (contributor)
+        }
+      </h3>
       <div id="book-info-image">
         @if (book.cover == null) {
           <div class="no-cover"><p>GEEN COVER</p></div>
@@ -29,8 +41,8 @@
         ></i>
       </div>
       <div id="book-info-text">
-        <h2>{{ book.title }}</h2>
-        <h3>
+        <h2 class="show-desktop">{{ book.title }}</h2>
+        <h3 class="show-desktop">
           @if (book.author != null) {
             {{ book.author.name }} (auteur)
           }
@@ -50,7 +62,13 @@
             | {{ book.age_start }}
           }
         </p>
-        <p>{{ book.description }}</p>
+        <p-accordion class="show-mobile">
+          <p-accordion-panel value="0">
+            <p-accordion-header>Description</p-accordion-header>
+            <p-accordion-content>{{ book.description }}</p-accordion-content>
+          </p-accordion-panel>
+        </p-accordion>
+        <p class="show-desktop">{{ book.description }}</p>
       </div>
     </div>
 
@@ -63,16 +81,16 @@
           }}
         </caption>
         <tr>
-          <th>uitgave</th>
+          <th>Uitgave</th>
           <th>Beschikbaarheid</th>
-          <th>info</th>
+          <th>Info</th>
         </tr>
         <tr>
           <td>
             @if (book.cover == null) {
-              <div class="no-cover"><p>GEEN COVER</p></div>
+              <div class="no-cover, show-desktop"><p>GEEN COVER</p></div>
             } @else {
-              <img src="{{ book.cover }}" alt="book cover" class="cover" />
+              <img src="{{ book.cover }}" alt="book cover" class="cover, show-desktop" />
             }
             <p>
               @if (book.publisher != null) {
@@ -113,6 +131,12 @@
             <td>{{ book.title }}</td>
           </tr>
         }
+        @if (book.book_type != null) {
+          <tr>
+            <td>Book type</td>
+            <td>{{ book.book_type.name }}</td>
+          </tr>
+        }
         @if (genresString != '') {
           <tr>
             <td>Genre</td>
@@ -141,13 +165,19 @@
         }
         @if (book.published != null) {
           <tr>
-            <td>jaar van uitgave</td>
+            <td>Jaar van uitgave</td>
             <td>{{ book.published }}</td>
+          </tr>
+        }
+        @if (book.age_start != 0 && book.age_end != 0) {
+          <tr>
+            <td>Leeftijd</td>
+            <td>{{ book.age_start }} - {{ book.age_end }}</td>
           </tr>
         }
         @if (book.pages != null) {
           <tr>
-            <td>paginas</td>
+            <td>Paginas</td>
             <td>
               @if (book.pages != 0) {
                 {{ book.pages }} p.

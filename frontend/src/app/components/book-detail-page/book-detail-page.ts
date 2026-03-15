@@ -1,16 +1,17 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { BookService } from '../../services/book-service';
-import { BookCard, BookDetail, BookResult } from '../../models/book';
+import { BookCard, BookDetail } from '../../models/book';
 import { ImageModule } from 'primeng/image';
 import { RatingModule } from 'primeng/rating';
 import { FormsModule } from '@angular/forms';
 import { NavBarComponent } from '../nav-bar/nav-bar';
 import { MessageService } from 'primeng/api';
+import { AccordionModule } from 'primeng/accordion';
 
 @Component({
   selector: 'app-book-detail-page',
-  imports: [ImageModule, RatingModule, FormsModule, NavBarComponent, RouterLink],
+  imports: [ImageModule, RatingModule, FormsModule, NavBarComponent, RouterLink, AccordionModule],
   templateUrl: './book-detail-page.html',
   styleUrl: './book-detail-page.css',
 })
@@ -31,7 +32,6 @@ export class BookDetailPage implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // let bookId = parseInt(this.route.snapshot.paramMap.get('id')!);
     this.route.paramMap.subscribe((params) => {
       this.bookId = Number(params.get('id'));
       this.loadBook();
