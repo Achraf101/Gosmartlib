@@ -1,8 +1,5 @@
 :host {
   display: block;
-  background-color: #f5f5f0;
-  background-image: url('/assets/book-bg.jpg');
-  background-repeat: repeat;
   min-height: 100vh;
 }
 
@@ -10,7 +7,8 @@
   border-radius: 10px;
 }
 
-.show-desktop {
+.show-desktop,
+h2.show-desktop {
   display: none;
 }
 
@@ -29,10 +27,9 @@
 
 #book-info {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 10px;
   border: 1px solid var(--p-menubar-border-color);
-  width: 70vw;
   position: relative;
   margin-top: 5vh;
   flex-flow: column;
@@ -54,33 +51,16 @@
   cursor: pointer;
 }
 
+.description {
+  width: 80vw;
+}
+
 p-image {
   height: 300px;
 }
 
-.no-cover {
-  background-color: var(--p-zinc-400);
-  aspect-ratio: 3/4;
-  color: var(--p-primary-50);
-  text-align: center;
-  font-size: large;
-  font-weight: 900;
-  align-content: center;
-  height: 200px;
-}
-
-.no-cover p {
-  transform: rotate(-35deg);
-  user-select: none;
-}
-
-tr > td:nth-child(1) {
-  display: flex;
-  align-items: center;
-}
-
 tr > td:nth-child(1) img,
-#book-available .no-cover {
+#book-available {
   margin-left: 20px;
   margin-right: 20px;
   height: 100px;
@@ -111,39 +91,38 @@ table td {
 
 #book-available {
   border: 1px solid var(--p-menubar-border-color);
-  width: 70vw;
+  padding-bottom: 13rem;
 }
 
 #book-available table {
   border: 1px solid var(--p-menubar-border-color);
   border-top: none;
-
   background-color: var(--p-amber-50);
   font-size: small;
 }
 
 #book-detail table tr {
   line-height: 40px;
+  border-bottom: 1px solid var(--p-slate-100);
+}
+
+#book-detail table tr td:nth-child(1) {
+  text-align: left;
 }
 
 #book-detail table tr td:nth-child(2) {
   text-align: left;
-  width: 70%;
-}
-
-#book-detail {
-  width: 70vw;
+  width: 60%;
+  color: var(--p-button-text-secondary-color);
+  border-left: 1px solid var(--p-slate-100);
+  padding-left: 10px;
 }
 
 .box {
   margin-bottom: 1em;
   padding: 20px;
-  background-color: var(--p-slate-50);
-  max-width: 1800px;
-}
-
-#book-detail table tr td:nth-child(2) {
-  color: var(--p-button-text-secondary-color);
+  /* background-color: var(--p-slate-50); */
+  width: 95vw;
 }
 
 #related-books-book {
@@ -179,14 +158,12 @@ table td {
 #related-books .book-card * {
   display: inline-block;
   margin: 0 auto;
+  display: flex;
+  flex-flow: column;
 }
 
 #related-books .book-card p {
   color: var(--p-button-text-secondary-color);
-}
-
-#related-books {
-  width: 70%;
 }
 
 @media (width>800px) {
@@ -194,8 +171,13 @@ table td {
     display: inline-block;
   }
 
-  .show-mobile {
+  .show-mobile,
+  h2.show-mobile {
     display: none;
+  }
+
+  h2.show-desktop {
+    display: block;
   }
 
   #book-info {
@@ -205,5 +187,19 @@ table td {
 
   #book-available table {
     font-size: medium;
+  }
+
+  .box {
+    max-width: 1800px;
+    width: 70vw;
+  }
+
+  #book-info {
+    align-items: flex-start;
+  }
+
+  #book-detail table tr td:nth-child(2) {
+    border-left: none;
+    padding-left: 0px;
   }
 }
