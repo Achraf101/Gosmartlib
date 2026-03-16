@@ -11,7 +11,7 @@ services:
     volumes:
       - certbot:/etc/letsencrypt
       - certbot:/var/www/certbot
-
+      - static:/var/www
 
   certbot:
     image: certbot/certbot
@@ -20,7 +20,6 @@ services:
       - certbot:/etc/letsencrypt
       - certbot:/var/www/certbot
     command: certonly --webroot -w /var/www/certbot --keep-until-expiring --email ${CERTBOT_EMAIL} -d gosmartlib.tech --agree-tos
-
 
   db:
     image: mysql:9.6.0
@@ -36,13 +35,13 @@ services:
     expose:
       - 3306
 
-
   backend:
     depends_on:
       - db
     container_name: backend
     volumes:
       - maven-repo:/root/.m2
+      - static:/var/www
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
@@ -54,11 +53,13 @@ services:
       context: ./backend
       dockerfile: Dockerfile
 
-
 volumes:
   certbot:
     name: certbot
     external: true
   maven-repo:
     name: maven-repo
+    external: true
+  static:
+    name: static
     external: true
