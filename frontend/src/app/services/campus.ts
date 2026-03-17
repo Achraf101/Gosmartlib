@@ -14,4 +14,12 @@ export class CampusService {
   createCampus(campus: Omit<Campus, 'id'>): Observable<Campus> {
     return this.apiService.post<Campus>(this.endpoint, campus);
   }
+
+  getAll(): Observable<Campus[]> {
+    return this.apiService.get<Campus[]>(this.endpoint);
+  }
+
+  getById(id: number): Observable<Campus> {
+    return this.apiService.get<Campus>(`${this.endpoint}/${id}`);
+  }
 }
