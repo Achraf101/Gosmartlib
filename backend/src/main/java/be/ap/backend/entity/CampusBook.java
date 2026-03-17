@@ -16,11 +16,11 @@ public class CampusBook {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "campus_id", nullable = false)
-    private Long campusId;
+    private Campus campus;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "book_id", nullable = false)
-    private Long bookId;
+    private Book book;
 
     @Column(nullable = false)
     private Integer amount;

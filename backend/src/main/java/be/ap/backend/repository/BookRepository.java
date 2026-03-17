@@ -24,6 +24,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
             "LEFT JOIN b.genres g " +
             "WHERE LOWER(b.title) LIKE LOWER(CONCAT('%', :query, '%')) " +
             "OR LOWER(a.name) LIKE LOWER(CONCAT('%', :query, '%')) " +
-            "OR LOWER(g.name) LIKE LOWER(CONCAT('%', :query, '%'))")
+            "OR LOWER(g.name) LIKE LOWER(CONCAT('%', :query, '%'))" +
+            "OR b.isbn LIKE CONCAT('%', :query, '%')")
     Page<Book> search(@Param("query") String query, Pageable pageable);
 }
