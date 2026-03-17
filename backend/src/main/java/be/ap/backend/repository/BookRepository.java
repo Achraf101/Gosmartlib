@@ -16,7 +16,23 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
     Page<Book> findAll(Pageable pageable);
 
-    @Query("SELECT new be.ap.backend.dto.BookCardDTO(b.id, b.title, b.cover, a.name) FROM Book b JOIN b.author a WHERE b.author = (SELECT b.author FROM Book b WHERE b.id=:id) AND b.id != :id")
+    @Query("""
+    SELECT DISTINCT new be.ap.backend.dto.BookCardDTO(
+        b.id,
+        b.title,
+        b.cover,
+        b.author.name
+        )
+    FROM Book b
+    JOIN b.genres g
+    WHERE g IN (
+        SELECT g2
+        FROM Book b2
+        JOIN b2.genres g2
+        WHERE b2.id = :id
+    )
+    AND b.id != :id
+    """)
     List<BookCardDTO> findRelated(@Param("id") Long id);
 
     @Query("SELECT DISTINCT b FROM Book b " +

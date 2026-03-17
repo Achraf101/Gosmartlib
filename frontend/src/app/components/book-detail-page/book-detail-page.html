@@ -5,11 +5,23 @@
 @if (book) {
   <div class="detail-container">
     <div id="book-info" class="box">
+      <h2 class="show-mobile">{{ book.title }}</h2>
+      <h3 class="show-mobile">
+        @if (book.author != null) {
+          {{ book.author.name }} (auteur)
+        }
+        @for (contributor of book.contributors; track $index) {
+          , {{ contributor }}
+        }
+        @if (book.contributors && book.contributors.length > 0) {
+          (contributor)
+        }
+      </h3>
       <div id="book-info-image">
         @if (book.cover == null) {
-          <div class="no-cover"><p>GEEN COVER</p></div>
+          <img src="/assets/no-cover.svg" alt="geen omslag" />
         } @else {
-          <p-image src="{{ book.cover }}" preview alt="book cover" class="cover" />
+          <p-image src="{{ book.cover }}" preview alt="boek omslag" class="cover" />
         }
         <div id="stars">
           <p-rating [(ngModel)]="ratingValueStars" [readonly]="true" />
@@ -29,8 +41,8 @@
         ></i>
       </div>
       <div id="book-info-text">
-        <h2>{{ book.title }}</h2>
-        <h3>
+        <h2 class="show-desktop">{{ book.title }}</h2>
+        <h3 class="show-desktop">
           @if (book.author != null) {
             {{ book.author.name }} (auteur)
           }
@@ -50,7 +62,13 @@
             | {{ book.age_start }}
           }
         </p>
-        <p>{{ book.description }}</p>
+        <p-accordion class="show-mobile">
+          <p-accordion-panel value="0">
+            <p-accordion-header class="description">Beschrijving</p-accordion-header>
+            <p-accordion-content>{{ book.description }}</p-accordion-content>
+          </p-accordion-panel>
+        </p-accordion>
+        <p class="show-desktop">{{ book.description }}</p>
       </div>
     </div>
 
@@ -63,17 +81,12 @@
           }}
         </caption>
         <tr>
-          <th>uitgave</th>
+          <th>Uitgave</th>
           <th>Beschikbaarheid</th>
-          <th>info</th>
+          <th>Info</th>
         </tr>
         <tr>
           <td>
-            @if (book.cover == null) {
-              <div class="no-cover"><p>GEEN COVER</p></div>
-            } @else {
-              <img src="{{ book.cover }}" alt="book cover" class="cover" />
-            }
             <p>
               @if (book.publisher != null) {
                 {{ book.publisher.name }}
@@ -86,7 +99,7 @@
               }
             </p>
           </td>
-          <td><p>true</p></td>
+          <td><p>beschikbaar</p></td>
           <td>
             <p>
               @if (book.language.id != 1) {
@@ -111,6 +124,12 @@
           <tr>
             <td>Titel</td>
             <td>{{ book.title }}</td>
+          </tr>
+        }
+        @if (book.book_type != null) {
+          <tr>
+            <td>Boektype</td>
+            <td>{{ book.book_type.name }}</td>
           </tr>
         }
         @if (genresString != '') {
@@ -141,13 +160,19 @@
         }
         @if (book.published != null) {
           <tr>
-            <td>jaar van uitgave</td>
+            <td>Jaar van uitgave</td>
             <td>{{ book.published }}</td>
+          </tr>
+        }
+        @if (book.age_start != 0 && book.age_end != 0) {
+          <tr>
+            <td>Leeftijd</td>
+            <td>{{ book.age_start }} - {{ book.age_end }}</td>
           </tr>
         }
         @if (book.pages != null) {
           <tr>
-            <td>paginas</td>
+            <td>Paginas</td>
             <td>
               @if (book.pages != 0) {
                 {{ book.pages }} p.
@@ -165,9 +190,9 @@
         }
       </table>
     </div>
-    @if (book.author) {
+    @if (relatedBooks?.length != 0) {
       <div id="related-books" class="box">
-        <h2>Meer van auteur {{ book.author.name }}</h2>
+        <h2>Meer van dit:</h2>
         <div id="related-books-book">
           @if (relatedBooks) {
             @for (bookCard of relatedBooks; track bookCard.id) {
@@ -175,10 +200,10 @@
                 <div class="book-card-header">
                   <p class="book-card-title">{{ bookCard.title }}</p>
                 </div>
-                @if (book.cover == null) {
-                  <div class="no-cover"><p>GEEN COVER</p></div>
+                @if (bookCard.cover == null) {
+                  <img src="/assets/no-cover.svg" alt="geen omslag" />
                 } @else {
-                  <img src="{{ bookCard.cover }}" alt="book cover" class="cover" />
+                  <img src="{{ bookCard.cover }}" alt="boek omslag" class="cover" />
                 }
                 <p>{{ bookCard.author_name }}</p>
               </div>
@@ -188,7 +213,6 @@
       </div>
     }
   </div>
-
 } @else {
   <p>Geen boeken gevonden.</p>
 }
