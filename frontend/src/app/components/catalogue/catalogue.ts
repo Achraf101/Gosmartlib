@@ -45,24 +45,17 @@ export class CatalogueComponent implements OnInit {
       this.currentPage = 0;
 
       const hasFilters = params['genres'] || params['language'] || params['fiction'] !== undefined
-        || params['authorId'] || params['ageMin'] || params['ageMax']
-        || params['pagesMin'] || params['pagesMax'];
+        || params['authorIds'] || params['pagesMin'] || params['pagesMax'];
 
       if (hasFilters) {
         this.activeFilters = {
-          genre: params['genres']
-            ? (Array.isArray(params['genres']) ? params['genres'].map(Number) : [Number(params['genres'])])
-            : undefined,
+          genre: params['genres'] ? params['genres'].split(',').map(Number) : undefined,
           language: params['language'] ? Number(params['language']) : undefined,
           fiction: params['fiction'] !== undefined ? params['fiction'] === 'true' : undefined,
-          author: params['authorId'] ? [Number(params['authorId'])] : undefined,
+          author: params['authorIds'] ? params['authorIds'].split(',').map(Number) : undefined,
           pages: (params['pagesMin'] || params['pagesMax']) ? [
             params['pagesMin'] ? Number(params['pagesMin']) : 0,
             params['pagesMax'] ? Number(params['pagesMax']) : 999999
-          ] : undefined,
-          age: (params['ageMin'] || params['ageMax']) ? [
-            params['ageMin'] ? Number(params['ageMin']) : 0,
-            params['ageMax'] ? Number(params['ageMax']) : 999
           ] : undefined,
         };
       } else {
@@ -110,4 +103,7 @@ export class CatalogueComponent implements OnInit {
     this.rows = event.rows ?? 5;
     this.loadBooks();
   }
+  get activeQueryParams(): any {
+  return this.route.snapshot.queryParams;
+}
 }

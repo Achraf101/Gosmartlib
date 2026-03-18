@@ -48,11 +48,7 @@ export class BookService {
   if (filters.genre) filters.genre.forEach(g => params = params.append('genres', g.toString()));
   if (filters.language) params = params.set('language', filters.language.toString());
   if (filters.fiction !== undefined && filters.fiction !== null) params = params.set('fiction', filters.fiction.toString());
-  if (filters.author) filters.author.forEach(a => params = params.append('authorId', a.toString()));
-  if (filters.age) {
-    params = params.set('ageMin', filters.age[0].toString());
-    params = params.set('ageMax', filters.age[1].toString());
-  }
+  if (filters.author) params = params.set('authorIds', filters.author.join(','));
   if (filters.pages?.[0] != null) params = params.set('pagesMin', filters.pages[0].toString());
   if (filters.pages?.[1] != null) params = params.set('pagesMax', filters.pages[1].toString());
 
