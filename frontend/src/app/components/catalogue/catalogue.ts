@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { TagModule } from 'primeng/tag';
+import { DividerModule } from 'primeng/divider';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { PaginatorModule, PaginatorState } from 'primeng/paginator';
 import { BookService } from '../../services/book';
@@ -19,6 +20,7 @@ import { RouterLink } from '@angular/router';
     PaginatorModule,
     NavBarComponent,
     RouterLink,
+    DividerModule,
   ],
   templateUrl: './catalogue.html',
   styleUrl: './catalogue.css',
@@ -31,7 +33,7 @@ export class CatalogueComponent implements OnInit {
   currentPage = 0;
   searchQuery = '';
 
-  readonly placeholder = 'https://placehold.co/150x220/e2e8f0/64748b?text=Geen+Cover';
+  readonly placeholder = '/assets/no-cover.svg';
 
   constructor(
     private bookService: BookService,
