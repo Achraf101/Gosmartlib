@@ -5,6 +5,7 @@ import { BookformComponent } from './components/bookform/bookform';
 import { BookDetailPage } from './components/book-detail-page/book-detail-page';
 import { CatalogueComponent } from './components/catalogue/catalogue';
 import { CampusComponent } from './components/campus/campus';
+import { FilterPage } from './components/filter-page/filter-page';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'startpagina', pathMatch: 'full' },
@@ -12,6 +13,7 @@ export const routes: Routes = [
   { path: 'school/toevoegen', component: SchoolComponent },
   { path: 'campus/toevoegen', component: CampusComponent },
   { path: 'boek/toevoegen', component: BookformComponent },
+  { path: 'catalogus/filter', component: FilterPage },
   { path: 'catalogus', component: CatalogueComponent },
   { path: 'boek/:id', component: BookDetailPage },
 
