@@ -2,29 +2,32 @@
 <div class="filter-container">
   <h1>Zoeken met filters</h1>
 
-
   <div class="filter-group">
     <h3>Genre</h3>
     <div class="genre-tags">
-      <button
-        *ngFor="let genre of genres"
-        class="tag-btn"
-        [class.active]="isGenreSelected(genre.id)"
-        (click)="toggleGenre(genre.id)">
-        {{ genre.name }}
-      </button>
+      @for (genre of genres; track genre.id) {
+        <button
+          class="tag-btn"
+          [class.active]="isGenreSelected(genre.id)"
+          (click)="toggleGenre(genre.id)">
+          {{ genre.name }}
+        </button>
+      }
     </div>
   </div>
 
-
   <div class="filter-group">
     <h3>Taal</h3>
-    <select class="filter-select" [(ngModel)]="selectedLanguage">
-      <option [ngValue]="null">Alle talen</option>
-      <option *ngFor="let lang of languages" [ngValue]="lang.id">{{ lang.name }}</option>
-    </select>
+    <p-select
+      [(ngModel)]="selectedLanguage"
+      [options]="languages"
+      optionLabel="name"
+      optionValue="id"
+      placeholder="Alle talen"
+      [showClear]="true"
+      styleClass="w-full"
+    />
   </div>
-
 
   <div class="filter-group">
     <h3>Fictie</h3>
@@ -35,25 +38,30 @@
     </div>
   </div>
 
-
   <div class="filter-group">
     <h3>Auteur</h3>
-    <select class="filter-select" [(ngModel)]="selectedAuthor">
-      <option [ngValue]="null">Alle auteurs</option>
-      <option *ngFor="let author of authors" [ngValue]="author.id">{{ author.name }}</option>
-    </select>
+    <p-autoComplete
+      [(ngModel)]="selectedAuthors"
+      [suggestions]="authorSuggestions"
+      (completeMethod)="searchAuthors($event)"
+      optionLabel="name"
+      placeholder="Typ een auteursnaam..."
+      [showClear]="true"
+      [multiple]="true"
+      styleClass="w-full"
+    />
   </div>
-
 
   <div class="filter-group">
-    <h3>Leeftijd</h3>
-    <div class="range-inputs">
-      <input type="number" class="filter-input" placeholder="Min" [(ngModel)]="ageMin" min="0" />
-      <span>—</span>
-      <input type="number" class="filter-input" placeholder="Max" [(ngModel)]="ageMax" min="0" />
+    <h3>CLIB niveau</h3>
+    <div class="fiction-btns">
+      @for (level of ['A', 'B', 'C', 'D']; track level) {
+        <button class="tag-btn" [class.active]="isClibSelected(level)" (click)="toggleClib(level)">
+          {{ level }}
+        </button>
+      }
     </div>
   </div>
-
 
   <div class="filter-group">
     <h3>Pagina's</h3>
@@ -62,6 +70,12 @@
       <span>—</span>
       <input type="number" class="filter-input" placeholder="Max" [(ngModel)]="pagesMax" min="0" />
     </div>
+    @if (errorPagesMin) {
+      <p class="error-msg">{{ errorPagesMin }}</p>
+    }
+    @if (errorPagesMax) {
+      <p class="error-msg">{{ errorPagesMax }}</p>
+    }
   </div>
 
   <div class="filter-actions">

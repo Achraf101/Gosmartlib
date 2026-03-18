@@ -7,27 +7,30 @@ import { ApiService } from '../../services/api';
 import { Author } from '../../models/author';
 import { Genre } from '../../models/genre';
 import { Language } from '../../models/language';
+import { AutoCompleteModule, AutoCompleteCompleteEvent } from 'primeng/autocomplete';
+import { SelectModule } from 'primeng/select';
 
 @Component({
   selector: 'app-filter-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavBarComponent],
+  imports: [CommonModule, FormsModule, NavBarComponent, AutoCompleteModule,SelectModule],
   templateUrl: './filter-page.html',
   styleUrl: './filter-page.css',
 })
 export class FilterPage implements OnInit {
   genres: Genre[] = [];
   languages: Language[] = [];
-  authors: Author[] = [];
 
   selectedGenres: number[] = [];
   selectedLanguage: number | null = null;
   selectedFiction: boolean | null = null;
-  selectedAuthor: number | null = null;
-  ageMin: number | null = null;
-  ageMax: number | null = null;
+  selectedAuthors: Author[] = [];
+  authorSuggestions: Author[] = [];
+  selectedClib: string[] = [];
   pagesMin: number | null = null;
   pagesMax: number | null = null;
+  errorPagesMin: string | null = null;
+ errorPagesMax: string | null = null;
 
   constructor(
     private apiService: ApiService,
@@ -38,23 +41,36 @@ export class FilterPage implements OnInit {
   ngOnInit(): void {
     this.apiService.get<Genre[]>('genre').subscribe(g => this.genres = g);
     this.apiService.get<Language[]>('language').subscribe(l => this.languages = l);
-    this.apiService.get<Author[]>('author').subscribe(a => this.authors = a);
-
 
     this.route.queryParams.subscribe(params => {
       if (params['genres']) {
-        this.selectedGenres = Array.isArray(params['genres'])
-          ? params['genres'].map(Number)
-          : [Number(params['genres'])];
-      }
+  this.selectedGenres = params['genres'].split(',').map(Number);
+}
       if (params['language']) this.selectedLanguage = Number(params['language']);
       if (params['fiction'] !== undefined) this.selectedFiction = params['fiction'] === 'true';
-      if (params['authorId']) this.selectedAuthor = Number(params['authorId']);
-      if (params['ageMin']) this.ageMin = Number(params['ageMin']);
-      if (params['ageMax']) this.ageMax = Number(params['ageMax']);
+      if (params['authorIds']) {
+        this.selectedAuthors = [];
+        params['authorIds'].split(',').forEach((id: string) => {
+        this.apiService.get<Author>(`author/${id}`).subscribe(a => this.selectedAuthors.push(a));
+  });
+}
+      if (params['clib']) {
+  this.selectedClib = params['clib'].split(',');
+}
       if (params['pagesMin']) this.pagesMin = Number(params['pagesMin']);
       if (params['pagesMax']) this.pagesMax = Number(params['pagesMax']);
     });
+  }
+
+  searchAuthors(event: AutoCompleteCompleteEvent): void {
+    const query = event.query.trim();
+    if (!query) {
+      this.authorSuggestions = [];
+      return;
+    }
+    this.apiService.get<Author[]>(`author/search/${encodeURIComponent(query)}`).subscribe(
+      a => this.authorSuggestions = a
+    );
   }
 
   toggleGenre(id: number): void {
@@ -70,27 +86,58 @@ export class FilterPage implements OnInit {
     return this.selectedGenres.includes(id);
   }
 
-  onSearch(): void {
-  const params: any = {};
-  if (this.selectedGenres.length > 0) params['genres'] = this.selectedGenres;
-  if (this.selectedLanguage) params['language'] = this.selectedLanguage;
-  if (this.selectedFiction !== null) params['fiction'] = this.selectedFiction;
-  if (this.selectedAuthor) params['authorId'] = this.selectedAuthor;
-  if (this.ageMin !== null) params['ageMin'] = this.ageMin;
-  if (this.ageMax !== null) params['ageMax'] = this.ageMax;
-  if (this.pagesMin !== null) params['pagesMin'] = this.pagesMin;
-  if (this.pagesMax !== null) params['pagesMax'] = this.pagesMax;
+  toggleClib(level: string): void {
+    const index = this.selectedClib.indexOf(level);
+    if (index > -1) {
+      this.selectedClib.splice(index, 1);
+    } else {
+      this.selectedClib.push(level);
+    }
+  }
 
-  this.router.navigate(['/catalogus'], { queryParams: params });
+  isClibSelected(level: string): boolean {
+    return this.selectedClib.includes(level);
+  }
+
+validate(): boolean {
+  this.errorPagesMin = null;
+  this.errorPagesMax = null;
+
+  if (this.pagesMin !== null && this.pagesMin < 0) {
+    this.errorPagesMin = 'Pagina\'s kan niet negatief zijn.';
+    return false;
+  }
+  if (this.pagesMax !== null && this.pagesMax < 0) {
+    this.errorPagesMax = 'Pagina\'s kan niet negatief zijn.';
+    return false;
+  }
+  if (this.pagesMin !== null && this.pagesMax !== null && this.pagesMin > this.pagesMax) {
+    this.errorPagesMin = 'Min moet kleiner zijn dan max.';
+    return false;
+  }
+  return true;
 }
+
+  onSearch(): void {
+    if (!this.validate()) return;
+    const params: any = {};
+    if (this.selectedGenres.length > 0) params['genres'] = this.selectedGenres.join(',');
+    if (this.selectedLanguage) params['language'] = this.selectedLanguage;
+    if (this.selectedFiction !== null) params['fiction'] = this.selectedFiction;
+    if (this.selectedAuthors.length > 0) params['authorIds'] = this.selectedAuthors.map(a => a.id).join(',');
+    if (this.selectedClib.length > 0) params['clib'] = this.selectedClib.join(',');
+    if (this.pagesMin !== null) params['pagesMin'] = this.pagesMin;
+    if (this.pagesMax !== null) params['pagesMax'] = this.pagesMax;
+
+    this.router.navigate(['/catalogus'], { queryParams: params });
+  }
 
   clearFilters(): void {
     this.selectedGenres = [];
     this.selectedLanguage = null;
     this.selectedFiction = null;
-    this.selectedAuthor = null;
-    this.ageMin = null;
-    this.ageMax = null;
+    this.selectedAuthors = [];
+    this.selectedClib = [];
     this.pagesMin = null;
     this.pagesMax = null;
   }
