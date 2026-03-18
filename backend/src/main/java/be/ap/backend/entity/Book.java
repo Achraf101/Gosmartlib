@@ -77,13 +77,13 @@ public class Book {
     private Language language;
 
     @Column(nullable = true, name = "age_start")
-    private byte ageStart;
+    private Byte ageStart;
 
     @Column(nullable = true, name = "age_end")
-    private byte ageEnd;
+    private Byte ageEnd;
 
     @Column(nullable = true, name = "pages")
-    private int pages;
+    private Integer pages;
 
     @Column(name = "rating")
     private int rating;
@@ -221,27 +221,27 @@ public class Book {
         this.language = language;
     }
 
-    public byte getAgeStart() {
+    public Byte getAgeStart() {
         return ageStart;
     }
 
-    public void setAgeStart(byte ageStart) {
+    public void setAgeStart(Byte ageStart) {
         this.ageStart = ageStart;
     }
 
-    public byte getAgeEnd() {
+    public Byte getAgeEnd() {
         return ageEnd;
     }
 
-    public void setAgeEnd(byte ageEnd) {
+    public void setAgeEnd(Byte ageEnd) {
         this.ageEnd = ageEnd;
     }
 
-    public int getPages() {
+    public Integer getPages() {
         return pages;
     }
 
-    public void setPages(int pages) {
+    public void setPages(Integer pages) {
         this.pages = pages;
     }
 
