@@ -34,19 +34,15 @@ public interface BookRepository extends JpaRepository<Book, Long> {
             "WHERE (:genres IS NULL OR g.id IN :genres) " +
             "AND (:language IS NULL OR l.id = :language) " +
             "AND (:fiction IS NULL OR b.fiction = :fiction) " +
-            "AND (:authorId IS NULL OR a.id = :authorId) " +
+            "AND (:authorIds IS NULL OR a.id IN :authorIds) " +
             "AND (:pagesMin IS NULL OR b.pages >= :pagesMin) " +
-            "AND (:pagesMax IS NULL OR b.pages <= :pagesMax) " +
-            "AND (:ageMin IS NULL OR b.ageStart >= :ageMin) " +
-            "AND (:ageMax IS NULL OR b.ageEnd <= :ageMax) ")
+            "AND (:pagesMax IS NULL OR b.pages <= :pagesMax) ")
             
     Page<Book> filter(
             @Param("genres") List<Long> genres,
             @Param("language") Long language,
             @Param("fiction") Boolean fiction,
-            @Param("authorId") Long authorId,
-            @Param("ageMin") Integer ageMin,
-            @Param("ageMax") Integer ageMax,
+            @Param("authorIds") List<Long> authorIds,
             @Param("pagesMin") Integer pagesMin,
             @Param("pagesMax") Integer pagesMax,
             Pageable pageable);
