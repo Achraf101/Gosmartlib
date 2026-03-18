@@ -9,11 +9,12 @@ import { Genre } from '../../models/genre';
 import { Language } from '../../models/language';
 import { AutoCompleteModule, AutoCompleteCompleteEvent } from 'primeng/autocomplete';
 import { SelectModule } from 'primeng/select';
+import { InputNumberModule } from 'primeng/inputnumber';
 
 @Component({
   selector: 'app-filter-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavBarComponent, AutoCompleteModule,SelectModule],
+  imports: [CommonModule, FormsModule, NavBarComponent, AutoCompleteModule,SelectModule,InputNumberModule],
   templateUrl: './filter-page.html',
   styleUrl: './filter-page.css',
 })

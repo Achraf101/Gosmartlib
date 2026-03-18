@@ -66,9 +66,10 @@
   <div class="filter-group">
     <h3>Pagina's</h3>
     <div class="range-inputs">
-      <input type="number" class="filter-input" placeholder="Min" [(ngModel)]="pagesMin" min="0" />
+      <p-inputnumber [(ngModel)]="pagesMin" placeholder="Min" [min]="0" [step]="50" [showButtons]="true" styleClass="w-full" />
       <span>—</span>
-      <input type="number" class="filter-input" placeholder="Max" [(ngModel)]="pagesMax" min="0" />
+      <p-inputnumber [(ngModel)]="pagesMax" placeholder="Max" [min]="0" [step]="50" [showButtons]="true" styleClass="w-full" />
+
     </div>
     @if (errorPagesMin) {
       <p class="error-msg">{{ errorPagesMin }}</p>
