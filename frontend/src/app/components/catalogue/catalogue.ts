@@ -5,7 +5,7 @@ import { TagModule } from 'primeng/tag';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { PaginatorModule, PaginatorState } from 'primeng/paginator';
 import { BookService } from '../../services/book';
-import { BookResult } from '../../models/book';
+import { BookFilter, BookResult } from '../../models/book';
 import { NavBarComponent } from '../nav-bar/nav-bar';
 import { RouterLink } from '@angular/router';
 
@@ -30,6 +30,7 @@ export class CatalogueComponent implements OnInit {
   rows = 5;
   currentPage = 0;
   searchQuery = '';
+  activeFilters: BookFilter | null = null;
 
   readonly placeholder = 'https://placehold.co/150x220/e2e8f0/64748b?text=Geen+Cover';
 
@@ -42,15 +43,44 @@ export class CatalogueComponent implements OnInit {
     this.route.queryParams.subscribe((params) => {
       this.searchQuery = params['q'] || '';
       this.currentPage = 0;
+
+      const hasFilters = params['genres'] || params['language'] || params['fiction'] !== undefined
+        || params['authorId'] || params['ageMin'] || params['ageMax']
+        || params['pagesMin'] || params['pagesMax'];
+
+      if (hasFilters) {
+        this.activeFilters = {
+          genre: params['genres']
+            ? (Array.isArray(params['genres']) ? params['genres'].map(Number) : [Number(params['genres'])])
+            : undefined,
+          language: params['language'] ? Number(params['language']) : undefined,
+          fiction: params['fiction'] !== undefined ? params['fiction'] === 'true' : undefined,
+          author: params['authorId'] ? [Number(params['authorId'])] : undefined,
+          pages: (params['pagesMin'] || params['pagesMax']) ? [
+            params['pagesMin'] ? Number(params['pagesMin']) : 0,
+            params['pagesMax'] ? Number(params['pagesMax']) : 999999
+          ] : undefined,
+          age: (params['ageMin'] || params['ageMax']) ? [
+            params['ageMin'] ? Number(params['ageMin']) : 0,
+            params['ageMax'] ? Number(params['ageMax']) : 999
+          ] : undefined,
+        };
+      } else {
+        this.activeFilters = null;
+      }
+
       this.loadBooks();
     });
   }
 
   loadBooks(): void {
     this.loading = true;
-    const request = this.searchQuery.trim()
-      ? this.bookService.search(this.searchQuery.trim(), this.currentPage, this.rows)
-      : this.bookService.getAll(this.currentPage, this.rows);
+
+    const request = this.activeFilters
+      ? this.bookService.filter(this.activeFilters, this.currentPage, this.rows)
+      : this.searchQuery.trim()
+        ? this.bookService.search(this.searchQuery.trim(), this.currentPage, this.rows)
+        : this.bookService.getAll(this.currentPage, this.rows);
 
     request.subscribe({
       next: (page) => {
