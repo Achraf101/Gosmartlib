@@ -23,7 +23,6 @@ import org.springframework.data.domain.Pageable;
 
 @RestController
 @RequestMapping("book")
-@CrossOrigin(origins = "http://localhost:4200")
 public class BookController {
 
     private final BookRepository bookRepository;
@@ -62,6 +61,22 @@ public class BookController {
     public List<BookCardDTO> getRelated(@PathVariable Long id) {
         return bookRepository.findRelated(id);
     }
+
+    @GetMapping("/filter")
+    public Page<Book> filter(
+        @RequestParam(required = false) List<Long> genres,
+        @RequestParam(required = false) Long language,
+        @RequestParam(required = false) Boolean fiction,
+        @RequestParam(required = false) Long authorId,
+        @RequestParam(required = false) Integer ageMin,
+        @RequestParam(required = false) Integer ageMax,
+        @RequestParam(required = false) Integer pagesMin,
+        @RequestParam(required = false) Integer pagesMax,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "5") int size) {
+    Pageable pageable = PageRequest.of(page, size);
+    return bookRepository.filter(genres, language, fiction, authorId, ageMin, ageMax, pagesMin, pagesMax, pageable);
+}
 
     @PostMapping
     public Book addBook(@RequestBody CreateBookDTO dto) {

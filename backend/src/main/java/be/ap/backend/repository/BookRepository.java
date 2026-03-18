@@ -26,4 +26,28 @@ public interface BookRepository extends JpaRepository<Book, Long> {
             "OR LOWER(a.name) LIKE LOWER(CONCAT('%', :query, '%')) " +
             "OR LOWER(g.name) LIKE LOWER(CONCAT('%', :query, '%'))")
     Page<Book> search(@Param("query") String query, Pageable pageable);
+
+    @Query("SELECT DISTINCT b FROM Book b " +
+            "LEFT JOIN b.author a " +
+            "LEFT JOIN b.genres g " +
+            "LEFT JOIN b.language l " +
+            "WHERE (:genres IS NULL OR g.id IN :genres) " +
+            "AND (:language IS NULL OR l.id = :language) " +
+            "AND (:fiction IS NULL OR b.fiction = :fiction) " +
+            "AND (:authorId IS NULL OR a.id = :authorId) " +
+            "AND (:pagesMin IS NULL OR b.pages >= :pagesMin) " +
+            "AND (:pagesMax IS NULL OR b.pages <= :pagesMax) " +
+            "AND (:ageMin IS NULL OR b.ageStart >= :ageMin) " +
+            "AND (:ageMax IS NULL OR b.ageEnd <= :ageMax) ")
+            
+    Page<Book> filter(
+            @Param("genres") List<Long> genres,
+            @Param("language") Long language,
+            @Param("fiction") Boolean fiction,
+            @Param("authorId") Long authorId,
+            @Param("ageMin") Integer ageMin,
+            @Param("ageMax") Integer ageMax,
+            @Param("pagesMin") Integer pagesMin,
+            @Param("pagesMax") Integer pagesMax,
+            Pageable pageable);
 }
