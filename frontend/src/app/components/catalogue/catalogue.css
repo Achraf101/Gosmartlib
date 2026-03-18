@@ -170,3 +170,10 @@ h1 {
   color: #999;
   font-size: 0.8rem;
 }
+
+.filter-link {
+  color: #7a1e2e;
+  font-size: 0.85rem;
+  text-decoration: underline;
+  cursor: pointer;
+}
