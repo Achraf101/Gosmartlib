@@ -19,7 +19,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import be.ap.backend.dto.BookGenre;
+import be.ap.backend.dto.GenreProjection;
 import be.ap.backend.dto.BookResultDTO;
 import be.ap.backend.repository.BookRepository;
 
@@ -39,7 +39,7 @@ public class BookServiceTest {
         Page<BookResultDTO> mockPage = new PageImpl<>(List.of(book));
         when(bookRepository.getAllBookResults(any())).thenReturn(mockPage);
 
-        BookGenre projection = mock(BookGenre.class);
+        GenreProjection projection = mock(GenreProjection.class);
         when(projection.getBookId()).thenReturn(1L);
         when(projection.getGenreId()).thenReturn(10L);
         when(projection.getGenreName()).thenReturn("Fantasy");
