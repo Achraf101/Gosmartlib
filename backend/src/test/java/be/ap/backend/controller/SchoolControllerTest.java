@@ -1,6 +1,6 @@
 package be.ap.backend.controller;
 
-import be.ap.backend.entity.School;
+import be.ap.backend.dto.SchoolDTO;
 import be.ap.backend.service.SchoolService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -12,6 +12,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -32,43 +33,57 @@ public class SchoolControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    private SchoolDTO buildDTO(Long id, String name) {
+        SchoolDTO dto = new SchoolDTO();
+        dto.setId(id);
+        dto.setName(name);
+        dto.setCampuses(List.of());
+        return dto;
+    }
+
     @Test
     void addSchool_shouldReturnCreatedSchool() throws Exception {
-        School input = new School();
-        input.setName("AP Hogeschool");
+        SchoolDTO input = buildDTO(null, "AP Hogeschool");
+        SchoolDTO saved = buildDTO(1L, "AP Hogeschool");
 
-        School saved = new School();
-        saved.setId(1L);
-        saved.setName("AP Hogeschool");
-
-        when(schoolService.addSchool(any(School.class))).thenReturn(saved);
+        // Service accepts SchoolDTO, not School
+        when(schoolService.addSchool(any(SchoolDTO.class))).thenReturn(saved);
 
         mockMvc.perform(post("/school")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(input)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1L))
+                .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.name").value("AP Hogeschool"));
     }
 
     @Test
+    void addSchool_shouldCallServiceWithCorrectBody() throws Exception {
+        SchoolDTO input = buildDTO(null, "Thomas More");
+        SchoolDTO saved = buildDTO(3L, "Thomas More");
+
+        when(schoolService.addSchool(any(SchoolDTO.class))).thenReturn(saved);
+
+        mockMvc.perform(post("/school")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(input)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(3))
+                .andExpect(jsonPath("$.name").value("Thomas More"));
+    }
+
+    @Test
     void getAll_shouldReturnListOfSchools() throws Exception {
-        School school1 = new School();
-        school1.setId(1L);
-        school1.setName("AP Hogeschool");
-
-        School savedSchool = new School();
-        savedSchool.setId(1L);
-        savedSchool.setName("Test School");
-
-        when(schoolService.getAll()).thenReturn(List.of(school1, savedSchool));
+        when(schoolService.getAll()).thenReturn(List.of(
+                buildDTO(1L, "AP Hogeschool"),
+                buildDTO(2L, "KU Leuven")));
 
         mockMvc.perform(get("/school"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
-                .andExpect(jsonPath("$[0].id").value(1L))
+                .andExpect(jsonPath("$[0].id").value(1))
                 .andExpect(jsonPath("$[0].name").value("AP Hogeschool"))
-                .andExpect(jsonPath("$[1].id").value(2L))
+                .andExpect(jsonPath("$[1].id").value(2))
                 .andExpect(jsonPath("$[1].name").value("KU Leuven"));
     }
 
@@ -82,20 +97,20 @@ public class SchoolControllerTest {
     }
 
     @Test
-    void addSchool_shouldCallServiceWithCorrectBody() throws Exception {
-        School input = new School();
-        input.setName("Thomas More");
+    void findById_shouldReturn200WhenFound() throws Exception {
+        when(schoolService.findById(1L)).thenReturn(Optional.of(buildDTO(1L, "AP Hogeschool")));
 
-        School saved = new School();
-        saved.setId(3L);
-        saved.setName("Thomas More");
-
-        when(schoolService.addSchool(any(School.class))).thenReturn(saved);
-
-        mockMvc.perform(post("/school")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(input)))
+        mockMvc.perform(get("/school/1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("Thomas More"));
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.name").value("AP Hogeschool"));
+    }
+
+    @Test
+    void findById_shouldReturn404WhenNotFound() throws Exception {
+        when(schoolService.findById(99L)).thenReturn(Optional.empty());
+
+        mockMvc.perform(get("/school/99"))
+                .andExpect(status().isNotFound());
     }
 }

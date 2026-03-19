@@ -13,6 +13,7 @@ import { School } from '../../models/school';
 import { CampusService } from '../../services/campus';
 import { Campus } from '../../models/campus';
 import { SchoolService } from '../../services/school';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-campus',
@@ -26,22 +27,26 @@ import { SchoolService } from '../../services/school';
     Button,
     CharCounterComponent,
     SelectModule,
+    RouterLink,
   ],
   templateUrl: './campus.html',
   styleUrl: './campus.css',
 })
 export class CampusComponent {
   constructor(
+    private route: ActivatedRoute,
     private campusService: CampusService,
     private schoolService: SchoolService,
     private messageService: MessageService,
-  ) {}
+  ) {
+    this.schoolId = Number(this.route.snapshot.paramMap.get('schoolId'));
+  }
+  schoolId: number;
+  school: School | null = null;
 
-  schools: School[] = [];
-
-  ngOnInit(): void {
-    this.schoolService.getAll().subscribe({
-      next: (schools) => (this.schools = schools),
+  ngOnInit() {
+    this.schoolService.getById(this.schoolId).subscribe({
+      next: (school) => (this.school = school),
       error: (err) => console.log(err),
     });
   }
@@ -49,8 +54,26 @@ export class CampusComponent {
   form = new FormGroup({
     name: new FormControl('', [Validators.required, Validators.maxLength(255)]),
     adres: new FormControl('', [Validators.maxLength(500)]),
-    borrowLimit: new FormControl<number | null>(null, [Validators.required, Validators.min(1)]),
-    schoolId: new FormControl<number | null>(null, [Validators.required]),
+    borrowLimit: new FormControl<number | null>(null, [
+      Validators.required,
+      Validators.min(1),
+      Validators.max(999),
+    ]),
+    borrowPeriod: new FormControl<number | null>(null, [
+      Validators.required,
+      Validators.min(1),
+      Validators.max(999),
+    ]),
+    extendPeriod: new FormControl<number | null>(null, [
+      Validators.required,
+      Validators.min(1),
+      Validators.max(999),
+    ]),
+    extendLimit: new FormControl<number | null>(null, [
+      Validators.required,
+      Validators.min(1),
+      Validators.max(10),
+    ]),
   });
 
   loading = false;
@@ -70,7 +93,10 @@ export class CampusComponent {
       adres: rawValue.adres?.trim() ?? '',
       // Only convert if there is a value; otherwise, keep it as null or undefined
       borrowLimit: Number(rawValue.borrowLimit),
-      schoolId: Number(rawValue.schoolId),
+      borrow_period: Number(rawValue.borrowPeriod),
+      extend_limit: Number(rawValue.extendLimit),
+      extend_period: Number(rawValue.extendPeriod),
+      schoolId: Number(this.schoolId),
     };
     console.log('Sending to API:', campus);
 
