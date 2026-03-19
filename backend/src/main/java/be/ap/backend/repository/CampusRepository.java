@@ -7,5 +7,4 @@ import be.ap.backend.entity.Campus;
 
 @Repository
 public interface CampusRepository extends JpaRepository<Campus, Long> {
-
 }
