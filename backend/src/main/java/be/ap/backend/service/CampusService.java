@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 import be.ap.backend.dto.CampusDTO;
 import be.ap.backend.entity.Campus;
 import be.ap.backend.entity.School;
+import be.ap.backend.exception.ArgumentsInvalidException;
+import be.ap.backend.exception.MissingArgumentsException;
 import be.ap.backend.repository.CampusRepository;
 import jakarta.persistence.EntityManager;
 
@@ -19,10 +21,28 @@ public class CampusService {
     private EntityManager entityManager;
 
     public CampusDTO createCampus(CampusDTO dto) {
+        if (dto.getSchoolId() == null) {
+            throw new MissingArgumentsException("School is verplicht!");
+        }
+        if (dto.getBorrowLimit() <= 0 || dto.getBorrowPeriod() <= 0 || dto.getExtendLimit() <= 0
+                || dto.getExtendPeriod() <= 0) {
+            throw new ArgumentsInvalidException("Getallen moeten minimaal 1 zijn!");
+        }
+        if (dto.getBorrowLimit() > 999 || dto.getBorrowPeriod() > 999 || dto.getExtendLimit() > 999) {
+            throw new ArgumentsInvalidException(
+                    "Uitleenlimiet, uitleenperiode en verlengperiode mogen niet groter zijn dan 999!");
+        }
+        if (dto.getExtendPeriod() > 10) {
+            throw new ArgumentsInvalidException("Maximaal aantal verlengingen mag niet meer zijn dan 10!");
+        }
+
         Campus campus = new Campus();
         campus.setName(dto.getName());
         campus.setAdres(dto.getAdres());
         campus.setBorrowLimit(dto.getBorrowLimit());
+        campus.setBorrowPeriod(dto.getBorrowPeriod());
+        campus.setExtendLimit(dto.getExtendLimit());
+        campus.setExtendPeriod(dto.getExtendPeriod());
         if (dto.getSchoolId() != null) {
             campus.setSchool(entityManager.find(School.class, dto.getSchoolId()));
         }

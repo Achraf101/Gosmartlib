@@ -30,12 +30,12 @@ export class BookService {
     return this.apiService.get<BookDetail>(`${this.endpoint}/${id}`);
   }
 
-  // gets similar books
+
   getRelated(id: number): Observable<BookCard[]> {
     return this.apiService.get<BookCard[]>(`${this.endpoint}/${id}/related`);
   }
 
-  // receives book detail with id, etc
+
   addBook(book: CreateBook): Observable<BookDetail> {
     return this.apiService.post<BookDetail>(this.endpoint, book);
   }
@@ -45,4 +45,18 @@ export class BookService {
     const params = new HttpParams().set('page', page.toString()).set('size', size.toString());
     return this.apiService.get<Page<BookResult>>(`${this.endpoint}/bookResult`, params);
   }
+  filter(filters: BookFilter, page: number = 0, size: number = 5): Observable<Page<BookResult>> {
+  let params = new HttpParams()
+    .set('page', page.toString())
+    .set('size', size.toString());
+
+  if (filters.genre) filters.genre.forEach(g => params = params.append('genres', g.toString()));
+  if (filters.language) params = params.set('language', filters.language.toString());
+  if (filters.fiction !== undefined && filters.fiction !== null) params = params.set('fiction', filters.fiction.toString());
+  if (filters.author) params = params.set('authorIds', filters.author.join(','));
+  if (filters.pages?.[0] != null) params = params.set('pagesMin', filters.pages[0].toString());
+  if (filters.pages?.[1] != null) params = params.set('pagesMax', filters.pages[1].toString());
+
+  return this.apiService.get<Page<BookResult>>(`${this.endpoint}/filter`, params);
+}
 }

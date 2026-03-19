@@ -6,7 +6,7 @@ import { DividerModule } from 'primeng/divider';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { PaginatorModule, PaginatorState } from 'primeng/paginator';
 import { BookService } from '../../services/book';
-import { BookResult } from '../../models/book';
+import { BookFilter, BookResult } from '../../models/book';
 import { NavBarComponent } from '../nav-bar/nav-bar';
 import { RouterLink } from '@angular/router';
 
@@ -32,6 +32,7 @@ export class CatalogueComponent implements OnInit {
   rows = 5;
   currentPage = 0;
   searchQuery = '';
+  activeFilters: BookFilter | null = null;
 
   readonly placeholder = '/assets/no-cover.svg';
 
@@ -44,15 +45,35 @@ export class CatalogueComponent implements OnInit {
     this.route.queryParams.subscribe((params) => {
       this.searchQuery = params['q'] || '';
       this.currentPage = 0;
+
+      const hasFilters = params['genres'] || params['language'] || params['fiction'] !== undefined
+        || params['authorIds'] || params['pagesMin'] || params['pagesMax'];
+
+      if (hasFilters) {
+        this.activeFilters = {
+          genre: params['genres'] ? params['genres'].split(',').map(Number) : undefined,
+          language: params['language'] ? Number(params['language']) : undefined,
+          fiction: params['fiction'] !== undefined ? params['fiction'] === 'true' : undefined,
+          author: params['authorIds'] ? params['authorIds'].split(',').map(Number) : undefined,
+          pages: (params['pagesMin'] || params['pagesMax']) ? [
+            params['pagesMin'] ? Number(params['pagesMin']) : 0,
+            params['pagesMax'] ? Number(params['pagesMax']) : 999999
+          ] : undefined,
+        };
+      } else {
+        this.activeFilters = null;
+      }
+
       this.loadBooks();
     });
   }
 
   loadBooks(): void {
-    this.loading = true;
-    const request = this.searchQuery.trim()
-      ? this.bookService.search(this.searchQuery.trim(), this.currentPage, this.rows)
-      : this.bookService.getAllBookResults(this.currentPage, this.rows);
+    const request = this.activeFilters
+      ? this.bookService.filter(this.activeFilters, this.currentPage, this.rows)
+      : this.searchQuery.trim()
+        ? this.bookService.search(this.searchQuery.trim(), this.currentPage, this.rows)
+        : this.bookService.getAllBookResults(this.currentPage, this.rows);
 
     request.subscribe({
       next: (page) => {
@@ -82,4 +103,7 @@ export class CatalogueComponent implements OnInit {
     this.rows = event.rows ?? 5;
     this.loadBooks();
   }
+  get activeQueryParams(): any {
+  return this.route.snapshot.queryParams;
+}
 }

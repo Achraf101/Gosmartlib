@@ -77,4 +77,23 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     WHERE b.id IN :bookIds
     """)
     List<GenreProjection> findGenresForBooks(@Param("bookIds") List<Long> bookIds);
+    @Query("SELECT DISTINCT b FROM Book b " +
+            "LEFT JOIN b.author a " +
+            "LEFT JOIN b.genres g " +
+            "LEFT JOIN b.language l " +
+            "WHERE (:genres IS NULL OR g.id IN :genres) " +
+            "AND (:language IS NULL OR l.id = :language) " +
+            "AND (:fiction IS NULL OR b.fiction = :fiction) " +
+            "AND (:authorIds IS NULL OR a.id IN :authorIds) " +
+            "AND (:pagesMin IS NULL OR b.pages >= :pagesMin) " +
+            "AND (:pagesMax IS NULL OR b.pages <= :pagesMax) ")
+            
+    Page<Book> filter(
+            @Param("genres") List<Long> genres,
+            @Param("language") Long language,
+            @Param("fiction") Boolean fiction,
+            @Param("authorIds") List<Long> authorIds,
+            @Param("pagesMin") Integer pagesMin,
+            @Param("pagesMax") Integer pagesMax,
+            Pageable pageable);
 }

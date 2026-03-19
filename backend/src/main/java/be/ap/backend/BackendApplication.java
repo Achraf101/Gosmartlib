@@ -115,7 +115,7 @@ public class BackendApplication implements CommandLineRunner {
     }
 
     private void seedSections() {
-        // Haal de eerste 5 boeken op uit de database
+        
         java.util.List<Book> books = bookRepository.findAll().stream().limit(5).toList();
         if (books.size() < 2) return;
 

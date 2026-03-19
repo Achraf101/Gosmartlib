@@ -5,7 +5,11 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
+import be.ap.backend.dto.CampusDTO;
+import be.ap.backend.dto.SchoolDTO;
 import be.ap.backend.entity.School;
+import be.ap.backend.exception.ArgumentsInvalidException;
+import be.ap.backend.exception.MissingArgumentsException;
 import be.ap.backend.repository.SchoolRepository;
 
 @Service
@@ -16,16 +20,59 @@ public class SchoolService {
         this.schoolRepository = schoolRepository;
     }
 
-    public School addSchool(School school) {
-        return schoolRepository.save(school);
+    public SchoolDTO addSchool(SchoolDTO dto) {
+        if (dto.getName() == null) {
+            throw new MissingArgumentsException("Schoolnaam is verplicht!");
+        }
+        if (dto.getAdres().length() > 500 || dto.getContact().length() > 500) {
+            throw new ArgumentsInvalidException("Adres en contact mogen niet langer zijn dan 500 tekens!");
+        }
+        if (dto.getDescription().length() > 1000) {
+            throw new ArgumentsInvalidException("Beschrijving mag niet langer zijn dan 1000 tekens!");
+        }
+
+        School saved = new School();
+        saved.setName(dto.getName());
+        saved.setAdres(dto.getAdres());
+        saved.setContact(dto.getContact());
+        saved.setDescription(dto.getDescription());
+
+        return toDTO(schoolRepository.save(saved));
     }
 
-    public List<School> getAll() {
-        return schoolRepository.findAll();
+    public List<SchoolDTO> getAll() {
+        return schoolRepository.findAll()
+                .stream()
+                .map(this::toDTO)
+                .collect(java.util.stream.Collectors.toList());
     }
 
-    public Optional<School> findById(Long id) {
-        return schoolRepository.findById(id);
+    public Optional<SchoolDTO> findById(Long id) {
+        return schoolRepository.findById(id)
+                .map(this::toDTO);
     }
 
+    private SchoolDTO toDTO(School school) {
+        SchoolDTO dto = new SchoolDTO();
+        dto.setId(school.getId());
+        dto.setName(school.getName());
+        dto.setAdres(school.getAdres());
+        dto.setContact(school.getContact());
+        dto.setDescription(school.getDescription());
+
+        List<CampusDTO> campusDTOs = school.getCampuses().stream()
+                .map(campus -> {
+                    CampusDTO c = new CampusDTO();
+                    c.setId(campus.getId());
+                    c.setName(campus.getName());
+                    c.setAdres(campus.getAdres());
+                    c.setBorrowLimit(campus.getBorrowLimit());
+                    c.setSchoolId(school.getId());
+                    return c;
+                })
+                .collect(java.util.stream.Collectors.toList());
+
+        dto.setCampuses(campusDTOs);
+        return dto;
+    }
 }

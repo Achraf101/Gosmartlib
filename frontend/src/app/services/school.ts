@@ -19,4 +19,8 @@ export class SchoolService {
   getAll(): Observable<School[]> {
     return this.apiService.get<School[]>(this.endpoint);
   }
+
+  getById(id: number): Observable<School> {
+    return this.apiService.get<School>(`${this.endpoint}/${id}`);
+  }
 }
