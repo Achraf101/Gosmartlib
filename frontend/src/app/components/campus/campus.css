@@ -22,14 +22,6 @@ input {
   position: relative;
 }
 
-/* Labels */
-label {
-  font-weight: 600;
-  font-size: 1rem;
-  color: #334155;
-  letter-spacing: 0.3px;
-}
-
 /* Textareas */
 textarea {
   font-size: 1rem;
