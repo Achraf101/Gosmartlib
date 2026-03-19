@@ -1,6 +1,7 @@
 package be.ap.backend.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -14,11 +15,13 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import be.ap.backend.dto.SchoolDTO;
 import be.ap.backend.entity.School;
 import be.ap.backend.repository.SchoolRepository;
 
 @ExtendWith(MockitoExtension.class)
 public class SchoolServiceTest {
+
     @Mock
     private SchoolRepository schoolRepository;
 
@@ -30,55 +33,65 @@ public class SchoolServiceTest {
         schoolService = new SchoolService(schoolRepository);
     }
 
+    // Helper to build a valid SchoolDTO
+    private SchoolDTO buildValidDTO(String name) {
+        SchoolDTO dto = new SchoolDTO();
+        dto.setName(name);
+        dto.setAdres("Ellermanstraat 33");
+        dto.setContact("info@ap.be");
+        dto.setDescription("Een hogeschool in Antwerpen.");
+        return dto;
+    }
+
+    // Helper to build a School entity (for mock returns)
+    private School buildSchoolEntity(Long id, String name) {
+        School school = new School();
+        school.setId(id);
+        school.setName(name);
+        school.setAdres("Ellermanstraat 33");
+        school.setContact("info@ap.be");
+        school.setDescription("Een hogeschool in Antwerpen.");
+        school.setCampuses(List.of());
+        return school;
+    }
+
     @Test
     void addSchool_shouldSaveAndReturnSchool() {
-        // Arrange
-        School school = new School();
-        school.setId(1L);
-        school.setName("AP hogeschool");
+        SchoolDTO dto = buildValidDTO("AP hogeschool");
+        School savedEntity = buildSchoolEntity(1L, "AP hogeschool");
 
-        when(schoolRepository.save(school)).thenReturn(school);
+        // The service builds a new School internally, so match with any(School.class)
+        when(schoolRepository.save(any(School.class))).thenReturn(savedEntity);
 
-        // Act
-        School result = schoolService.addSchool(school);
+        SchoolDTO result = schoolService.addSchool(dto);
 
-        // Assert
         assertEquals("AP hogeschool", result.getName());
-        verify(schoolRepository).save(school);
+        verify(schoolRepository).save(any(School.class));
     }
 
     @Test
     void getAll_shouldReturnAllSchools() {
-        // Arrange
-        School school1 = new School();
-        school1.setName("School A");
-
-        School school2 = new School();
-        school2.setName("School B");
+        School school1 = buildSchoolEntity(1L, "School A");
+        School school2 = buildSchoolEntity(2L, "School B");
 
         when(schoolRepository.findAll()).thenReturn(List.of(school1, school2));
 
-        // Act
-        List<School> result = schoolService.getAll();
+        List<SchoolDTO> result = schoolService.getAll();
 
-        // Assert
         assertEquals(2, result.size());
+        assertEquals("School A", result.get(0).getName());
+        assertEquals("School B", result.get(1).getName());
         verify(schoolRepository).findAll();
     }
 
     @Test
     void findById_shouldReturnSchoolWhenExists() {
-        // Arrange
-        School school = new School();
-        school.setId(1L);
-        school.setName("AP hogeschool");
+        School school = buildSchoolEntity(1L, "AP hogeschool");
 
         when(schoolRepository.findById(1L)).thenReturn(Optional.of(school));
 
-        // Act
-        Optional<School> result = schoolService.findById(1L);
+        Optional<SchoolDTO> result = schoolService.findById(1L);
 
-        // Assert
         assertEquals(true, result.isPresent());
         assertEquals("AP hogeschool", result.get().getName());
         verify(schoolRepository).findById(1L);
@@ -86,13 +99,10 @@ public class SchoolServiceTest {
 
     @Test
     void findById_shouldReturnEmptyWhenNotFound() {
-        // Arrange
         when(schoolRepository.findById(1L)).thenReturn(Optional.empty());
 
-        // Act
-        Optional<School> result = schoolService.findById(1L);
+        Optional<SchoolDTO> result = schoolService.findById(1L);
 
-        // Assert
         assertEquals(true, result.isEmpty());
         verify(schoolRepository).findById(1L);
     }
