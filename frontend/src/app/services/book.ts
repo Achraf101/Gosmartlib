@@ -39,4 +39,10 @@ export class BookService {
   addBook(book: CreateBook): Observable<BookDetail> {
     return this.apiService.post<BookDetail>(this.endpoint, book);
   }
+
+  // get all bookResults
+  getAllBookResults(page: number = 0, size: number = 5): Observable<Page<BookResult>> {
+    const params = new HttpParams().set('page', page.toString()).set('size', size.toString());
+    return this.apiService.get<Page<BookResult>>(`${this.endpoint}/bookResult`, params);
+  }
 }

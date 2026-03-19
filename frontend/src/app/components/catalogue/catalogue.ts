@@ -52,7 +52,7 @@ export class CatalogueComponent implements OnInit {
     this.loading = true;
     const request = this.searchQuery.trim()
       ? this.bookService.search(this.searchQuery.trim(), this.currentPage, this.rows)
-      : this.bookService.getAll(this.currentPage, this.rows);
+      : this.bookService.getAllBookResults(this.currentPage, this.rows);
 
     request.subscribe({
       next: (page) => {
