@@ -9,6 +9,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import be.ap.backend.dto.BookCardDTO;
+import be.ap.backend.dto.GenreProjection;
+import be.ap.backend.dto.BookResultDTO;
 import be.ap.backend.entity.Book;
 
 public interface BookRepository extends JpaRepository<Book, Long> {
@@ -43,4 +45,36 @@ public interface BookRepository extends JpaRepository<Book, Long> {
             "OR LOWER(g.name) LIKE LOWER(CONCAT('%', :query, '%'))" +
             "OR b.isbn LIKE CONCAT('%', :query, '%')")
     Page<Book> search(@Param("query") String query, Pageable pageable);
+
+    @Query(value = """
+    SELECT new be.ap.backend.dto.BookResultDTO(
+        b.id,
+        b.title,
+        b.cover,
+        b.author.name,
+        b.bookType,
+        b.seriesId,
+        b.seriesCount,
+        b.language,
+        b.published,
+        b.description,
+        b.fiction,
+        b.ageStart,
+        b.ageEnd,
+        b.pages,
+        b.rating,
+        b.ratingCount
+    )
+    FROM Book b
+    ORDER BY b.id ASC
+    """)
+    Page<BookResultDTO> getAllBookResults(Pageable pageable);
+
+    @Query("""
+    SELECT b.id, g.id, g.name
+    FROM Book b
+    JOIN b.genres g
+    WHERE b.id IN :bookIds
+    """)
+    List<GenreProjection> findGenresForBooks(@Param("bookIds") List<Long> bookIds);
 }
