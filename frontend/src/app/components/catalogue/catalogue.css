@@ -202,6 +202,13 @@ h1 {
   background-color: var(--p-surface-200);
 }
 
+.filter-link {
+  color: #7a1e2e;
+  font-size: 0.85rem;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 @media (width> 800px) {
   .show-mobile {
     visibility: hidden;

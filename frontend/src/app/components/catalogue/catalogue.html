@@ -15,6 +15,7 @@
         <i class="pi pi-search"></i>
       </button>
     </div>
+    <a [routerLink]="['/catalogus/filter']" [queryParams]="activeQueryParams" class="filter-link">Zoeken met filters</a>
     @if (searchQuery) {
       <button type="button" class="clear-btn" (click)="clearSearch()">Wis zoekopdracht</button>
     }

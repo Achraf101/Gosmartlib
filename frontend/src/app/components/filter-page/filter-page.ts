@@ -1,0 +1,145 @@
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router, ActivatedRoute } from '@angular/router';
+import { NavBarComponent } from '../nav-bar/nav-bar';
+import { ApiService } from '../../services/api';
+import { Author } from '../../models/author';
+import { Genre } from '../../models/genre';
+import { Language } from '../../models/language';
+import { AutoCompleteModule, AutoCompleteCompleteEvent } from 'primeng/autocomplete';
+import { SelectModule } from 'primeng/select';
+import { InputNumberModule } from 'primeng/inputnumber';
+
+@Component({
+  selector: 'app-filter-page',
+  standalone: true,
+  imports: [CommonModule, FormsModule, NavBarComponent, AutoCompleteModule,SelectModule,InputNumberModule],
+  templateUrl: './filter-page.html',
+  styleUrl: './filter-page.css',
+})
+export class FilterPage implements OnInit {
+  genres: Genre[] = [];
+  languages: Language[] = [];
+
+  selectedGenres: number[] = [];
+  selectedLanguage: number | null = null;
+  selectedFiction: boolean | null = null;
+  selectedAuthors: Author[] = [];
+  authorSuggestions: Author[] = [];
+  selectedClib: string[] = [];
+  pagesMin: number | null = null;
+  pagesMax: number | null = null;
+  errorPagesMin: string | null = null;
+ errorPagesMax: string | null = null;
+
+  constructor(
+    private apiService: ApiService,
+    private router: Router,
+    private route: ActivatedRoute,
+  ) {}
+
+  ngOnInit(): void {
+    this.apiService.get<Genre[]>('genre').subscribe(g => this.genres = g);
+    this.apiService.get<Language[]>('language').subscribe(l => this.languages = l);
+
+    this.route.queryParams.subscribe(params => {
+      if (params['genres']) {
+  this.selectedGenres = params['genres'].split(',').map(Number);
+}
+      if (params['language']) this.selectedLanguage = Number(params['language']);
+      if (params['fiction'] !== undefined) this.selectedFiction = params['fiction'] === 'true';
+      if (params['authorIds']) {
+        this.selectedAuthors = [];
+        params['authorIds'].split(',').forEach((id: string) => {
+        this.apiService.get<Author>(`author/${id}`).subscribe(a => this.selectedAuthors.push(a));
+  });
+}
+      if (params['clib']) {
+  this.selectedClib = params['clib'].split(',');
+}
+      if (params['pagesMin']) this.pagesMin = Number(params['pagesMin']);
+      if (params['pagesMax']) this.pagesMax = Number(params['pagesMax']);
+    });
+  }
+
+  searchAuthors(event: AutoCompleteCompleteEvent): void {
+    const query = event.query.trim();
+    if (!query) {
+      this.authorSuggestions = [];
+      return;
+    }
+    this.apiService.get<Author[]>(`author/search/${encodeURIComponent(query)}`).subscribe(
+      a => this.authorSuggestions = a
+    );
+  }
+
+  toggleGenre(id: number): void {
+    const index = this.selectedGenres.indexOf(id);
+    if (index > -1) {
+      this.selectedGenres.splice(index, 1);
+    } else {
+      this.selectedGenres.push(id);
+    }
+  }
+
+  isGenreSelected(id: number): boolean {
+    return this.selectedGenres.includes(id);
+  }
+
+  toggleClib(level: string): void {
+    const index = this.selectedClib.indexOf(level);
+    if (index > -1) {
+      this.selectedClib.splice(index, 1);
+    } else {
+      this.selectedClib.push(level);
+    }
+  }
+
+  isClibSelected(level: string): boolean {
+    return this.selectedClib.includes(level);
+  }
+
+validate(): boolean {
+  this.errorPagesMin = null;
+  this.errorPagesMax = null;
+
+  if (this.pagesMin !== null && this.pagesMin < 0) {
+    this.errorPagesMin = 'Pagina\'s kan niet negatief zijn.';
+    return false;
+  }
+  if (this.pagesMax !== null && this.pagesMax < 0) {
+    this.errorPagesMax = 'Pagina\'s kan niet negatief zijn.';
+    return false;
+  }
+  if (this.pagesMin !== null && this.pagesMax !== null && this.pagesMin > this.pagesMax) {
+    this.errorPagesMin = 'Min moet kleiner zijn dan max.';
+    return false;
+  }
+  return true;
+}
+
+  onSearch(): void {
+    if (!this.validate()) return;
+    const params: any = {};
+    if (this.selectedGenres.length > 0) params['genres'] = this.selectedGenres.join(',');
+    if (this.selectedLanguage) params['language'] = this.selectedLanguage;
+    if (this.selectedFiction !== null) params['fiction'] = this.selectedFiction;
+    if (this.selectedAuthors.length > 0) params['authorIds'] = this.selectedAuthors.map(a => a.id).join(',');
+    if (this.selectedClib.length > 0) params['clib'] = this.selectedClib.join(',');
+    if (this.pagesMin !== null) params['pagesMin'] = this.pagesMin;
+    if (this.pagesMax !== null) params['pagesMax'] = this.pagesMax;
+
+    this.router.navigate(['/catalogus'], { queryParams: params });
+  }
+
+  clearFilters(): void {
+    this.selectedGenres = [];
+    this.selectedLanguage = null;
+    this.selectedFiction = null;
+    this.selectedAuthors = [];
+    this.selectedClib = [];
+    this.pagesMin = null;
+    this.pagesMax = null;
+  }
+}

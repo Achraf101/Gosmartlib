@@ -83,7 +83,7 @@ public class Book {
     private byte ageEnd;
 
     @Column(nullable = true, name = "pages")
-    private int pages;
+    private Integer pages;
 
     @Column(name = "rating")
     private int rating;
@@ -237,11 +237,11 @@ public class Book {
         this.ageEnd = ageEnd;
     }
 
-    public int getPages() {
+    public Integer getPages() {
         return pages;
     }
 
-    public void setPages(int pages) {
+    public void setPages(Integer pages) {
         this.pages = pages;
     }
 
