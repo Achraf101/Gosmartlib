@@ -28,10 +28,15 @@ public class AuthorController {
         return authorRepository.findBy();
     }
 
+    @GetMapping("/{id}")
+    public Author getById(@PathVariable Long id) {
+    return authorRepository.findById(id).orElse(null);
+}
+
     @GetMapping("search/{query}")
     public List<Author> searchAuthor(@PathVariable String query) {
-        return authorRepository.findByName(query);
-    }
+    return authorRepository.searchByName(query);
+}
 
     @PostMapping
     public Author addAuthor(@RequestBody Author author) {

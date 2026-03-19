@@ -2,9 +2,11 @@ package be.ap.backend.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -20,6 +22,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.web.server.ResponseStatusException;
 
 import be.ap.backend.dto.BookCardDTO;
 import be.ap.backend.dto.CreateBookDTO;
@@ -177,5 +180,106 @@ public class BookControllerTest {
         // Assertions
         assertNotNull(result);
         assertTrue(result.isEmpty(), "Expected empty list when no related books exist");
+    }
+
+    @Test
+    void givenValidParams_whenFilter_thenReturnBooks() {
+       
+        Book book = new Book();
+        book.setTitle("De brief voor de koning");
+        Page<Book> mockPage = new PageImpl<>(List.of(book));
+        when(repository.filter(any(), any(), any(), any(), any(), any(), any(Pageable.class)))
+            .thenReturn(mockPage);
+ 
+       
+        Page<Book> result = controller.filter(null, null, null, null, 100, 500, 0, 5);
+ 
+       
+        assertNotNull(result);
+        assertEquals(1, result.getTotalElements());
+        verify(repository, times(1)).filter(any(), any(), any(), any(), any(), any(), any(Pageable.class));
+    }
+ 
+    @Test
+    void givenPagesMinGreaterThanMax_whenFilter_thenThrow400() {
+        
+        Integer pagesMin = 500;
+        Integer pagesMax = 100;
+ 
+        
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
+            controller.filter(null, null, null, null, pagesMin, pagesMax, 0, 5);
+        });
+        assertEquals(400, exception.getStatusCode().value());
+    }
+ 
+    @Test
+    void givenNoParams_whenFilter_thenReturnAllBooks() {
+        
+        Page<Book> mockPage = new PageImpl<>(List.of(new Book(), new Book(), new Book()));
+        when(repository.filter(isNull(), isNull(), isNull(), isNull(), isNull(), isNull(), any(Pageable.class)))
+            .thenReturn(mockPage);
+ 
+       
+        Page<Book> result = controller.filter(null, null, null, null, null, null, 0, 5);
+ 
+        
+        assertEquals(3, result.getTotalElements());
+        verify(repository, times(1)).filter(isNull(), isNull(), isNull(), isNull(), isNull(), isNull(), any(Pageable.class));
+    }
+ 
+    @Test
+    void givenFictionTrue_whenFilter_thenReturnOnlyFictionBooks() {
+        
+        Book book = new Book();
+        book.setTitle("De brief voor de koning");
+        book.setFiction(true);
+        Page<Book> mockPage = new PageImpl<>(List.of(book));
+        when(repository.filter(any(), any(), eq(true), any(), any(), any(), any(Pageable.class)))
+            .thenReturn(mockPage);
+ 
+       
+        Page<Book> result = controller.filter(null, null, true, null, null, null, 0, 5);
+ 
+        
+        assertEquals(1, result.getTotalElements());
+        assertTrue(result.getContent().get(0).getFiction());
+        verify(repository, times(1)).filter(any(), any(), eq(true), any(), any(), any(), any(Pageable.class));
+    }
+ 
+    @Test
+    void givenGenreFilter_whenFilter_thenReturnCorrectBooks() {
+        
+        Book book = new Book();
+        book.setTitle("Harry Potter en de vuurbeker");
+        Page<Book> mockPage = new PageImpl<>(List.of(book));
+        when(repository.filter(eq(List.of(1L)), any(), any(), any(), any(), any(), any(Pageable.class)))
+            .thenReturn(mockPage);
+ 
+        
+        Page<Book> result = controller.filter(List.of(1L), null, null, null, null, null, 0, 5);
+ 
+        
+        assertEquals(1, result.getTotalElements());
+        assertEquals("Harry Potter en de vuurbeker", result.getContent().get(0).getTitle());
+        verify(repository, times(1)).filter(eq(List.of(1L)), any(), any(), any(), any(), any(), any(Pageable.class));
+    }
+ 
+    @Test
+    void givenAuthorFilter_whenFilter_thenReturnCorrectBooks() {
+        
+        Book book = new Book();
+        book.setTitle("Kruistocht in Spijkerbroek");
+        Page<Book> mockPage = new PageImpl<>(List.of(book));
+        when(repository.filter(any(), any(), any(), eq(List.of(2L)), any(), any(), any(Pageable.class)))
+            .thenReturn(mockPage);
+ 
+     
+        Page<Book> result = controller.filter(null, null, null, List.of(2L), null, null, 0, 5);
+ 
+       
+        assertEquals(1, result.getTotalElements());
+        assertEquals("Kruistocht in Spijkerbroek", result.getContent().get(0).getTitle());
+        verify(repository, times(1)).filter(any(), any(), any(), eq(List.of(2L)), any(), any(), any(Pageable.class));
     }
 }

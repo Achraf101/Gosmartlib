@@ -1,6 +1,5 @@
 package be.ap.backend.controller;
 
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -8,6 +7,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.validation.annotation.Validated;
+import jakarta.validation.constraints.Min;
 
 import be.ap.backend.dto.BookCardDTO;
 import be.ap.backend.dto.CreateBookDTO;
@@ -20,7 +22,9 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 
+@Validated
 @RestController
 @RequestMapping("book")
 public class BookController {
@@ -61,6 +65,25 @@ public class BookController {
     public List<BookCardDTO> getRelated(@PathVariable Long id) {
         return bookRepository.findRelated(id);
     }
+
+    @GetMapping("/filter")
+    public Page<Book> filter(
+        @RequestParam(required = false) List<Long> genres,
+        @RequestParam(required = false) Long language,
+        @RequestParam(required = false) Boolean fiction,
+        @RequestParam(required = false) List<Long> authorIds,
+        @RequestParam(required = false) @Min(0) Integer pagesMin,
+        @RequestParam(required = false) @Min(0) Integer pagesMax,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "5") int size) {
+
+            if (pagesMin != null && pagesMax != null && pagesMin > pagesMax) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "pagesMin moet kleiner zijn dan pagesMax");
+                                                                            }
+
+         Pageable pageable = PageRequest.of(page, size);
+        return bookRepository.filter(genres, language, fiction, authorIds, pagesMin, pagesMax, pageable);
+}
 
     @PostMapping
     public Book addBook(@RequestBody CreateBookDTO dto) {
