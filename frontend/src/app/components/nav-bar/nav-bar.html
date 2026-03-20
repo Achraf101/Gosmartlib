@@ -6,10 +6,15 @@
     <button class="icon-btn">
       <i class="pi pi-bell" style="font-size: 1.2rem"></i>
     </button>
-    <div class="user-info">
-      <i class="pi pi-user"></i>
-      <span>John Smith</span>
-    </div>
+    @if (authService.currentUser$ | async; as user) {
+      <div class="user-info">
+        <i class="pi pi-user"></i>
+        <span>{{ user.username }}</span>
+      </div>
+      <button class="icon-btn" (click)="logout()" title="Uitloggen">
+        <i class="pi pi-sign-out" style="font-size: 1.2rem"></i>
+      </button>
+    }
   </div>
 </header>
 
