@@ -12,7 +12,6 @@ services:
       - certbot:/etc/letsencrypt
       - certbot:/var/www/certbot
 
-
   certbot:
     image: certbot/certbot
     container_name: certbot
@@ -20,7 +19,6 @@ services:
       - certbot:/etc/letsencrypt
       - certbot:/var/www/certbot
     command: certonly --webroot -w /var/www/certbot --keep-until-expiring --email ${CERTBOT_EMAIL} -d gosmartlib.tech --agree-tos
-
 
   db:
     image: mysql:9.6.0
@@ -36,7 +34,6 @@ services:
     expose:
       - 3306
 
-
   backend:
     depends_on:
       - db
@@ -50,10 +47,10 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       DB_UPDATE: ${DB_UPDATE}
       DB_URL: ${DB_URL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
     build:
       context: ./backend
       dockerfile: Dockerfile
-
 
 volumes:
   certbot:

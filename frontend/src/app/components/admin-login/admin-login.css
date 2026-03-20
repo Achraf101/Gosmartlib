@@ -1,0 +1,48 @@
+.login-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: #f5f5f0;
+  background-image: url('/assets/book-bg.jpg');
+  background-repeat: repeat;
+}
+
+.login-card {
+  width: 90%;
+  max-width: 400px;
+}
+
+.login-header {
+  display: flex;
+  justify-content: center;
+  padding: 1.5rem 1.5rem 0;
+}
+
+.login-logo {
+  height: 50px;
+}
+
+.login-title {
+  text-align: center;
+  color: #7a1e2e;
+  margin: 0 0 1.5rem;
+  font-size: 1.4rem;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* if this is not present the input field is smaller than it's supposed to be */
+::ng-deep .p-password input {
+  width: 100%;
+}
+
+label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #333;
+}

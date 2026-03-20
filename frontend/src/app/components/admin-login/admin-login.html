@@ -1,0 +1,47 @@
+<div class="login-container">
+  <p-card class="login-card">
+    <ng-template pTemplate="header">
+      <div class="login-header">
+        <img src="assets/logo.png" alt="GO! Antwerpen" class="login-logo" />
+      </div>
+    </ng-template>
+
+    <h2 class="login-title">Inloggen</h2>
+
+    @if (errorMessage) {
+      <p-message severity="error" class="w-full mb-3">{{ errorMessage }}</p-message>
+    }
+
+    <form (ngSubmit)="onSubmit()" class="login-form">
+      <label for="username">Gebruikersnaam</label>
+      <input
+        id="username"
+        pInputText
+        type="text"
+        [(ngModel)]="username"
+        name="username"
+        class="w-full"
+        autocomplete="username"
+      />
+
+      <label for="password">Wachtwoord</label>
+
+      <p-password
+        id="password"
+        name="password"
+        [(ngModel)]="password"
+        [toggleMask]="true"
+        [feedback]="false"
+        autocomplete="current-password"
+      />
+
+      <p-button
+        type="submit"
+        label="Inloggen"
+        [loading]="loading"
+        class="w-full mt-2"
+        [style]="{ 'background-color': '#7a1e2e', 'border-color': '#7a1e2e' }"
+      />
+    </form>
+  </p-card>
+</div>

@@ -1,9 +1,11 @@
 package be.ap.backend;
 
 import java.time.Year;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import be.ap.backend.entity.Author;
 import be.ap.backend.entity.Book;
@@ -13,6 +15,7 @@ import be.ap.backend.entity.Hello;
 import be.ap.backend.entity.Language;
 import be.ap.backend.entity.Section;
 import be.ap.backend.entity.SectionBook;
+import be.ap.backend.entity.User;
 import be.ap.backend.repository.AuthorRepository;
 import be.ap.backend.repository.BookRepository;
 import be.ap.backend.repository.BookTypeRepository;
@@ -21,9 +24,13 @@ import be.ap.backend.repository.HelloRepository;
 import be.ap.backend.repository.LanguageRepository;
 import be.ap.backend.repository.SectionBookRepository;
 import be.ap.backend.repository.SectionRepository;
+import be.ap.backend.repository.UserRepository;
 
 @SpringBootApplication
 public class BackendApplication implements CommandLineRunner {
+
+    @Value("${ADMIN_PASSWORD}")
+    private String adminPassword;
 
     private final GenreRepository genreRepository;
     private final HelloRepository helloRepository;
@@ -33,11 +40,14 @@ public class BackendApplication implements CommandLineRunner {
     private final AuthorRepository authorRepository;
     private final SectionRepository sectionRepository;
     private final SectionBookRepository sectionBookRepository;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public BackendApplication(HelloRepository helloRepository, LanguageRepository languageRepository,
             BookTypeRepository bookTypeRepository, GenreRepository genreRepository,
             BookRepository bookRepository, AuthorRepository authorRepository,
-            SectionRepository sectionRepository, SectionBookRepository sectionBookRepository) {
+            SectionRepository sectionRepository, SectionBookRepository sectionBookRepository,
+            UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.helloRepository = helloRepository;
         this.languageRepository = languageRepository;
         this.bookTypeRepository = bookTypeRepository;
@@ -46,6 +56,8 @@ public class BackendApplication implements CommandLineRunner {
         this.authorRepository = authorRepository;
         this.sectionRepository = sectionRepository;
         this.sectionBookRepository = sectionBookRepository;
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public static void main(String[] args) {
@@ -54,6 +66,10 @@ public class BackendApplication implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
+
+        if (userRepository.count() == 0) {
+            userRepository.save(new User("admin", passwordEncoder.encode(adminPassword)));
+        }
 
         if (bookRepository.count() > 0) {
             if (sectionRepository.count() == 0) {
