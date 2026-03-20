@@ -49,6 +49,7 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       DB_UPDATE: ${DB_UPDATE}
       DB_URL: ${DB_URL}
+      UPLOAD_DIR: ${UPLOAD_DIR}
     build:
       context: ./backend
       dockerfile: Dockerfile
