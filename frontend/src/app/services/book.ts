@@ -40,6 +40,11 @@ export class BookService {
     return this.apiService.post<BookDetail>(this.endpoint, book);
   }
 
+  // get all bookResults
+  getAllBookResults(page: number = 0, size: number = 5): Observable<Page<BookResult>> {
+    const params = new HttpParams().set('page', page.toString()).set('size', size.toString());
+    return this.apiService.get<Page<BookResult>>(`${this.endpoint}/bookResult`, params);
+  }
   filter(filters: BookFilter, page: number = 0, size: number = 5): Observable<Page<BookResult>> {
   let params = new HttpParams()
     .set('page', page.toString())

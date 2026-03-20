@@ -1,12 +1,19 @@
 package be.ap.backend.service;
 
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import be.ap.backend.dto.GenreProjection;
+import be.ap.backend.dto.BookResultDTO;
 import be.ap.backend.dto.CreateBookDTO;
+import be.ap.backend.dto.GenreDTO;
 import be.ap.backend.entity.Author;
 import be.ap.backend.entity.Publisher;
 import be.ap.backend.entity.Book;
@@ -16,6 +23,10 @@ import be.ap.backend.entity.Genre;
 import be.ap.backend.entity.Language;
 import be.ap.backend.repository.BookRepository;
 import jakarta.persistence.EntityManager;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 
 @Service
 public class BookService {
@@ -87,4 +98,30 @@ public class BookService {
         return bookRepository.save(book);
     }
 
+    public Page<BookResultDTO> getAllBookResults(Pageable pageable) {
+
+        Page<BookResultDTO> page = bookRepository.getAllBookResults(pageable);
+
+        List<Long> bookIds = page.getContent().stream()
+                .map(BookResultDTO::getId)
+                .toList();
+
+        if (bookIds.isEmpty()) {
+            return page;
+        }
+
+        List<GenreProjection> results = bookRepository.findGenresForBooks(bookIds);
+
+        Map<Long, Set<GenreDTO>> genreMap = new HashMap<>();
+        for (GenreProjection row : results) {
+            genreMap.computeIfAbsent(row.getBookId(), k -> new HashSet<>())
+                .add(new GenreDTO(row.getGenreId(), row.getGenreName()));
+        }
+
+        page.getContent().forEach(dto ->
+                dto.setGenres(genreMap.getOrDefault(dto.getId(), Set.of()))
+        );
+
+        return page;
+    }
 }

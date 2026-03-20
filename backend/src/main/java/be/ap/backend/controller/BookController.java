@@ -12,6 +12,7 @@ import org.springframework.validation.annotation.Validated;
 import jakarta.validation.constraints.Min;
 
 import be.ap.backend.dto.BookCardDTO;
+import be.ap.backend.dto.BookResultDTO;
 import be.ap.backend.dto.CreateBookDTO;
 import be.ap.backend.entity.Book;
 import be.ap.backend.repository.BookRepository;
@@ -89,4 +90,15 @@ public class BookController {
     public Book addBook(@RequestBody CreateBookDTO dto) {
         return bookService.saveBook(dto);
     }
+
+
+    @GetMapping("/bookResult")
+    public Page<BookResultDTO> getBooks(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size) {
+
+        Pageable pageable = PageRequest.of(page, size);
+        return bookService.getAllBookResults(pageable);
+    }
+    
 }

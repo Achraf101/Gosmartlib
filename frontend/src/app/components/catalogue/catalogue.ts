@@ -69,13 +69,11 @@ export class CatalogueComponent implements OnInit {
   }
 
   loadBooks(): void {
-    this.loading = true;
-
     const request = this.activeFilters
       ? this.bookService.filter(this.activeFilters, this.currentPage, this.rows)
       : this.searchQuery.trim()
         ? this.bookService.search(this.searchQuery.trim(), this.currentPage, this.rows)
-        : this.bookService.getAll(this.currentPage, this.rows);
+        : this.bookService.getAllBookResults(this.currentPage, this.rows);
 
     request.subscribe({
       next: (page) => {

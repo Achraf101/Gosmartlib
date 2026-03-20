@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -20,11 +21,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.web.server.ResponseStatusException;
 
 import be.ap.backend.dto.BookCardDTO;
+import be.ap.backend.dto.BookResultDTO;
 import be.ap.backend.dto.CreateBookDTO;
 import be.ap.backend.entity.Book;
 import be.ap.backend.repository.BookRepository;
@@ -183,6 +186,39 @@ public class BookControllerTest {
     }
 
     @Test
+    void getBooks_defaultParams_returnsPage() {
+        Page<BookResultDTO> mockPage = new PageImpl<>(List.of(mock(BookResultDTO.class)));
+        when(service.getAllBookResults(PageRequest.of(0, 5))).thenReturn(mockPage);
+
+        Page<BookResultDTO> result = controller.getBooks(0, 5);
+
+        assertNotNull(result);
+        assertEquals(1, result.getContent().size());
+    }
+
+    @Test
+    void getBooks_customParams_passesCorrectPageable() {
+        Page<BookResultDTO> mockPage = new PageImpl<>(List.of());
+        when(service.getAllBookResults(PageRequest.of(2, 10))).thenReturn(mockPage);
+
+        Page<BookResultDTO> result = controller.getBooks(2, 10);
+
+        assertEquals(0, result.getContent().size());
+        verify(service).getAllBookResults(PageRequest.of(2, 10));
+    }
+
+    @Test
+    void getBooks_firstPage_returnsCorrectMetadata() {
+        List<BookResultDTO> books = List.of(mock(BookResultDTO.class), mock(BookResultDTO.class));
+        Page<BookResultDTO> mockPage = new PageImpl<>(books, PageRequest.of(0, 5), 11);
+        when(service.getAllBookResults(PageRequest.of(0, 5))).thenReturn(mockPage);
+
+        Page<BookResultDTO> result = controller.getBooks(0, 5);
+
+        assertEquals(11, result.getTotalElements());
+        assertEquals(3, result.getTotalPages());
+    }
+
     void givenValidParams_whenFilter_thenReturnBooks() {
        
         Book book = new Book();
