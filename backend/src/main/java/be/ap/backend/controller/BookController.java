@@ -47,7 +47,6 @@ public class BookController {
     }
 
     @GetMapping("/{id}")
-
     public Book getById(@PathVariable Long id) {
         return bookRepository.findById(id).orElse(null);
     }

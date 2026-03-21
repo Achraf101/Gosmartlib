@@ -104,28 +104,28 @@ public class BackendApplication implements CommandLineRunner {
         Book b1 = bookRepository.save(createSampleBook("De brief voor de koning",
                 "Vijf jongelingen moeten, voordat ze tot ridder geslagen worden, de nacht biddend en wakend doorbrengen. Eén van hen hoort een noodkreet van buiten en gaat op onderzoek uit. Met deze daad bewijst hij pas een echte ridder te zijn. ",
                 true, Year.of(1962), 449, boek, nl, tonke,
-                "https://webservices.bibliotheek.be/index.php?func=cover&ISBN=9789025873530&VLACCnr=10565678&CDR=&EAN=&ISMN=&EBS=&coversize=large"));
+                "eacc8ca9ee1827042fc7835e7de56227.webp"));
         Book b2 = bookRepository.save(createSampleBook("Harry Potter en de vuurbeker",
                 "Als tovenaar-in-de-dop Harry Potter deelneemt aan een internationaal tovenaarstoernooi, dreigt er onverwacht gevaar. ",
                 true, Year.of(2000), 546, boek, nl, jk,
-                "https://webservices.bibliotheek.be/index.php?func=cover&ISBN=9789076174204&VLACCnr=10542926&CDR=&EAN=&ISMN=&EBS=&coversize=large"));
+                "b983a2f49e023bb4e2b8c5370552c0f4.webp"));
         Book b3 = bookRepository.save(createSampleBook("Kruistocht in Spijkerbroek",
                 "Dolf Wega belandt door een tijdmachine plotseling in de kinderkruistocht van 1212. Omdat hij niet meer terug kan naar de 20e eeuw , besluit hij ongeveer 8000 kinderen te volgen op hun gevaarlijke tocht over de Alpen naar Genua, waar een wonder zal gebeuren. ",
                 true, Year.of(1973), 264, boek, nl, thea,
-                "https://webservices.bibliotheek.be/index.php?func=cover&ISBN=9789060691670&VLACCnr=10420689&CDR=&EAN=&ISMN=&EBS=&coversize=large"));
+                "5a6539e1224f4a55659a0136a0de562f.webp"));
         Book b4 = bookRepository.save(createSampleBook("Geef me de ruimte!",
                 "De lotgevallen van een Vlaams meisje dat van huis wegloopt en in het middeleeuwse Frankrijk een zwervend, avontuurlijk bestaan gaat leiden als vrouw van een vrijgevochten troubadour. ",
                 true, Year.of(1976), 406, boek, nl, thea,
-                "https://webservices.bibliotheek.be/index.php?func=cover&ISBN=9789056377298&VLACCnr=10559524&CDR=&EAN=&ISMN=&EBS=&coversize=large"));
+                "6353feab95305a1264c9430a565515de.webp"));
         Book b5 = bookRepository.save(createSampleBook("De Zwendelprins",
                 "Simran (17) werkt als keukenhulp in het paleis van de maharadja van Suryan als ze wordt ontvoerd door een mysterieuze prins uit het noordelijke Fengart. Al snel blijkt dat Simran niet zomaar kan terugkeren naar haar oude leven. Wat volgt is een groot avontuur dwars door de bergen en de woestijn, waarin Simran zichzelf en haar eigen cultuur beter leert kennen. ",
                 true, Year.of(2019), 399, boek, nl, rima,
-                "https://webservices.bibliotheek.be/index.php?func=cover&ISBN=9789048860333&VLACCnr=10313312&CDR=&EAN=&ISMN=&EBS=&coversize=large"));
+                "811278f6a3909b01ed523a55f4b6b817.webp"));
         Book b6 = bookRepository.save(createSampleBook(
                 "Een geschiedenis van België voornieuwsgierige kinderen (en hun ouders)",
-                "Geschiedenis van Belgie͏̈ vanaf 1830 tot 2003 in hoofdlijnen. ",
+                "Geschiedenis van België vanaf 1830 tot 2003 in hoofdlijnen. ",
                 true, Year.of(2012), 319, boek, nl, benno,
-                "https://webservices.bibliotheek.be/index.php?func=cover&ISBN=9789045048031&VLACCnr=10412649&CDR=&EAN=&ISMN=&EBS=&coversize=large"));
+                "82f15cee848b29e0f9684f691f2f020e.webp"));
 
         seedSectionsWithBooks(b1, b2, b3, b4, b5);
     }
@@ -133,7 +133,8 @@ public class BackendApplication implements CommandLineRunner {
     private void seedSections() {
         
         java.util.List<Book> books = bookRepository.findAll().stream().limit(5).toList();
-        if (books.size() < 2) return;
+        if (books.size() < 2)
+            return;
 
         Section inDeKijker = createSection("In de kijker", (byte) 0);
         Section boekVanDeMaand = createSection("Boek van de maand", (byte) 1);

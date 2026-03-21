@@ -189,6 +189,16 @@
         <p-button class="btn" label="Opslaan" severity="primary" (click)="addBook()" />
       </div>
     </form>
+    <p-fileupload
+      mode="basic"
+      name="file"
+      chooseIcon="pi pi-upload"
+      accept="image/*"
+      maxFileSize="8000000"
+      (onSelect)="coverUpload($event)"
+      [customUpload]="true"
+      [disabled]="coverDisabled"
+    />
   </div>
 </div>
 <div>

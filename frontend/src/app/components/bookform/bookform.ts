@@ -12,6 +12,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { DatePickerModule } from 'primeng/datepicker';
+import { FileSelectEvent, FileUploadModule } from 'primeng/fileupload';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CheckboxModule } from 'primeng/checkbox';
 import { isbnValidator, maxEntries } from '../../utils/validator';
@@ -28,6 +29,7 @@ import { BookService } from '../../services/book';
 import { LanguageService } from '../../services/language';
 import { BookTypeService } from '../../services/book-type';
 import { BookType } from '../../models/book-type';
+import { UpLoadService } from '../../services/upload';
 
 @Component({
   selector: 'app-bookform',
@@ -47,6 +49,7 @@ import { BookType } from '../../models/book-type';
     DatePickerModule,
     FormsModule,
     CheckboxModule,
+    FileUploadModule,
   ],
   templateUrl: './bookform.html',
   styleUrl: './bookform.css',
@@ -97,6 +100,7 @@ export class BookformComponent {
   publishers: Publisher[] | undefined;
   authors: Author[] | undefined;
   bookTypes: BookType[] | undefined;
+  newBookId: number | undefined; // this will be populated when the bookform is submitted
 
   font_sizes = [
     { name: 'Klein', value: 'KLEIN' },
@@ -112,6 +116,7 @@ export class BookformComponent {
     private bookService: BookService,
     private languageService: LanguageService,
     private bookTypeService: BookTypeService,
+    private upLoadService: UpLoadService,
   ) {}
 
   ngOnInit() {
@@ -198,6 +203,9 @@ export class BookformComponent {
             detail: 'Boek is opgeslagen.',
             life: 3000,
           });
+          // allow cover upload
+          this.coverDisabled = false;
+          this.newBookId = book.id;
         },
         error: (err) => {
           this.messageService.add({
@@ -273,5 +281,26 @@ export class BookformComponent {
         },
       });
     }
+  }
+
+  coverDisabled: boolean = true;
+  coverUpload($event: FileSelectEvent) {
+    if (this.newBookId == undefined) {
+      return;
+    }
+    const formData = new FormData();
+    formData.append('file', $event?.files[0]);
+    formData.append('book_id', this.newBookId.toString());
+
+    this.upLoadService.addCover(formData).subscribe({
+      next: (res) => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Succes',
+          detail: 'Boek omslag is toegevoegd.',
+          life: 3000,
+        });
+      },
+    });
   }
 }

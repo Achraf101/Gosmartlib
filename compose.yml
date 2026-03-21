@@ -11,6 +11,7 @@ services:
     volumes:
       - certbot:/etc/letsencrypt
       - certbot:/var/www/certbot
+      - static:/var/www
 
   certbot:
     image: certbot/certbot
@@ -40,6 +41,7 @@ services:
     container_name: backend
     volumes:
       - maven-repo:/root/.m2
+      - static:/var/www
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
@@ -48,6 +50,7 @@ services:
       DB_UPDATE: ${DB_UPDATE}
       DB_URL: ${DB_URL}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      UPLOAD_DIR: ${UPLOAD_DIR}
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -58,4 +61,7 @@ volumes:
     external: true
   maven-repo:
     name: maven-repo
+    external: true
+  static:
+    name: static
     external: true
