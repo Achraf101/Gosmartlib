@@ -37,28 +37,27 @@
     <div class="book-list">
       @for (book of books; track book.id) {
         <div class="book-card" routerLink="/boek/{{ book.id }}">
-          @if (book.cover == '' || book.cover == null) {
-            <img src="{{ placeholder }}" [alt]="book.title" class="book-cover" />
-          } @else {
-            <img src="static/cover/{{ book.cover }}" [alt]="book.title" class="book-cover" />
-          }
           <div class="book-info">
-            <img [src]="book.cover || placeholder" [alt]="book.title" class="book-cover" />
+            @if (book.cover == '' || book.cover == null) {
+              <img [src]="placeholder" [alt]="book.title" class="book-cover" />
+            } @else {
+              <img src="static/cover/{{ book.cover }}" [alt]="book.title" class="book-cover" />
+            }
             <div class="book-info-data">
               <h2 class="book-title">{{ book.title }}</h2>
               <div class="book-subtitle">
-                @if (book.author) {
-                  <span>{{ book.author.name }}</span>
+                @if (book.author_name) {
+                  <span>{{ book.author_name }}</span>
                 }
                 @if (book.published) {
                   <span> · {{ book.published }}</span>
                 }
-                <!-- @if (book.age_end != 0 || book.age_start != 0) {
+                @if (book.age_end != 0 || book.age_start != 0) {
                   <span> · CLIB A</span>
-                } -->
-                @if (book.genre?.length != 0 && book.genre) {
+                }
+                @if (book.genres && book.genres.length != 0) {
                   <div class="book-meta show-desktop">
-                    @for (genre of book.genre; track $index) {
+                    @for (genre of book.genres; track $index) {
                       <div class="tag">
                         <span>{{ genre.name }}</span>
                       </div>
@@ -66,10 +65,10 @@
                   </div>
                   <div class="book-meta show-mobile">
                     <div class="tag">
-                      <span>{{ book.genre[0]?.name }}</span>
+                      <span>{{ book.genres[0]?.name }}</span>
                     </div>
-                    @if (book.genre.length - 1 > 0) {
-                      <p>+{{ book.genre.length - 1 }}</p>
+                    @if (book.genres.length - 1 > 0) {
+                      <p>+{{ book.genres.length - 1 }}</p>
                     }
                   </div>
                 }

@@ -121,7 +121,7 @@ public class BackendApplication implements CommandLineRunner {
                 "Simran (17) werkt als keukenhulp in het paleis van de maharadja van Suryan als ze wordt ontvoerd door een mysterieuze prins uit het noordelijke Fengart. Al snel blijkt dat Simran niet zomaar kan terugkeren naar haar oude leven. Wat volgt is een groot avontuur dwars door de bergen en de woestijn, waarin Simran zichzelf en haar eigen cultuur beter leert kennen. ",
                 true, Year.of(2019), 399, boek, nl, rima,
                 "811278f6a3909b01ed523a55f4b6b817.webp"));
-        Book b6 = bookRepository.save(createSampleBook(
+        bookRepository.save(createSampleBook(
                 "Een geschiedenis van België voornieuwsgierige kinderen (en hun ouders)",
                 "Geschiedenis van België vanaf 1830 tot 2003 in hoofdlijnen. ",
                 true, Year.of(2012), 319, boek, nl, benno,
@@ -131,7 +131,7 @@ public class BackendApplication implements CommandLineRunner {
     }
 
     private void seedSections() {
-        
+
         java.util.List<Book> books = bookRepository.findAll().stream().limit(5).toList();
         if (books.size() < 2)
             return;

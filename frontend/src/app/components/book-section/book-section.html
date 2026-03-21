@@ -14,7 +14,7 @@
   <div class="books-grid" *ngIf="activeSection && books.length > 1">
     <div class="book-card" *ngFor="let book of books" [routerLink]="['/boek', book.id]">
       <div class="book-cover">
-        <img *ngIf="book.cover" [src]="book.cover" [alt]="book.title" class="cover-img" (error)="book.cover = ''" />
+        <img *ngIf="book.cover" src="static/cover/{{book.cover}}" [alt]="book.title" class="cover-img" (error)="book.cover = ''" />
         <span class="book-initial" *ngIf="!book.cover">{{ book.title.charAt(0) }}</span>
       </div>
       <div class="book-info">
@@ -26,7 +26,7 @@
 
   <div class="monthly-book" *ngIf="activeSection && books.length === 1" [routerLink]="['/boek', books[0].id]" style="cursor: pointer;">
     <div class="monthly-cover">
-      <img *ngIf="books[0].cover" [src]="books[0].cover" [alt]="books[0].title" class="cover-img" (error)="books[0].cover = ''" />
+      <img *ngIf="books[0].cover" src="/static/cover/{{books[0].cover}}" [alt]="books[0].title" class="cover-img" (error)="books[0].cover = ''" />
       <span class="book-initial" *ngIf="!books[0].cover">{{ books[0].title.charAt(0) }}</span>
     </div>
     <div class="monthly-info">

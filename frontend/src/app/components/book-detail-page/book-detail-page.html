@@ -24,7 +24,7 @@
           <p-image src="/static/cover/{{ book.cover }}" preview alt="boek omslag" class="cover" />
         }
         <div id="stars">
-          <p-rating [(ngModel)]="ratingValueStars" [readonly]="true" />
+          <p-rating [(ngModel)]="ratingValueStars" [disabled]="true" />
           <p>
             @if (ratingValue > 0) {
               ({{ ratingValue }})
@@ -87,11 +87,6 @@
         </tr>
         <tr>
           <td>
-            @if (book.cover == '' || book.cover == null) {
-              <img src="{{ placeholder }}" alt="" />
-            } @else {
-              <img src="/static/cover/{{ book.cover }}" alt="book cover" class="cover" />
-            }
             <p>
               @if (book.publisher != null) {
                 {{ book.publisher.name }}

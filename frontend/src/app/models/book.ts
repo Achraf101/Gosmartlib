@@ -19,6 +19,7 @@ export interface BookCard extends BookBase {
 
 // the item displayed after search
 export interface BookResult extends BookBase {
+  author_name?: String;
   book_type: BookType;
   series?: Series;
   series_count?: number;
