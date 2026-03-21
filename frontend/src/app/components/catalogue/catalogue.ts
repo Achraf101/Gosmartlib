@@ -46,8 +46,13 @@ export class CatalogueComponent implements OnInit {
       this.searchQuery = params['q'] || '';
       this.currentPage = 0;
 
-      const hasFilters = params['genres'] || params['language'] || params['fiction'] !== undefined
-        || params['authorIds'] || params['pagesMin'] || params['pagesMax'];
+      const hasFilters =
+        params['genres'] ||
+        params['language'] ||
+        params['fiction'] !== undefined ||
+        params['authorIds'] ||
+        params['pagesMin'] ||
+        params['pagesMax'];
 
       if (hasFilters) {
         this.activeFilters = {
@@ -55,10 +60,13 @@ export class CatalogueComponent implements OnInit {
           language: params['language'] ? Number(params['language']) : undefined,
           fiction: params['fiction'] !== undefined ? params['fiction'] === 'true' : undefined,
           author: params['authorIds'] ? params['authorIds'].split(',').map(Number) : undefined,
-          pages: (params['pagesMin'] || params['pagesMax']) ? [
-            params['pagesMin'] ? Number(params['pagesMin']) : 0,
-            params['pagesMax'] ? Number(params['pagesMax']) : 999999
-          ] : undefined,
+          pages:
+            params['pagesMin'] || params['pagesMax']
+              ? [
+                  params['pagesMin'] ? Number(params['pagesMin']) : 0,
+                  params['pagesMax'] ? Number(params['pagesMax']) : 999999,
+                ]
+              : undefined,
         };
       } else {
         this.activeFilters = null;
@@ -73,7 +81,7 @@ export class CatalogueComponent implements OnInit {
       ? this.bookService.filter(this.activeFilters, this.currentPage, this.rows)
       : this.searchQuery.trim()
         ? this.bookService.search(this.searchQuery.trim(), this.currentPage, this.rows)
-        : this.bookService.getAllBookResults(this.currentPage, this.rows);
+        : this.bookService.getAll(this.currentPage, this.rows);
 
     request.subscribe({
       next: (page) => {
@@ -104,6 +112,6 @@ export class CatalogueComponent implements OnInit {
     this.loadBooks();
   }
   get activeQueryParams(): any {
-  return this.route.snapshot.queryParams;
-}
+    return this.route.snapshot.queryParams;
+  }
 }
