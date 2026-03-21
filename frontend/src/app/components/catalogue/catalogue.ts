@@ -1,19 +1,24 @@
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { TagModule } from 'primeng/tag';
 import { DividerModule } from 'primeng/divider';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { PaginatorModule, PaginatorState } from 'primeng/paginator';
+import { DialogModule } from 'primeng/dialog';
+import { ButtonModule } from 'primeng/button';
 import { BookService } from '../../services/book';
+import { SectionService } from '../../services/section';
 import { BookFilter, BookResult } from '../../models/book';
 import { NavBarComponent } from '../nav-bar/nav-bar';
 import { RouterLink } from '@angular/router';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-catalogue',
   standalone: true,
   imports: [
+    CommonModule,
     FormsModule,
     TagModule,
     ProgressSpinnerModule,
@@ -21,6 +26,8 @@ import { RouterLink } from '@angular/router';
     NavBarComponent,
     RouterLink,
     DividerModule,
+    DialogModule,
+    ButtonModule,
   ],
   templateUrl: './catalogue.html',
   styleUrl: './catalogue.css',
@@ -34,17 +41,29 @@ export class CatalogueComponent implements OnInit {
   searchQuery = '';
   activeFilters: BookFilter | null = null;
 
+  // Select mode
+  selectMode = false;
+  sectionId: number | null = null;
+  grade: number | null = null;
+  selectedBook: BookResult | null = null;
+  showDialog = false;
+
   readonly placeholder = '/assets/no-cover.svg';
 
   constructor(
     private bookService: BookService,
+    private sectionService: SectionService,
     private route: ActivatedRoute,
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
     this.route.queryParams.subscribe((params) => {
       this.searchQuery = params['q'] || '';
       this.currentPage = 0;
+      this.selectMode = params['selectMode'] === 'true';
+      this.sectionId = params['sectionId'] ? Number(params['sectionId']) : null;
+      this.grade = params['grade'] ? Number(params['grade']) : null;
 
       const hasFilters = params['genres'] || params['language'] || params['fiction'] !== undefined
         || params['authorIds'] || params['pagesMin'] || params['pagesMax'];
@@ -65,6 +84,33 @@ export class CatalogueComponent implements OnInit {
       }
 
       this.loadBooks();
+    });
+  }
+
+  onBookClick(book: BookResult): void {
+    if (this.selectMode) {
+      this.selectedBook = book;
+      this.showDialog = true;
+    } else {
+      this.router.navigate(['/boek', book.id]);
+    }
+  }
+
+  viewBookDetails(): void {
+    this.showDialog = false;
+    this.router.navigate(['/boek', this.selectedBook!.id]);
+  }
+
+  setAsBookOfMonth(): void {
+    if (!this.sectionId || !this.grade || !this.selectedBook) return;
+    this.sectionService.setBookOfMonth(this.sectionId, this.selectedBook.id, this.grade).subscribe({
+      next: () => {
+        this.showDialog = false;
+        this.router.navigate(['/']);
+      },
+      error: () => {
+        this.showDialog = false;
+      }
     });
   }
 
@@ -105,7 +151,8 @@ export class CatalogueComponent implements OnInit {
     this.rows = event.rows ?? 5;
     this.loadBooks();
   }
+
   get activeQueryParams(): any {
-  return this.route.snapshot.queryParams;
-}
+    return this.route.snapshot.queryParams;
+  }
 }
