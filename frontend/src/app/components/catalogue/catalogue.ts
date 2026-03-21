@@ -31,7 +31,7 @@ export class CatalogueComponent implements OnInit {
   currentPage = 0;
   searchQuery = '';
 
-  readonly placeholder = 'https://placehold.co/150x220/e2e8f0/64748b?text=Geen+Cover';
+  readonly placeholder = '/assets/no-cover.svg';
 
   constructor(
     private bookService: BookService,

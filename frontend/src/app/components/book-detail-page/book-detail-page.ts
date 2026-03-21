@@ -24,6 +24,8 @@ export class BookDetailPage implements OnInit {
   bookmarked = false;
   genresString = '';
 
+  readonly placeholder = '/assets/no-cover.svg';
+
   constructor(
     private readonly route: ActivatedRoute,
     private readonly bookService: BookService,

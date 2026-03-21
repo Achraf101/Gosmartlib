@@ -6,10 +6,10 @@
   <div class="detail-container">
     <div id="book-info" class="box">
       <div id="book-info-image">
-        @if (book.cover == null) {
-          <div class="no-cover"><p>GEEN COVER</p></div>
+        @if (book.cover == '' || book.cover == null) {
+          <img src="{{ placeholder }}" alt="boek omslag" />
         } @else {
-          <p-image src="{{ book.cover }}" preview alt="book cover" class="cover" />
+          <p-image src="/static/cover/{{ book.cover }}" preview alt="book cover" class="cover" />
         }
         <div id="stars">
           <p-rating [(ngModel)]="ratingValueStars" [readonly]="true" />
@@ -69,10 +69,10 @@
         </tr>
         <tr>
           <td>
-            @if (book.cover == null) {
-              <div class="no-cover"><p>GEEN COVER</p></div>
+            @if (book.cover == '' || book.cover == null) {
+              <img src="{{ placeholder }}" alt="" />
             } @else {
-              <img src="{{ book.cover }}" alt="book cover" class="cover" />
+              <img src="/static/cover/{{ book.cover }}" alt="book cover" class="cover" />
             }
             <p>
               @if (book.publisher != null) {
@@ -175,10 +175,10 @@
                 <div class="book-card-header">
                   <p class="book-card-title">{{ bookCard.title }}</p>
                 </div>
-                @if (book.cover == null) {
-                  <div class="no-cover"><p>GEEN COVER</p></div>
+                @if (bookCard.cover == '' || bookCard.cover == null) {
+                  <img src="{{ placeholder }}" alt="boek omslag" />
                 } @else {
-                  <img src="{{ bookCard.cover }}" alt="book cover" class="cover" />
+                  <img src="/static/cover/{{ bookCard.cover }}" alt="book cover" class="cover" />
                 }
                 <p>{{ bookCard.author_name }}</p>
               </div>
@@ -188,7 +188,6 @@
       </div>
     }
   </div>
-
 } @else {
   <p>Geen boeken gevonden.</p>
 }

@@ -54,22 +54,6 @@ p-image {
   height: 300px;
 }
 
-.no-cover {
-  background-color: var(--p-zinc-400);
-  aspect-ratio: 3/4;
-  color: var(--p-primary-50);
-  text-align: center;
-  font-size: large;
-  font-weight: 900;
-  align-content: center;
-  height: 200px;
-}
-
-.no-cover p {
-  transform: rotate(-35deg);
-  user-select: none;
-}
-
 tr > td:nth-child(1) {
   display: flex;
   align-items: center;

@@ -34,7 +34,11 @@
     <div class="book-list">
       @for (book of books; track book.id) {
         <div class="book-card" routerLink="/boek/{{ book.id }}">
-          <img [src]="book.cover || placeholder" [alt]="book.title" class="book-cover" />
+          @if (book.cover == '' || book.cover == null) {
+            <img src="{{ placeholder }}" [alt]="book.title" class="book-cover" />
+          } @else {
+            <img src="static/cover/{{ book.cover }}" [alt]="book.title" class="book-cover" />
+          }
           <div class="book-info">
             <h2 class="book-title">{{ book.title }}</h2>
             <div class="book-subtitle">
