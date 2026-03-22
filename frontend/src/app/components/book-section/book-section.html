@@ -25,12 +25,6 @@
     </div>
   </div>
 
-<<<<<<< HEAD
-  <div class="monthly-book" *ngIf="activeSection && books.length === 1" [routerLink]="['/boek', books[0].id]" style="cursor: pointer;">
-    <div class="monthly-cover">
-      <img *ngIf="books[0].cover" src="/static/cover/{{books[0].cover}}" [alt]="books[0].title" class="cover-img" (error)="books[0].cover = ''" />
-      <span class="book-initial" *ngIf="!books[0].cover">{{ books[0].title.charAt(0) }}</span>
-=======
   @if (isMonthlySection) {
     <div class="monthly-header">
       <p-select
@@ -42,7 +36,6 @@
         styleClass="grade-select"
       />
       <p-button label="Wijzig boek" icon="pi pi-pencil" severity="secondary" (onClick)="changeBookOfMonth()" />
->>>>>>> feature-19-boek-van-de-maand-instellen
     </div>
 
     @if (monthlyBook) {
