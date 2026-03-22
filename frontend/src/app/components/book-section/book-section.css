@@ -116,6 +116,12 @@
   color: #999;
   font-size: 0.9rem;
 }
+.monthly-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
 
 @media (max-width: 700px) {
   .books-grid {

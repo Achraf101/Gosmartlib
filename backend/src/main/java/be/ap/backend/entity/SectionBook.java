@@ -24,5 +24,8 @@ public class SectionBook {
     @Column(name = "ranking")
     private short ranking;
 
+    @Column(name = "grade", nullable = true)
+    private Byte grade;
+
     public SectionBook(){};
 }

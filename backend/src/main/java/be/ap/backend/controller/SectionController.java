@@ -26,4 +26,19 @@ public class SectionController {
     public List<Book> getBooksBySection(@PathVariable Long id) {
         return sectionService.getBooksBySection(id);
     }
+
+    @GetMapping("/{id}/books/grade")
+    public Book getBookBySectionAndGrade(
+            @PathVariable Long id,
+            @RequestParam Byte grade) {
+        return sectionService.getBookBySectionAndGrade(id, grade);
+    }
+
+    @PutMapping("/{id}/book")
+    public Book setBookOfMonth(
+            @PathVariable Long id,
+            @RequestParam Long bookId,
+            @RequestParam Byte grade) {
+        return sectionService.setBookOfMonth(id, bookId, grade);
+    }
 }
