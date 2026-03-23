@@ -23,7 +23,7 @@ public class BookTypeController {
 
     @GetMapping()
     public List<BookType> getAll() {
-        return bookTypeRepository.findBy();
+        return bookTypeRepository.findAll();
     }
 
     @PostMapping()

@@ -25,7 +25,7 @@ public class PublisherController {
 
     @GetMapping()
     public List<Publisher> getAll() {
-        return publisherRepository.findBy();
+        return publisherRepository.findAll();
     }
 
     @GetMapping("search/{query}")
