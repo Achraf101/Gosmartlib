@@ -10,5 +10,4 @@ public interface PublisherRepository extends JpaRepository<Publisher, Long> {
 
     List<Publisher> findByName(String query);
 
-    List<Publisher> findBy();
 }

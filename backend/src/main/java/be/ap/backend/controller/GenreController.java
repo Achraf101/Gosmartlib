@@ -25,12 +25,12 @@ public class GenreController {
 
     @GetMapping()
     public List<Genre> getAll() {
-        return genreRepository.findBy();
+        return genreRepository.findAll();
     }
 
     @GetMapping("search/{query}")
     public List<Genre> searchPublisher(@PathVariable String query) {
-        return genreRepository.findByName(query);
+        return genreRepository.findByNameContainingIgnoreCase(query);
     }
 
     @PostMapping

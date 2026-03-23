@@ -8,7 +8,8 @@ import be.ap.backend.entity.Genre;
 
 public interface GenreRepository extends JpaRepository<Genre, Long> {
 
-    List<Genre> findByName(String query);
+    List<Genre> findByNameContainingIgnoreCase(String query);
 
-    List<Genre> findBy();
+    Genre findByName(String name);
+
 }

@@ -25,7 +25,7 @@ public class LanguageController {
 
     @GetMapping()
     public List<Language> getAll() {
-        return languageRepository.findBy();
+        return languageRepository.findAll();
     }
 
     @GetMapping("search/{query}")

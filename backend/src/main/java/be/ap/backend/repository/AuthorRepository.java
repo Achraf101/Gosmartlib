@@ -11,8 +11,6 @@ import be.ap.backend.entity.Author;
 public interface AuthorRepository extends JpaRepository<Author, Long> {
 
     List<Author> findByName(String query);
-
-    List<Author> findBy();
     
     @Query("SELECT a FROM Author a WHERE LOWER(a.name) LIKE LOWER(CONCAT('%', :query, '%'))")
     List<Author> searchByName(@Param("query") String query);

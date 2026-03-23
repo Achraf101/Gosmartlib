@@ -16,7 +16,6 @@ import be.ap.backend.entity.Book;
 import jakarta.transaction.Transactional;
 
 public interface BookRepository extends JpaRepository<Book, Long> {
-    List<Book> findBy();
 
     Page<Book> findAll(Pageable pageable);
 
