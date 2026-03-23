@@ -8,7 +8,8 @@ import be.ap.backend.entity.BookType;
 
 public interface BookTypeRepository extends JpaRepository<BookType, Long> {
 
-    List<BookType> findByName(String query);
+    List<BookType> findByNameContainingIgnoreCase(String query);
 
-    List<BookType> findBy();
+    BookType findByName(String query);
+
 }

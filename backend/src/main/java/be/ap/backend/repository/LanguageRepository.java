@@ -9,9 +9,9 @@ import be.ap.backend.entity.Language;
 
 public interface LanguageRepository extends JpaRepository<Language, Long> {
 
-    List<Language> findBy();
-
     List<Language> findByName(String query);
 
     List<Language> findByCodeOrderById(String code);
+
+    Language findByCode(String code);
 }
