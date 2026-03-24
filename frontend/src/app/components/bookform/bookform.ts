@@ -30,6 +30,12 @@ import { LanguageService } from '../../services/language';
 import { BookTypeService } from '../../services/book-type';
 import { BookType } from '../../models/book-type';
 import { UpLoadService } from '../../services/upload';
+import { StepperModule } from 'primeng/stepper';
+import { CharCounterComponent } from '../char-counter/char-counter';
+import { NavBarComponent } from '../nav-bar/nav-bar';
+import { Router } from '@angular/router';
+import { Message } from 'primeng/message';
+import { InputNumberModule } from 'primeng/inputnumber';
 
 @Component({
   selector: 'app-bookform',
@@ -50,6 +56,11 @@ import { UpLoadService } from '../../services/upload';
     FormsModule,
     CheckboxModule,
     FileUploadModule,
+    StepperModule,
+    CharCounterComponent,
+    NavBarComponent,
+    Message,
+    InputNumberModule,
   ],
   templateUrl: './bookform.html',
   styleUrl: './bookform.css',
@@ -57,29 +68,36 @@ import { UpLoadService } from '../../services/upload';
 export class BookformComponent {
   bookForm = new FormGroup({
     title: new FormControl('', Validators.required),
-    author: new FormControl<number | null>(null),
+    author: new FormControl<number | null>(null, Validators.required),
     cover: new FormControl<string | null>(null),
     isbn: new FormControl<string | null>(null, isbnValidator),
     book_type: new FormControl<number | null>(null, Validators.required),
-
+    cLIB: new FormControl('', Validators.required),
     series: new FormControl<number | null>(null),
     series_count: new FormControl<number | null>(null),
+    didactic_material: new FormControl<boolean>(true, Validators.required),
 
     contributors: new FormControl<number[]>([], maxEntries(5)),
     publisher: new FormControl<number | null>(null),
 
     fiction: new FormControl<boolean>(true, Validators.required),
-    genres: new FormControl<number[]>([], maxEntries(5)),
+    genres: new FormControl<number[]>([], [maxEntries(5), Validators.required]),
 
-    description: new FormControl<string | null>(null),
+    description: new FormControl<string | null>(null, [
+      Validators.maxLength(500),
+      Validators.required,
+    ]),
 
-    published: new FormControl<number | null>(null),
+    published: new FormControl<number | null>(null, [
+      Validators.min(1),
+      Validators.pattern('^[0-9]*$'),
+    ]),
     language: new FormControl<number | null>(null, Validators.required),
 
-    age_start: new FormControl<number | null>(null),
-    age_end: new FormControl<number | null>(null),
-
-    pages: new FormControl<number | null>(null),
+    pages: new FormControl<number | null>(null, [
+      Validators.min(1),
+      Validators.pattern('^[0-9]*$'),
+    ]),
     font_size: new FormControl<string | null>(null),
 
     school: new FormControl<boolean>(false, Validators.required),
@@ -101,13 +119,14 @@ export class BookformComponent {
   authors: Author[] | undefined;
   bookTypes: BookType[] | undefined;
   newBookId: number | undefined; // this will be populated when the bookform is submitted
-
+  coverUploaded: boolean = false;
   font_sizes = [
     { name: 'Klein', value: 'KLEIN' },
     { name: 'Medium', value: 'MEDIUM' },
     { name: 'Groot', value: 'GROOT' },
   ];
 
+  cLIBS = ['A', 'B', 'C', 'D'];
   constructor(
     private genreService: GenreService,
     private messageService: MessageService,
@@ -117,6 +136,7 @@ export class BookformComponent {
     private languageService: LanguageService,
     private bookTypeService: BookTypeService,
     private upLoadService: UpLoadService,
+    private router: Router,
   ) {}
 
   ngOnInit() {
@@ -124,7 +144,7 @@ export class BookformComponent {
       next: (genres) => {
         this.genres = genres;
       },
-      error: (err) => {
+      error: () => {
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
@@ -138,7 +158,7 @@ export class BookformComponent {
       next: (publishers) => {
         this.publishers = publishers;
       },
-      error: (err) => {
+      error: () => {
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
@@ -152,7 +172,7 @@ export class BookformComponent {
       next: (authors) => {
         this.authors = authors;
       },
-      error: (err) => {
+      error: () => {
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
@@ -166,7 +186,7 @@ export class BookformComponent {
       next: (languages) => {
         this.languages = languages;
       },
-      error: (err) => {
+      error: () => {
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
@@ -180,18 +200,18 @@ export class BookformComponent {
       next: (bookTypes) => {
         this.bookTypes = bookTypes;
       },
-      error: (err) => {
+      error: () => {
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: 'Probleem met het laden van boek types.',
+          detail: 'Probleem met het laden van boektypes.',
           life: 3000,
         });
       },
     });
   }
 
-  addBook(): void {
+  addBook(activateCallback: (step: number) => void): void {
     if (this.bookForm.valid) {
       const book: CreateBook = this.bookForm.value as CreateBook;
       this.bookForm.reset({ school: false, fiction: false });
@@ -206,8 +226,9 @@ export class BookformComponent {
           // allow cover upload
           this.coverDisabled = false;
           this.newBookId = book.id;
+          activateCallback(3);
         },
-        error: (err) => {
+        error: () => {
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
@@ -228,18 +249,15 @@ export class BookformComponent {
       this.authorFormVisible = false;
       this.authorService.addAuthor(author).subscribe({
         next: (author) => {
-          // this.bookForm.patchValue({
-          //   author: author.id,
-          // });
           this.authors?.push(author);
           this.messageService.add({
             severity: 'success',
             summary: 'Success',
-            detail: 'Auter is opgeslagen.',
+            detail: 'Auteur is opgeslagen.',
             life: 3000,
           });
         },
-        error: (err) => {
+        error: () => {
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
@@ -260,9 +278,6 @@ export class BookformComponent {
       this.publisherFormVisible = false;
       this.publisherService.addPublisher(publisher).subscribe({
         next: (publisher) => {
-          // this.bookForm.patchValue({
-          //   publisher: publisher.id,
-          // });
           this.publishers?.push(publisher);
           this.messageService.add({
             severity: 'success',
@@ -271,7 +286,7 @@ export class BookformComponent {
             life: 3000,
           });
         },
-        error: (err) => {
+        error: () => {
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
@@ -284,7 +299,7 @@ export class BookformComponent {
   }
 
   coverDisabled: boolean = true;
-  coverUpload($event: FileSelectEvent) {
+  coverUpload($event: FileSelectEvent, fileUploader: any) {
     if (this.newBookId == undefined) {
       return;
     }
@@ -293,12 +308,22 @@ export class BookformComponent {
     formData.append('book_id', this.newBookId.toString());
 
     this.upLoadService.addCover(formData).subscribe({
-      next: (res) => {
+      next: () => {
+        this.router.navigate(['/boek', this.newBookId]);
+        this.coverUploaded = true;
+        fileUploader.clear();
         this.messageService.add({
           severity: 'success',
           summary: 'Succes',
-          detail: 'Boek omslag is toegevoegd.',
+          detail: 'Boekomslag is toegevoegd.',
           life: 3000,
+        });
+      },
+      error: () => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Boekomslag in niet toegevoegd.',
         });
       },
     });
