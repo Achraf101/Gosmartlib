@@ -8,25 +8,25 @@ import { BookType } from './book-type';
 export interface BookBase {
   id: number;
   title: string;
-  author?: Author;
+  author: Author;
   cover?: string;
 }
 
 // optionally add fields later
 export interface BookCard extends BookBase {
-  author_name?: String;
+  author_name: String;
 }
 
 // the item displayed after search
 export interface BookResult extends BookBase {
-  author_name?: String;
+  author_name: String;
   book_type: BookType;
   series?: Series;
   series_count?: number;
   language?: Language;
   published?: number;
   description?: string;
-  genres?: Genre[];
+  genres: Genre[];
   fiction?: boolean;
   age_start?: number;
   age_end?: number;
@@ -42,7 +42,7 @@ export interface BookDetail extends BookBase {
   series_count?: number;
   contributors?: Author[];
   publisher?: Publisher;
-  genres?: Genre[];
+  genres: Genre[];
   description?: string;
   fiction: boolean;
   published?: number;
@@ -61,14 +61,14 @@ export interface BookDetail extends BookBase {
 export interface CreateBook {
   book_type: number;
   title: string;
-  author?: number;
+  author: number;
   cover?: string;
   isbn?: string;
   series?: number;
   series_count?: number;
   contributors?: number[];
   publisher?: number;
-  genre?: number[];
+  genres: number[];
   description?: string;
   fiction: boolean;
   published?: number;
@@ -78,6 +78,8 @@ export interface CreateBook {
   pages?: number;
   font_size?: string;
   school?: boolean;
+  CLIB: string;
+  Didactic_material: boolean;
 }
 
 // interface to search with filters
