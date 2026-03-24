@@ -90,7 +90,7 @@
                 </div>
                 <div class="btns">
                   <p-button
-                    label="Next"
+                    label="Volgende"
                     [disabled]="
                       bookForm.controls.title.invalid || bookForm.controls.description.invalid
                     "
@@ -238,7 +238,7 @@
                     formControlName="cLIB"
                     id="cLIB"
                     class="select"
-                    placeholder="CLIB"
+                    placeholder="CLIB*"
                   />
                 </div>
                 <div class="inputitem">
@@ -293,11 +293,11 @@
                   </div>
                 </div>
                 <div class="btns">
-                  <p-button label="Back" severity="secondary" (onClick)="activateCallback(1)" />
+                  <p-button label="Terug" severity="secondary" (onClick)="activateCallback(1)" />
                   <p-button
                     [disabled]="bookForm.invalid"
                     class="btn"
-                    label="Opslaan"
+                    label="Volgende"
                     severity="primary"
                     (click)="addBook(activateCallback)"
                   />
