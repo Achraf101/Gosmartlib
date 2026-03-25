@@ -48,7 +48,7 @@ export class BookSectionComponent implements OnInit {
       error: () => {
         this.messageService.add({
           severity: 'error',
-          summary: 'Error',
+          summary: 'Fout',
           detail: 'Fout bij laden van secties.',
           life: 3750,
         });
@@ -70,7 +70,7 @@ export class BookSectionComponent implements OnInit {
         error: () => {
           this.messageService.add({
             severity: 'error',
-            summary: 'Error',
+            summary: 'Fout',
             detail: 'Fout bij laden van boeken.',
             life: 3750,
           });

@@ -67,7 +67,7 @@ export class CampusDetailPageComponent implements OnInit {
       error: () =>
         this.messageService.add({
           severity: 'error',
-          summary: 'Error',
+          summary: 'Fout',
           detail: 'Probleem met het laden van campussen.',
           life: 3000,
         }),
@@ -115,7 +115,7 @@ export class CampusDetailPageComponent implements OnInit {
       next: () => {
         this.messageService.add({
           severity: 'success',
-          summary: 'Success',
+          summary: 'Succes',
           detail: 'Boek is toegevoegd aan campus.',
           life: 3000,
         });
@@ -125,7 +125,7 @@ export class CampusDetailPageComponent implements OnInit {
         this.addedBooks.delete(book.id!);
         this.messageService.add({
           severity: 'error',
-          summary: 'Error',
+          summary: 'Fout',
           detail: 'Probleem met toevoegen van boek aan campus.',
           life: 3000,
         });
@@ -153,7 +153,7 @@ export class CampusDetailPageComponent implements OnInit {
         this.loading = false;
         this.messageService.add({
           severity: 'error',
-          summary: 'Error',
+          summary: 'Fout',
           detail: 'Probleem met het laden van boeken.',
           life: 3000,
         });
@@ -178,7 +178,7 @@ export class CampusDetailPageComponent implements OnInit {
   alreadyAdded(): void {
     this.messageService.add({
       severity: 'error',
-      summary: 'Error',
+      summary: 'Fout',
       detail: 'Boek is al toegevoegd!',
       life: 3000,
     });
@@ -196,7 +196,7 @@ export class CampusDetailPageComponent implements OnInit {
       error: () =>
         this.messageService.add({
           severity: 'error',
-          summary: 'Error',
+          summary: 'Fout',
           detail: 'Probleem met het laden van de boeken in deze campus.',
           life: 3000,
         }),

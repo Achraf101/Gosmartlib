@@ -147,7 +147,7 @@ export class BookformComponent {
       error: () => {
         this.messageService.add({
           severity: 'error',
-          summary: 'Error',
+          summary: 'Fout',
           detail: 'Probleem met het laden van genres.',
           life: 3000,
         });
@@ -161,7 +161,7 @@ export class BookformComponent {
       error: () => {
         this.messageService.add({
           severity: 'error',
-          summary: 'Error',
+          summary: 'Fout',
           detail: 'Probleem met het laden van uitgevers.',
           life: 3000,
         });
@@ -175,7 +175,7 @@ export class BookformComponent {
       error: () => {
         this.messageService.add({
           severity: 'error',
-          summary: 'Error',
+          summary: 'Fout',
           detail: 'Probleem met het laden van auteurs.',
           life: 3000,
         });
@@ -189,7 +189,7 @@ export class BookformComponent {
       error: () => {
         this.messageService.add({
           severity: 'error',
-          summary: 'Error',
+          summary: 'Fout',
           detail: 'Probleem met het laden van talen.',
           life: 3000,
         });
@@ -203,7 +203,7 @@ export class BookformComponent {
       error: () => {
         this.messageService.add({
           severity: 'error',
-          summary: 'Error',
+          summary: 'Fout',
           detail: 'Probleem met het laden van boektypes.',
           life: 3000,
         });
@@ -219,7 +219,7 @@ export class BookformComponent {
         next: (book) => {
           this.messageService.add({
             severity: 'success',
-            summary: 'Success',
+            summary: 'Succes',
             detail: 'Boek is opgeslagen.',
             life: 3000,
           });
@@ -231,8 +231,8 @@ export class BookformComponent {
         error: () => {
           this.messageService.add({
             severity: 'error',
-            summary: 'Error',
-            detail: 'Probleem met het opslagen van het boek.',
+            summary: 'Fout',
+            detail: 'Probleem met het opslaan van het boek.',
             life: 3000,
           });
         },
@@ -252,7 +252,7 @@ export class BookformComponent {
           this.authors?.push(author);
           this.messageService.add({
             severity: 'success',
-            summary: 'Success',
+            summary: 'Succes',
             detail: 'Auteur is opgeslagen.',
             life: 3000,
           });
@@ -260,8 +260,8 @@ export class BookformComponent {
         error: () => {
           this.messageService.add({
             severity: 'error',
-            summary: 'Error',
-            detail: 'Probleem met het opslagen van auteur.',
+            summary: 'Fout',
+            detail: 'Probleem met het opslaan van auteur.',
             life: 3000,
           });
         },
@@ -281,7 +281,7 @@ export class BookformComponent {
           this.publishers?.push(publisher);
           this.messageService.add({
             severity: 'success',
-            summary: 'Success',
+            summary: 'Succes',
             detail: 'Uitgever is opgeslagen.',
             life: 3000,
           });
@@ -289,8 +289,8 @@ export class BookformComponent {
         error: () => {
           this.messageService.add({
             severity: 'error',
-            summary: 'Error',
-            detail: 'Probleem met het opslagen van uitgever.',
+            summary: 'Fout',
+            detail: 'Probleem met het opslaan van uitgever.',
             life: 3000,
           });
         },
@@ -322,8 +322,8 @@ export class BookformComponent {
       error: () => {
         this.messageService.add({
           severity: 'error',
-          summary: 'Error',
-          detail: 'Boekomslag in niet toegevoegd.',
+          summary: 'Fout',
+          detail: 'Boekomslag is niet toegevoegd.',
         });
       },
     });

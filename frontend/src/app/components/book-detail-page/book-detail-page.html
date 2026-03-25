@@ -14,7 +14,7 @@
           , {{ contributor }}
         }
         @if (book.contributors && book.contributors.length > 0) {
-          (contributor)
+          (medeauteur)
         }
       </h3>
       <div id="book-info-image">
@@ -50,7 +50,7 @@
             , {{ contributor }}
           }
           @if (book.contributors && book.contributors.length > 0) {
-            (contributor)
+            (medeauteur)
           }
         </h3>
         <p>
@@ -103,7 +103,7 @@
           <td>
             <p>
               @if (book.language.id != 1) {
-                Anderstalige litteratuur:
+                Anderstalige literatuur:
               }
               {{ book.language.name }}
             </p>
@@ -172,7 +172,7 @@
         }
         @if (book.pages != null) {
           <tr>
-            <td>Paginas</td>
+            <td>Pagina's</td>
             <td>
               @if (book.pages != 0) {
                 {{ book.pages }} p.
@@ -203,7 +203,7 @@
                 @if (bookCard.cover == '' || bookCard.cover == null) {
                   <img src="{{ placeholder }}" alt="boek omslag" />
                 } @else {
-                  <img src="/static/cover/{{ bookCard.cover }}" alt="book cover" class="cover" />
+                  <img src="/static/cover/{{ bookCard.cover }}" alt="boek omslag" class="cover" />
                 }
                 <p>{{ bookCard.author_name }}</p>
               </div>
