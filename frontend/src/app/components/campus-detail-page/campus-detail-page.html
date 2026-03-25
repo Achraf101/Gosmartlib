@@ -63,7 +63,11 @@
         @for (book of books; track book.id) {
           <div class="book-card">
             <div class="book-info">
-              <img [src]="book.cover || placeholder" [alt]="book.title" class="book-cover" />
+              @if (book.cover) {
+                <img src="/static/cover/{{ book.cover }}" [alt]="book.title" class="book-cover" />
+              } @else {
+                <img src="{{ placeholder }}" [alt]="book.title" class="book-cover" />
+              }
               <span class="book-title">{{ book.title }}</span>
               @if (book.author) {
                 <span class="book-author">{{ book.author.name }}</span>

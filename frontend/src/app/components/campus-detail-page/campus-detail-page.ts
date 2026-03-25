@@ -47,7 +47,7 @@ export class CampusDetailPageComponent implements OnInit {
   totalRecords: number = 0;
   amounts: { [bookId: number]: number } = {};
   locations: { [bookId: number]: string } = {};
-  readonly placeholder = 'https://placehold.co/150x220/e2e8f0/64748b?text=Geen+Cover';
+  readonly placeholder = '/assets/no-cover.svg';
   campusBooksPage = 0;
   campusBooksRows = 5;
   campusTotalRecords = 0;
