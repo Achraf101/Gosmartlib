@@ -51,7 +51,6 @@
                       pTextarea
                       rows="8"
                       fluid
-                      autoResize="true"
                       maxlength="500"
                     ></textarea>
                   </p-iftalabel>
@@ -203,7 +202,7 @@
                 </div>
                 <div class="inputitem">
                   <p-iftalabel>
-                    <p-inputNumber formControlName="published" [showButtons]="true" [min]="1" />
+                    <p-inputNumber formControlName="published" [showButtons]="true" [min]="1" [useGrouping]="false" />
                     <label for="published">Jaar van uitgave</label>
                   </p-iftalabel>
                   @if (bookForm.controls.published.invalid && bookForm.controls.published.touched) {
@@ -248,6 +247,7 @@
                       formControlName="pages"
                       [showButtons]="true"
                       [min]="1"
+                      [useGrouping]="false"
                     />
                     <label for="pages">Aantal pagina's</label>
                   </p-iftalabel>
