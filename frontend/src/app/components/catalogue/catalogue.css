@@ -9,7 +9,7 @@
 }
 
 .catalogue-container {
-  padding: 2rem 0rem;
+  padding: 4rem 1rem;
   max-width: 1100px;
   margin: 0 auto;
 }
@@ -224,10 +224,15 @@ h1 {
   text-align: center;
 }
 
+:host ::ng-deep .first-page .p-paginator-first,
+:host ::ng-deep .first-page .p-paginator-prev {
+  display: none;
+}
+
 @media (width> 800px) {
   .show-mobile {
     visibility: hidden;
-    position: absolute;
+    position: relative;
   }
 
   .show-desktop {

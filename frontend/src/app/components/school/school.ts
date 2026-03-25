@@ -26,7 +26,7 @@ export class SchoolComponent {
       error: () =>
         this.messageService.add({
           severity: 'error',
-          summary: 'Error',
+          summary: 'Fout',
           detail: 'Fout bij laden van de scholen.',
           life: 3000,
         }),

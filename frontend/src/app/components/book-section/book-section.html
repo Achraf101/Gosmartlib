@@ -41,7 +41,7 @@
     @if (monthlyBook) {
       <div class="monthly-book" [routerLink]="['/boek', monthlyBook.id]" style="cursor: pointer;">
         <div class="monthly-cover">
-          <img *ngIf="monthlyBook.cover" [src]="monthlyBook.cover" [alt]="monthlyBook.title" class="cover-img" (error)="monthlyBook.cover = ''" />
+          <img *ngIf="monthlyBook.cover" src="static/cover/{{monthlyBook.cover}}" [alt]="monthlyBook.title" class="cover-img" (error)="monthlyBook.cover = ''" />
           <span class="book-initial" *ngIf="!monthlyBook.cover">{{ monthlyBook.title.charAt(0) }}</span>
         </div>
         <div class="monthly-info">

@@ -81,7 +81,7 @@ export class BookDetailPage implements OnInit {
       error: (err) => {
         this.messageService.add({
           severity: 'error',
-          summary: 'Error',
+          summary: 'Fout',
           detail: 'Boek niet gevonden.',
           life: 3000,
         });
@@ -93,7 +93,7 @@ export class BookDetailPage implements OnInit {
       error: (err) => {
         this.messageService.add({
           severity: 'error',
-          summary: 'Error',
+          summary: 'Fout',
           detail: 'Probleem met het zoeken van gelijkaardige boeken.',
           life: 3750,
         });

@@ -104,7 +104,7 @@ export class CampusComponent {
       next: () => {
         this.messageService.add({
           severity: 'success',
-          summary: 'Success',
+          summary: 'Succes',
           detail: 'Campus succesvol opgeslagen!',
           life: 3000,
         });
@@ -114,9 +114,9 @@ export class CampusComponent {
       error: (err) => {
         this.messageService.add({
           severity: 'error',
-          summary: 'Error',
+          summary: 'Fout',
           detail: 'Fout bij opslaan van de campus.',
-          life: 3003000,
+          life: 3000,
         });
 
         console.error(err);

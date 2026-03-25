@@ -66,7 +66,7 @@ export class SchoolAddComponent {
       next: (school) => {
         this.messageService.add({
           severity: 'success',
-          summary: 'Success',
+          summary: 'Succes',
           detail: 'School succesvol opgeslagen!',
           life: 3000,
         });
@@ -76,9 +76,9 @@ export class SchoolAddComponent {
       error: (err) => {
         this.messageService.add({
           severity: 'error',
-          summary: 'Error',
+          summary: 'Fout',
           detail: 'Fout bij opslaan van de school.',
-          life: 3003000,
+          life: 3000,
         });
 
         console.error(err);
