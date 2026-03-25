@@ -34,10 +34,10 @@
           </p>
         </div>
         <i
-          (click)="bookMark()"
+          (click)="toggleFavorite()"
           class="bookmark pi"
-          [class.pi-bookmark]="!bookmarked"
-          [class.pi-bookmark-fill]="bookmarked"
+          [class.pi-bookmark]="!isBookmarked"
+          [class.pi-bookmark-fill]="isBookmarked"
         ></i>
       </div>
       <div id="book-info-text">

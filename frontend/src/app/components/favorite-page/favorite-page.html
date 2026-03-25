@@ -1,0 +1,30 @@
+<app-nav-bar></app-nav-bar>
+@if (bookmarked.length > 0) {
+  <h1>Jouw favorieten</h1>
+  <div class="book-card-list">
+    @for (book of bookmarked; track $index) {
+      <div class="book-card" (click)="onBookClick(book.book_id)">
+        <p>{{ book.title }}</p>
+        @if (book.cover == '' || book.cover == null) {
+          <img [src]="placeholder" [alt]="book.title" class="book-cover" />
+        } @else {
+          <img src="static/cover/{{ book.cover }}" [alt]="book.title" class="book-cover" />
+        }
+        <p>{{ book.author_name }}</p>
+        <i
+          (click)="toggleBookmarked(book.book_id); $event.stopPropagation()"
+          class="bookmark pi"
+          [class.pi-bookmark-fill]="true"
+        ></i>
+      </div>
+    }
+  </div>
+} @else if (!loading && bookmarked.length === 0){
+  <h1>Je hebt nog geen favorieten</h1>
+}
+
+@if (loading) {
+  <div class="loading-container">
+    <p-progressSpinner />
+  </div>
+}
