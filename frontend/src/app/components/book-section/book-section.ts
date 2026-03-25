@@ -16,7 +16,7 @@ import { FormsModule } from '@angular/forms';
   imports: [CommonModule, RouterModule, ToastModule, SelectModule, FormsModule, ButtonModule],
   templateUrl: './book-section.html',
   styleUrl: './book-section.css',
-  providers: [MessageService]
+  providers: [MessageService],
 })
 export class BookSectionComponent implements OnInit {
   sections: Section[] = [];
@@ -34,7 +34,7 @@ export class BookSectionComponent implements OnInit {
   constructor(
     private sectionService: SectionService,
     private messageService: MessageService,
-    private router: Router
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
@@ -52,7 +52,7 @@ export class BookSectionComponent implements OnInit {
           detail: 'Fout bij laden van secties.',
           life: 3750,
         });
-      }
+      },
     });
   }
 
@@ -66,7 +66,7 @@ export class BookSectionComponent implements OnInit {
       this.loadMonthlyBook();
     } else {
       this.sectionService.getBooksBySection(section.id).subscribe({
-        next: (books) => this.books = books,
+        next: (books) => (this.books = books),
         error: () => {
           this.messageService.add({
             severity: 'error',
@@ -74,17 +74,19 @@ export class BookSectionComponent implements OnInit {
             detail: 'Fout bij laden van boeken.',
             life: 3750,
           });
-        }
+        },
       });
     }
   }
 
   loadMonthlyBook(): void {
     if (!this.activeSection) return;
-    this.sectionService.getBookBySectionAndGrade(this.activeSection.id, this.selectedGrade).subscribe({
-      next: (book) => this.monthlyBook = book,
-      error: () => this.monthlyBook = null
-    });
+    this.sectionService
+      .getBookBySectionAndGrade(this.activeSection.id, this.selectedGrade)
+      .subscribe({
+        next: (book) => (this.monthlyBook = book),
+        error: () => (this.monthlyBook = null),
+      });
   }
 
   onGradeChange(): void {
@@ -96,8 +98,8 @@ export class BookSectionComponent implements OnInit {
       queryParams: {
         selectMode: true,
         sectionId: this.activeSection!.id,
-        grade: this.selectedGrade
-      }
+        grade: this.selectedGrade,
+      },
     });
   }
 }
