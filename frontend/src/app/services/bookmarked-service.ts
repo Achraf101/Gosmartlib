@@ -7,7 +7,7 @@ import { Bookmarked } from '../models/bookmarked';
   providedIn: 'root',
 })
 export class BookmarkedService {
-  private endpoint = 'Bookmarked';
+  private endpoint = 'bookmarked';
 
   constructor(private apiService: ApiService) {}
 
