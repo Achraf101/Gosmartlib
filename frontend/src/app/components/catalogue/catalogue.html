@@ -111,6 +111,7 @@
       [totalRecords]="totalRecords"
       [rowsPerPageOptions]="[5, 10, 20]"
       (onPageChange)="onPageChange($event)"
+      [class.first-page]="currentPage === 0"
     />
   }
 </div>
