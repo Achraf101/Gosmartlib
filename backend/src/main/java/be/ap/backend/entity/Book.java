@@ -3,6 +3,8 @@ package be.ap.backend.entity;
 import java.time.Year;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -18,10 +20,14 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Data
 @NoArgsConstructor
+@EqualsAndHashCode(exclude = { "genres", "contributors" })
+@ToString(exclude = { "genres", "contributors" })
 @Entity
 @Table(name = "book", indexes = {
         @Index(name = "index_books_isbn", columnList = "isbn", unique = true),
@@ -57,6 +63,7 @@ public class Book {
     @JoinColumn(nullable = true, name = "author_id")
     private Author author;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "book")
     private Set<BookContributor> contributors;
 
