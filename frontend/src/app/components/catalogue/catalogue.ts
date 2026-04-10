@@ -60,7 +60,7 @@ export class CatalogueComponent implements OnInit {
   ngOnInit(): void {
     this.route.queryParams.subscribe((params) => {
       this.searchQuery = params['q'] || '';
-      this.currentPage = 0;
+      this.currentPage = params['page'] ? Number(params['pagina']) -1 : 0;
       this.selectMode = params['selectMode'] === 'true';
       this.sectionId = params['sectionId'] ? Number(params['sectionId']) : null;
       this.grade = params['grade'] ? Number(params['grade']) : null;
@@ -143,18 +143,36 @@ export class CatalogueComponent implements OnInit {
 
   onSearch(): void {
     this.currentPage = 0;
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { pagina: this.currentPage + 1, page: null },
+      queryParamsHandling: 'merge',
+      
+    });
     this.loadBooks();
   }
 
   clearSearch(): void {
     this.searchQuery = '';
     this.currentPage = 0;
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { pagina: 1, q: null },
+      queryParamsHandling: 'merge',
+    });
     this.loadBooks();
   }
 
   onPageChange(event: PaginatorState): void {
     this.currentPage = event.page ?? 0;
     this.rows = event.rows ?? 5;
+
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { pagina: this.currentPage + 1 },
+      queryParamsHandling: 'merge',
+    });
+
     this.loadBooks();
   }
 
