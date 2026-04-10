@@ -2,8 +2,10 @@ package be.ap.backend.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
 @Entity
 @Table(name = "section")
 public class Section {
@@ -24,6 +26,4 @@ public class Section {
 
     @Column(name = "hidden")
     private boolean hidden;
-
-    public Section(){};
 }

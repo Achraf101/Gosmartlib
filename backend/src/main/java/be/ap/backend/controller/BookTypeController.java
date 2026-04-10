@@ -10,16 +10,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import be.ap.backend.entity.BookType;
 import be.ap.backend.repository.BookTypeRepository;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("booktype")
+@RequiredArgsConstructor
 public class BookTypeController {
 
     private final BookTypeRepository bookTypeRepository;
-
-    public BookTypeController(BookTypeRepository bookTypeRepository) {
-        this.bookTypeRepository = bookTypeRepository;
-    }
 
     @GetMapping()
     public List<BookType> getAll() {

@@ -1,6 +1,5 @@
 package be.ap.backend.service;
 
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -23,23 +22,17 @@ import be.ap.backend.entity.Genre;
 import be.ap.backend.entity.Language;
 import be.ap.backend.repository.BookRepository;
 import jakarta.persistence.EntityManager;
+import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-
 @Service
+@RequiredArgsConstructor
 public class BookService {
 
     private final BookRepository bookRepository;
     private final EntityManager entityManager;
-    
-
-    public BookService(BookRepository bookRepository, EntityManager entityManager) {
-        this.bookRepository = bookRepository;
-        this.entityManager = entityManager;
-      
-    }
 
     public Book saveBook(CreateBookDTO dto) {
 
@@ -115,12 +108,10 @@ public class BookService {
         Map<Long, Set<GenreDTO>> genreMap = new HashMap<>();
         for (GenreProjection row : results) {
             genreMap.computeIfAbsent(row.getBookId(), k -> new HashSet<>())
-                .add(new GenreDTO(row.getGenreId(), row.getGenreName()));
+                    .add(new GenreDTO(row.getGenreId(), row.getGenreName()));
         }
 
-        page.getContent().forEach(dto ->
-                dto.setGenres(genreMap.getOrDefault(dto.getId(), Set.of()))
-        );
+        page.getContent().forEach(dto -> dto.setGenres(genreMap.getOrDefault(dto.getId(), Set.of())));
 
         return page;
     }

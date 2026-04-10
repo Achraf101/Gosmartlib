@@ -2,19 +2,18 @@ package be.ap.backend.controller;
 
 import be.ap.backend.dto.BookmarkedDTO;
 import be.ap.backend.service.BookmarkedService;
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("bookmarked")
+@RequiredArgsConstructor
 public class BookmarkedController {
 
     private final BookmarkedService bookmarkedService;
-
-    public BookmarkedController(BookmarkedService bookmarkedService) {
-        this.bookmarkedService = bookmarkedService;
-    }
 
     @GetMapping("/{userId}")
     public List<BookmarkedDTO> getBookmarkeds(@PathVariable Long userId) {

@@ -18,13 +18,14 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
 @Entity
 @Table(name = "book", indexes = {
         @Index(name = "index_books_isbn", columnList = "isbn", unique = true),
         @Index(name = "index_books_title", columnList = "title")
-
 })
 public class Book {
     @Id
@@ -99,8 +100,4 @@ public class Book {
 
     @Column(nullable = true, name = "school_id")
     private long schoolId;
-
-    public Book() {
-    }
-
 }

@@ -2,7 +2,6 @@ package be.ap.backend.service;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -18,13 +17,14 @@ import be.ap.backend.exception.BookAlreadyInCampusException;
 import be.ap.backend.exception.MissingArgumentsException;
 import be.ap.backend.repository.CampusBookRepository;
 import jakarta.persistence.EntityManager;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class CampusBookService {
-    @Autowired
+
     private CampusBookRepository campusBookRepository;
 
-    @Autowired
     EntityManager entityManager;
 
     public CampusBook createCampusBook(CampusBookDTO dto) {

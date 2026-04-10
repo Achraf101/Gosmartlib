@@ -14,16 +14,14 @@ import org.springframework.web.multipart.MultipartFile;
 import be.ap.backend.dto.CoverDTO;
 import be.ap.backend.entity.Book;
 import be.ap.backend.repository.BookRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 @Service
+@RequiredArgsConstructor
 public class UploadService {
 
     private final BookRepository bookRepository;
-
-    public UploadService(BookRepository bookRepository) {
-        this.bookRepository = bookRepository;
-    }
 
     private final int idLength = 16;
 

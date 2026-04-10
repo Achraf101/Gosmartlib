@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import be.ap.backend.entity.Publisher;
 import be.ap.backend.repository.PublisherRepository;
+import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 
@@ -15,13 +16,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequestMapping("publisher")
+@RequiredArgsConstructor
 public class PublisherController {
 
     private final PublisherRepository publisherRepository;
-
-    public PublisherController(PublisherRepository publisherRepository) {
-        this.publisherRepository = publisherRepository;
-    }
 
     @GetMapping()
     public List<Publisher> getAll() {

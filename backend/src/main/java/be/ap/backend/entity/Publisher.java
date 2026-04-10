@@ -10,7 +10,11 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@Data
+@NoArgsConstructor
 @Entity
 @Table(name = "publisher", indexes = { @Index(name = "index_publisher_name", columnList = "name", unique = true) })
 public class Publisher {
@@ -27,32 +31,4 @@ public class Publisher {
 
     @Column(length = 255, name = "description")
     private String description;
-
-    public Publisher() {
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
 }
