@@ -72,34 +72,28 @@ export class BookformComponent {
     cover: new FormControl<string | null>(null),
     isbn: new FormControl<string | null>(null, isbnValidator),
     book_type: new FormControl<number | null>(null, Validators.required),
-    cLIB: new FormControl('', Validators.required),
+    cLIB: new FormControl<string | null>(null),
     series: new FormControl<number | null>(null),
     series_count: new FormControl<number | null>(null),
     didactic_material: new FormControl<boolean>(true, Validators.required),
-
     contributors: new FormControl<number[]>([], maxEntries(5)),
     publisher: new FormControl<number | null>(null),
-
     fiction: new FormControl<boolean>(true, Validators.required),
     genres: new FormControl<number[]>([], [maxEntries(5), Validators.required]),
-
     description: new FormControl<string | null>(null, [
       Validators.maxLength(500),
       Validators.required,
     ]),
-
     published: new FormControl<number | null>(null, [
       Validators.min(1),
       Validators.pattern('^[0-9]*$'),
     ]),
     language: new FormControl<number | null>(null, Validators.required),
-
     pages: new FormControl<number | null>(null, [
       Validators.min(1),
       Validators.pattern('^[0-9]*$'),
     ]),
     font_size: new FormControl<string | null>(null),
-
     school: new FormControl<boolean>(false, Validators.required),
   });
 
@@ -118,7 +112,7 @@ export class BookformComponent {
   publishers: Publisher[] | undefined;
   authors: Author[] | undefined;
   bookTypes: BookType[] | undefined;
-  newBookId: number | undefined; // this will be populated when the bookform is submitted
+  newBookId: number | undefined;
   coverUploaded: boolean = false;
   font_sizes = [
     { name: 'Klein', value: 'KLEIN' },
@@ -141,73 +135,37 @@ export class BookformComponent {
 
   ngOnInit() {
     this.genreService.getAll().subscribe({
-      next: (genres) => {
-        this.genres = genres;
-      },
-      error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fout',
-          detail: 'Probleem met het laden van genres.',
-          life: 3000,
-        });
-      },
+      next: (genres) => { this.genres = genres; },
+      error: () => { this.showError('Probleem met het laden van genres.'); }
     });
 
     this.publisherService.getAll().subscribe({
-      next: (publishers) => {
-        this.publishers = publishers;
-      },
-      error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fout',
-          detail: 'Probleem met het laden van uitgevers.',
-          life: 3000,
-        });
-      },
+      next: (publishers) => { this.publishers = publishers; },
+      error: () => { this.showError('Probleem met het laden van uitgevers.'); }
     });
 
     this.authorService.getAll().subscribe({
-      next: (authors) => {
-        this.authors = authors;
-      },
-      error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fout',
-          detail: 'Probleem met het laden van auteurs.',
-          life: 3000,
-        });
-      },
+      next: (authors) => { this.authors = authors; },
+      error: () => { this.showError('Probleem met het laden van auteurs.'); }
     });
 
     this.languageService.getAll().subscribe({
-      next: (languages) => {
-        this.languages = languages;
-      },
-      error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fout',
-          detail: 'Probleem met het laden van talen.',
-          life: 3000,
-        });
-      },
+      next: (languages) => { this.languages = languages; },
+      error: () => { this.showError('Probleem met het laden van talen.'); }
     });
 
     this.bookTypeService.getAll().subscribe({
-      next: (bookTypes) => {
-        this.bookTypes = bookTypes;
-      },
-      error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fout',
-          detail: 'Probleem met het laden van boektypes.',
-          life: 3000,
-        });
-      },
+      next: (bookTypes) => { this.bookTypes = bookTypes; },
+      error: () => { this.showError('Probleem met het laden van boektypes.'); }
+    });
+  }
+
+  private showError(detail: string) {
+    this.messageService.add({
+      severity: 'error',
+      summary: 'Fout',
+      detail: detail,
+      life: 3000,
     });
   }
 
@@ -223,26 +181,17 @@ export class BookformComponent {
             detail: 'Boek is opgeslagen.',
             life: 3000,
           });
-          // allow cover upload
           this.coverDisabled = false;
           this.newBookId = book.id;
           activateCallback(3);
         },
-        error: () => {
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Fout',
-            detail: 'Probleem met het opslaan van het boek.',
-            life: 3000,
-          });
-        },
+        error: () => { this.showError('Probleem met het opslaan van het boek.'); },
       });
     }
   }
 
   authorFormVisible: boolean = false;
   addAuthor(): void {
-    // BookService;
     if (this.authorForm.valid) {
       const author: Author = this.authorForm.value as Author;
       this.authorForm.reset();
@@ -257,21 +206,13 @@ export class BookformComponent {
             life: 3000,
           });
         },
-        error: () => {
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Fout',
-            detail: 'Probleem met het opslaan van auteur.',
-            life: 3000,
-          });
-        },
+        error: () => { this.showError('Probleem met het opslaan van auteur.'); },
       });
     }
   }
 
   publisherFormVisible: boolean = false;
   addPublisher(): void {
-    // publisher service;
     if (this.publisherForm.valid) {
       const publisher: Publisher = this.publisherForm.value as Publisher;
       this.publisherForm.reset();
@@ -286,23 +227,14 @@ export class BookformComponent {
             life: 3000,
           });
         },
-        error: () => {
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Fout',
-            detail: 'Probleem met het opslaan van uitgever.',
-            life: 3000,
-          });
-        },
+        error: () => { this.showError('Probleem met het opslaan van uitgever.'); },
       });
     }
   }
 
   coverDisabled: boolean = true;
   coverUpload($event: FileSelectEvent, fileUploader: any) {
-    if (this.newBookId == undefined) {
-      return;
-    }
+    if (this.newBookId == undefined) return;
     const formData = new FormData();
     formData.append('file', $event?.files[0]);
     formData.append('book_id', this.newBookId.toString());
@@ -319,13 +251,7 @@ export class BookformComponent {
           life: 3000,
         });
       },
-      error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fout',
-          detail: 'Boekomslag is niet toegevoegd.',
-        });
-      },
+      error: () => { this.showError('Boekomslag is niet toegevoegd.'); },
     });
   }
 }
