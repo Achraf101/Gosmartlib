@@ -82,10 +82,8 @@ public class BookService {
         if (dto.getPages() != 0)
             book.setPages(dto.getPages());
 
-        if (dto.getAgeStart() != 0 && dto.getAgeEnd() != 0
-                && dto.getAgeStart() < dto.getAgeEnd()) {
-            book.setAgeStart(dto.getAgeStart());
-            book.setAgeEnd(dto.getAgeEnd());
+        if (dto.getClib() != null) {
+            book.setClib(dto.getClib());
         }
 
         return bookRepository.save(book);

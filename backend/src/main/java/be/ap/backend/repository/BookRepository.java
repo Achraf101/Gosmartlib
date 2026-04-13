@@ -13,6 +13,7 @@ import be.ap.backend.dto.BookCardDTO;
 import be.ap.backend.dto.GenreProjection;
 import be.ap.backend.dto.BookResultDTO;
 import be.ap.backend.entity.Book;
+import be.ap.backend.entity.Clib;
 import jakarta.transaction.Transactional;
 
 public interface BookRepository extends JpaRepository<Book, Long> {
@@ -60,8 +61,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
                 b.published,
                 b.description,
                 b.fiction,
-                b.ageStart,
-                b.ageEnd,
+                b.clib,
                 b.pages,
                 b.rating,
                 b.ratingCount
@@ -88,8 +88,8 @@ public interface BookRepository extends JpaRepository<Book, Long> {
             "AND (:fiction IS NULL OR b.fiction = :fiction) " +
             "AND (:authorIds IS NULL OR a.id IN :authorIds) " +
             "AND (:pagesMin IS NULL OR b.pages >= :pagesMin) " +
-            "AND (:pagesMax IS NULL OR b.pages <= :pagesMax) ")
-
+            "AND (:pagesMax IS NULL OR b.pages <= :pagesMax) " +
+            "AND (COALESCE(:clibs, NULL) IS NULL OR b.clib IN :clibs)")
     Page<Book> filter(
             @Param("genres") List<Long> genres,
             @Param("language") Long language,
@@ -97,6 +97,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
             @Param("authorIds") List<Long> authorIds,
             @Param("pagesMin") Integer pagesMin,
             @Param("pagesMax") Integer pagesMax,
+            @Param("clibs") List<Clib> clibs,
             Pageable pageable);
 
     @Modifying

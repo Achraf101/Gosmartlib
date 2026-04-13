@@ -60,18 +60,21 @@ export class CatalogueComponent implements OnInit {
   ngOnInit(): void {
     this.route.queryParams.subscribe((params) => {
       this.searchQuery = params['q'] || '';
-      this.currentPage = params['page'] ? Number(params['pagina']) -1 : 0;
+      // Fix voor paginering: gebruik 'pagina' of 'page' consistent
+      this.currentPage = params['pagina'] ? Number(params['pagina']) - 1 : 0;
       this.selectMode = params['selectMode'] === 'true';
       this.sectionId = params['sectionId'] ? Number(params['sectionId']) : null;
       this.grade = params['grade'] ? Number(params['grade']) : null;
 
+      // Controleer of er filters aanwezig zijn, inclusief de nieuwe 'clibs'
       const hasFilters =
         params['genres'] ||
         params['language'] ||
         params['fiction'] !== undefined ||
         params['authorIds'] ||
         params['pagesMin'] ||
-        params['pagesMax'];
+        params['pagesMax'] ||
+        params['clibs'];
 
       if (hasFilters) {
         this.activeFilters = {
@@ -79,6 +82,8 @@ export class CatalogueComponent implements OnInit {
           language: params['language'] ? Number(params['language']) : undefined,
           fiction: params['fiction'] !== undefined ? params['fiction'] === 'true' : undefined,
           author: params['authorIds'] ? params['authorIds'].split(',').map(Number) : undefined,
+          // Hier trekken we de clib-letters uit de URL (bijv. "A,D")
+          clibs: params['clibs'] ? params['clibs'].split(',') : undefined,
           pages:
             params['pagesMin'] || params['pagesMax']
               ? [
@@ -123,6 +128,7 @@ export class CatalogueComponent implements OnInit {
   }
 
   loadBooks(): void {
+    this.loading = true;
     const request = this.activeFilters
       ? this.bookService.filter(this.activeFilters, this.currentPage, this.rows)
       : this.searchQuery.trim()
@@ -145,9 +151,8 @@ export class CatalogueComponent implements OnInit {
     this.currentPage = 0;
     this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: { pagina: this.currentPage + 1, page: null },
+      queryParams: { pagina: 1, q: this.searchQuery.trim() || null },
       queryParamsHandling: 'merge',
-      
     });
     this.loadBooks();
   }

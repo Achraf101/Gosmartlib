@@ -86,11 +86,9 @@ public class Book {
     @ManyToOne
     private Language language;
 
-    @Column(nullable = true, name = "age_start")
-    private byte ageStart;
-
-    @Column(nullable = true, name = "age_end")
-    private byte ageEnd;
+    @Column(nullable = true, name = "clib")
+    @Enumerated(EnumType.STRING)
+    private Clib clib;
 
     @Column(nullable = true, name = "pages")
     private Integer pages;

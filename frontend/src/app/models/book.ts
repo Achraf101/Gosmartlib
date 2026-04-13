@@ -12,12 +12,10 @@ export interface BookBase {
   cover?: string;
 }
 
-// optionally add fields later
 export interface BookCard extends BookBase {
   author_name: String;
 }
 
-// the item displayed after search
 export interface BookResult extends BookBase {
   author_name: String;
   book_type: BookType;
@@ -28,8 +26,7 @@ export interface BookResult extends BookBase {
   description?: string;
   genres: Genre[];
   fiction?: boolean;
-  age_start?: number;
-  age_end?: number;
+  clib?: string;
   pages?: number;
   rating?: number;
   rating_count?: number;
@@ -48,8 +45,7 @@ export interface BookDetail extends BookBase {
   published?: number;
   cover?: string;
   language: Language;
-  age_start?: number;
-  age_end?: number;
+  clib?: string;
   pages?: number;
   font_size?: string;
   rating_total: number;
@@ -73,16 +69,13 @@ export interface CreateBook {
   fiction: boolean;
   published?: number;
   language: number;
-  age_start?: number;
-  age_end?: number;
+  clib?: string;
   pages?: number;
   font_size?: string;
   school?: boolean;
-  CLIB: string;
-  Didactic_material: boolean;
+  didactic_material: boolean;
 }
 
-// interface to search with filters
 export interface BookFilter {
   type?: number[];
   genre?: number[];
@@ -91,7 +84,7 @@ export interface BookFilter {
   pages?: [number, number];
   series?: number[];
   author?: number[];
-  age?: [number, number];
+  clibs?: string[];
   published?: [number, number];
   publisher?: number[];
 }

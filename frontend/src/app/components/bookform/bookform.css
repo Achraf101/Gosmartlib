@@ -1,5 +1,4 @@
-.author-name,
-.author-desc {
+.author-name, .author-desc {
   display: flex;
   margin-bottom: 1rem;
 }
@@ -22,22 +21,34 @@
 
 .inputrow {
   display: flex;
-  gap: 1rem;
+  gap: 1.5rem;
   margin-bottom: 1rem;
   align-items: flex-start;
-  justify-content: flex-start;
 }
 
-.field-isbn,
-.field-author {
+.field-isbn, .field-author {
   flex: 1;
-  max-width: 300px;
 }
 
-.field-isbn .input,
-.field-author .p-select {
+.field-publisher {
+  flex: 3;
+  min-width: 0;
+}
+
+.field-clib {
+  flex: 1;
+  min-width: 120px;
+}
+
+.inputrow .p-select, .inputrow .input {
   width: 100%;
   height: 54px;
+}
+
+.field-clib .p-select-label, .field-publisher .p-select-label {
+  display: flex;
+  align-items: center;
+  height: 100%;
 }
 
 .inputitem {
@@ -46,73 +57,53 @@
 
 .dropdowns {
   display: flex;
+  gap: 1rem;
 }
 
 .select {
   flex-grow: 1;
 }
 
-.select:nth-child(1) {
-  margin-right: 40px !important;
-}
-
-#author {
-  margin-right: auto;
-}
-
-.narrow {
-  width: 3.5rem;
-}
-
 .language {
-  width: calc((100% - 50px) / 2);
-}
-
-.save {
-  display: flex;
-  justify-content: right;
+  width: 100%;
 }
 
 .subtext {
   color: var(--p-button-text-secondary-color);
+  font-size: 0.85rem;
 }
 
 .radioBtns {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 1.5rem;
+  margin-top: 0.5rem;
 }
 
 .radioBtns label {
-  margin-left: -0.75rem;
+  margin-left: -0.5rem;
 }
 
+.field-clib .p-select .p-select-label,
+.field-clib .p-select .p-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding-left: 1rem;
+  height: 100%;
+}
+
+.field-clib .p-select {
+  display: flex;
+  align-items: center;
+}
 @media (max-width: 600px) {
-  .container {
-    width: 95vw;
-    margin-top: 30px;
-  }
-
-  .inputrow {
+  .inputrow, .dropdowns {
     flex-direction: column;
+    gap: 1rem;
   }
-
-  .field-isbn,
-  .field-author {
+  .field-clib, .field-publisher, .field-isbn, .field-author {
     width: 100%;
     max-width: none;
-  }
-
-  .dropdowns {
-    flex-direction: column;
-  }
-
-  .select:nth-child(1) {
-    margin-right: 0 !important;
-    margin-bottom: 1rem;
-  }
-
-  .language {
-    width: 100%;
   }
 }

@@ -58,10 +58,7 @@
           @if (book.published != null) {
             | {{ book.published }}
           }
-          @if (book.age_start != 0) {
-            | {{ book.age_start }}
-          }
-        </p>
+          </p>
         <p-accordion class="show-mobile">
           <p-accordion-panel value="0">
             <p-accordion-header class="description">Beschrijving</p-accordion-header>
@@ -164,10 +161,10 @@
             <td>{{ book.published }}</td>
           </tr>
         }
-        @if (book.age_start != 0 && book.age_end != 0) {
+        @if (book.clib) {
           <tr>
-            <td>Leeftijd</td>
-            <td>{{ book.age_start }} - {{ book.age_end }}</td>
+            <td>CLIB niveau</td>
+            <td>{{ book.clib }}</td>
           </tr>
         }
         @if (book.pages != null) {

@@ -4,6 +4,7 @@ import java.time.Year;
 import java.util.List;
 
 import be.ap.backend.entity.FontSize;
+import be.ap.backend.entity.Clib; // Vergeet deze import niet
 import lombok.Data;
 
 @Data
@@ -37,9 +38,7 @@ public class CreateBookDTO {
 
     private Long language;
 
-    private byte ageStart;
-
-    private byte ageEnd;
+    private Clib clib;
 
     private int pages;
 

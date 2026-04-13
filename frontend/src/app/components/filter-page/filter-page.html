@@ -56,7 +56,10 @@
     <h3>CLIB niveau</h3>
     <div class="fiction-btns">
       @for (level of ['A', 'B', 'C', 'D']; track level) {
-        <button class="tag-btn" [class.active]="isClibSelected(level)" (click)="toggleClib(level)">
+        <button 
+          class="tag-btn" 
+          [class.active]="isClibSelected(level)" 
+          (click)="toggleClib(level)">
           {{ level }}
         </button>
       }
@@ -69,7 +72,6 @@
       <p-inputnumber [(ngModel)]="pagesMin" placeholder="Min" [min]="0" [step]="50" [showButtons]="true" styleClass="w-full" />
       <span>—</span>
       <p-inputnumber [(ngModel)]="pagesMax" placeholder="Max" [min]="0" [step]="50" [showButtons]="true" styleClass="w-full" />
-
     </div>
     @if (errorPagesMin) {
       <p class="error-msg">{{ errorPagesMin }}</p>

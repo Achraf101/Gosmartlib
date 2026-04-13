@@ -15,6 +15,7 @@ import be.ap.backend.dto.BookCardDTO;
 import be.ap.backend.dto.BookResultDTO;
 import be.ap.backend.dto.CreateBookDTO;
 import be.ap.backend.entity.Book;
+import be.ap.backend.entity.Clib;
 import be.ap.backend.repository.BookRepository;
 import be.ap.backend.service.BookService;
 
@@ -56,7 +57,6 @@ public class BookController {
         return bookRepository.search(query, pageable);
     }
 
-    // related books for detail page, (same author)
     @GetMapping("/{id}/related")
     public List<BookCardDTO> getRelated(@PathVariable Long id) {
         return bookRepository.findRelated(id);
@@ -70,6 +70,7 @@ public class BookController {
             @RequestParam(required = false) List<Long> authorIds,
             @RequestParam(required = false) @Min(0) Integer pagesMin,
             @RequestParam(required = false) @Min(0) Integer pagesMax,
+            @RequestParam(required = false) List<Clib> clibs,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size) {
 
@@ -78,7 +79,7 @@ public class BookController {
         }
 
         Pageable pageable = PageRequest.of(page, size);
-        return bookRepository.filter(genres, language, fiction, authorIds, pagesMin, pagesMax, pageable);
+        return bookRepository.filter(genres, language, fiction, authorIds, pagesMin, pagesMax, clibs, pageable);
     }
 
     @PostMapping
@@ -94,5 +95,4 @@ public class BookController {
         Pageable pageable = PageRequest.of(page, size);
         return bookService.getAllBookResults(pageable);
     }
-
 }

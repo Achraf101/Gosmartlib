@@ -166,6 +166,32 @@ table td {
   color: var(--p-button-text-secondary-color);
 }
 
+.clib-badge {
+  background-color: var(--primary-color, #00a884);
+  color: white;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: bold;
+  margin-left: 10px;
+}
+
+/* In book-detail-page.css */
+#book-detail table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+#book-detail td {
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+}
+
+#book-detail td:first-child {
+  font-weight: bold;
+  width: 150px;
+  color: #555;
+}
+
 @media (width>800px) {
   .show-desktop {
     display: inline-block;
