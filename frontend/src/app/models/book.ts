@@ -13,14 +13,15 @@ export interface BookBase {
 }
 
 export interface BookCard extends BookBase {
-  author_name: String;
+  author_name: string;
 }
 
 export interface BookResult extends BookBase {
-  author_name: String;
+  author_name: string;
   book_type: BookType;
-  series?: Series;
-  series_count?: number;
+  series_id?: number;      
+  series_name?: string;    
+  series_number?: number;  
   language?: Language;
   published?: number;
   description?: string;
@@ -35,8 +36,8 @@ export interface BookResult extends BookBase {
 export interface BookDetail extends BookBase {
   book_type: BookType;
   isbn?: string;
-  series?: Series;
-  series_count?: number;
+  series?: Series;         
+  series_count?: number;   
   contributors?: Author[];
   publisher?: Publisher;
   genres: Genre[];
@@ -60,8 +61,8 @@ export interface CreateBook {
   author: number;
   cover?: string;
   isbn?: string;
-  series?: number;
-  series_count?: number;
+  series?: number;        
+  series_count?: number;  
   contributors?: number[];
   publisher?: number;
   genres: number[];
@@ -82,7 +83,7 @@ export interface BookFilter {
   fiction?: boolean;
   language?: number;
   pages?: [number, number];
-  series?: number[];
+  series?: number[];    
   author?: number[];
   clibs?: string[];
   published?: [number, number];

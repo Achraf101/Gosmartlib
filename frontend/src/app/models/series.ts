@@ -5,4 +5,5 @@ export interface Series {
   name: string;
   author: Author;
   description?: string;
+  
 }

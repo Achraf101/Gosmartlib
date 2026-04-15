@@ -14,6 +14,8 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { StepperModule } from 'primeng/stepper';
 import { MessageService } from 'primeng/api';
 import { Message } from 'primeng/message';
+import { ToastModule } from 'primeng/toast'; 
+import { MessageModule } from 'primeng/message';
 import { Router } from '@angular/router';
 
 import { isbnValidator, maxEntries } from '../../utils/validator';
@@ -23,6 +25,7 @@ import { Genre } from '../../models/genre';
 import { Publisher } from '../../models/publisher';
 import { Language } from '../../models/language';
 import { BookType } from '../../models/book-type';
+import { Series } from '../../models/series';
 
 import { GenreService } from '../../services/genre';
 import { AuthorService } from '../../services/author';
@@ -31,6 +34,7 @@ import { BookService } from '../../services/book';
 import { LanguageService } from '../../services/language';
 import { BookTypeService } from '../../services/book-type';
 import { UpLoadService } from '../../services/upload';
+import { SeriesService } from '../../services/series';
 
 import { CharCounterComponent } from '../char-counter/char-counter';
 import { NavBarComponent } from '../nav-bar/nav-bar';
@@ -43,9 +47,11 @@ import { NavBarComponent } from '../nav-bar/nav-bar';
     SelectModule, DialogModule, IftaLabelModule, FluidModule,
     RadioButtonModule, MultiSelectModule, FormsModule, FileUploadModule,
     StepperModule, CharCounterComponent, NavBarComponent, Message, InputNumberModule,
+    ToastModule, MessageModule 
   ],
   templateUrl: './bookform.html',
   styleUrl: './bookform.css',
+  providers: [MessageService]
 })
 export class BookformComponent implements OnInit {
   bookForm = new FormGroup({
@@ -79,15 +85,23 @@ export class BookformComponent implements OnInit {
     description: new FormControl<string | null>(null),
   });
 
+  seriesForm = new FormGroup({
+    name: new FormControl<string>('', Validators.required),
+    description: new FormControl<string | null>(null),
+  });
+
   genres: Genre[] | undefined;
   languages: Language[] | undefined;
   publishers: Publisher[] | undefined;
   authors: Author[] | undefined;
   bookTypes: BookType[] | undefined;
+  series: Series[] | undefined;
+
   newBookId: number | undefined;
   coverDisabled: boolean = true;
   authorFormVisible: boolean = false;
   publisherFormVisible: boolean = false;
+  seriesFormVisible: boolean = false;
   
   font_sizes = [
     { name: 'Klein', value: 'KLEIN' },
@@ -105,6 +119,7 @@ export class BookformComponent implements OnInit {
     private languageService: LanguageService,
     private bookTypeService: BookTypeService,
     private upLoadService: UpLoadService,
+    private seriesService: SeriesService,
     private router: Router,
   ) {}
 
@@ -114,6 +129,7 @@ export class BookformComponent implements OnInit {
     this.authorService.getAll().subscribe(a => this.authors = a);
     this.languageService.getAll().subscribe(l => this.languages = l);
     this.bookTypeService.getAll().subscribe(bt => this.bookTypes = bt);
+    this.seriesService.getAll().subscribe(s => this.series = s);
   }
 
   private showError(detail: string) {
@@ -139,7 +155,8 @@ export class BookformComponent implements OnInit {
     if (this.authorForm.valid) {
       this.authorService.addAuthor(this.authorForm.value as Author).subscribe({
         next: (a) => {
-          this.authors?.push(a);
+          this.authors = [...(this.authors || []), a]; 
+          this.bookForm.patchValue({ author: a.id });
           this.authorFormVisible = false;
           this.authorForm.reset();
         },
@@ -152,11 +169,31 @@ export class BookformComponent implements OnInit {
     if (this.publisherForm.valid) {
       this.publisherService.addPublisher(this.publisherForm.value as Publisher).subscribe({
         next: (p) => {
-          this.publishers?.push(p);
+          this.publishers = [...(this.publishers || []), p];
           this.publisherFormVisible = false;
           this.publisherForm.reset();
         },
         error: () => this.showError('Fout bij opslaan uitgever.')
+      });
+    }
+  }
+
+  addSeries(): void {
+    if (this.seriesForm.valid) {
+      const seriesData = {
+        name: this.seriesForm.value.name!,
+        description: this.seriesForm.value.description!,
+        authorId: this.bookForm.value.author 
+      };
+
+      this.seriesService.create(seriesData as any).subscribe({
+        next: (s) => {
+          this.series = [...(this.series || []), s]; 
+          this.seriesFormVisible = false;
+          this.bookForm.patchValue({ series: s.id });
+          this.seriesForm.reset();
+        },
+        error: () => this.showError('Fout bij opslaan serie.')
       });
     }
   }

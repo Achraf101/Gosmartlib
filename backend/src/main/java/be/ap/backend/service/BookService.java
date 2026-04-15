@@ -8,6 +8,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import be.ap.backend.dto.GenreProjection;
 import be.ap.backend.dto.BookResultDTO;
@@ -15,6 +17,7 @@ import be.ap.backend.dto.CreateBookDTO;
 import be.ap.backend.dto.GenreDTO;
 import be.ap.backend.entity.Author;
 import be.ap.backend.entity.Publisher;
+import be.ap.backend.entity.Series; 
 import be.ap.backend.entity.Book;
 import be.ap.backend.entity.BookContributor;
 import be.ap.backend.entity.BookType;
@@ -24,9 +27,6 @@ import be.ap.backend.repository.BookRepository;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-
 @Service
 @RequiredArgsConstructor
 public class BookService {
@@ -35,7 +35,6 @@ public class BookService {
     private final EntityManager entityManager;
 
     public Book saveBook(CreateBookDTO dto) {
-
         Book book = new Book();
 
         // required fields
@@ -44,13 +43,23 @@ public class BookService {
         book.setLanguage(entityManager.find(Language.class, dto.getLanguage()));
         book.setFiction(dto.getFiction());
 
-        // optional fields
+       
         if (dto.getAuthor() != null) {
             book.setAuthor(entityManager.find(Author.class, dto.getAuthor()));
         }
 
         if (dto.getPublisher() != null) {
             book.setPublisher(entityManager.find(Publisher.class, dto.getPublisher()));
+        }
+
+       
+        if (dto.getSeries() != null) {
+            book.setSeries(entityManager.find(Series.class, dto.getSeries()));
+        }
+        
+        
+        if (dto.getSeriesCount() != 0) {
+            book.setSeriesNumber(dto.getSeriesCount());
         }
 
         if (dto.getGenres() != null) {
@@ -90,7 +99,6 @@ public class BookService {
     }
 
     public Page<BookResultDTO> getAllBookResults(Pageable pageable) {
-
         Page<BookResultDTO> page = bookRepository.getAllBookResults(pageable);
 
         List<Long> bookIds = page.getContent().stream()

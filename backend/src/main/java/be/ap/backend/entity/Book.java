@@ -53,12 +53,6 @@ public class Book {
     @Column(nullable = true, length = 13, name = "isbn")
     private String isbn;
 
-    @Column(name = "series_id")
-    private Long seriesId;
-
-    @Column(name = "series_count")
-    private int seriesCount;
-
     @ManyToOne
     @JoinColumn(nullable = true, name = "author_id")
     private Author author;
@@ -105,4 +99,11 @@ public class Book {
 
     @Column(nullable = true, name = "school_id")
     private long schoolId;
+
+    @ManyToOne
+    @JoinColumn(name = "series_id")
+    private Series series;
+
+    @Column(name = "series_number")
+    private Integer seriesNumber;
 }

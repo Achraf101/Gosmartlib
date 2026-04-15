@@ -1,7 +1,6 @@
 package be.ap.backend.repository;
 
 import java.util.List;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -42,37 +41,44 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     @Query("SELECT DISTINCT b FROM Book b " +
             "LEFT JOIN b.author a " +
             "LEFT JOIN b.genres g " +
+            "LEFT JOIN b.series s " + 
             "WHERE LOWER(b.title) LIKE LOWER(CONCAT('%', :query, '%')) " +
             "OR LOWER(a.name) LIKE LOWER(CONCAT('%', :query, '%')) " +
-            "OR LOWER(g.name) LIKE LOWER(CONCAT('%', :query, '%'))" +
+            "OR LOWER(g.name) LIKE LOWER(CONCAT('%', :query, '%')) " +
+            "OR LOWER(s.name) LIKE LOWER(CONCAT('%', :query, '%')) " + 
             "OR b.isbn LIKE CONCAT('%', :query, '%')")
     Page<Book> search(@Param("query") String query, Pageable pageable);
 
-    @Query(value = """
+    @Query("""
             SELECT new be.ap.backend.dto.BookResultDTO(
                 b.id,
                 b.title,
                 b.cover,
-                b.author.name,
-                b.bookType,
-                b.seriesId,
-                b.seriesCount,
-                b.language,
+                a.name,
+                bt,
+                s.id,
+                s.name,
+                b.seriesNumber,
+                l,
                 b.published,
                 b.description,
                 b.fiction,
                 b.clib,
                 b.pages,
-                b.rating,
-                b.ratingCount
+                0, 
+                0
             )
             FROM Book b
+            LEFT JOIN b.author a
+            LEFT JOIN b.bookType bt
+            LEFT JOIN b.series s
+            LEFT JOIN b.language l
             ORDER BY b.id ASC
             """)
     Page<BookResultDTO> getAllBookResults(Pageable pageable);
 
     @Query("""
-            SELECT b.id, g.id, g.name
+            SELECT b.id as bookId, g.id as genreId, g.name as genreName
             FROM Book b
             JOIN b.genres g
             WHERE b.id IN :bookIds

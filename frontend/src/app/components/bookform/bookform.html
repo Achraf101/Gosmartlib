@@ -1,9 +1,12 @@
 <app-nav-bar></app-nav-bar>
+<p-toast position="bottom-right"></p-toast>
+
 <div class="container">
   <div class="bookform">
     <div class="card">
       <p-stepper [value]="1" class="basis-[50rem]" [linear]="true">
         <form [formGroup]="bookForm">
+          
           <p-step-item [value]="1">
             <p-step>Basisinfo:</p-step>
             <p-step-panel>
@@ -21,29 +24,10 @@
                     }
                   </div>
                   <div class="inputitem field-author">
-                    <p-select
-                      [options]="authors"
-                      [filter]="true"
-                      filterBy="name"
-                      optionLabel="name"
-                      optionValue="id"
-                      formControlName="author"
-                      placeholder="Auteur*"
-                      class="select"
-                      [showClear]="true"
-                      id="author"
-                    >
+                    <p-select [options]="authors" [filter]="true" filterBy="name" optionLabel="name" optionValue="id" formControlName="author" placeholder="Auteur*" class="select" [showClear]="true" id="author">
                       <ng-template #footer>
                         <div class="p-3">
-                          <p-button
-                            label="Nieuwe auteur"
-                            fluid
-                            severity="secondary"
-                            text
-                            size="small"
-                            icon="pi pi-plus"
-                            (click)="authorFormVisible = true"
-                          />
+                          <p-button label="Nieuwe auteur" fluid severity="secondary" text size="small" icon="pi pi-plus" (click)="authorFormVisible = true" />
                         </div>
                       </ng-template>
                     </p-select>
@@ -57,119 +41,81 @@
                 <div class="inputitem">
                   <p-iftalabel>
                     <label for="title">Titel*</label>
-                    <input
-                      id="title"
-                      fluid
-                      type="text"
-                      class="input"
-                      autofocus
-                      pInputText
-                      formControlName="title"
-                    />
+                    <input id="title" fluid type="text" class="input" autofocus pInputText formControlName="title" />
                   </p-iftalabel>
-                  @if (bookForm.controls.title.invalid && bookForm.controls.title.touched) {
-                    <small class="p-error">
-                      <p-message severity="error" size="small" variant="simple">Titel is verplicht!</p-message>
-                    </small>
-                  }
                 </div>
                 <div class="inputitem">
                   <p-iftalabel>
                     <label for="description">Beschrijving*</label>
-                    <textarea
-                      id="description"
-                      formControlName="description"
-                      pTextarea
-                      rows="8"
-                      fluid
-                      maxlength="500"
-                    ></textarea>
+                    <textarea id="description" formControlName="description" pTextarea rows="8" fluid maxlength="500"></textarea>
                   </p-iftalabel>
-                  @if (bookForm.controls.description.invalid && bookForm.controls.description.touched) {
-                    <small class="p-error">
-                      <p-message severity="error" size="small" variant="simple">Beschrijving is verplicht!</p-message>
-                    </small>
-                  }
-                  <app-char-counter
-                    [text]="bookForm.get('description')?.value ?? ''"
-                    [maxLength]="500"
-                  ></app-char-counter>
+                  <app-char-counter [text]="bookForm.get('description')?.value ?? ''" [maxLength]="500"></app-char-counter>
                 </div>
                 <div class="inputitem">
                   <p>Didactisch materiaal?*</p>
                   <div class="radioBtns">
-                    <p-radiobutton
-                      id="didactic_material_no"
-                      [value]="false"
-                      name="didactic_material"
-                      formControlName="didactic_material"
-                    />
+                    <p-radiobutton id="didactic_material_no" [value]="false" name="didactic_material" formControlName="didactic_material" />
                     <label for="didactic_material_no">Nee</label>
-                    <p-radiobutton
-                      id="didactic_material_yes"
-                      [value]="true"
-                      name="didactic_material"
-                      formControlName="didactic_material"
-                    />
+                    <p-radiobutton id="didactic_material_yes" [value]="true" name="didactic_material" formControlName="didactic_material" />
                     <label for="didactic_material_yes">Ja</label>
                   </div>
                 </div>
                 <div class="btns">
-                  <p-button
-                    label="Volgende"
-                    [disabled]="bookForm.controls.title.invalid || bookForm.controls.description.invalid || bookForm.controls.author.invalid"
-                    (onClick)="activateCallback(2)"
-                  />
+                  <p-button label="Volgende" [disabled]="bookForm.controls.title.invalid || bookForm.controls.description.invalid || bookForm.controls.author.invalid" (onClick)="activateCallback(2)" />
                 </div>
               </ng-template>
             </p-step-panel>
           </p-step-item>
+
           <p-step-item [value]="2">
             <p-step>Extra info:</p-step>
             <p-step-panel>
               <ng-template #content let-activateCallback="activateCallback">
+                
                 <div class="inputrow">
-                  <div class="inputitem field-publisher">
-                    <p-select
-                      [options]="publishers"
-                      [filter]="true"
-                      filterBy="name"
-                      optionLabel="name"
-                      optionValue="id"
-                      formControlName="publisher"
-                      placeholder="Uitgever (optioneel)"
-                      class="select"
+                  <div class="inputitem field-series">
+                    <p-select 
+                      [options]="series" 
+                      [filter]="true" 
+                      filterBy="name" 
+                      optionLabel="name" 
+                      optionValue="id" 
+                      formControlName="series" 
+                      placeholder="Serie (optioneel)" 
+                      class="select" 
                       [showClear]="true"
                     >
                       <ng-template #footer>
                         <div class="p-3">
-                          <p-button
-                            label="Nieuwe uitgever"
-                            fluid
-                            severity="secondary"
-                            text
-                            size="small"
-                            icon="pi pi-plus"
-                            (click)="publisherFormVisible = true"
-                          />
+                          <p-button label="Nieuwe serie" fluid severity="secondary" text size="small" icon="pi pi-plus" (click)="seriesFormVisible = true" />
+                        </div>
+                      </ng-template>
+                    </p-select>
+                  </div>
+                  
+                  <div class="inputitem field-series-nr">
+                    <label for="series_count" class="static-label">Volgnummer</label>
+                    <p-inputNumber id="series_count" formControlName="series_count" [showButtons]="true" [min]="1" [useGrouping]="false" styleClass="w-full" placeholder="Bv. 1" />
+                  </div>
+                </div>
+
+                <div class="inputrow">
+                  <div class="inputitem field-publisher">
+                    <p-select [options]="publishers" [filter]="true" filterBy="name" optionLabel="name" optionValue="id" formControlName="publisher" placeholder="Uitgever (optioneel)" class="select" [showClear]="true">
+                      <ng-template #footer>
+                        <div class="p-3">
+                          <p-button label="Nieuwe uitgever" fluid severity="secondary" text size="small" icon="pi pi-plus" (click)="publisherFormVisible = true" />
                         </div>
                       </ng-template>
                     </p-select>
                   </div>
                   <div class="inputitem field-clib">
-                    <p-select
-                      [options]="cLIBS"
-                      formControlName="clib"
-                      id="clib"
-                      class="select"
-                      placeholder="CLIB (optioneel)"
-                      [showClear]="true"
-                    />
+                    <p-select [options]="cLIBS" formControlName="clib" id="clib" class="select" placeholder="CLIB (optioneel)" [showClear]="true" />
                   </div>
                 </div>
+
                 <div class="inputitem">
                   <div>Kies er één*:</div>
-                  <br />
                   <div class="radioBtns">
                     <p-radiobutton id="fiction" [value]="true" name="fiction" formControlName="fiction" />
                     <label for="fiction"> Fictie</label>
@@ -178,60 +124,26 @@
                   </div>
                 </div>
                 <div class="inputitem dropdowns">
-                  <p-select
-                    [options]="bookTypes"
-                    [filter]="true"
-                    filterBy="name"
-                    optionLabel="name"
-                    optionValue="id"
-                    formControlName="book_type"
-                    placeholder="Boektype*"
-                    class="select"
-                  />
-                  <p-multiselect
-                    display="chip"
-                    [options]="genres"
-                    formControlName="genres"
-                    placeholder="Genre(s)*"
-                    [selectionLimit]="5"
-                    optionLabel="name"
-                    optionValue="id"
-                    showToggleAll="false"
-                    [showClear]="true"
-                    class="select"
-                  />
+                  <p-select [options]="bookTypes" [filter]="true" filterBy="name" optionLabel="name" optionValue="id" formControlName="book_type" placeholder="Boektype*" class="select" />
+                  <p-multiselect display="chip" [options]="genres" formControlName="genres" placeholder="Genre(s)*" [selectionLimit]="5" optionLabel="name" optionValue="id" showToggleAll="false" [showClear]="true" class="select" />
                 </div>
                 <div class="inputitem">
                   <p-iftalabel>
-                    <p-inputNumber formControlName="published" [showButtons]="true" [min]="1" [useGrouping]="false" />
+                    <p-inputNumber formControlName="published" [showButtons]="true" [min]="1" [useGrouping]="false" styleClass="w-full" />
                     <label for="published">Jaar van uitgave</label>
                   </p-iftalabel>
                 </div>
                 <div class="inputitem">
-                  <p-select
-                    [options]="languages"
-                    formControlName="language"
-                    optionValue="id"
-                    optionLabel="name"
-                    placeholder="Taal*"
-                    class="language"
-                  />
+                  <p-select [options]="languages" formControlName="language" optionValue="id" optionLabel="name" placeholder="Taal*" class="language" />
                 </div>
                 <div class="inputitem">
                   <p-iftalabel>
-                    <p-inputNumber id="pages" formControlName="pages" [showButtons]="true" [min]="1" [useGrouping]="false" />
+                    <p-inputNumber id="pages" formControlName="pages" [showButtons]="true" [min]="1" [useGrouping]="false" styleClass="w-full" />
                     <label for="pages">Aantal pagina's</label>
                   </p-iftalabel>
                 </div>
                 <div class="inputitem">
-                  <p-select
-                    [options]="font_sizes"
-                    formControlName="font_size"
-                    optionValue="value"
-                    optionLabel="name"
-                    placeholder="Lettergrootte (optioneel)"
-                    [showClear]="true"
-                  />
+                  <p-select [options]="font_sizes" formControlName="font_size" optionValue="value" optionLabel="name" placeholder="Lettergrootte (optioneel)" [showClear]="true" class="w-full" />
                 </div>
                 <div class="inputitem">
                   <p>Enkel zichtbaar voor deze school?*<br /><span class="subtext">(dit verbergt het boek voor andere scholen)</span></p>
@@ -249,6 +161,7 @@
               </ng-template>
             </p-step-panel>
           </p-step-item>
+
           <p-step-item [value]="3">
             <p-step>Boekomslag:</p-step>
             <p-step-panel>
@@ -261,36 +174,63 @@
       </p-stepper>
     </div>
   </div>
+
   <form [formGroup]="authorForm">
-    <p-dialog header="Nieuwe auteur" [modal]="true" [(visible)]="authorFormVisible" [style]="{ width: '30rem' }" resizable="false">
+    <p-dialog header="Nieuwe auteur" [modal]="true" [(visible)]="authorFormVisible" [style]="{ width: '30rem' }">
       <p-iftalabel>
         <label for="author-name">Naam*</label>
-        <input pInputText id="author-name" formControlName="name" autocomplete="off" class="author-name" fluid />
+        <input pInputText id="author-name" formControlName="name" autocomplete="off" class="w-full mb-3" />
       </p-iftalabel>
       <p-iftalabel>
-        <label for="author-desc">Beschrijving (optioneel)</label>
-        <textarea rows="5" formControlName="description" class="author-description" fluid style="resize: vertical" pTextarea></textarea>
+        <label for="author-desc">Beschrijving</label>
+        <textarea rows="5" formControlName="description" class="w-full" pTextarea></textarea>
       </p-iftalabel>
-      <div class="btns">
+      <div class="btns mt-3">
         <p-button label="Annuleer" severity="secondary" (click)="authorFormVisible = false" />
         <p-button label="Opslaan" [disabled]="authorForm.invalid" (click)="addAuthor()" />
       </div>
     </p-dialog>
   </form>
+
   <form [formGroup]="publisherForm">
-    <p-dialog header="Nieuwe uitgever" [modal]="true" [(visible)]="publisherFormVisible" [style]="{ width: '30rem' }" resizable="false">
+    <p-dialog header="Nieuwe uitgever" [modal]="true" [(visible)]="publisherFormVisible" [style]="{ width: '30rem' }">
       <p-iftalabel>
         <label for="pub-name">Naam*</label>
-        <input pInputText id="pub-name" formControlName="name" autocomplete="off" class="author-name" fluid />
+        <input pInputText id="pub-name" formControlName="name" class="w-full mb-3" />
       </p-iftalabel>
       <p-iftalabel>
-        <label for="pub-desc">Beschrijving (optioneel)</label>
-        <textarea rows="5" formControlName="description" class="author-desc" fluid pTextarea maxlength="255" style="resize: vertical"></textarea>
+        <label for="pub-desc">Beschrijving</label>
+        <textarea rows="5" formControlName="description" class="w-full" pTextarea></textarea>
       </p-iftalabel>
-      <div class="btns">
+      <div class="btns mt-3">
         <p-button label="Annuleer" severity="secondary" (click)="publisherFormVisible = false" />
         <p-button label="Opslaan" [disabled]="publisherForm.invalid" (click)="addPublisher()" />
       </div>
     </p-dialog>
+  </form>
+
+  <form [formGroup]="seriesForm">
+    <p-dialog header="Nieuwe serie" [modal]="true" [(visible)]="seriesFormVisible" [style]="{ width: '30rem' }" resizable="false">
+  <form [formGroup]="seriesForm">
+    <div class="flex flex-column">
+      
+      <p-iftalabel>
+        <label for="ser-name">Naam*</label>
+        <input pInputText id="ser-name" formControlName="name" autocomplete="off" />
+      </p-iftalabel>
+      
+      <p-iftalabel>
+        <label for="ser-desc">Beschrijving (optioneel)</label>
+        <textarea rows="5" formControlName="description" id="ser-desc" pTextarea maxlength="500" style="resize: none"></textarea>
+      </p-iftalabel>
+
+    </div>
+    
+    <div class="btns">
+      <p-button label="Annuleer" severity="secondary" (click)="seriesFormVisible = false" />
+      <p-button label="Opslaan" [disabled]="seriesForm.invalid" (click)="addSeries()" />
+    </div>
+  </form>
+</p-dialog>
   </form>
 </div>
