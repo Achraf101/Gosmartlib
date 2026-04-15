@@ -26,7 +26,7 @@ export class BookDetailPage implements OnInit {
   isBookmarked = false;
   genresString = '';
 
-  // TODO: replace with actual logged in user id once auth is done
+
   userId = 1;
 
 

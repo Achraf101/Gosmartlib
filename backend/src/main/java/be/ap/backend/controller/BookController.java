@@ -63,24 +63,25 @@ public class BookController {
     }
 
     @GetMapping("/filter")
-    public Page<Book> filter(
-            @RequestParam(required = false) List<Long> genres,
-            @RequestParam(required = false) Long language,
-            @RequestParam(required = false) Boolean fiction,
-            @RequestParam(required = false) List<Long> authorIds,
-            @RequestParam(required = false) @Min(0) Integer pagesMin,
-            @RequestParam(required = false) @Min(0) Integer pagesMax,
-            @RequestParam(required = false) List<Clib> clibs,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "5") int size) {
+public Page<Book> filter(
+        @RequestParam(required = false) List<Long> genres,
+        @RequestParam(required = false) Long language,
+        @RequestParam(required = false) Boolean fiction,
+        @RequestParam(required = false) List<Long> authorIds,
+        @RequestParam(required = false) List<Long> seriesIds,
+        @RequestParam(required = false) @Min(0) Integer pagesMin,
+        @RequestParam(required = false) @Min(0) Integer pagesMax,
+        @RequestParam(required = false) List<Clib> clibs,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "5") int size) {
 
-        if (pagesMin != null && pagesMax != null && pagesMin > pagesMax) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "pagesMin moet kleiner zijn dan pagesMax");
-        }
-
-        Pageable pageable = PageRequest.of(page, size);
-        return bookRepository.filter(genres, language, fiction, authorIds, pagesMin, pagesMax, clibs, pageable);
+    if (pagesMin != null && pagesMax != null && pagesMin > pagesMax) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "pagesMin moet kleiner zijn dan pagesMax");
     }
+
+    Pageable pageable = PageRequest.of(page, size);
+    return bookService.filter(genres, language, fiction, authorIds, seriesIds, pagesMin, pagesMax, clibs, pageable);
+}
 
     @PostMapping
     public Book addBook(@RequestBody CreateBookDTO dto) {

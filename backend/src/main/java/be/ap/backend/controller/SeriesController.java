@@ -25,6 +25,11 @@ public class SeriesController {
         return seriesService.searchByName(name);
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<SeriesDTO> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(seriesService.findById(id));
+    }
+
     @PostMapping
     public ResponseEntity<SeriesDTO> create(@RequestBody SeriesDTO dto) {
         return ResponseEntity.ok(seriesService.createSeries(dto));

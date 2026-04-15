@@ -4,6 +4,7 @@ import java.time.Year;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -103,6 +104,11 @@ public class Book {
     @ManyToOne
     @JoinColumn(name = "series_id")
     private Series series;
+
+    @JsonProperty("series_name")
+    public String getSeriesName() {
+        return series != null ? series.getName() : null;
+    }
 
     @Column(name = "series_number")
     private Integer seriesNumber;

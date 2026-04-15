@@ -29,6 +29,12 @@ public class SeriesService {
                 .collect(Collectors.toList());
     }
 
+    public SeriesDTO findById(Long id) {
+    return seriesRepository.findById(id)
+            .map(this::convertToDTO)
+            .orElseThrow(() -> new RuntimeException("Series niet gevonden: " + id));
+}
+
     public SeriesDTO createSeries(SeriesDTO dto) {
         Series series = new Series();
         series.setName(dto.getName());

@@ -7,6 +7,7 @@ import { ApiService } from '../../services/api';
 import { Author } from '../../models/author';
 import { Genre } from '../../models/genre';
 import { Language } from '../../models/language';
+import { Series } from '../../models/series'; // voeg dit model toe
 import { AutoCompleteModule, AutoCompleteCompleteEvent } from 'primeng/autocomplete';
 import { SelectModule } from 'primeng/select';
 import { InputNumberModule } from 'primeng/inputnumber';
@@ -27,6 +28,8 @@ export class FilterPage implements OnInit {
   selectedFiction: boolean | null = null;
   selectedAuthors: Author[] = [];
   authorSuggestions: Author[] = [];
+  selectedSeries: Series[] = [];
+  seriesSuggestions: Series[] = [];
   selectedClib: string[] = [];
   pagesMin: number | null = null;
   pagesMax: number | null = null;
@@ -55,6 +58,12 @@ export class FilterPage implements OnInit {
           this.apiService.get<Author>(`author/${id}`).subscribe(a => this.selectedAuthors.push(a));
         });
       }
+      if (params['seriesIds']) {
+        this.selectedSeries = [];
+        params['seriesIds'].split(',').forEach((id: string) => {
+          this.apiService.get<Series>(`series/${id}`).subscribe(s => this.selectedSeries.push(s));
+        });
+      }
       if (params['clibs']) {
         this.selectedClib = params['clibs'].split(',');
       }
@@ -71,6 +80,17 @@ export class FilterPage implements OnInit {
     }
     this.apiService.get<Author[]>(`author/search/${encodeURIComponent(query)}`).subscribe(
       a => this.authorSuggestions = a
+    );
+  }
+
+  searchSeries(event: AutoCompleteCompleteEvent): void {
+    const query = event.query.trim();
+    if (!query) {
+      this.seriesSuggestions = [];
+      return;
+    }
+    this.apiService.get<Series[]>(`series/search/${encodeURIComponent(query)}`).subscribe(
+      s => this.seriesSuggestions = s
     );
   }
 
@@ -126,6 +146,7 @@ export class FilterPage implements OnInit {
     if (this.selectedLanguage) params['language'] = this.selectedLanguage;
     if (this.selectedFiction !== null) params['fiction'] = this.selectedFiction;
     if (this.selectedAuthors.length > 0) params['authorIds'] = this.selectedAuthors.map(a => a.id).join(',');
+    if (this.selectedSeries.length > 0) params['seriesIds'] = this.selectedSeries.map(s => s.id).join(',');
     if (this.selectedClib.length > 0) params['clibs'] = this.selectedClib.join(',');
     if (this.pagesMin !== null) params['pagesMin'] = this.pagesMin;
     if (this.pagesMax !== null) params['pagesMax'] = this.pagesMax;
@@ -138,6 +159,7 @@ export class FilterPage implements OnInit {
     this.selectedLanguage = null;
     this.selectedFiction = null;
     this.selectedAuthors = [];
+    this.selectedSeries = [];
     this.selectedClib = [];
     this.pagesMin = null;
     this.pagesMax = null;

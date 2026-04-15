@@ -35,9 +35,9 @@ export interface BookResult extends BookBase {
 
 export interface BookDetail extends BookBase {
   book_type: BookType;
-  isbn?: string;
-  series?: Series;         
-  series_count?: number;   
+  isbn?: string;         
+  series_name?: string;  
+  series_number?: number; 
   contributors?: Author[];
   publisher?: Publisher;
   genres: Genre[];

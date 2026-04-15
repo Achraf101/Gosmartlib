@@ -17,10 +17,11 @@ import be.ap.backend.dto.CreateBookDTO;
 import be.ap.backend.dto.GenreDTO;
 import be.ap.backend.entity.Author;
 import be.ap.backend.entity.Publisher;
-import be.ap.backend.entity.Series; 
+import be.ap.backend.entity.Series;
 import be.ap.backend.entity.Book;
 import be.ap.backend.entity.BookContributor;
 import be.ap.backend.entity.BookType;
+import be.ap.backend.entity.Clib;
 import be.ap.backend.entity.Genre;
 import be.ap.backend.entity.Language;
 import be.ap.backend.repository.BookRepository;
@@ -43,7 +44,6 @@ public class BookService {
         book.setLanguage(entityManager.find(Language.class, dto.getLanguage()));
         book.setFiction(dto.getFiction());
 
-       
         if (dto.getAuthor() != null) {
             book.setAuthor(entityManager.find(Author.class, dto.getAuthor()));
         }
@@ -52,12 +52,10 @@ public class BookService {
             book.setPublisher(entityManager.find(Publisher.class, dto.getPublisher()));
         }
 
-       
         if (dto.getSeries() != null) {
             book.setSeries(entityManager.find(Series.class, dto.getSeries()));
         }
-        
-        
+
         if (dto.getSeriesCount() != 0) {
             book.setSeriesNumber(dto.getSeriesCount());
         }
@@ -96,6 +94,34 @@ public class BookService {
         }
 
         return bookRepository.save(book);
+    }
+
+    public Page<Book> filter(
+            List<Long> genres,
+            Long language,
+            Boolean fiction,
+            List<Long> authorIds,
+            List<Long> seriesIds,
+            Integer pagesMin,
+            Integer pagesMax,
+            List<Clib> clibs,
+            Pageable pageable) {
+
+        // 🔥 BELANGRIJK
+        if (seriesIds != null && seriesIds.isEmpty()) {
+            seriesIds = null;
+        }
+
+        return bookRepository.filter(
+                genres,
+                language,
+                fiction,
+                authorIds,
+                seriesIds,
+                pagesMin,
+                pagesMax,
+                clibs,
+                pageable);
     }
 
     public Page<BookResultDTO> getAllBookResults(Pageable pageable) {

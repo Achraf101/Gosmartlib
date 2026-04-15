@@ -1,215 +1,225 @@
 <app-nav-bar />
 @if (error) {
-  <p class="error">{{ error }}</p>
+<p class="error">{{ error }}</p>
 }
 @if (book) {
-  <div class="detail-container">
-    <div id="book-info" class="box">
-      <h2 class="show-mobile">{{ book.title }}</h2>
-      <h3 class="show-mobile">
+<div class="detail-container">
+  <div id="book-info" class="box">
+    <h2 class="show-mobile">{{ book.title }}</h2>
+    <h3 class="show-mobile">
+      @if (book.author != null) {
+      {{ book.author.name }} (auteur)
+      }
+      @for (contributor of book.contributors; track $index) {
+      , {{ contributor }}
+      }
+      @if (book.contributors && book.contributors.length > 0) {
+      (medeauteur)
+      }
+    </h3>
+    <div id="book-info-image">
+      @if (book.cover == '' || book.cover == null) {
+      <img src="{{ placeholder }}" alt="boek omslag" />
+      } @else {
+      <p-image src="/static/cover/{{ book.cover }}" preview alt="boek omslag" class="cover" />
+      }
+      <div id="stars">
+        <p-rating [(ngModel)]="ratingValueStars" [disabled]="true" />
+        <p>
+          @if (ratingValue > 0) {
+          ({{ ratingValue }})
+          } @else {
+          (0)
+          }
+        </p>
+      </div>
+      <i (click)="toggleFavorite()" class="bookmark pi" [class.pi-bookmark]="!isBookmarked"
+        [class.pi-bookmark-fill]="isBookmarked"></i>
+    </div>
+    <div id="book-info-text">
+      <h2 class="show-desktop">{{ book.title }}</h2>
+      <h3 class="show-desktop">
         @if (book.author != null) {
-          {{ book.author.name }} (auteur)
+        {{ book.author.name }} (auteur)
         }
         @for (contributor of book.contributors; track $index) {
-          , {{ contributor }}
+        , {{ contributor }}
         }
         @if (book.contributors && book.contributors.length > 0) {
-          (medeauteur)
+        (medeauteur)
         }
       </h3>
-      <div id="book-info-image">
-        @if (book.cover == '' || book.cover == null) {
-          <img src="{{ placeholder }}" alt="boek omslag" />
-        } @else {
-          <p-image src="/static/cover/{{ book.cover }}" preview alt="boek omslag" class="cover" />
-        }
-        <div id="stars">
-          <p-rating [(ngModel)]="ratingValueStars" [disabled]="true" />
-          <p>
-            @if (ratingValue > 0) {
-              ({{ ratingValue }})
-            } @else {
-              (0)
-            }
-          </p>
-        </div>
-        <i
-          (click)="toggleFavorite()"
-          class="bookmark pi"
-          [class.pi-bookmark]="!isBookmarked"
-          [class.pi-bookmark-fill]="isBookmarked"
-        ></i>
-      </div>
-      <div id="book-info-text">
-        <h2 class="show-desktop">{{ book.title }}</h2>
-        <h3 class="show-desktop">
-          @if (book.author != null) {
-            {{ book.author.name }} (auteur)
-          }
-          @for (contributor of book.contributors; track $index) {
-            , {{ contributor }}
-          }
-          @if (book.contributors && book.contributors.length > 0) {
-            (medeauteur)
-          }
-        </h3>
-        <p>
-          {{ book.language.name }}
-          @if (book.published != null) {
-            | {{ book.published }}
-          }
-          </p>
-        <p-accordion class="show-mobile">
-          <p-accordion-panel value="0">
-            <p-accordion-header class="description">Beschrijving</p-accordion-header>
-            <p-accordion-content>{{ book.description }}</p-accordion-content>
-          </p-accordion-panel>
-        </p-accordion>
-        <p class="show-desktop">{{ book.description }}</p>
-      </div>
-    </div>
-
-    <div id="book-available" class="box">
-      <h2>Beschikbaarheid</h2>
-      <table>
-        <caption>
-          {{
-            book.school
-          }}
-        </caption>
-        <tr>
-          <th>Uitgave</th>
-          <th>Beschikbaarheid</th>
-          <th>Info</th>
-        </tr>
-        <tr>
-          <td>
-            <p>
-              @if (book.publisher != null) {
-                {{ book.publisher.name }}
-              }
-              @if (book.published != null && book.publisher != null) {
-                ,
-              }
-              @if (book.published != null) {
-                {{ book.published }}
-              }
-            </p>
-          </td>
-          <td><p>beschikbaar</p></td>
-          <td>
-            <p>
-              @if (book.language.id != 1) {
-                Anderstalige literatuur:
-              }
-              {{ book.language.name }}
-            </p>
-            <p>
-              {{ genresString }}
-            </p>
-          </td>
-        </tr>
-      </table>
-    </div>
-
-    <div id="book-detail" class="box">
-      <table>
-        <caption>
-          <h2>Details</h2>
-        </caption>
-        @if (book.title != null) {
-          <tr>
-            <td>Titel</td>
-            <td>{{ book.title }}</td>
-          </tr>
-        }
-        @if (book.book_type != null) {
-          <tr>
-            <td>Boektype</td>
-            <td>{{ book.book_type.name }}</td>
-          </tr>
-        }
-        @if (genresString != '') {
-          <tr>
-            <td>Genre</td>
-            <td>
-              {{ genresString }}
-            </td>
-          </tr>
-        }
-        @if (book.author != null) {
-          <tr>
-            <td>Auteur</td>
-            <td>{{ book.author.name }}</td>
-          </tr>
-        }
-        @if (book.language != null) {
-          <tr>
-            <td>Taal</td>
-            <td>{{ book.language.name }}</td>
-          </tr>
-        }
-        @if (book.publisher != null) {
-          <tr>
-            <td>Uitgever</td>
-            <td>{{ book.publisher.name }}</td>
-          </tr>
-        }
+      <p>
+        {{ book.language.name }}
         @if (book.published != null) {
-          <tr>
-            <td>Jaar van uitgave</td>
-            <td>{{ book.published }}</td>
-          </tr>
+        | {{ book.published }}
         }
-        @if (book.clib) {
-          <tr>
-            <td>CLIB niveau</td>
-            <td>{{ book.clib }}</td>
-          </tr>
-        }
-        @if (book.pages != null) {
-          <tr>
-            <td>Pagina's</td>
-            <td>
-              @if (book.pages != 0) {
-                {{ book.pages }} p.
-              } @else {
-                1 p.
-              }
-            </td>
-          </tr>
-        }
-        @if (book.isbn != null) {
-          <tr>
-            <td>ISBN</td>
-            <td>{{ book.isbn }}</td>
-          </tr>
-        }
-      </table>
+      </p>
+      <p-accordion class="show-mobile">
+        <p-accordion-panel value="0">
+          <p-accordion-header class="description">Beschrijving</p-accordion-header>
+          <p-accordion-content>{{ book.description }}</p-accordion-content>
+        </p-accordion-panel>
+      </p-accordion>
+      <p class="show-desktop">{{ book.description }}</p>
     </div>
-    @if (relatedBooks?.length != 0) {
-      <div id="related-books" class="box">
-        <h2>Meer van dit:</h2>
-        <div id="related-books-book">
-          @if (relatedBooks) {
-            @for (bookCard of relatedBooks; track bookCard.id) {
-              <div class="book-card" routerLink="/boek/{{ bookCard.id }}" (click)="scrollTop()">
-                <div class="book-card-header">
-                  <p class="book-card-title">{{ bookCard.title }}</p>
-                </div>
-                @if (bookCard.cover == '' || bookCard.cover == null) {
-                  <img src="{{ placeholder }}" alt="boek omslag" />
-                } @else {
-                  <img src="/static/cover/{{ bookCard.cover }}" alt="boek omslag" class="cover" />
-                }
-                <p>{{ bookCard.author_name }}</p>
-              </div>
-            }
-          }
-        </div>
-      </div>
-    }
   </div>
+
+  <div id="book-available" class="box">
+    <h2>Beschikbaarheid</h2>
+    <table>
+      <caption>
+        {{
+        book.school
+        }}
+      </caption>
+      <tr>
+        <th>Uitgave</th>
+        <th>Beschikbaarheid</th>
+        <th>Info</th>
+      </tr>
+      <tr>
+        <td>
+          <p>
+            @if (book.publisher != null) {
+            {{ book.publisher.name }}
+            }
+            @if (book.published != null && book.publisher != null) {
+            ,
+            }
+            @if (book.published != null) {
+            {{ book.published }}
+            }
+          </p>
+        </td>
+        <td>
+          <p>beschikbaar</p>
+        </td>
+        <td>
+          <p>
+            @if (book.language.id != 1) {
+            Anderstalige literatuur:
+            }
+            {{ book.language.name }}
+          </p>
+          <p>
+            {{ genresString }}
+          </p>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <div id="book-detail" class="box">
+    <table>
+      <caption>
+        <h2>Details</h2>
+      </caption>
+      @if (book.title != null) {
+      <tr>
+        <td>Titel</td>
+        <td>{{ book.title }}</td>
+      </tr>
+      }
+      @if (book.book_type != null) {
+      <tr>
+        <td>Boektype</td>
+        <td>{{ book.book_type.name }}</td>
+      </tr>
+      }
+      @if (genresString != '') {
+      <tr>
+        <td>Genre</td>
+        <td>
+          {{ genresString }}
+        </td>
+      </tr>
+      }
+      @if (book.author != null) {
+      <tr>
+        <td>Auteur</td>
+        <td>{{ book.author.name }}</td>
+      </tr>
+      }
+      @if (book.language != null) {
+      <tr>
+        <td>Taal</td>
+        <td>{{ book.language.name }}</td>
+      </tr>
+      }
+      @if (book.publisher != null) {
+      <tr>
+        <td>Uitgever</td>
+        <td>{{ book.publisher.name }}</td>
+      </tr>
+      }
+      @if (book.published != null) {
+      <tr>
+        <td>Jaar van uitgave</td>
+        <td>{{ book.published }}</td>
+      </tr>
+      }
+      @if (book.clib) {
+      <tr>
+        <td>CLIB niveau</td>
+        <td>{{ book.clib }}</td>
+      </tr>
+      }
+      @if (book.pages != null) {
+      <tr>
+        <td>Pagina's</td>
+        <td>
+          @if (book.pages != 0) {
+          {{ book.pages }} p.
+          } @else {
+          1 p.
+          }
+        </td>
+      </tr>
+      }
+      @if (book.isbn != null) {
+      <tr>
+        <td>ISBN</td>
+        <td>{{ book.isbn }}</td>
+      </tr>
+      }
+      @if (book.series_name) {
+      <tr>
+        <td>Serie</td>
+        <td>{{ book.series_name }}</td>
+      </tr>
+      }
+      @if (book.series_number) {
+      <tr>
+        <td>Volgnummer</td>
+        <td>Deel {{ book.series_number }}</td>
+      </tr>
+      }
+    </table>
+  </div>
+  @if (relatedBooks?.length != 0) {
+  <div id="related-books" class="box">
+    <h2>Meer van dit:</h2>
+    <div id="related-books-book">
+      @if (relatedBooks) {
+      @for (bookCard of relatedBooks; track bookCard.id) {
+      <div class="book-card" routerLink="/boek/{{ bookCard.id }}" (click)="scrollTop()">
+        <div class="book-card-header">
+          <p class="book-card-title">{{ bookCard.title }}</p>
+        </div>
+        @if (bookCard.cover == '' || bookCard.cover == null) {
+        <img src="{{ placeholder }}" alt="boek omslag" />
+        } @else {
+        <img src="/static/cover/{{ bookCard.cover }}" alt="boek omslag" class="cover" />
+        }
+        <p>{{ bookCard.author_name }}</p>
+      </div>
+      }
+      }
+    </div>
+  </div>
+  }
+</div>
 } @else {
-  <p>Geen boeken gevonden.</p>
+<p>Geen boeken gevonden.</p>
 }

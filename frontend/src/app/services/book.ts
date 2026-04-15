@@ -58,8 +58,11 @@ export class BookService {
     
     if (filters.author) 
       params = params.set('authorIds', filters.author.join(','));
+
+    if (filters.series && filters.series.length > 0)
+  params = params.set('seriesIds', filters.series.join(','));
     
-    // De fix: CLIB parameters doorsturen naar de backend
+    
     if (filters.clibs && filters.clibs.length > 0) {
       params = params.set('clibs', filters.clibs.join(','));
     }

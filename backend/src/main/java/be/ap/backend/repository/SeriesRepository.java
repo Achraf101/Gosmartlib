@@ -11,4 +11,5 @@ public interface SeriesRepository extends JpaRepository<Series, Long> {
     List<Series> findByNameContainingIgnoreCase(String name);
 
     List<Series> findByAuthorId(Long authorId);
+    
 }
