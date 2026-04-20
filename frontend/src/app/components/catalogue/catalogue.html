@@ -9,26 +9,7 @@
 
   <h1>Catalogus</h1>
 
-  <form class="search-bar" (submit)="$event.preventDefault(); onSearch()">
-    <div class="search-wrapper">
-      <input
-        type="text"
-        class="search-input"
-        placeholder="Zoek op titel, auteur of genre..."
-        [(ngModel)]="searchQuery"
-        name="search"
-      />
-      <button type="submit" class="search-btn">
-        <i class="pi pi-search"></i>
-      </button>
-    </div>
-    <a [routerLink]="['/catalogus/filter']" [queryParams]="activeQueryParams" class="filter-link">
-      Zoeken met filters
-    </a>
-    @if (searchQuery) {
-      <button type="button" class="clear-btn" (click)="clearSearch()">Wis zoekopdracht</button>
-    }
-  </form>
+ <s-bar (search)="onSearch($event)" />
 
   @if (loading) {
     <div class="loading-container">

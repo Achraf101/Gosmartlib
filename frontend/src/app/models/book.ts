@@ -34,6 +34,7 @@ export interface BookResult extends BookBase {
 }
 
 export interface BookDetail extends BookBase {
+  author_name: string;
   book_type: BookType;
   isbn?: string;         
   series_name?: string;  

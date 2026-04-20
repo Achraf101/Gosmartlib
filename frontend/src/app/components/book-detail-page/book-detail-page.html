@@ -63,32 +63,12 @@
       </p-accordion>
       <p class="show-desktop">{{ book.description }}</p>
     </div>
-    @if (relatedBooks?.length != 0) {
-      <div id="related-books" class="box">
-        <h2>Meer van dit:</h2>
-        <div id="related-books-book">
-          @if (relatedBooks) {
-            <p-carousel [value]="relatedBooks" [numVisible]="4" [numScroll]="2">
-              <ng-template pTemplate="item" let-bookCard>
-                <b-card [bookCard]="bookCard"></b-card>
-              </ng-template>
-            </p-carousel>
-          }
-        </div>
-      </div>
-    }
-  </div>
-}
   </div>
 
   <div id="book-available" class="box">
     <h2>Beschikbaarheid</h2>
     <table>
-      <caption>
-        {{
-        book.school
-        }}
-      </caption>
+      <caption>{{ book.school }}</caption>
       <tr>
         <th>Uitgave</th>
         <th>Beschikbaarheid</th>
@@ -118,9 +98,7 @@
             }
             {{ book.language.name }}
           </p>
-          <p>
-            {{ genresString }}
-          </p>
+          <p>{{ genresString }}</p>
         </td>
       </tr>
     </table>
@@ -128,58 +106,30 @@
 
   <div id="book-detail" class="box">
     <table>
-      <caption>
-        <h2>Details</h2>
-      </caption>
+      <caption><h2>Details</h2></caption>
       @if (book.title != null) {
-      <tr>
-        <td>Titel</td>
-        <td>{{ book.title }}</td>
-      </tr>
+      <tr><td>Titel</td><td>{{ book.title }}</td></tr>
       }
       @if (book.book_type != null) {
-      <tr>
-        <td>Boektype</td>
-        <td>{{ book.book_type.name }}</td>
-      </tr>
+      <tr><td>Boektype</td><td>{{ book.book_type.name }}</td></tr>
       }
       @if (genresString != '') {
-      <tr>
-        <td>Genre</td>
-        <td>
-          {{ genresString }}
-        </td>
-      </tr>
+      <tr><td>Genre</td><td>{{ genresString }}</td></tr>
       }
       @if (book.author != null) {
-      <tr>
-        <td>Auteur</td>
-        <td>{{ book.author.name }}</td>
-      </tr>
+      <tr><td>Auteur</td><td>{{ book.author.name }}</td></tr>
       }
       @if (book.language != null) {
-      <tr>
-        <td>Taal</td>
-        <td>{{ book.language.name }}</td>
-      </tr>
+      <tr><td>Taal</td><td>{{ book.language.name }}</td></tr>
       }
       @if (book.publisher != null) {
-      <tr>
-        <td>Uitgever</td>
-        <td>{{ book.publisher.name }}</td>
-      </tr>
+      <tr><td>Uitgever</td><td>{{ book.publisher.name }}</td></tr>
       }
       @if (book.published != null) {
-      <tr>
-        <td>Jaar van uitgave</td>
-        <td>{{ book.published }}</td>
-      </tr>
+      <tr><td>Jaar van uitgave</td><td>{{ book.published }}</td></tr>
       }
       @if (book.clib) {
-      <tr>
-        <td>CLIB niveau</td>
-        <td>{{ book.clib }}</td>
-      </tr>
+      <tr><td>CLIB niveau</td><td>{{ book.clib }}</td></tr>
       }
       @if (book.pages != null) {
       <tr>
@@ -194,43 +144,27 @@
       </tr>
       }
       @if (book.isbn != null) {
-      <tr>
-        <td>ISBN</td>
-        <td>{{ book.isbn }}</td>
-      </tr>
+      <tr><td>ISBN</td><td>{{ book.isbn }}</td></tr>
       }
       @if (book.series_name) {
-      <tr>
-        <td>Serie</td>
-        <td>{{ book.series_name }}</td>
-      </tr>
+      <tr><td>Serie</td><td>{{ book.series_name }}</td></tr>
       }
       @if (book.series_number) {
-      <tr>
-        <td>Volgnummer</td>
-        <td>Deel {{ book.series_number }}</td>
-      </tr>
+      <tr><td>Volgnummer</td><td>Deel {{ book.series_number }}</td></tr>
       }
     </table>
   </div>
+
   @if (relatedBooks?.length != 0) {
   <div id="related-books" class="box">
     <h2>Meer van dit:</h2>
     <div id="related-books-book">
       @if (relatedBooks) {
-      @for (bookCard of relatedBooks; track bookCard.id) {
-      <div class="book-card" routerLink="/boek/{{ bookCard.id }}" (click)="scrollTop()">
-        <div class="book-card-header">
-          <p class="book-card-title">{{ bookCard.title }}</p>
-        </div>
-        @if (bookCard.cover == '' || bookCard.cover == null) {
-        <img src="{{ placeholder }}" alt="boek omslag" />
-        } @else {
-        <img src="/static/cover/{{ bookCard.cover }}" alt="boek omslag" class="cover" />
-        }
-        <p>{{ bookCard.author_name }}</p>
-      </div>
-      }
+        <p-carousel [value]="relatedBooks" [numVisible]="4" [numScroll]="2">
+          <ng-template pTemplate="item" let-bookCard>
+            <b-card [bookCard]="bookCard"></b-card>
+          </ng-template>
+        </p-carousel>
       }
     </div>
   </div>
@@ -239,4 +173,3 @@
 } @else {
 <p>Geen boeken gevonden.</p>
 }
-

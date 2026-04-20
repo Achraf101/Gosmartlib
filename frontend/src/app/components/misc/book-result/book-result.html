@@ -12,8 +12,8 @@
         @if (book.published) {
           <span> · {{ book.published }}</span>
         }
-        @if (book.age_end != 0 || book.age_start != 0) {
-          <span> · CLIB A</span>
+        @if (book.clib) {
+          <span> · CLIB {{ book.clib }}</span>
         }
         @if (book.genres && book.genres.length != 0) {
           <div class="book-meta show-desktop">
