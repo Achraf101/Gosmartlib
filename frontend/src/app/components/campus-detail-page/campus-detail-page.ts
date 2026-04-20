@@ -16,6 +16,7 @@ import { ProgressSpinner } from 'primeng/progressspinner';
 
 import { PaginatorModule, PaginatorState } from 'primeng/paginator';
 import { CampusBookDetail } from '../../models/CampusBookDetail';
+import { SearchBar } from '../misc/search-bar/search-bar';
 
 @Component({
   selector: 'app-campus-detail-page',
@@ -29,6 +30,7 @@ import { CampusBookDetail } from '../../models/CampusBookDetail';
     NavBarComponent,
     ProgressSpinner,
     PaginatorModule,
+    SearchBar,
   ],
   templateUrl: './campus-detail-page.html',
   styleUrl: './campus-detail-page.css',
@@ -133,7 +135,8 @@ export class CampusDetailPageComponent implements OnInit {
     });
   }
 
-  onSearch() {
+  onSearch(query: string) {
+    this.searchQuery = query;
     this.currentPage = 0;
     this.loadBooks();
   }
@@ -160,11 +163,7 @@ export class CampusDetailPageComponent implements OnInit {
       },
     });
   }
-  clearSearch() {
-    this.searchQuery = '';
-    this.currentPage = 0;
-    this.onSearch();
-  }
+
   onPageChange(event: PaginatorState): void {
     this.currentPage = event.page ?? 0;
     this.rows = event.rows ?? 5;

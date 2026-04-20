@@ -11,8 +11,9 @@ import { BookService } from '../../services/book';
 import { SectionService } from '../../services/section';
 import { BookFilter, BookResult } from '../../models/book';
 import { NavBarComponent } from '../nav-bar/nav-bar';
-import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { SearchBar } from '../misc/search-bar/search-bar';
+import { BookResult as BookResultComponent } from '../misc/book-result/book-result';
 
 @Component({
   selector: 'app-catalogue',
@@ -24,10 +25,11 @@ import { CommonModule } from '@angular/common';
     ProgressSpinnerModule,
     PaginatorModule,
     NavBarComponent,
-    RouterLink,
     DividerModule,
     DialogModule,
     ButtonModule,
+    SearchBar,
+    BookResultComponent,
   ],
   templateUrl: './catalogue.html',
   styleUrl: './catalogue.css',
@@ -118,7 +120,7 @@ export class CatalogueComponent implements OnInit {
       },
       error: () => {
         this.showDialog = false;
-      }
+      },
     });
   }
 
@@ -141,13 +143,8 @@ export class CatalogueComponent implements OnInit {
     });
   }
 
-  onSearch(): void {
-    this.currentPage = 0;
-    this.loadBooks();
-  }
-
-  clearSearch(): void {
-    this.searchQuery = '';
+  onSearch(query: string): void {
+    this.searchQuery = query;
     this.currentPage = 0;
     this.loadBooks();
   }

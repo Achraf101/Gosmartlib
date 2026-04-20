@@ -24,7 +24,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
                 b.id,
                 b.title,
                 b.cover,
-                b.author.name
+                b.author
                 )
             FROM Book b
             JOIN b.genres g
