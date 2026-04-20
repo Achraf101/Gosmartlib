@@ -195,24 +195,14 @@
         <h2>Meer van dit:</h2>
         <div id="related-books-book">
           @if (relatedBooks) {
-            @for (bookCard of relatedBooks; track bookCard.id) {
-              <div class="book-card" routerLink="/boek/{{ bookCard.id }}" (click)="scrollTop()">
-                <div class="book-card-header">
-                  <p class="book-card-title">{{ bookCard.title }}</p>
-                </div>
-                @if (bookCard.cover == '' || bookCard.cover == null) {
-                  <img src="{{ placeholder }}" alt="boek omslag" />
-                } @else {
-                  <img src="/static/cover/{{ bookCard.cover }}" alt="boek omslag" class="cover" />
-                }
-                <p>{{ bookCard.author_name }}</p>
-              </div>
-            }
+            <p-carousel [value]="relatedBooks" [numVisible]="4" [numScroll]="2">
+              <ng-template pTemplate="item" let-bookCard>
+                <b-card [bookCard]="bookCard"></b-card>
+              </ng-template>
+            </p-carousel>
           }
         </div>
       </div>
     }
   </div>
-} @else {
-  <p>Geen boeken gevonden.</p>
 }

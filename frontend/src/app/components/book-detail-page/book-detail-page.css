@@ -121,49 +121,12 @@ table td {
 .box {
   margin-bottom: 1em;
   padding: 20px;
-  /* background-color: var(--p-slate-50); */
   width: 95vw;
 }
 
 #related-books-book {
-  display: flex;
-  overflow-x: auto;
-  gap: 10px;
   width: 80%;
   margin-left: 10%;
-}
-
-.book-card-title {
-  font-weight: 700;
-  padding-bottom: 1rem;
-}
-
-#related-books-book .book-card {
-  width: 180px;
-  min-height: 220px;
-  flex-shrink: 0;
-  border: 1px solid var(--p-menubar-border-color);
-  text-align: center;
-  align-content: center;
-  cursor: pointer;
-}
-
-#related-books img {
-  display: block;
-  height: 200px;
-  margin-top: 10px;
-  margin-bottom: 10px;
-}
-
-#related-books .book-card * {
-  display: inline-block;
-  margin: 0 auto;
-  display: flex;
-  flex-flow: column;
-}
-
-#related-books .book-card p {
-  color: var(--p-button-text-secondary-color);
 }
 
 @media (width>800px) {

@@ -2,24 +2,20 @@
 @if (bookmarked.length > 0) {
   <h1>Jouw favorieten</h1>
   <div class="book-card-list">
-    @for (book of bookmarked; track $index) {
-      <div class="book-card" (click)="onBookClick(book.book_id)">
-        <p>{{ book.title }}</p>
-        @if (book.cover == '' || book.cover == null) {
-          <img [src]="placeholder" [alt]="book.title" class="book-cover" />
-        } @else {
-          <img src="static/cover/{{ book.cover }}" [alt]="book.title" class="book-cover" />
-        }
-        <p>{{ book.author_name }}</p>
-        <i
-          (click)="toggleBookmarked(book.book_id); $event.stopPropagation()"
-          class="bookmark pi"
-          [class.pi-bookmark-fill]="true"
-        ></i>
-      </div>
-    }
+    <p-carousel [value]="bookmarked" [numVisible]="4" [numScroll]="2">
+      <ng-template pTemplate="item" let-book>
+        <div class="book-card">
+          <b-card [bookCard]="book"></b-card>
+          <i
+            (click)="toggleBookmarked(book.book_id); $event.stopPropagation()"
+            class="bookmark pi"
+            [class.pi-bookmark-fill]="true"
+          ></i>
+        </div>
+      </ng-template>
+    </p-carousel>
   </div>
-} @else if (!loading && bookmarked.length === 0){
+} @else if (!loading && bookmarked.length === 0) {
   <h1>Je hebt nog geen favorieten</h1>
 }
 
