@@ -29,7 +29,6 @@ import { BookResult as BookResultComponent } from '../misc/book-result/book-resu
     DialogModule,
     ButtonModule,
     SearchBar,
-    BookResultComponent,
   ],
   templateUrl: './catalogue.html',
   styleUrl: './catalogue.css',
@@ -68,33 +67,32 @@ export class CatalogueComponent implements OnInit {
       this.sectionId = params['sectionId'] ? Number(params['sectionId']) : null;
       this.grade = params['grade'] ? Number(params['grade']) : null;
 
-      
       const hasFilters =
         params['genres'] ||
         params['language'] ||
         params['fiction'] !== undefined ||
         params['authorIds'] ||
-        params['seriesIds'] || 
+        params['seriesIds'] ||
         params['pagesMin'] ||
         params['pagesMax'] ||
         params['clibs'];
 
       if (hasFilters) {
         this.activeFilters = {
-  genre: params['genres'] ? params['genres'].split(',').map(Number) : undefined,
-  language: params['language'] ? Number(params['language']) : undefined,
-  fiction: params['fiction'] !== undefined ? params['fiction'] === 'true' : undefined,
-  author: params['authorIds'] ? params['authorIds'].split(',').map(Number) : undefined,
-  series: params['seriesIds'] ? params['seriesIds'].split(',').map(Number) : undefined, 
-  clibs: params['clibs'] ? params['clibs'].split(',') : undefined,
-  pages:
-    params['pagesMin'] || params['pagesMax']
-      ? [
-          params['pagesMin'] ? Number(params['pagesMin']) : 0,
-          params['pagesMax'] ? Number(params['pagesMax']) : 999999,
-        ]
-      : undefined,
-};
+          genre: params['genres'] ? params['genres'].split(',').map(Number) : undefined,
+          language: params['language'] ? Number(params['language']) : undefined,
+          fiction: params['fiction'] !== undefined ? params['fiction'] === 'true' : undefined,
+          author: params['authorIds'] ? params['authorIds'].split(',').map(Number) : undefined,
+          series: params['seriesIds'] ? params['seriesIds'].split(',').map(Number) : undefined,
+          clibs: params['clibs'] ? params['clibs'].split(',') : undefined,
+          pages:
+            params['pagesMin'] || params['pagesMax']
+              ? [
+                  params['pagesMin'] ? Number(params['pagesMin']) : 0,
+                  params['pagesMax'] ? Number(params['pagesMax']) : 999999,
+                ]
+              : undefined,
+        };
       } else {
         this.activeFilters = null;
       }
@@ -150,7 +148,7 @@ export class CatalogueComponent implements OnInit {
     });
   }
 
-onSearch(query: string): void {
+  onSearch(query: string): void {
     this.searchQuery = query;
     this.currentPage = 0;
     this.router.navigate([], {
