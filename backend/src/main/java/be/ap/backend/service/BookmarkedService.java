@@ -34,7 +34,7 @@ public class BookmarkedService {
                 f.getBook().getId(),
                 f.getBook().getTitle(),
                 f.getBook().getCover(),
-                f.getBook().getAuthor().getName(),
+                f.getBook().getAuthor(),
                 f.getAdded()))
             .toList();
     }

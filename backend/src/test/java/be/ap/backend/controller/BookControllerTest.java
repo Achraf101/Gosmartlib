@@ -29,6 +29,7 @@ import org.springframework.web.server.ResponseStatusException;
 import be.ap.backend.dto.BookCardDTO;
 import be.ap.backend.dto.BookResultDTO;
 import be.ap.backend.dto.CreateBookDTO;
+import be.ap.backend.entity.Author;
 import be.ap.backend.entity.Book;
 import be.ap.backend.repository.BookRepository;
 import be.ap.backend.service.BookService;
@@ -152,10 +153,14 @@ public class BookControllerTest {
     void testGetRelatedBooks_Success() {
         Long bookId = 1L;
 
+        Author author = new Author();
+            author.setId(1L);
+            author.setName("J.K. Rowling");
+            author.setDescription("British author");
         // Mock related books
         List<BookCardDTO> relatedBooks = List.of(
-                new BookCardDTO(2L, "Title 1", "cover", "Jan"),
-                new BookCardDTO(2L, "Title 2", "cover", "Jan"));
+                new BookCardDTO(2L, "Title 1", "cover", author),
+                new BookCardDTO(2L, "Title 2", "cover", author));
 
         // Mock repository behavior
         when(repository.findRelated(bookId)).thenReturn(relatedBooks);
