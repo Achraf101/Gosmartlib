@@ -13,9 +13,7 @@ export interface BookBase {
 }
 
 // optionally add fields later
-export interface BookCard extends BookBase {
-  author_name: String;
-}
+export interface BookCard extends BookBase {}
 
 // the item displayed after search
 export interface BookResult extends BookBase {
@@ -40,6 +38,7 @@ export interface BookDetail extends BookBase {
   isbn?: string;
   series?: Series;
   series_count?: number;
+  author_name: String;
   contributors?: Author[];
   publisher?: Publisher;
   genres: Genre[];
