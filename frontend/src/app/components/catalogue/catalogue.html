@@ -9,26 +9,7 @@
 
   <h1>Catalogus</h1>
 
-  <form class="search-bar" (submit)="$event.preventDefault(); onSearch()">
-    <div class="search-wrapper">
-      <input
-        type="text"
-        class="search-input"
-        placeholder="Zoek op titel, auteur of genre..."
-        [(ngModel)]="searchQuery"
-        name="search"
-      />
-      <button type="submit" class="search-btn">
-        <i class="pi pi-search"></i>
-      </button>
-    </div>
-    <a [routerLink]="['/catalogus/filter']" [queryParams]="activeQueryParams" class="filter-link"
-      >Zoeken met filters</a
-    >
-    @if (searchQuery) {
-      <button type="button" class="clear-btn" (click)="clearSearch()">Wis zoekopdracht</button>
-    }
-  </form>
+  <s-bar (search)="onSearch($event)" />
 
   @if (loading) {
     <div class="loading-container">
@@ -43,65 +24,7 @@
   @if (!loading && books.length > 0) {
     <div class="book-list">
       @for (book of books; track book.id) {
-        <div class="book-card" (click)="onBookClick(book)" [style.cursor]="'pointer'">
-          <div class="book-info">
-            @if (book.cover == '' || book.cover == null) {
-              <img [src]="placeholder" [alt]="book.title" class="book-cover" />
-            } @else {
-              <img src="static/cover/{{ book.cover }}" [alt]="book.title" class="book-cover" />
-            }
-            <div class="book-info-data">
-              <h2 class="book-title">{{ book.title }}</h2>
-              <div class="book-subtitle">
-                @if (book.author) {
-                  <span>{{ book.author.name }}</span>
-                }
-                @if (book.published) {
-                  <span> · {{ book.published }}</span>
-                }
-                @if (book.age_end != 0 || book.age_start != 0) {
-                  <span> · CLIB A</span>
-                }
-                @if (book.genres && book.genres.length != 0) {
-                  <div class="book-meta show-desktop">
-                    @for (genre of book.genres; track $index) {
-                      <div class="tag">
-                        <span>{{ genre.name }}</span>
-                      </div>
-                    }
-                  </div>
-                  <div class="book-meta show-mobile">
-                    <div class="tag">
-                      <span>{{ book.genres[0]?.name }}</span>
-                    </div>
-                    @if (book.genres.length - 1 > 0) {
-                      <p>+{{ book.genres.length - 1 }}</p>
-                    }
-                  </div>
-                }
-              </div>
-              <p class="book-description">{{ book.description }}</p>
-            </div>
-          </div>
-          <div class="book-meta">
-            @if (book.fiction !== undefined && book.fiction !== null) {
-              <p-tag
-                [value]="book.fiction ? 'Fictie' : 'Non-fictie'"
-                [severity]="book.fiction ? 'info' : 'success'"
-              />
-            }
-            @if (book.pages) {
-              <span>{{ book.pages }} p.</span>
-            }
-            @if (book.rating) {
-              <span class="book-rating">
-                <i class="pi pi-star-fill"></i> {{ book.rating }}/5
-                <span class="rating-count">({{ book.rating_count }})</span>
-              </span>
-            }
-          </div>
-        </div>
-        <p-divider class="show-mobile" />
+        <b-result [book]="book" (onBookClick)="onBookClick(book)"></b-result>
       }
     </div>
 

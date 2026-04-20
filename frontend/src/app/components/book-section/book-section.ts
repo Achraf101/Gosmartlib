@@ -9,11 +9,13 @@ import { ToastModule } from 'primeng/toast';
 import { SelectModule } from 'primeng/select';
 import { ButtonModule } from 'primeng/button';
 import { FormsModule } from '@angular/forms';
+import { BookCardComponent } from "../misc/book-card/book-card";
+import { BookResult } from "../misc/book-result/book-result";
 
 @Component({
   selector: 'app-book-section',
   standalone: true,
-  imports: [CommonModule, RouterModule, ToastModule, SelectModule, FormsModule, ButtonModule],
+  imports: [CommonModule, RouterModule, ToastModule, SelectModule, FormsModule, ButtonModule, BookCardComponent, BookResult],
   templateUrl: './book-section.html',
   styleUrl: './book-section.css',
   providers: [MessageService],

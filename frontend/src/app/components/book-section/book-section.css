@@ -86,15 +86,13 @@
   background-color: #fff;
   border-radius: 10px;
   padding: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
-
 
 .monthly-cover {
   width: 200px;
   min-width: 200px;
   aspect-ratio: 2/3;
-  background-color: #ddd;
   border-radius: 6px;
   overflow: hidden;
   display: flex;
