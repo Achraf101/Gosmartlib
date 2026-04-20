@@ -1,5 +1,11 @@
 import { Component, OnInit } from '@angular/core';
-import { FormsModule, ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms';
+import {
+  FormsModule,
+  ReactiveFormsModule,
+  FormControl,
+  FormGroup,
+  Validators,
+} from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
@@ -14,7 +20,7 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { StepperModule } from 'primeng/stepper';
 import { MessageService } from 'primeng/api';
 import { Message } from 'primeng/message';
-import { ToastModule } from 'primeng/toast'; 
+import { ToastModule } from 'primeng/toast';
 import { MessageModule } from 'primeng/message';
 import { Router } from '@angular/router';
 
@@ -43,15 +49,29 @@ import { NavBarComponent } from '../nav-bar/nav-bar';
   selector: 'app-bookform',
   standalone: true,
   imports: [
-    ButtonModule, InputTextModule, TextareaModule, ReactiveFormsModule,
-    SelectModule, DialogModule, IftaLabelModule, FluidModule,
-    RadioButtonModule, MultiSelectModule, FormsModule, FileUploadModule,
-    StepperModule, CharCounterComponent, NavBarComponent, Message, InputNumberModule,
-    ToastModule, MessageModule 
+    ButtonModule,
+    InputTextModule,
+    TextareaModule,
+    ReactiveFormsModule,
+    SelectModule,
+    DialogModule,
+    IftaLabelModule,
+    FluidModule,
+    RadioButtonModule,
+    MultiSelectModule,
+    FormsModule,
+    FileUploadModule,
+    StepperModule,
+    CharCounterComponent,
+    NavBarComponent,
+    Message,
+    InputNumberModule,
+    ToastModule,
+    MessageModule,
   ],
   templateUrl: './bookform.html',
   styleUrl: './bookform.css',
-  providers: [MessageService]
+  providers: [MessageService],
 })
 export class BookformComponent implements OnInit {
   bookForm = new FormGroup({
@@ -67,7 +87,10 @@ export class BookformComponent implements OnInit {
     publisher: new FormControl<number | null>(null),
     fiction: new FormControl<boolean>(true, Validators.required),
     genres: new FormControl<number[]>([], [maxEntries(5), Validators.required]),
-    description: new FormControl<string | null>(null, [Validators.maxLength(500), Validators.required]),
+    description: new FormControl<string | null>(null, [
+      Validators.maxLength(500),
+      Validators.required,
+    ]),
     published: new FormControl<number | null>(null, [Validators.min(1)]),
     language: new FormControl<number | null>(null, Validators.required),
     pages: new FormControl<number | null>(null, [Validators.min(1)]),
@@ -102,7 +125,7 @@ export class BookformComponent implements OnInit {
   authorFormVisible: boolean = false;
   publisherFormVisible: boolean = false;
   seriesFormVisible: boolean = false;
-  
+
   font_sizes = [
     { name: 'Klein', value: 'KLEIN' },
     { name: 'Medium', value: 'MEDIUM' },
@@ -124,12 +147,12 @@ export class BookformComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.genreService.getAll().subscribe(g => this.genres = g);
-    this.publisherService.getAll().subscribe(p => this.publishers = p);
-    this.authorService.getAll().subscribe(a => this.authors = a);
-    this.languageService.getAll().subscribe(l => this.languages = l);
-    this.bookTypeService.getAll().subscribe(bt => this.bookTypes = bt);
-    this.seriesService.getAll().subscribe(s => this.series = s);
+    this.genreService.getAll().subscribe((g) => (this.genres = g));
+    this.publisherService.getAll().subscribe((p) => (this.publishers = p));
+    this.authorService.getAll().subscribe((a) => (this.authors = a));
+    this.languageService.getAll().subscribe((l) => (this.languages = l));
+    this.bookTypeService.getAll().subscribe((bt) => (this.bookTypes = bt));
+    this.seriesService.getAll().subscribe((s) => (this.series = s));
   }
 
   private showError(detail: string) {
@@ -141,12 +164,17 @@ export class BookformComponent implements OnInit {
       const book: CreateBook = this.bookForm.value as any;
       this.bookService.addBook(book).subscribe({
         next: (savedBook) => {
-          this.messageService.add({ severity: 'success', summary: 'Succes', detail: 'Boek opgeslagen.', life: 3000 });
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Succes',
+            detail: 'Boek opgeslagen.',
+            life: 3000,
+          });
           this.coverDisabled = false;
           this.newBookId = savedBook.id;
           activateCallback(3);
         },
-        error: () => this.showError('Fout bij opslaan boek.')
+        error: () => this.showError('Fout bij opslaan boek.'),
       });
     }
   }
@@ -155,12 +183,12 @@ export class BookformComponent implements OnInit {
     if (this.authorForm.valid) {
       this.authorService.addAuthor(this.authorForm.value as Author).subscribe({
         next: (a) => {
-          this.authors = [...(this.authors || []), a]; 
+          this.authors = [...(this.authors || []), a];
           this.bookForm.patchValue({ author: a.id });
           this.authorFormVisible = false;
           this.authorForm.reset();
         },
-        error: () => this.showError('Fout bij opslaan auteur.')
+        error: () => this.showError('Fout bij opslaan auteur.'),
       });
     }
   }
@@ -173,7 +201,7 @@ export class BookformComponent implements OnInit {
           this.publisherFormVisible = false;
           this.publisherForm.reset();
         },
-        error: () => this.showError('Fout bij opslaan uitgever.')
+        error: () => this.showError('Fout bij opslaan uitgever.'),
       });
     }
   }
@@ -183,17 +211,17 @@ export class BookformComponent implements OnInit {
       const seriesData = {
         name: this.seriesForm.value.name!,
         description: this.seriesForm.value.description!,
-        authorId: this.bookForm.value.author 
+        authorId: this.bookForm.value.author,
       };
 
       this.seriesService.create(seriesData as any).subscribe({
         next: (s) => {
-          this.series = [...(this.series || []), s]; 
+          this.series = [...(this.series || []), s];
           this.seriesFormVisible = false;
           this.bookForm.patchValue({ series: s.id });
           this.seriesForm.reset();
         },
-        error: () => this.showError('Fout bij opslaan serie.')
+        error: () => this.showError('Fout bij opslaan serie.'),
       });
     }
   }
@@ -209,7 +237,12 @@ export class BookformComponent implements OnInit {
         this.router.navigate(['/boek', this.newBookId]);
         fileUploader.clear();
       },
-      error: () => this.showError('Boekomslag niet toegevoegd.')
+      error: () => this.showError('Boekomslag niet toegevoegd.'),
     });
+  }
+
+  // bulkupload
+  downloadTemplate() {
+    window.open('/api/books/template', '_blank');
   }
 }
