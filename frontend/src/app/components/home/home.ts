@@ -2,13 +2,12 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { NavBarComponent } from '../nav-bar/nav-bar';
-import { Footer } from '../footer/footer';
 import { BookSectionComponent } from '../book-section/book-section';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterModule, NavBarComponent, Footer, BookSectionComponent],
+  imports: [CommonModule, RouterModule, NavBarComponent, BookSectionComponent],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
