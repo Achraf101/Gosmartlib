@@ -1,0 +1,17 @@
+<form class="search-bar" (submit)="$event.preventDefault(); onSearch()">
+  <button type="submit" class="search-btn">
+    <i class="pi pi-search"></i>
+  </button>
+  <input
+    type="text"
+    class="search-input"
+    placeholder="Zoek op titel, auteur, genre, ISBN,..."
+    [(ngModel)]="query"
+    name="search"
+  />
+  @if (query) {
+    <button type="button" class="search-btn" (click)="onDelete()">
+      <i class="pi pi-times"></i>
+    </button>
+  }
+</form>
