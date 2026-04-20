@@ -1,0 +1,7 @@
+<div class="book-card {{ size }}" routerLink="/boek/{{ bookCard.id }}" (click)="scrollTop()">
+  <div class="book-cover">
+    <b-cover [bookCard]="bookCard"></b-cover>
+  </div>
+  <p class="title">{{ bookCard.title }}</p>
+  <p class="author">{{ bookCard.author.name }}</p>
+</div>
