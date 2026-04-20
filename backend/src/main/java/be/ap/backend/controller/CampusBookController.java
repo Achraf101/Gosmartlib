@@ -19,15 +19,13 @@ import be.ap.backend.exception.ArgumentsInvalidException;
 import be.ap.backend.exception.BookAlreadyInCampusException;
 import be.ap.backend.exception.MissingArgumentsException;
 import be.ap.backend.service.CampusBookService;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("campusbook")
+@RequiredArgsConstructor
 public class CampusBookController {
     private final CampusBookService campusBookService;
-
-    public CampusBookController(CampusBookService campusBookService) {
-        this.campusBookService = campusBookService;
-    }
 
     @PostMapping
     public ResponseEntity<?> createCampusBook(@RequestBody CampusBookDTO dto) {

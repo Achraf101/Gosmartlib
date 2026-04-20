@@ -62,33 +62,39 @@ export class CatalogueComponent implements OnInit {
   ngOnInit(): void {
     this.route.queryParams.subscribe((params) => {
       this.searchQuery = params['q'] || '';
-      this.currentPage = 0;
+      // Fix voor paginering: gebruik 'pagina' of 'page' consistent
+      this.currentPage = params['pagina'] ? Number(params['pagina']) - 1 : 0;
       this.selectMode = params['selectMode'] === 'true';
       this.sectionId = params['sectionId'] ? Number(params['sectionId']) : null;
       this.grade = params['grade'] ? Number(params['grade']) : null;
 
+      
       const hasFilters =
         params['genres'] ||
         params['language'] ||
         params['fiction'] !== undefined ||
         params['authorIds'] ||
+        params['seriesIds'] || 
         params['pagesMin'] ||
-        params['pagesMax'];
+        params['pagesMax'] ||
+        params['clibs'];
 
       if (hasFilters) {
         this.activeFilters = {
-          genre: params['genres'] ? params['genres'].split(',').map(Number) : undefined,
-          language: params['language'] ? Number(params['language']) : undefined,
-          fiction: params['fiction'] !== undefined ? params['fiction'] === 'true' : undefined,
-          author: params['authorIds'] ? params['authorIds'].split(',').map(Number) : undefined,
-          pages:
-            params['pagesMin'] || params['pagesMax']
-              ? [
-                  params['pagesMin'] ? Number(params['pagesMin']) : 0,
-                  params['pagesMax'] ? Number(params['pagesMax']) : 999999,
-                ]
-              : undefined,
-        };
+  genre: params['genres'] ? params['genres'].split(',').map(Number) : undefined,
+  language: params['language'] ? Number(params['language']) : undefined,
+  fiction: params['fiction'] !== undefined ? params['fiction'] === 'true' : undefined,
+  author: params['authorIds'] ? params['authorIds'].split(',').map(Number) : undefined,
+  series: params['seriesIds'] ? params['seriesIds'].split(',').map(Number) : undefined, 
+  clibs: params['clibs'] ? params['clibs'].split(',') : undefined,
+  pages:
+    params['pagesMin'] || params['pagesMax']
+      ? [
+          params['pagesMin'] ? Number(params['pagesMin']) : 0,
+          params['pagesMax'] ? Number(params['pagesMax']) : 999999,
+        ]
+      : undefined,
+};
       } else {
         this.activeFilters = null;
       }
@@ -125,6 +131,7 @@ export class CatalogueComponent implements OnInit {
   }
 
   loadBooks(): void {
+    this.loading = true;
     const request = this.activeFilters
       ? this.bookService.filter(this.activeFilters, this.currentPage, this.rows)
       : this.searchQuery.trim()
@@ -143,15 +150,38 @@ export class CatalogueComponent implements OnInit {
     });
   }
 
-  onSearch(query: string): void {
+onSearch(query: string): void {
     this.searchQuery = query;
     this.currentPage = 0;
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { pagina: 1, q: this.searchQuery.trim() || null },
+      queryParamsHandling: 'merge',
+    });
+    this.loadBooks();
+  }
+
+  clearSearch(): void {
+    this.searchQuery = '';
+    this.currentPage = 0;
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { pagina: 1, q: null },
+      queryParamsHandling: 'merge',
+    });
     this.loadBooks();
   }
 
   onPageChange(event: PaginatorState): void {
     this.currentPage = event.page ?? 0;
     this.rows = event.rows ?? 5;
+
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { pagina: this.currentPage + 1 },
+      queryParamsHandling: 'merge',
+    });
+
     this.loadBooks();
   }
 

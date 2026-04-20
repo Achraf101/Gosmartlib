@@ -22,9 +22,11 @@ import be.ap.backend.repository.HelloRepository;
 import be.ap.backend.repository.LanguageRepository;
 import be.ap.backend.repository.SectionBookRepository;
 import be.ap.backend.repository.SectionRepository;
+
 import org.springframework.beans.factory.annotation.Value;
 
 @Component
+
 public class DataSeeder implements CommandLineRunner {
 
     @Value("${app.seeding.enabled:true}")

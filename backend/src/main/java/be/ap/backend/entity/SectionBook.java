@@ -2,8 +2,10 @@ package be.ap.backend.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
 @Entity
 @Table(name = "section_book")
 public class SectionBook {
@@ -26,6 +28,4 @@ public class SectionBook {
 
     @Column(name = "grade", nullable = true)
     private Byte grade;
-
-    public SectionBook(){};
 }

@@ -8,11 +8,13 @@ import be.ap.backend.repository.BookRepository;
 import be.ap.backend.repository.BookmarkedRepository;
 import be.ap.backend.repository.UserRepository;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@RequiredArgsConstructor
 @Service
 public class BookmarkedService {
 
@@ -20,23 +22,16 @@ public class BookmarkedService {
     private final BookRepository bookRepository;
     private final UserRepository userRepository;
 
-    public BookmarkedService(BookmarkedRepository bookmarkedRepository,
-            BookRepository bookRepository, UserRepository userRepository) {
-        this.bookmarkedRepository = bookmarkedRepository;
-        this.bookRepository = bookRepository;
-        this.userRepository = userRepository;
-    }
-
     public List<BookmarkedDTO> getBookmarked(Long userId) {
         return bookmarkedRepository.findByUserIdOrderByAdded(userId).stream()
-            .map(f -> new BookmarkedDTO(
-                f.getId(),
-                f.getBook().getId(),
-                f.getBook().getTitle(),
-                f.getBook().getCover(),
-                f.getBook().getAuthor(),
-                f.getAdded()))
-            .toList();
+                .map(f -> new BookmarkedDTO(
+                        f.getId(),
+                        f.getBook().getId(),
+                        f.getBook().getTitle(),
+                        f.getBook().getCover(),
+                        f.getBook().getAuthor(),
+                        f.getAdded()))
+                .toList();
     }
 
     public boolean isBookmarkedd(Long userId, Long bookId) {
@@ -51,9 +46,9 @@ public class BookmarkedService {
         }
 
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
         Book book = bookRepository.findById(bookId)
-            .orElseThrow(() -> new IllegalArgumentException("Book not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Book not found"));
 
         Bookmarked bookmarked = new Bookmarked();
         bookmarked.setUser(user);

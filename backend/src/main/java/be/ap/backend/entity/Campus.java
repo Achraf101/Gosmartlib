@@ -2,10 +2,12 @@ package be.ap.backend.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "campus")
 @Data
+@NoArgsConstructor
 public class Campus {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,10 +35,6 @@ public class Campus {
     @ManyToOne
     @JoinColumn(name = "school_id")
     private School school;
-
-    // Constructors
-    public Campus() {
-    }
 
     public Campus(String name, String adres, int borrowLimit, int borrowPeriod, int extendPeriod, int extendLimit) {
         this.name = name;
