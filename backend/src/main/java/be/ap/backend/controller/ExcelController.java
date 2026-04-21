@@ -396,7 +396,7 @@ public class ExcelController {
                     result.addError(rowNum, "Taal is verplicht");
                     continue;
                 }
-                if (!isbn.isBlank() && existingIsbns.contains(isbn)) {
+                if (!isbn.isBlank()) {
                     if (existingIsbns.contains(isbn)) {
                         result.addSkipped(rowNum, "ISBN bestaat al in de database: " + isbn);
                         continue;
@@ -405,7 +405,7 @@ public class ExcelController {
                         result.addSkipped(rowNum, "ISBN komt meerdere keren voor in dit bestand: " + isbn);
                         continue;
                     }
-                    seenIsbns.add(isbn);
+                    seenIsbns.add(isbn); 
                 }
 
                 Author auteur = authorMap.get(auteurNaam.toLowerCase());
