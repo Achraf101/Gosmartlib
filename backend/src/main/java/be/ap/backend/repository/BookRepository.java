@@ -1,6 +1,8 @@
 package be.ap.backend.repository;
 
 import java.util.List;
+import java.util.Set;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,6 +20,11 @@ import jakarta.transaction.Transactional;
 public interface BookRepository extends JpaRepository<Book, Long> {
 
     Page<Book> findAll(Pageable pageable);
+    boolean existsByIsbn(String isbn);
+
+    @Query("SELECT b.isbn FROM Book b WHERE b.isbn IS NOT NULL")
+    Set<String> findAllIsbns();
+
 
     @Query("""
             SELECT DISTINCT new be.ap.backend.dto.BookCardDTO(

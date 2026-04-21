@@ -1,0 +1,126 @@
+<div class="bulk-upload">
+  <div class="card">
+    <span class="step-label">Stap 1</span>
+    <h3>Download de template</h3>
+    <a href="/api/excel/book/template" pButton icon="pi pi-download">
+      <span pButtonLabel>Template</span>
+    </a>
+  </div>
+
+  @if (!result) {
+    <div class="card">
+      <span class="step-label">Stap 2</span>
+      <h3>Upload gevulde template</h3>
+      <p>alleen excel (.xlsx) files worden geaccepteerd.</p>
+
+      <div
+        class="drop-zone"
+        [class.dragging]="isDragging"
+        [class.has-file]="selectedFile"
+        (dragover)="onDragOver($event)"
+        (dragleave)="onDragLeave()"
+        (drop)="onDrop($event)"
+        (click)="fileInput.click()"
+      >
+        <input
+          #fileInput
+          type="file"
+          accept=".xlsx"
+          style="display: none"
+          (change)="onFileSelected($event)"
+        />
+
+        @if (!selectedFile) {
+          <ng-container>
+            <p>Sleep uw bestand hierheen, of <strong>klik om te bladeren</strong>.</p>
+          </ng-container>
+        }
+
+        @if (selectedFile) {
+          <ng-container>
+            <span class="file-chip">
+              {{ selectedFile.name }}
+              <button (click)="clearFile(); $event.stopPropagation()">&#x2715;</button>
+            </span>
+          </ng-container>
+        }
+      </div>
+
+      @if (uploadError) {
+        <p class="error">{{ uploadError }}</p>
+      }
+
+      @if (isUploading) {
+        <div class="progress-bar">
+          <div class="progress-fill" [style.width.%]="uploadProgress"></div>
+        </div>
+      }
+
+      <p-button (click)="upload()" [disabled]="!selectedFile || isUploading">
+        {{ isUploading ? 'Aan het uploaden...' : 'Uploaden' }}
+      </p-button>
+    </div>
+  }
+
+  @if (result) {
+    <div class="card">
+      <h3>{{ result.fullSuccess ? 'Import geslaagd' : 'Import voltooid met opmerkingen' }}</h3>
+
+      <div class="metrics">
+        <div class="metric success">
+          <span class="value">{{ result.added }}</span>
+          <span class="label">Toegevoegd</span>
+        </div>
+        <div class="metric warn">
+          <span class="value">{{ result.skipped.length }}</span>
+          <span class="label">Overgeslagen</span>
+        </div>
+        <div class="metric danger">
+          <span class="value">{{ result.errors.length }}</span>
+          <span class="label">Fouten</span>
+        </div>
+        <div class="metric neutral">
+          <span class="value">{{ result.total_processed }}</span>
+          <span class="label">Totaal verwerkt</span>
+        </div>
+      </div>
+
+      @if (result.skipped.length || result.errors.length) {
+        <table>
+          <thead>
+            <tr>
+              <th>Rij</th>
+              <th>Type</th>
+              <th>Melding</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of result.skipped; track $index) {
+              <tr>
+                <td>{{ item.row }}</td>
+                <td><span class="badge skip">Overgeslagen</span></td>
+                <td>{{ item.message }}</td>
+              </tr>
+            }
+            @for (item of result.errors; track $index) {
+              <tr>
+                <td>{{ item.row }}</td>
+                <td><span class="badge error">Fout</span></td>
+                <td>{{ item.message }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+
+        @if (result.errors.length > 0) {
+          <p class="hint">
+            Verbeter de fouten in je bestand en upload opnieuw — boeken met een dubbel ISBN worden
+            automatisch overgeslagen.
+          </p>
+        }
+      }
+
+      <p-button (click)="reset()">Nieuw bestand uploaden</p-button>
+    </div>
+  }
+</div>
