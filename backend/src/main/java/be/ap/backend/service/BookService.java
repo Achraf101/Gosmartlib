@@ -38,7 +38,6 @@ public class BookService {
     public Book saveBook(CreateBookDTO dto) {
         Book book = new Book();
 
-        // required fields
         book.setTitle(dto.getTitle());
         book.setBookType(entityManager.find(BookType.class, dto.getBookType()));
         book.setLanguage(entityManager.find(Language.class, dto.getLanguage()));
@@ -56,7 +55,7 @@ public class BookService {
             book.setSeries(entityManager.find(Series.class, dto.getSeries()));
         }
 
-        if (dto.getSeriesCount() != 0) {
+        if (dto.getSeriesCount() != null && dto.getSeriesCount() != 0) {
             book.setSeriesNumber(dto.getSeriesCount());
         }
 
@@ -107,7 +106,6 @@ public class BookService {
             List<Clib> clibs,
             Pageable pageable) {
 
-        // 🔥 BELANGRIJK
         if (seriesIds != null && seriesIds.isEmpty()) {
             seriesIds = null;
         }
