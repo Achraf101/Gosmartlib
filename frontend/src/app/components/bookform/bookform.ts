@@ -44,6 +44,7 @@ import { SeriesService } from '../../services/series';
 
 import { CharCounterComponent } from '../char-counter/char-counter';
 import { NavBarComponent } from '../nav-bar/nav-bar';
+import { BulkUpload } from '../bulk-upload/bulk-upload';
 
 @Component({
   selector: 'app-bookform',
@@ -68,6 +69,7 @@ import { NavBarComponent } from '../nav-bar/nav-bar';
     InputNumberModule,
     ToastModule,
     MessageModule,
+    BulkUpload,
   ],
   templateUrl: './bookform.html',
   styleUrl: './bookform.css',
@@ -119,6 +121,7 @@ export class BookformComponent implements OnInit {
   authors: Author[] | undefined;
   bookTypes: BookType[] | undefined;
   series: Series[] | undefined;
+  uploadMode: 'manual' | 'bulk' = 'manual';
 
   newBookId: number | undefined;
   coverDisabled: boolean = true;
@@ -241,8 +244,7 @@ export class BookformComponent implements OnInit {
     });
   }
 
-  // bulkupload
-  downloadTemplate() {
-    window.open('/api/books/template', '_blank');
+  setMode(mode: 'manual' | 'bulk'): void {
+    this.uploadMode = mode;
   }
 }
