@@ -98,15 +98,15 @@ h1 {
   gap: 0.5rem;
 }
 
-/* 1. Zorg dat de inputs onder elkaar komen te staan in plaats van naast elkaar */
+
 .range-inputs {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  /* Ruimte tussen de Min en Max balkjes */
+
 }
 
-/* 2. Dwing de PrimeNG component én het onderliggende input-veld naar de volle breedte */
+
 :host ::ng-deep .p-inputnumber,
 :host ::ng-deep .p-inputnumber-input {
   width: 100% !important;
