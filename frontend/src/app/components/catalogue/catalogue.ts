@@ -14,6 +14,7 @@ import { NavBarComponent } from '../nav-bar/nav-bar';
 import { CommonModule } from '@angular/common';
 import { SearchBar } from '../misc/search-bar/search-bar';
 import { BookResult as BookResultComponent } from '../misc/book-result/book-result';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-catalogue',
@@ -30,6 +31,7 @@ import { BookResult as BookResultComponent } from '../misc/book-result/book-resu
     ButtonModule,
     SearchBar,
     BookResultComponent,
+    RouterLink
   ],
   templateUrl: './catalogue.html',
   styleUrl: './catalogue.css',

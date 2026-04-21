@@ -120,10 +120,12 @@ h1 {
 .book-subtitle {
   display: flex;
   flex-direction: column;
-  gap: 4px; /* Iets minder gap tussen de regels */
+  gap: 4px;
+  /* Iets minder gap tussen de regels */
 }
 
-.book-main-info, .book-clib-info {
+.book-main-info,
+.book-clib-info {
   font-size: 0.9rem;
   color: var(--p-neutral-600);
 }
@@ -133,7 +135,8 @@ h1 {
   flex-direction: row;
   flex-wrap: wrap;
   gap: 6px;
-  margin-top: 4px; /* Wat extra ruimte boven de tags */
+  margin-top: 4px;
+  /* Wat extra ruimte boven de tags */
 }
 
 .tag {
@@ -180,16 +183,33 @@ h1 {
   color: var(--p-amber-500);
 }
 
+.filter-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--p-rose-800);
+  font-size: 0.85rem;
+  text-decoration: none;
+  margin-bottom: 1.5rem;
+}
+
+.filter-link:hover span {
+  text-decoration: underline;
+}
+
 @media (min-width: 800px) {
   .show-desktop {
     display: flex;
   }
+
   .show-mobile {
     display: none;
   }
+
   .book-card {
     padding: 1.5rem;
   }
+
   .book-cover {
     width: 120px;
     height: 170px;
