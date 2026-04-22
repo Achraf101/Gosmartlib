@@ -13,6 +13,7 @@ import { CampusBookService } from '../../services/campusbook';
 import { NavBarComponent } from '../nav-bar/nav-bar';
 import { BookService } from '../../services/book';
 import { ProgressSpinner } from 'primeng/progressspinner';
+import { DelayedLoader } from '../../utils/delayed-loader';
 
 import { PaginatorModule, PaginatorState } from 'primeng/paginator';
 import { CampusBookDetail } from '../../models/CampusBookDetail';
@@ -44,7 +45,7 @@ export class CampusDetailPageComponent implements OnInit {
   selectedBookId: number | null = null;
   searchQuery = '';
   currentPage: number = 0;
-  loading: boolean = false;
+  loading = new DelayedLoader();
   rows: number = 5;
   totalRecords: number = 0;
   amounts: { [bookId: number]: number } = {};
@@ -141,7 +142,7 @@ export class CampusDetailPageComponent implements OnInit {
     this.loadBooks();
   }
   loadBooks() {
-    this.loading = true;
+    this.loading.start();
     const request = this.searchQuery.trim()
       ? this.bookService.search(this.searchQuery.trim(), this.currentPage, this.rows)
       : this.bookService.getAll(this.currentPage, this.rows);
@@ -150,10 +151,10 @@ export class CampusDetailPageComponent implements OnInit {
       next: (page) => {
         this.books = page.content;
         this.totalRecords = page.total_elements;
-        this.loading = false;
+        this.loading.stop();
       },
       error: () => {
-        this.loading = false;
+        this.loading.stop();
         this.messageService.add({
           severity: 'error',
           summary: 'Fout',

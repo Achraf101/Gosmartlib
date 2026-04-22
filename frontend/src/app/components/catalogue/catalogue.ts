@@ -21,6 +21,7 @@ import { CommonModule } from '@angular/common';
 import { SearchBar } from '../misc/search-bar/search-bar';
 import { BookResult as BookResultComponent } from '../misc/book-result/book-result';
 import { RouterLink } from '@angular/router';
+import { DelayedLoader } from '../../utils/delayed-loader';
 
 @Component({
   selector: 'app-catalogue',
@@ -47,7 +48,7 @@ import { RouterLink } from '@angular/router';
 })
 export class CatalogueComponent implements OnInit {
   books: BookResult[] = [];
-  loading = true;
+  loading = new DelayedLoader();
   totalRecords = 0;
   rows = 5;
   currentPage = 0;
@@ -80,8 +81,8 @@ export class CatalogueComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.apiService.get<Genre[]>('genre').subscribe(g => this.genres = g);
-    this.apiService.get<Language[]>('language').subscribe(l => this.languages = l);
+    this.apiService.get<Genre[]>('genre').subscribe((g) => (this.genres = g));
+    this.apiService.get<Language[]>('language').subscribe((l) => (this.languages = l));
 
     this.route.queryParams.subscribe((params) => {
       this.searchQuery = params['q'] || '';
@@ -197,7 +198,7 @@ export class CatalogueComponent implements OnInit {
   }
 
   loadBooks(): void {
-    this.loading = true;
+    this.loading.start();
     const request = this.activeFilters
       ? this.bookService.filter(this.activeFilters, this.currentPage, this.rows)
       : this.searchQuery.trim()
@@ -208,10 +209,10 @@ export class CatalogueComponent implements OnInit {
       next: (page) => {
         this.books = page.content;
         this.totalRecords = page.total_elements;
-        this.loading = false;
+        this.loading.stop();
       },
       error: () => {
-        this.loading = false;
+        this.loading.stop();
       },
     });
   }

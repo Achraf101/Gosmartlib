@@ -15,11 +15,11 @@
       </ng-template>
     </p-carousel>
   </div>
-} @else if (!loading && bookmarked.length === 0) {
+} @else if (!loading.isLoading && bookmarked.length === 0) {
   <h1>Je hebt nog geen favorieten</h1>
 }
 
-@if (loading) {
+@if (loading.visible) {
   <div class="loading-container">
     <p-progressSpinner />
   </div>

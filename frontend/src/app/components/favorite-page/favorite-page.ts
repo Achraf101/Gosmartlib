@@ -5,7 +5,8 @@ import { NavBarComponent } from '../nav-bar/nav-bar';
 import { Router } from '@angular/router';
 import { ProgressSpinner } from 'primeng/progressspinner';
 import { BookCardComponent } from '../misc/book-card/book-card';
-import { CarouselModule } from "primeng/carousel";
+import { CarouselModule } from 'primeng/carousel';
+import { DelayedLoader } from '../../utils/delayed-loader';
 
 @Component({
   selector: 'app-bookmarked',
@@ -15,7 +16,7 @@ import { CarouselModule } from "primeng/carousel";
 })
 export class FavoritePage implements OnInit {
   bookmarked: Bookmarked[] = [];
-  loading = true;
+  loading = new DelayedLoader();
   readonly placeholder = '/assets/no-cover.svg';
 
   // TODO: replace with actual logged in user id once auth is done
@@ -27,13 +28,14 @@ export class FavoritePage implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.loading.start();
     this.bookmarkedService.getBookmarked(this.userId).subscribe({
       next: (data) => {
         this.bookmarked = data;
-        this.loading = false;
+        this.loading.stop();
       },
       error: () => {
-        this.loading = false;
+        this.loading.stop();
       },
     });
   }

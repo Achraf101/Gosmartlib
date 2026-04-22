@@ -1,10 +1,10 @@
 <app-nav-bar></app-nav-bar>
 <div class="catalogue-container">
   @if (selectMode) {
-  <div class="select-mode-banner">
-    <i class="pi pi-info-circle"></i>
-    Kies een boek als boek van de maand voor graad {{ grade }}
-  </div>
+    <div class="select-mode-banner">
+      <i class="pi pi-info-circle"></i>
+      Kies een boek als boek van de maand voor graad {{ grade }}
+    </div>
   }
 
   <h1>Catalogus</h1>
@@ -19,22 +19,47 @@
 
       <div class="sidebar-section">
         <label>Genre</label>
-        <p-multiselect [(ngModel)]="sidebarGenres" [options]="genres" optionLabel="name" optionValue="id"
-          placeholder="Alle genres" [showClear]="true" [showToggleAll]="false"
-          selectedItemsLabel="{0} genres " styleClass="w-full" />
+        <p-multiselect
+          [(ngModel)]="sidebarGenres"
+          [options]="genres"
+          optionLabel="name"
+          optionValue="id"
+          placeholder="Alle genres"
+          [showClear]="true"
+          [showToggleAll]="false"
+          selectedItemsLabel="{0} genres "
+          styleClass="w-full"
+        />
       </div>
 
       <div class="sidebar-section">
         <label>Taal</label>
-        <p-select [(ngModel)]="sidebarLanguage" [options]="languages" optionLabel="name" optionValue="id"
-          placeholder="Alle talen" [showClear]="true" styleClass="w-full" />
+        <p-select
+          [(ngModel)]="sidebarLanguage"
+          [options]="languages"
+          optionLabel="name"
+          optionValue="id"
+          placeholder="Alle talen"
+          [showClear]="true"
+          styleClass="w-full"
+        />
       </div>
 
       <div class="sidebar-section">
         <label>Pagina's</label>
         <div class="range-inputs">
-          <p-inputnumber [(ngModel)]="sidebarPagesMin" placeholder="Min" [min]="0" styleClass="w-full" />
-          <p-inputnumber [(ngModel)]="sidebarPagesMax" placeholder="Max" [min]="0" styleClass="w-full" />
+          <p-inputnumber
+            [(ngModel)]="sidebarPagesMin"
+            placeholder="Min"
+            [min]="0"
+            styleClass="w-full"
+          />
+          <p-inputnumber
+            [(ngModel)]="sidebarPagesMax"
+            placeholder="Max"
+            [min]="0"
+            styleClass="w-full"
+          />
         </div>
       </div>
 
@@ -45,102 +70,124 @@
     </aside>
 
     <div class="catalogue-main">
-      @if (loading) {
-      <div class="loading-container">
-        <p-progressSpinner />
-      </div>
+      @if (loading.visible) {
+        <div class="loading-container">
+          <p-progressSpinner />
+        </div>
       }
 
-      @if (!loading && books.length === 0) {
-      <p>Geen boeken gevonden.</p>
+      @if (!loading.isLoading && books.length === 0) {
+        <p>Geen boeken gevonden.</p>
       }
 
-      @if (!loading && books.length > 0) {
-      <div class="book-list">
-        @for (book of books; track book.id) {
-        <div class="book-card" (click)="onBookClick(book)" [style.cursor]="'pointer'">
-          <div class="book-info">
-            @if (book.cover == '' || book.cover == null) {
-            <img [src]="placeholder" [alt]="book.title" class="book-cover" />
-            } @else {
-            <img src="static/cover/{{ book.cover }}" [alt]="book.title" class="book-cover" />
-            }
-            <div class="book-info-data">
-              <h2 class="book-title">{{ book.title }}</h2>
-              <div class="book-subtitle">
-                <div class="book-main-info">
-                  @if (book.author) {
-                  <span>{{ book.author.name }}</span>
-                  }
-                  @if (book.published) {
-                  <span> · {{ book.published }}</span>
-                  }
-                </div>
-                @if (book.clib) {
-                <div class="book-clib-info">
-                  <span>CLIB : {{ book.clib }}</span>
-                </div>
+      @if (!loading.isLoading && books.length > 0) {
+        <div class="book-list">
+          @for (book of books; track book.id) {
+            <div class="book-card" (click)="onBookClick(book)" [style.cursor]="'pointer'">
+              <div class="book-info">
+                @if (book.cover == '' || book.cover == null) {
+                  <img [src]="placeholder" [alt]="book.title" class="book-cover" />
+                } @else {
+                  <img src="static/cover/{{ book.cover }}" [alt]="book.title" class="book-cover" />
                 }
-                @if (book.genres && book.genres.length != 0) {
-                <div class="genre-container show-desktop">
-                  @for (genre of book.genres; track $index) {
-                  <div class="tag">
-                    <span>{{ genre.name }}</span>
+                <div class="book-info-data">
+                  <h2 class="book-title">{{ book.title }}</h2>
+                  <div class="book-subtitle">
+                    <div class="book-main-info">
+                      @if (book.author) {
+                        <span>{{ book.author.name }}</span>
+                      }
+                      @if (book.published) {
+                        <span> · {{ book.published }}</span>
+                      }
+                    </div>
+                    @if (book.clib) {
+                      <div class="book-clib-info">
+                        <span>CLIB : {{ book.clib }}</span>
+                      </div>
+                    }
+                    @if (book.genres && book.genres.length != 0) {
+                      <div class="genre-container show-desktop">
+                        @for (genre of book.genres; track $index) {
+                          <div class="tag">
+                            <span>{{ genre.name }}</span>
+                          </div>
+                        }
+                      </div>
+                      <div class="genre-container show-mobile">
+                        <div class="tag">
+                          <span>{{ book.genres[0]?.name }}</span>
+                        </div>
+                        @if (book.genres.length - 1 > 0) {
+                          <span class="genre-more">+{{ book.genres.length - 1 }}</span>
+                        }
+                      </div>
+                    }
                   </div>
-                  }
+                  <p class="book-description">{{ book.description }}</p>
                 </div>
-                <div class="genre-container show-mobile">
-                  <div class="tag">
-                    <span>{{ book.genres[0]?.name }}</span>
-                  </div>
-                  @if (book.genres.length - 1 > 0) {
-                  <span class="genre-more">+{{ book.genres.length - 1 }}</span>
-                  }
-                </div>
+              </div>
+              <div class="book-meta">
+                @if (book.fiction !== undefined && book.fiction !== null) {
+                  <p-tag
+                    [value]="book.fiction ? 'Fictie' : 'Non-fictie'"
+                    [severity]="book.fiction ? 'info' : 'success'"
+                  />
+                }
+                @if (book.pages) {
+                  <span>{{ book.pages }} p.</span>
+                }
+                @if (book.rating) {
+                  <span class="book-rating">
+                    <i class="pi pi-star-fill"></i> {{ book.rating }}/5
+                    <span class="rating-count">({{ book.rating_count }})</span>
+                  </span>
                 }
               </div>
-              <p class="book-description">{{ book.description }}</p>
             </div>
-          </div>
-          <div class="book-meta">
-            @if (book.fiction !== undefined && book.fiction !== null) {
-            <p-tag [value]="book.fiction ? 'Fictie' : 'Non-fictie'" [severity]="book.fiction ? 'info' : 'success'" />
-            }
-            @if (book.pages) {
-            <span>{{ book.pages }} p.</span>
-            }
-            @if (book.rating) {
-            <span class="book-rating">
-              <i class="pi pi-star-fill"></i> {{ book.rating }}/5
-              <span class="rating-count">({{ book.rating_count }})</span>
-            </span>
-            }
-          </div>
+            <p-divider class="show-mobile" />
+          }
         </div>
-        <p-divider class="show-mobile" />
-        }
-      </div>
 
-      <p-paginator [first]="currentPage * rows" [rows]="rows" [totalRecords]="totalRecords"
-        [rowsPerPageOptions]="[5, 10, 20]" (onPageChange)="onPageChange($event)"
-        [class.first-page]="currentPage === 0" />
+        <p-paginator
+          [first]="currentPage * rows"
+          [rows]="rows"
+          [totalRecords]="totalRecords"
+          [rowsPerPageOptions]="[5, 10, 20]"
+          (onPageChange)="onPageChange($event)"
+          [class.first-page]="currentPage === 0"
+        />
       }
     </div>
   </div>
 </div>
 
-<p-dialog [(visible)]="showDialog" [modal]="true" [closable]="true" header="{{ selectedBook?.title }}"
-  [style]="{ width: '400px' }">
+<p-dialog
+  [(visible)]="showDialog"
+  [modal]="true"
+  [closable]="true"
+  header="{{ selectedBook?.title }}"
+  [style]="{ width: '400px' }"
+>
   <div class="dialog-content">
     @if (selectedBook?.cover) {
-    <img [src]="selectedBook!.cover" [alt]="selectedBook!.title" class="dialog-cover" />
+      <img [src]="selectedBook!.cover" [alt]="selectedBook!.title" class="dialog-cover" />
     }
     <p *ngIf="selectedBook?.author">{{ selectedBook!.author!.name }}</p>
   </div>
   <ng-template pTemplate="footer">
-    <p-button label="Boekdetails bekijken" icon="pi pi-book" severity="secondary" (onClick)="viewBookDetails()" />
+    <p-button
+      label="Boekdetails bekijken"
+      icon="pi pi-book"
+      severity="secondary"
+      (onClick)="viewBookDetails()"
+    />
     @if (selectMode) {
-    <p-button label="Instellen als boek van de maand" icon="pi pi-check" (onClick)="setAsBookOfMonth()" />
+      <p-button
+        label="Instellen als boek van de maand"
+        icon="pi pi-check"
+        (onClick)="setAsBookOfMonth()"
+      />
     }
   </ng-template>
 </p-dialog>

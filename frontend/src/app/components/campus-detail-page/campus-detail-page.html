@@ -34,15 +34,15 @@
 
     <h3>Boek toevoegen:</h3>
     <s-bar (search)="onSearch($event)" />
-    @if (loading) {
+    @if (loading.visible) {
       <div class="loading-container">
         <p-progressSpinner />
       </div>
     }
-    @if (!loading && books.length === 0) {
+    @if (!loading.isLoading && books.length === 0) {
       <p>Geen boeken gevonden.</p>
     }
-    @if (!loading && books.length > 0) {
+    @if (!loading.isLoading && books.length > 0) {
       <div class="book-list">
         @for (book of books; track book.id) {
           <div class="book-card">
