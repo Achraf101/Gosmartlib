@@ -1,6 +1,5 @@
 package be.ap.backend.service;
 
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -9,6 +8,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import be.ap.backend.dto.GenreProjection;
 import be.ap.backend.dto.BookResultDTO;
@@ -16,48 +17,46 @@ import be.ap.backend.dto.CreateBookDTO;
 import be.ap.backend.dto.GenreDTO;
 import be.ap.backend.entity.Author;
 import be.ap.backend.entity.Publisher;
+import be.ap.backend.entity.Series;
 import be.ap.backend.entity.Book;
 import be.ap.backend.entity.BookContributor;
 import be.ap.backend.entity.BookType;
+import be.ap.backend.entity.Clib;
 import be.ap.backend.entity.Genre;
 import be.ap.backend.entity.Language;
 import be.ap.backend.repository.BookRepository;
 import jakarta.persistence.EntityManager;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class BookService {
 
     private final BookRepository bookRepository;
     private final EntityManager entityManager;
-    
-
-    public BookService(BookRepository bookRepository, EntityManager entityManager) {
-        this.bookRepository = bookRepository;
-        this.entityManager = entityManager;
-      
-    }
 
     public Book saveBook(CreateBookDTO dto) {
-
         Book book = new Book();
 
-        // required fields
         book.setTitle(dto.getTitle());
         book.setBookType(entityManager.find(BookType.class, dto.getBookType()));
         book.setLanguage(entityManager.find(Language.class, dto.getLanguage()));
         book.setFiction(dto.getFiction());
 
-        // optional fields
         if (dto.getAuthor() != null) {
             book.setAuthor(entityManager.find(Author.class, dto.getAuthor()));
         }
 
         if (dto.getPublisher() != null) {
             book.setPublisher(entityManager.find(Publisher.class, dto.getPublisher()));
+        }
+
+        if (dto.getSeries() != null) {
+            book.setSeries(entityManager.find(Series.class, dto.getSeries()));
+        }
+
+        if (dto.getSeriesCount() != null && dto.getSeriesCount() != 0) {
+            book.setSeriesNumber(dto.getSeriesCount());
         }
 
         if (dto.getGenres() != null) {
@@ -89,17 +88,41 @@ public class BookService {
         if (dto.getPages() != 0)
             book.setPages(dto.getPages());
 
-        if (dto.getAgeStart() != 0 && dto.getAgeEnd() != 0
-                && dto.getAgeStart() < dto.getAgeEnd()) {
-            book.setAgeStart(dto.getAgeStart());
-            book.setAgeEnd(dto.getAgeEnd());
+        if (dto.getClib() != null) {
+            book.setClib(dto.getClib());
         }
 
         return bookRepository.save(book);
     }
 
-    public Page<BookResultDTO> getAllBookResults(Pageable pageable) {
+    public Page<Book> filter(
+            List<Long> genres,
+            Long language,
+            Boolean fiction,
+            List<Long> authorIds,
+            List<Long> seriesIds,
+            Integer pagesMin,
+            Integer pagesMax,
+            List<Clib> clibs,
+            Pageable pageable) {
 
+        if (seriesIds != null && seriesIds.isEmpty()) {
+            seriesIds = null;
+        }
+
+        return bookRepository.filter(
+                genres,
+                language,
+                fiction,
+                authorIds,
+                seriesIds,
+                pagesMin,
+                pagesMax,
+                clibs,
+                pageable);
+    }
+
+    public Page<BookResultDTO> getAllBookResults(Pageable pageable) {
         Page<BookResultDTO> page = bookRepository.getAllBookResults(pageable);
 
         List<Long> bookIds = page.getContent().stream()
@@ -115,12 +138,10 @@ public class BookService {
         Map<Long, Set<GenreDTO>> genreMap = new HashMap<>();
         for (GenreProjection row : results) {
             genreMap.computeIfAbsent(row.getBookId(), k -> new HashSet<>())
-                .add(new GenreDTO(row.getGenreId(), row.getGenreName()));
+                    .add(new GenreDTO(row.getGenreId(), row.getGenreName()));
         }
 
-        page.getContent().forEach(dto ->
-                dto.setGenres(genreMap.getOrDefault(dto.getId(), Set.of()))
-        );
+        page.getContent().forEach(dto -> dto.setGenres(genreMap.getOrDefault(dto.getId(), Set.of())));
 
         return page;
     }

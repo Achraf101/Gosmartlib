@@ -4,21 +4,7 @@
     <section class="hero">
       <div class="hero-overlay"></div>
       <div class="hero-content">
-        <form class="search-form" (submit)="onSearch($event)">
-          <div class="search-wrapper">
-            <input
-              type="text"
-              class="search-input"
-              placeholder="Titel, auteur, genre, onderwerp"
-              [value]="searchQuery"
-              (input)="onSearchInput($event)"
-            />
-            <button type="submit" class="search-btn">
-              <i class="pi pi-search"></i>
-            </button>
-          </div>
-          <a routerLink="/catalogus" class="catalogus-btn"> Bekijk catalogus &rsaquo; </a>
-        </form>
+        <s-bar (search)="onSearch($event)" class="search-bar" />
       </div>
     </section>
   </div>

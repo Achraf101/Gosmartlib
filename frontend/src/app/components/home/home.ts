@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { NavBarComponent } from '../nav-bar/nav-bar';
 import { BookSectionComponent } from '../book-section/book-section';
+import { SearchBar } from '../misc/search-bar/search-bar';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterModule, NavBarComponent, BookSectionComponent],
+  imports: [CommonModule, RouterModule, NavBarComponent, BookSectionComponent, SearchBar],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
@@ -16,13 +17,9 @@ export class HomeComponent {
 
   constructor(private router: Router) {}
 
-  onSearch(event: Event) {
-    event.preventDefault();
-    if (!this.searchQuery.trim()) return;
+  onSearch(query: string) {
+    if (!query.trim()) return;
+    this.searchQuery = query.trim();
     this.router.navigate(['/catalogus'], { queryParams: { q: this.searchQuery.trim() } });
-  }
-
-  onSearchInput(event: Event) {
-    this.searchQuery = (event.target as HTMLInputElement).value;
   }
 }

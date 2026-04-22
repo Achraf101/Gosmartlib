@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import be.ap.backend.entity.Language;
 import be.ap.backend.repository.LanguageRepository;
+import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 
@@ -15,13 +16,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequestMapping("language")
+@RequiredArgsConstructor
 public class LanguageController {
 
     private final LanguageRepository languageRepository;
-
-    public LanguageController(LanguageRepository languageRepository) {
-        this.languageRepository = languageRepository;
-    }
 
     @GetMapping()
     public List<Language> getAll() {

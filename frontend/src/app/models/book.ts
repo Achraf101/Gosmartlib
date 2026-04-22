@@ -12,34 +12,33 @@ export interface BookBase {
   cover?: string;
 }
 
-// optionally add fields later
 export interface BookCard extends BookBase {
-  author_name: String;
+  author_name: string;
 }
 
-// the item displayed after search
 export interface BookResult extends BookBase {
-  author_name: String;
+  author_name: string;
   book_type: BookType;
-  series?: Series;
-  series_count?: number;
+  series_id?: number;      
+  series_name?: string;    
+  series_number?: number;  
   language?: Language;
   published?: number;
   description?: string;
   genres: Genre[];
   fiction?: boolean;
-  age_start?: number;
-  age_end?: number;
+  clib?: string;
   pages?: number;
   rating?: number;
   rating_count?: number;
 }
 
 export interface BookDetail extends BookBase {
+  author_name: string;
   book_type: BookType;
-  isbn?: string;
-  series?: Series;
-  series_count?: number;
+  isbn?: string;         
+  series_name?: string;  
+  series_number?: number; 
   contributors?: Author[];
   publisher?: Publisher;
   genres: Genre[];
@@ -48,8 +47,7 @@ export interface BookDetail extends BookBase {
   published?: number;
   cover?: string;
   language: Language;
-  age_start?: number;
-  age_end?: number;
+  clib?: string;
   pages?: number;
   font_size?: string;
   rating_total: number;
@@ -64,8 +62,8 @@ export interface CreateBook {
   author: number;
   cover?: string;
   isbn?: string;
-  series?: number;
-  series_count?: number;
+  series?: number;        
+  series_count?: number;  
   contributors?: number[];
   publisher?: number;
   genres: number[];
@@ -73,25 +71,22 @@ export interface CreateBook {
   fiction: boolean;
   published?: number;
   language: number;
-  age_start?: number;
-  age_end?: number;
+  clib?: string;
   pages?: number;
   font_size?: string;
   school?: boolean;
-  CLIB: string;
-  Didactic_material: boolean;
+  didactic_material: boolean;
 }
 
-// interface to search with filters
 export interface BookFilter {
   type?: number[];
   genre?: number[];
   fiction?: boolean;
   language?: number;
   pages?: [number, number];
-  series?: number[];
+  series?: number[];    
   author?: number[];
-  age?: [number, number];
+  clibs?: string[];
   published?: [number, number];
   publisher?: number[];
 }

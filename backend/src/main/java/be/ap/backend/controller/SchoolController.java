@@ -7,15 +7,13 @@ import org.springframework.web.bind.annotation.*;
 
 import be.ap.backend.dto.SchoolDTO;
 import be.ap.backend.service.SchoolService;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("school")
+@RequiredArgsConstructor
 public class SchoolController {
     private final SchoolService schoolService;
-
-    public SchoolController(SchoolService schoolService) {
-        this.schoolService = schoolService;
-    }
 
     @PostMapping
     public ResponseEntity<SchoolDTO> addSchool(@RequestBody SchoolDTO dto) {

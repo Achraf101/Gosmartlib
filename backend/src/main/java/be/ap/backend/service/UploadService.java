@@ -1,9 +1,15 @@
 package be.ap.backend.service;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.security.SecureRandom;
 import java.util.Optional;
 
@@ -14,16 +20,14 @@ import org.springframework.web.multipart.MultipartFile;
 import be.ap.backend.dto.CoverDTO;
 import be.ap.backend.entity.Book;
 import be.ap.backend.repository.BookRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 @Service
+@RequiredArgsConstructor
 public class UploadService {
 
     private final BookRepository bookRepository;
-
-    public UploadService(BookRepository bookRepository) {
-        this.bookRepository = bookRepository;
-    }
 
     private final int idLength = 16;
 
@@ -104,5 +108,59 @@ public class UploadService {
             sb.append(String.format("%02x", b));
         }
         return sb.toString();
+    }
+
+    public String saveCoverFromUrl(String imageUrl) {
+        try {
+            URI uri = new URI(imageUrl);
+            URL url = uri.toURL();
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+            connection.setConnectTimeout(5000);
+            connection.setReadTimeout(10000);
+            connection.setRequestProperty("User-Agent", "Mozilla/5.0");
+            connection.connect();
+
+            if (connection.getResponseCode() != 200) {
+                return null;
+            }
+
+            String contentType = connection.getContentType();
+            String extension = getExtensionFromContentType(contentType);
+            if (extension == null) {
+                String path = url.getPath();
+                int dot = path.lastIndexOf('.');
+                if (dot >= 0 && path.length() - dot <= 6) {
+                    extension = path.substring(dot + 1);
+                }
+            }
+
+            String fileName = extension != null
+                ? generateId() + "." + extension
+                : generateId();
+
+            Path coverPath = Paths.get(uploadDir, "cover", fileName);
+            Files.createDirectories(coverPath.getParent());
+
+            try (InputStream in = connection.getInputStream()) {
+                Files.copy(in, coverPath, StandardCopyOption.REPLACE_EXISTING);
+            }
+
+            return fileName;
+
+        } catch (URISyntaxException | IOException e) {
+            return null;
+        }
+    }
+
+    private String getExtensionFromContentType(String contentType) {
+        if (contentType == null) return null;
+        return switch (contentType.split(";")[0].trim().toLowerCase()) {
+            case "image/jpeg" -> "jpg";
+            case "image/png"  -> "png";
+            case "image/webp" -> "webp";
+            case "image/gif"  -> "gif";
+            default           -> null;
+        };
     }
 }

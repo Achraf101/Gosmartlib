@@ -1,0 +1,57 @@
+<div class="book-card" (click)="handleClick()" [style.cursor]="'pointer'">
+  <div class="book-info">
+    <div class="book-cover">
+      <b-cover [bookCard]="book"></b-cover>
+    </div>
+    <div class="book-info-data">
+      <h2 class="book-title">{{ book.title }}</h2>
+      <div class="book-subtitle">
+        @if (book.author) {
+          <span>{{ book.author.name }}</span>
+        }
+        @if (book.published) {
+          <span> · {{ book.published }}</span>
+        }
+        @if (book.clib) {
+          <span> · CLIB {{ book.clib }}</span>
+        }
+        @if (book.genres && book.genres.length != 0) {
+          <div class="book-meta show-desktop">
+            @for (genre of book.genres; track $index) {
+              <div class="tag">
+                <span>{{ genre.name }}</span>
+              </div>
+            }
+          </div>
+          <div class="book-meta show-mobile">
+            <div class="tag">
+              <span>{{ book.genres[0]?.name }}</span>
+            </div>
+            @if (book.genres.length - 1 > 0) {
+              <p>+{{ book.genres.length - 1 }}</p>
+            }
+          </div>
+        }
+      </div>
+      <p class="book-description">{{ book.description }}</p>
+    </div>
+  </div>
+  <div class="book-meta">
+    @if (book.fiction !== undefined && book.fiction !== null) {
+      <p-tag
+        [value]="book.fiction ? 'Fictie' : 'Non-fictie'"
+        [severity]="book.fiction ? 'info' : 'success'"
+      />
+    }
+    @if (book.pages) {
+      <span>{{ book.pages }} p.</span>
+    }
+    @if (book.rating) {
+      <span class="book-rating">
+        <i class="pi pi-star-fill"></i> {{ book.rating }}/5
+        <span class="rating-count">({{ book.rating_count }})</span>
+      </span>
+    }
+  </div>
+</div>
+<p-divider class="show-mobile" />

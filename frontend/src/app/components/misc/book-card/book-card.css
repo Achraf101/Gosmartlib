@@ -1,0 +1,40 @@
+.book-card {
+  width: 180px;
+  height: 350px;
+  cursor: pointer;
+  align-items: center;
+  text-align: center;
+}
+
+.book-cover {
+  height: 70%;
+}
+
+p {
+  margin: 0;
+}
+
+.title {
+  margin-top: 10px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.author {
+  font-size: 14px;
+  margin-top: 6px;
+  color: var(--p-text-muted-color);
+}
+
+.large.book-card {
+  width: 240px;
+  height: 600px;
+}
+
+.small.book-card {
+  width: 5px;
+  height: 5px;
+}

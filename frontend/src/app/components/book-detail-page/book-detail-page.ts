@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { BookService } from '../../services/book-service';
 import { BookCard, BookDetail } from '../../models/book';
 import { ImageModule } from 'primeng/image';
@@ -8,11 +8,20 @@ import { FormsModule } from '@angular/forms';
 import { NavBarComponent } from '../nav-bar/nav-bar';
 import { MessageService } from 'primeng/api';
 import { AccordionModule } from 'primeng/accordion';
+import { BookCardComponent } from '../misc/book-card/book-card';
 import { BookmarkedService } from '../../services/bookmarked-service';
+import { CarouselModule } from 'primeng/carousel';
 
 @Component({
-  selector: 'app-book-detail-page',
-  imports: [ImageModule, RatingModule, FormsModule, NavBarComponent, RouterLink, AccordionModule],
+  imports: [
+    ImageModule,
+    RatingModule,
+    FormsModule,
+    NavBarComponent,
+    AccordionModule,
+    BookCardComponent,
+    CarouselModule,
+  ],
   templateUrl: './book-detail-page.html',
   styleUrl: './book-detail-page.css',
 })
@@ -26,9 +35,8 @@ export class BookDetailPage implements OnInit {
   isBookmarked = false;
   genresString = '';
 
-  // TODO: replace with actual logged in user id once auth is done
-  userId = 1;
 
+  userId = 1;
 
   readonly placeholder = '/assets/no-cover.svg';
 
@@ -45,7 +53,7 @@ export class BookDetailPage implements OnInit {
       this.loadBook();
     });
     this.bookmarkedService.isBookmarked(this.userId, this.bookId).subscribe({
-      next: (result) => this.isBookmarked = result
+      next: (result) => (this.isBookmarked = result),
     });
 
     if (!this.bookId) return;
@@ -56,8 +64,8 @@ export class BookDetailPage implements OnInit {
     this.bookmarkedService.toggleBookmarked(this.userId, this.bookId).subscribe({
       next: (isAdded) => {
         this.isBookmarked = isAdded;
-      }
-    })
+      },
+    });
   }
 
   scrollTop() {
@@ -75,7 +83,7 @@ export class BookDetailPage implements OnInit {
         this.genresString = (this.book?.genres || []).map((i) => i.name).join(', ');
 
         this.bookmarkedService.isBookmarked(this.userId, this.bookId).subscribe({
-          next: (result) => this.isBookmarked = result
+          next: (result) => (this.isBookmarked = result),
         });
       },
       error: (err) => {

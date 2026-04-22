@@ -5,10 +5,12 @@ import java.util.List;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "school")
 @Data
+@NoArgsConstructor
 public class School {
 
     @Id
@@ -28,12 +30,8 @@ public class School {
     @Column(nullable = true, length = 1000, name = "description")
     private String description;
 
-    // One school has many campuses
     @OneToMany(mappedBy = "school", cascade = CascadeType.ALL)
     private List<Campus> campuses = new ArrayList<>();
-
-    public School() {
-    }
 
     public School(String name, String adres, String contact, String description) {
         this.name = name;

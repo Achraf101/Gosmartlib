@@ -7,6 +7,7 @@ import { ApiService } from '../../services/api';
 import { Author } from '../../models/author';
 import { Genre } from '../../models/genre';
 import { Language } from '../../models/language';
+import { Series } from '../../models/series'; // voeg dit model toe
 import { AutoCompleteModule, AutoCompleteCompleteEvent } from 'primeng/autocomplete';
 import { SelectModule } from 'primeng/select';
 import { InputNumberModule } from 'primeng/inputnumber';
@@ -14,7 +15,7 @@ import { InputNumberModule } from 'primeng/inputnumber';
 @Component({
   selector: 'app-filter-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavBarComponent, AutoCompleteModule,SelectModule,InputNumberModule],
+  imports: [CommonModule, FormsModule, NavBarComponent, AutoCompleteModule, SelectModule, InputNumberModule],
   templateUrl: './filter-page.html',
   styleUrl: './filter-page.css',
 })
@@ -27,11 +28,13 @@ export class FilterPage implements OnInit {
   selectedFiction: boolean | null = null;
   selectedAuthors: Author[] = [];
   authorSuggestions: Author[] = [];
+  selectedSeries: Series[] = [];
+  seriesSuggestions: Series[] = [];
   selectedClib: string[] = [];
   pagesMin: number | null = null;
   pagesMax: number | null = null;
   errorPagesMin: string | null = null;
- errorPagesMax: string | null = null;
+  errorPagesMax: string | null = null;
 
   constructor(
     private apiService: ApiService,
@@ -45,19 +48,25 @@ export class FilterPage implements OnInit {
 
     this.route.queryParams.subscribe(params => {
       if (params['genres']) {
-  this.selectedGenres = params['genres'].split(',').map(Number);
-}
+        this.selectedGenres = params['genres'].split(',').map(Number);
+      }
       if (params['language']) this.selectedLanguage = Number(params['language']);
       if (params['fiction'] !== undefined) this.selectedFiction = params['fiction'] === 'true';
       if (params['authorIds']) {
         this.selectedAuthors = [];
         params['authorIds'].split(',').forEach((id: string) => {
-        this.apiService.get<Author>(`author/${id}`).subscribe(a => this.selectedAuthors.push(a));
-  });
-}
-      if (params['clib']) {
-  this.selectedClib = params['clib'].split(',');
-}
+          this.apiService.get<Author>(`author/${id}`).subscribe(a => this.selectedAuthors.push(a));
+        });
+      }
+      if (params['seriesIds']) {
+        this.selectedSeries = [];
+        params['seriesIds'].split(',').forEach((id: string) => {
+          this.apiService.get<Series>(`series/${id}`).subscribe(s => this.selectedSeries.push(s));
+        });
+      }
+      if (params['clibs']) {
+        this.selectedClib = params['clibs'].split(',');
+      }
       if (params['pagesMin']) this.pagesMin = Number(params['pagesMin']);
       if (params['pagesMax']) this.pagesMax = Number(params['pagesMax']);
     });
@@ -71,6 +80,17 @@ export class FilterPage implements OnInit {
     }
     this.apiService.get<Author[]>(`author/search/${encodeURIComponent(query)}`).subscribe(
       a => this.authorSuggestions = a
+    );
+  }
+
+  searchSeries(event: AutoCompleteCompleteEvent): void {
+    const query = event.query.trim();
+    if (!query) {
+      this.seriesSuggestions = [];
+      return;
+    }
+    this.apiService.get<Series[]>(`series/search/${encodeURIComponent(query)}`).subscribe(
+      s => this.seriesSuggestions = s
     );
   }
 
@@ -100,24 +120,24 @@ export class FilterPage implements OnInit {
     return this.selectedClib.includes(level);
   }
 
-validate(): boolean {
-  this.errorPagesMin = null;
-  this.errorPagesMax = null;
+  validate(): boolean {
+    this.errorPagesMin = null;
+    this.errorPagesMax = null;
 
-  if (this.pagesMin !== null && this.pagesMin < 0) {
-    this.errorPagesMin = 'Pagina\'s kan niet negatief zijn.';
-    return false;
+    if (this.pagesMin !== null && this.pagesMin < 0) {
+      this.errorPagesMin = 'Pagina\'s kan niet negatief zijn.';
+      return false;
+    }
+    if (this.pagesMax !== null && this.pagesMax < 0) {
+      this.errorPagesMax = 'Pagina\'s kan niet negatief zijn.';
+      return false;
+    }
+    if (this.pagesMin !== null && this.pagesMax !== null && this.pagesMin > this.pagesMax) {
+      this.errorPagesMin = 'Min moet kleiner zijn dan max.';
+      return false;
+    }
+    return true;
   }
-  if (this.pagesMax !== null && this.pagesMax < 0) {
-    this.errorPagesMax = 'Pagina\'s kan niet negatief zijn.';
-    return false;
-  }
-  if (this.pagesMin !== null && this.pagesMax !== null && this.pagesMin > this.pagesMax) {
-    this.errorPagesMin = 'Min moet kleiner zijn dan max.';
-    return false;
-  }
-  return true;
-}
 
   onSearch(): void {
     if (!this.validate()) return;
@@ -126,7 +146,8 @@ validate(): boolean {
     if (this.selectedLanguage) params['language'] = this.selectedLanguage;
     if (this.selectedFiction !== null) params['fiction'] = this.selectedFiction;
     if (this.selectedAuthors.length > 0) params['authorIds'] = this.selectedAuthors.map(a => a.id).join(',');
-    if (this.selectedClib.length > 0) params['clib'] = this.selectedClib.join(',');
+    if (this.selectedSeries.length > 0) params['seriesIds'] = this.selectedSeries.map(s => s.id).join(',');
+    if (this.selectedClib.length > 0) params['clibs'] = this.selectedClib.join(',');
     if (this.pagesMin !== null) params['pagesMin'] = this.pagesMin;
     if (this.pagesMax !== null) params['pagesMax'] = this.pagesMax;
 
@@ -138,6 +159,7 @@ validate(): boolean {
     this.selectedLanguage = null;
     this.selectedFiction = null;
     this.selectedAuthors = [];
+    this.selectedSeries = [];
     this.selectedClib = [];
     this.pagesMin = null;
     this.pagesMax = null;
