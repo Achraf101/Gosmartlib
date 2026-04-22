@@ -11,6 +11,8 @@ import { AccordionModule } from 'primeng/accordion';
 import { BookCardComponent } from '../misc/book-card/book-card';
 import { BookmarkedService } from '../../services/bookmarked-service';
 import { CarouselModule } from 'primeng/carousel';
+import { ProgressSpinner } from 'primeng/progressspinner';
+import { DelayedLoader } from '../../utils/delayed-loader';
 
 @Component({
   imports: [
@@ -21,6 +23,7 @@ import { CarouselModule } from 'primeng/carousel';
     AccordionModule,
     BookCardComponent,
     CarouselModule,
+    ProgressSpinner,
   ],
   templateUrl: './book-detail-page.html',
   styleUrl: './book-detail-page.css',
@@ -34,7 +37,7 @@ export class BookDetailPage implements OnInit {
   relatedBooks?: BookCard[];
   isBookmarked = false;
   genresString = '';
-
+  loading = new DelayedLoader();
 
   userId = 1;
 
@@ -52,11 +55,6 @@ export class BookDetailPage implements OnInit {
       this.bookId = Number(params.get('id'));
       this.loadBook();
     });
-    this.bookmarkedService.isBookmarked(this.userId, this.bookId).subscribe({
-      next: (result) => (this.isBookmarked = result),
-    });
-
-    if (!this.bookId) return;
   }
 
   public toggleFavorite() {
@@ -73,6 +71,10 @@ export class BookDetailPage implements OnInit {
   }
 
   public loadBook() {
+    this.loading.start();
+    this.error = '';
+    this.book = undefined;
+
     this.bookService.getById(this.bookId).subscribe({
       next: (book) => {
         this.book = book;
@@ -85,25 +87,29 @@ export class BookDetailPage implements OnInit {
         this.bookmarkedService.isBookmarked(this.userId, this.bookId).subscribe({
           next: (result) => (this.isBookmarked = result),
         });
+
+        this.bookService.getRelated(this.bookId).subscribe({
+          next: (relatedBooks) => (this.relatedBooks = relatedBooks),
+          error: () => {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Fout',
+              detail: 'Probleem met het zoeken van gelijkaardige boeken.',
+              life: 3750,
+            });
+          },
+        });
+
+        this.loading.stop();
       },
-      error: (err) => {
+      error: () => {
+        this.error = 'Boek niet gevonden.';
+        this.loading.stop();
         this.messageService.add({
           severity: 'error',
           summary: 'Fout',
           detail: 'Boek niet gevonden.',
           life: 3000,
-        });
-      },
-    });
-
-    this.bookService.getRelated(this.bookId).subscribe({
-      next: (relatedBooks) => (this.relatedBooks = relatedBooks),
-      error: (err) => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fout',
-          detail: 'Probleem met het zoeken van gelijkaardige boeken.',
-          life: 3750,
         });
       },
     });

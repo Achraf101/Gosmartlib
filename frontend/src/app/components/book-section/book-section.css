@@ -121,6 +121,13 @@
   margin-bottom: 1rem;
 }
 
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 140px;
+}
+
 @media (max-width: 700px) {
   .books-grid {
     grid-template-columns: repeat(2, 1fr);
