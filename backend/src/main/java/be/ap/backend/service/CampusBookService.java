@@ -23,9 +23,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CampusBookService {
 
-    private CampusBookRepository campusBookRepository;
+    private final CampusBookRepository campusBookRepository;
 
-    EntityManager entityManager;
+    private final EntityManager entityManager;
 
     public CampusBook createCampusBook(CampusBookDTO dto) {
         if (dto.getCampusId() == null || dto.getBookId() == null) {
