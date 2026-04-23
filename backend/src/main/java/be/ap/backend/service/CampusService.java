@@ -13,12 +13,13 @@ import be.ap.backend.repository.CampusRepository;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 
+
 @Service
 @RequiredArgsConstructor
 public class CampusService {
-    private CampusRepository campusRepository;
+    private final CampusRepository campusRepository;
 
-    private EntityManager entityManager;
+    private final EntityManager entityManager;
 
     public CampusDTO createCampus(CampusDTO dto) {
         if (dto.getSchoolId() == null) {
