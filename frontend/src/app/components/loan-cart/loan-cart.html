@@ -1,0 +1,82 @@
+<div class="fixed bottom-6 right-6 z-50">
+  <p-button
+    icon="pi pi-shopping-cart"
+    [rounded]="true"
+    (onClick)="visible = true"
+    [disabled]="cartService.isEmpty()"
+    pBadge
+    [outlined]="true"
+  />
+</div>
+
+<p-dialog
+  header="Uw ontleenlijst"
+  [(visible)]="visible"
+  [modal]="true"
+  [style]="{ width: '520px' }"
+  [draggable]="false"
+>
+  <!-- Boeken in cart -->
+  <div class="flex flex-col gap-3 mb-4">
+    @if (cartService.isEmpty()) {
+      <p class="text-center text-gray-400">Uw ontleenlijst is leeg.</p>
+    }
+
+    @for (item of cartService.items(); track item.bookId) {
+      <div class="flex justify-between items-center border-b pb-3">
+        <span class="font-medium">Boek #{{ item.bookId }}</span>
+
+        <div class="flex items-center gap-3">
+          <p-inputnumber
+            [ngModel]="item.requestedAmount"
+            (ngModelChange)="updateAmount(item.bookId, $event)"
+            [min]="1"
+            [max]="100"
+            [showButtons]="true"
+            buttonLayout="horizontal"
+            decrementButtonIcon="pi pi-minus"
+            incrementButtonIcon="pi pi-plus"
+            [style]="{ width: '120px' }"
+          />
+          <p-button
+            icon="pi pi-trash"
+            severity="danger"
+            [text]="true"
+            (onClick)="cartService.removeBook(item.bookId)"
+          />
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Checkout form -->
+  @if (!cartService.isEmpty()) {
+    <form [formGroup]="checkoutForm" class="flex flex-col gap-4 mt-2">
+      <p-ifta-label>
+        <p-datepicker
+          formControlName="start"
+          inputId="cartStart"
+          [minDate]="today"
+          [showIcon]="true"
+          (onSelect)="onStartDateSelect($event)"
+        />
+        <label for="cartStart">Startdatum</label>
+      </p-ifta-label>
+
+      <p-ifta-label>
+        <p-datepicker formControlName="end" inputId="cartEnd" [showIcon]="true" />
+        <label for="cartEnd">Einddatum</label>
+      </p-ifta-label>
+    </form>
+  }
+
+  <ng-template pTemplate="footer">
+    <p-button label="Annuleren" severity="secondary" (onClick)="visible = false" />
+    <p-button
+      label="Ontlening aanvragen"
+      icon="pi pi-check"
+      [disabled]="checkoutForm.invalid || cartService.isEmpty()"
+      (onClick)="submitLoan()"
+    />
+  </ng-template>
+</p-dialog>

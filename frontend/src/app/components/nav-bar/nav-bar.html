@@ -8,6 +8,7 @@
     </button>
     @if (authService.currentUser$ | async; as user) {
       <div class="user-info">
+        <app-loan-cart />
         <i class="pi pi-user"></i>
         <span>{{ user.username }}</span>
       </div>
