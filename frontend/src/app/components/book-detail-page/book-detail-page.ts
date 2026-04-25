@@ -14,6 +14,7 @@ import {
 import { NavBarComponent } from '../nav-bar/nav-bar';
 import { MessageService } from 'primeng/api';
 import { AccordionModule } from 'primeng/accordion';
+import { BookCardComponent } from '../misc/book-card/book-card';
 import { BookmarkedService } from '../../services/bookmarked-service';
 import { ButtonModule } from 'primeng/button';
 import { Message } from 'primeng/message';
@@ -26,6 +27,9 @@ import { LoanService } from '../../services/loan';
 import { CreateLoanBookDTO } from '../../models/loanBook';
 import { DatePipe } from '@angular/common';
 import { LoanCartService } from '../../services/loan-cart';
+import { CarouselModule } from 'primeng/carousel';
+import { ProgressSpinner } from 'primeng/progressspinner';
+import { DelayedLoader } from '../../utils/delayed-loader';
 
 @Component({
   selector: 'app-book-detail-page',
@@ -44,6 +48,9 @@ import { LoanCartService } from '../../services/loan-cart';
     DatePickerModule,
     InputNumber,
     DatePipe,
+    BookCardComponent,
+    CarouselModule,
+    ProgressSpinner,
   ],
   templateUrl: './book-detail-page.html',
   styleUrl: './book-detail-page.css',
@@ -61,8 +68,8 @@ export class BookDetailPage implements OnInit {
   cartDialogVisible = false;
   today = new Date();
   endDate = new Date();
+  loading = new DelayedLoader();
 
-  // TODO: replace with actual logged in user id once auth is done
   userId = 1;
 
   readonly placeholder = '/assets/no-cover.svg';
@@ -107,6 +114,7 @@ export class BookDetailPage implements OnInit {
       this.bookId = Number(params.get('id'));
       this.loadBook();
     });
+    //kan weg volgens mij TODO check dat
     this.bookmarkedService.isBookmarked(this.userId, this.bookId).subscribe({
       next: (result) => (this.isBookmarked = result),
     });
@@ -128,6 +136,10 @@ export class BookDetailPage implements OnInit {
   }
 
   public loadBook() {
+    this.loading.start();
+    this.error = '';
+    this.book = undefined;
+
     this.bookService.getById(this.bookId).subscribe({
       next: (book) => {
         this.book = book;
@@ -140,25 +152,29 @@ export class BookDetailPage implements OnInit {
         this.bookmarkedService.isBookmarked(this.userId, this.bookId).subscribe({
           next: (result) => (this.isBookmarked = result),
         });
+
+        this.bookService.getRelated(this.bookId).subscribe({
+          next: (relatedBooks) => (this.relatedBooks = relatedBooks),
+          error: () => {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Fout',
+              detail: 'Probleem met het zoeken van gelijkaardige boeken.',
+              life: 3750,
+            });
+          },
+        });
+
+        this.loading.stop();
       },
       error: () => {
+        this.error = 'Boek niet gevonden.';
+        this.loading.stop();
         this.messageService.add({
           severity: 'error',
           summary: 'Fout',
           detail: 'Boek niet gevonden.',
           life: 3000,
-        });
-      },
-    });
-
-    this.bookService.getRelated(this.bookId).subscribe({
-      next: (relatedBooks) => (this.relatedBooks = relatedBooks),
-      error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fout',
-          detail: 'Probleem met het zoeken van gelijkaardige boeken.',
-          life: 3750,
         });
       },
     });

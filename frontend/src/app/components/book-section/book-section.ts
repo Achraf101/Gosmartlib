@@ -8,12 +8,26 @@ import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { SelectModule } from 'primeng/select';
 import { ButtonModule } from 'primeng/button';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { FormsModule } from '@angular/forms';
+import { BookCardComponent } from '../misc/book-card/book-card';
+import { BookResult } from '../misc/book-result/book-result';
+import { DelayedLoader } from '../../utils/delayed-loader';
 
 @Component({
   selector: 'app-book-section',
   standalone: true,
-  imports: [CommonModule, RouterModule, ToastModule, SelectModule, FormsModule, ButtonModule],
+  imports: [
+    CommonModule,
+    RouterModule,
+    ToastModule,
+    SelectModule,
+    FormsModule,
+    ButtonModule,
+    ProgressSpinnerModule,
+    BookCardComponent,
+    BookResult,
+  ],
   templateUrl: './book-section.html',
   styleUrl: './book-section.css',
   providers: [MessageService],
@@ -24,6 +38,7 @@ export class BookSectionComponent implements OnInit {
   books: BookDetail[] = [];
   selectedGrade: number = 1;
   monthlyBook: BookDetail | null = null;
+  loading = new DelayedLoader();
 
   grades = [
     { label: 'Graad 1', value: 1 },
@@ -38,14 +53,18 @@ export class BookSectionComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.loading.start();
     this.sectionService.getAll().subscribe({
       next: (sections) => {
         this.sections = sections;
         if (this.sections.length > 0) {
           this.selectSection(this.sections[0]);
+        } else {
+          this.loading.stop();
         }
       },
       error: () => {
+        this.loading.stop();
         this.messageService.add({
           severity: 'error',
           summary: 'Fout',
@@ -62,12 +81,17 @@ export class BookSectionComponent implements OnInit {
 
   selectSection(section: Section): void {
     this.activeSection = section;
+    this.loading.start();
     if (this.isMonthlySection) {
       this.loadMonthlyBook();
     } else {
       this.sectionService.getBooksBySection(section.id).subscribe({
-        next: (books) => (this.books = books),
+        next: (books) => {
+          this.books = books;
+          this.loading.stop();
+        },
         error: () => {
+          this.loading.stop();
           this.messageService.add({
             severity: 'error',
             summary: 'Fout',
@@ -81,11 +105,18 @@ export class BookSectionComponent implements OnInit {
 
   loadMonthlyBook(): void {
     if (!this.activeSection) return;
+    this.loading.start();
     this.sectionService
       .getBookBySectionAndGrade(this.activeSection.id, this.selectedGrade)
       .subscribe({
-        next: (book) => (this.monthlyBook = book),
-        error: () => (this.monthlyBook = null),
+        next: (book) => {
+          this.monthlyBook = book;
+          this.loading.stop();
+        },
+        error: () => {
+          this.monthlyBook = null;
+          this.loading.stop();
+        },
       });
   }
 

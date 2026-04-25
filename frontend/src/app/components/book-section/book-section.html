@@ -6,22 +6,25 @@
       class="tab"
       *ngFor="let section of sections"
       [class.active]="activeSection?.id === section.id"
-      (click)="selectSection(section)">
+      (click)="selectSection(section)"
+    >
       {{ section.title }}
     </button>
   </div>
 
+  @if (loading.visible) {
+    <div class="loading-container">
+      <p-progressSpinner />
+    </div>
+  }
+
   <!-- In de kijker: grid van boeken -->
-  <div class="books-grid" *ngIf="!isMonthlySection && activeSection && books.length > 0">
+  <div
+    class="books-grid"
+    *ngIf="!loading.isLoading && !isMonthlySection && activeSection && books.length > 0"
+  >
     <div class="book-card" *ngFor="let book of books" [routerLink]="['/boek', book.id]">
-      <div class="book-cover">
-        <img *ngIf="book.cover" src="static/cover/{{book.cover}}" [alt]="book.title" class="cover-img" (error)="book.cover = ''" />
-        <span class="book-initial" *ngIf="!book.cover">{{ book.title.charAt(0) }}</span>
-      </div>
-      <div class="book-info">
-        <h3 class="book-title">{{ book.title }}</h3>
-        <p class="book-author" *ngIf="book.author">{{ book.author.name }}</p>
-      </div>
+      <b-card [bookCard]="book" size="large"></b-card>
     </div>
   </div>
 
@@ -35,29 +38,25 @@
         (onChange)="onGradeChange()"
         styleClass="grade-select"
       />
-      <p-button label="Wijzig boek" icon="pi pi-pencil" severity="secondary" (onClick)="changeBookOfMonth()" />
+      <p-button
+        label="Wijzig boek"
+        icon="pi pi-pencil"
+        severity="secondary"
+        (onClick)="changeBookOfMonth()"
+      />
     </div>
 
-    @if (monthlyBook) {
-      <div class="monthly-book" [routerLink]="['/boek', monthlyBook.id]" style="cursor: pointer;">
-        <div class="monthly-cover">
-          <img *ngIf="monthlyBook.cover" src="static/cover/{{monthlyBook.cover}}" [alt]="monthlyBook.title" class="cover-img" (error)="monthlyBook.cover = ''" />
-          <span class="book-initial" *ngIf="!monthlyBook.cover">{{ monthlyBook.title.charAt(0) }}</span>
-        </div>
-        <div class="monthly-info">
-          <p><strong>Titel:</strong> {{ monthlyBook.title }}</p>
-          <p *ngIf="monthlyBook.author"><strong>Auteur:</strong> {{ monthlyBook.author.name }}</p>
-          <p *ngIf="monthlyBook.description"><strong>Beschrijving:</strong> {{ monthlyBook.description }}</p>
-          <p *ngIf="monthlyBook.genres && monthlyBook.genres.length > 0"><strong>Genre:</strong> {{ monthlyBook.genres[0].name }}</p>
-          <p *ngIf="monthlyBook.pages"><strong>Pagina's:</strong> {{ monthlyBook.pages }}</p>
-        </div>
-      </div>
-    } @else {
+    @if (!loading.isLoading && monthlyBook) {
+      <b-result [book]="monthlyBook"></b-result>
+    } @else if (!loading.isLoading) {
       <div class="empty-msg">Geen boek van de maand ingesteld voor deze graad.</div>
     }
   }
 
-  <div class="empty-msg" *ngIf="!isMonthlySection && books.length === 0">
+  <div
+    class="empty-msg"
+    *ngIf="!loading.isLoading && !isMonthlySection && activeSection && books.length === 0"
+  >
     Geen boeken gevonden.
   </div>
 </section>

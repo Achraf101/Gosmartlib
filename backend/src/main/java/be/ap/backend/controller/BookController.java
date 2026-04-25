@@ -10,11 +10,12 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.validation.annotation.Validated;
 import jakarta.validation.constraints.Min;
-
+import lombok.RequiredArgsConstructor;
 import be.ap.backend.dto.BookCardDTO;
 import be.ap.backend.dto.BookResultDTO;
 import be.ap.backend.dto.CreateBookDTO;
 import be.ap.backend.entity.Book;
+import be.ap.backend.entity.Clib;
 import be.ap.backend.repository.BookRepository;
 import be.ap.backend.service.BookService;
 
@@ -28,15 +29,11 @@ import org.springframework.http.HttpStatus;
 @Validated
 @RestController
 @RequestMapping("book")
+@RequiredArgsConstructor
 public class BookController {
 
     private final BookRepository bookRepository;
     private final BookService bookService;
-
-    public BookController(BookRepository bookRepository, BookService bookService) {
-        this.bookRepository = bookRepository;
-        this.bookService = bookService;
-    }
 
     @GetMapping
     public Page<Book> getAll(
@@ -60,36 +57,36 @@ public class BookController {
         return bookRepository.search(query, pageable);
     }
 
-    // related books for detail page, (same author)
     @GetMapping("/{id}/related")
     public List<BookCardDTO> getRelated(@PathVariable Long id) {
         return bookRepository.findRelated(id);
     }
 
     @GetMapping("/filter")
-    public Page<Book> filter(
+public Page<Book> filter(
         @RequestParam(required = false) List<Long> genres,
         @RequestParam(required = false) Long language,
         @RequestParam(required = false) Boolean fiction,
         @RequestParam(required = false) List<Long> authorIds,
+        @RequestParam(required = false) List<Long> seriesIds,
         @RequestParam(required = false) @Min(0) Integer pagesMin,
         @RequestParam(required = false) @Min(0) Integer pagesMax,
+        @RequestParam(required = false) List<Clib> clibs,
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "5") int size) {
 
-            if (pagesMin != null && pagesMax != null && pagesMin > pagesMax) {
+    if (pagesMin != null && pagesMax != null && pagesMin > pagesMax) {
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "pagesMin moet kleiner zijn dan pagesMax");
-                                                                            }
+    }
 
-         Pageable pageable = PageRequest.of(page, size);
-        return bookRepository.filter(genres, language, fiction, authorIds, pagesMin, pagesMax, pageable);
+    Pageable pageable = PageRequest.of(page, size);
+    return bookService.filter(genres, language, fiction, authorIds, seriesIds, pagesMin, pagesMax, clibs, pageable);
 }
 
     @PostMapping
     public Book addBook(@RequestBody CreateBookDTO dto) {
         return bookService.saveBook(dto);
     }
-
 
     @GetMapping("/bookResult")
     public Page<BookResultDTO> getBooks(
@@ -99,5 +96,4 @@ public class BookController {
         Pageable pageable = PageRequest.of(page, size);
         return bookService.getAllBookResults(pageable);
     }
-    
 }

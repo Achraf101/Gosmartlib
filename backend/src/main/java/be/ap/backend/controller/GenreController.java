@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import be.ap.backend.entity.Genre;
 import be.ap.backend.repository.GenreRepository;
+import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 
@@ -15,13 +16,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequestMapping("genre")
+@RequiredArgsConstructor
 public class GenreController {
 
     private final GenreRepository genreRepository;
-
-    public GenreController(GenreRepository genreRepository) {
-        this.genreRepository = genreRepository;
-    }
 
     @GetMapping()
     public List<Genre> getAll() {

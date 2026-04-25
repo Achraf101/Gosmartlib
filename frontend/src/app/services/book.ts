@@ -27,11 +27,11 @@ export class BookService {
   }
 
   getById(id: number): Observable<BookDetail> {
-    return this.apiService.get<BookDetail>(`${this.endpoint}/${id}`);
+    return this.apiService.get<BookDetail>(`${id}`);
   }
 
   getRelated(id: number): Observable<BookCard[]> {
-    return this.apiService.get<BookCard[]>(`${this.endpoint}/${id}/related`);
+    return this.apiService.get<BookCard[]>(`${id}/related`);
   }
 
   addBook(book: CreateBook): Observable<BookDetail> {
@@ -49,12 +49,29 @@ export class BookService {
 
     if (filters.genre)
       filters.genre.forEach((g) => (params = params.append('genres', g.toString())));
-    if (filters.language) params = params.set('language', filters.language.toString());
+    
+    if (filters.language) 
+      params = params.set('language', filters.language.toString());
+    
     if (filters.fiction !== undefined && filters.fiction !== null)
       params = params.set('fiction', filters.fiction.toString());
-    if (filters.author) params = params.set('authorIds', filters.author.join(','));
-    if (filters.pages?.[0] != null) params = params.set('pagesMin', filters.pages[0].toString());
-    if (filters.pages?.[1] != null) params = params.set('pagesMax', filters.pages[1].toString());
+    
+    if (filters.author) 
+      params = params.set('authorIds', filters.author.join(','));
+
+    if (filters.series && filters.series.length > 0)
+  params = params.set('seriesIds', filters.series.join(','));
+    
+    
+    if (filters.clibs && filters.clibs.length > 0) {
+      params = params.set('clibs', filters.clibs.join(','));
+    }
+
+    if (filters.pages?.[0] != null) 
+      params = params.set('pagesMin', filters.pages[0].toString());
+    
+    if (filters.pages?.[1] != null) 
+      params = params.set('pagesMax', filters.pages[1].toString());
 
     return this.apiService.get<Page<BookResult>>(`${this.endpoint}/filter`, params);
   }

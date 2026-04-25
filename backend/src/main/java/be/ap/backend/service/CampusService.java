@@ -2,7 +2,6 @@ package be.ap.backend.service;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import be.ap.backend.dto.CampusDTO;
@@ -12,13 +11,15 @@ import be.ap.backend.exception.ArgumentsInvalidException;
 import be.ap.backend.exception.MissingArgumentsException;
 import be.ap.backend.repository.CampusRepository;
 import jakarta.persistence.EntityManager;
+import lombok.RequiredArgsConstructor;
+
 
 @Service
+@RequiredArgsConstructor
 public class CampusService {
-    @Autowired
-    private CampusRepository campusRepository;
-    @Autowired
-    private EntityManager entityManager;
+    private final CampusRepository campusRepository;
+
+    private final EntityManager entityManager;
 
     public CampusDTO createCampus(CampusDTO dto) {
         if (dto.getSchoolId() == null) {

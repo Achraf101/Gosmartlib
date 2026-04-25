@@ -25,6 +25,13 @@ h2.show-desktop {
   overflow-x: hidden;
 }
 
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 180px;
+}
+
 #book-info {
   display: flex;
   align-items: center;
@@ -121,14 +128,10 @@ table td {
 .box {
   margin-bottom: 1em;
   padding: 20px;
-  /* background-color: var(--p-slate-50); */
   width: 95vw;
 }
 
 #related-books-book {
-  display: flex;
-  overflow-x: auto;
-  gap: 10px;
   width: 80%;
   margin-left: 10%;
 }
@@ -164,6 +167,32 @@ table td {
 
 #related-books .book-card p {
   color: var(--p-button-text-secondary-color);
+}
+
+.clib-badge {
+  background-color: var(--primary-color, #00a884);
+  color: white;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: bold;
+  margin-left: 10px;
+}
+
+/* In book-detail-page.css */
+#book-detail table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+#book-detail td {
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+}
+
+#book-detail td:first-child {
+  font-weight: bold;
+  width: 150px;
+  color: #555;
 }
 
 @media (width>800px) {

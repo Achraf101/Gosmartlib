@@ -3,6 +3,9 @@ package be.ap.backend.entity;
 import java.time.Year;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -18,13 +21,18 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Data
+@NoArgsConstructor
+@EqualsAndHashCode(exclude = { "genres", "contributors" })
+@ToString(exclude = { "genres", "contributors" })
 @Entity
 @Table(name = "book", indexes = {
         @Index(name = "index_books_isbn", columnList = "isbn", unique = true),
         @Index(name = "index_books_title", columnList = "title")
-
 })
 public class Book {
     @Id
@@ -46,16 +54,11 @@ public class Book {
     @Column(nullable = true, length = 13, name = "isbn")
     private String isbn;
 
-    @Column(name = "series_id")
-    private Long seriesId;
-
-    @Column(name = "series_count")
-    private int seriesCount;
-
     @ManyToOne
     @JoinColumn(nullable = true, name = "author_id")
     private Author author;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "book")
     private Set<BookContributor> contributors;
 
@@ -78,11 +81,9 @@ public class Book {
     @ManyToOne
     private Language language;
 
-    @Column(nullable = true, name = "age_start")
-    private byte ageStart;
-
-    @Column(nullable = true, name = "age_end")
-    private byte ageEnd;
+    @Column(nullable = true, name = "clib")
+    @Enumerated(EnumType.STRING)
+    private Clib clib;
 
     @Column(nullable = true, name = "pages")
     private Integer pages;
@@ -100,7 +101,15 @@ public class Book {
     @Column(nullable = true, name = "school_id")
     private long schoolId;
 
-    public Book() {
+    @ManyToOne
+    @JoinColumn(name = "series_id")
+    private Series series;
+
+    @JsonProperty("series_name")
+    public String getSeriesName() {
+        return series != null ? series.getName() : null;
     }
 
+    @Column(name = "series_number")
+    private Integer seriesNumber;
 }

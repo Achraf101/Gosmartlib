@@ -11,15 +11,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 import be.ap.backend.dto.CampusDTO;
 import be.ap.backend.service.CampusService;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("campus")
+@RequiredArgsConstructor
 public class CampusController {
     private final CampusService campusService;
-
-    public CampusController(CampusService campusService) {
-        this.campusService = campusService;
-    }
 
     @PostMapping
     public CampusDTO createCampus(@RequestBody CampusDTO dto) {

@@ -11,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import be.ap.backend.dto.BookmarkedDTO;
+import be.ap.backend.entity.Author;
 import be.ap.backend.service.BookmarkedService;
 
 @SpringBootTest
@@ -24,7 +25,11 @@ public class BookmarkedControllerTest {
 
     @Test
     void getBookmarkeds_returnsListOfDTOs() {
-        BookmarkedDTO dto = new BookmarkedDTO(1L, 1L, "Harry Potter", "cover.webp", "J.K. Rowling", null);
+        Author author = new Author();
+            author.setId(1L);
+            author.setName("J.K. Rowling");
+            author.setDescription("British author");
+        BookmarkedDTO dto = new BookmarkedDTO(1L, 1L, "Harry Potter", "cover.webp", author, null);
         when(bookmarkedService.getBookmarked(1L)).thenReturn(List.of(dto));
 
         List<BookmarkedDTO> result = bookmarkedController.getBookmarkeds(1L);

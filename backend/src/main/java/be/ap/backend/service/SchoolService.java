@@ -11,14 +11,12 @@ import be.ap.backend.entity.School;
 import be.ap.backend.exception.ArgumentsInvalidException;
 import be.ap.backend.exception.MissingArgumentsException;
 import be.ap.backend.repository.SchoolRepository;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class SchoolService {
     private final SchoolRepository schoolRepository;
-
-    public SchoolService(SchoolRepository schoolRepository) {
-        this.schoolRepository = schoolRepository;
-    }
 
     public SchoolDTO addSchool(SchoolDTO dto) {
         if (dto.getName() == null) {

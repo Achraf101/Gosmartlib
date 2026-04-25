@@ -1,0 +1,129 @@
+.show-desktop {
+  visibility: hidden;
+  position: absolute;
+}
+
+.book-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  max-height: 20rem;
+}
+
+.book-info {
+  display: flex;
+  flex-direction: row;
+  gap: 25px;
+}
+
+.book-cover {
+  width: 120px;
+  min-width: 120px;
+  height: 170px;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.book-info-data {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  gap: 10px;
+}
+
+.book-info-data h2,
+.book-info-data p {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.book-title {
+  margin: 0 0 0.25rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--p-neutral-950);
+}
+
+.book-subtitle {
+  font-size: 0.875rem;
+  color: var(--p-neutral-600);
+}
+
+.book-meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 10px;
+}
+
+.book-meta span {
+  color: var(--p-neutral-600);
+}
+
+.book-meta.show-mobile {
+  height: 25px;
+}
+
+.book-meta .tag {
+  margin-right: -10px;
+  background-color: var(--p-surface-200);
+}
+
+.book-description {
+  font-size: 0.875rem;
+  color: var(--p-neutral-600);
+  overflow: hidden;
+  margin: 0 0 0.75rem;
+}
+
+.book-rating {
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.book-rating .pi-star-fill {
+  color: var(--p-amber-500);
+}
+
+.rating-count {
+  color: var(--p-neutral-300);
+  font-size: 0.8rem;
+}
+
+@media (width> 800px) {
+  .show-mobile {
+    visibility: hidden;
+    position: relative;
+  }
+
+  .show-desktop {
+    visibility: visible;
+    position: relative;
+  }
+
+  .book-card {
+    background: var(--p-neutral-50);
+    border: 1px solid var(--p-neutral-100);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  }
+
+  .book-info-data h2 {
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
+  }
+
+  .book-info-data p {
+    -webkit-line-clamp: 4;
+    line-clamp: 4;
+  }
+}

@@ -1,8 +1,13 @@
 <app-nav-bar />
-@if (error) {
+@if (loading.visible) {
+  <div class="loading-container">
+    <p-progressSpinner />
+  </div>
+}
+@if (!loading.isLoading && error) {
   <p class="error">{{ error }}</p>
 }
-@if (book) {
+@if (!loading.isLoading && book) {
   <div class="detail-container">
     <div id="book-info" class="box">
       <h2 class="show-mobile">{{ book.title }}</h2>
@@ -70,9 +75,6 @@
           @if (book.published != null) {
             | {{ book.published }}
           }
-          @if (book.age_start != 0) {
-            | {{ book.age_start }}
-          }
         </p>
         <p-accordion class="show-mobile">
           <p-accordion-panel value="0">
@@ -111,7 +113,9 @@
               }
             </p>
           </td>
-          <td><p>beschikbaar</p></td>
+          <td>
+            <p>beschikbaar</p>
+          </td>
           <td>
             <p>
               @if (book.language.id != 1) {
@@ -119,9 +123,7 @@
               }
               {{ book.language.name }}
             </p>
-            <p>
-              {{ genresString }}
-            </p>
+            <p>{{ genresString }}</p>
           </td>
         </tr>
       </table>
@@ -147,9 +149,7 @@
         @if (genresString != '') {
           <tr>
             <td>Genre</td>
-            <td>
-              {{ genresString }}
-            </td>
+            <td>{{ genresString }}</td>
           </tr>
         }
         @if (book.author != null) {
@@ -176,10 +176,10 @@
             <td>{{ book.published }}</td>
           </tr>
         }
-        @if (book.age_start != 0 && book.age_end != 0) {
+        @if (book.clib) {
           <tr>
-            <td>Leeftijd</td>
-            <td>{{ book.age_start }} - {{ book.age_end }}</td>
+            <td>CLIB niveau</td>
+            <td>{{ book.clib }}</td>
           </tr>
         }
         @if (book.pages != null) {
@@ -200,26 +200,31 @@
             <td>{{ book.isbn }}</td>
           </tr>
         }
+        @if (book.series_name) {
+          <tr>
+            <td>Serie</td>
+            <td>{{ book.series_name }}</td>
+          </tr>
+        }
+        @if (book.series_number) {
+          <tr>
+            <td>Volgnummer</td>
+            <td>Deel {{ book.series_number }}</td>
+          </tr>
+        }
       </table>
     </div>
+
     @if (relatedBooks?.length != 0) {
       <div id="related-books" class="box">
         <h2>Meer van dit:</h2>
         <div id="related-books-book">
           @if (relatedBooks) {
-            @for (bookCard of relatedBooks; track bookCard.id) {
-              <div class="book-card" routerLink="/boek/{{ bookCard.id }}" (click)="scrollTop()">
-                <div class="book-card-header">
-                  <p class="book-card-title">{{ bookCard.title }}</p>
-                </div>
-                @if (bookCard.cover == '' || bookCard.cover == null) {
-                  <img src="{{ placeholder }}" alt="boek omslag" />
-                } @else {
-                  <img src="/static/cover/{{ bookCard.cover }}" alt="boek omslag" class="cover" />
-                }
-                <p>{{ bookCard.author_name }}</p>
-              </div>
-            }
+            <p-carousel [value]="relatedBooks" [numVisible]="4" [numScroll]="2">
+              <ng-template pTemplate="item" let-bookCard>
+                <b-card [bookCard]="bookCard"></b-card>
+              </ng-template>
+            </p-carousel>
           }
         </div>
       </div>
@@ -308,6 +313,6 @@
       </ng-template>
     </p-dialog>
   </div>
-} @else {
+} @else if (!loading.isLoading && !error) {
   <p>Geen boeken gevonden.</p>
 }

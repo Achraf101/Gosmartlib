@@ -33,32 +33,28 @@
     </div>
 
     <h3>Boek toevoegen:</h3>
-    <form class="search-bar" (submit)="$event.preventDefault(); onSearch()">
-      <div class="search-wrapper">
-        <input
-          type="text"
-          class="search-input"
-          placeholder="Zoek op titel, auteur, genre, ISBN,..."
-          [(ngModel)]="searchQuery"
-          name="search"
-        />
-        <button type="submit" class="search-btn">
-          <i class="pi pi-search"></i>
-        </button>
-      </div>
-      @if (searchQuery) {
-        <button type="button" class="clear-btn" (click)="clearSearch()">Wis zoekopdracht</button>
-      }
-    </form>
-    @if (loading) {
+    <s-bar (search)="onSearch($event)" />
+    @if (loading.visible) {
       <div class="loading-container">
         <p-progressSpinner />
       </div>
     }
-    @if (!loading && books.length === 0) {
-      <p>Geen boeken gevonden.</p>
+    @if (!loading.isLoading && books.length === 0) {
+      <div class="no-results">
+        <p>Geen boeken gevonden.</p>
+        @if (searchQuery.trim()) {
+          <button
+            pButton
+            type="button"
+            label="Boek toevoegen"
+            icon="pi pi-plus"
+            class="p-button-sm p-button-outlined"
+            [routerLink]="['/boek/toevoegen']"
+          ></button>
+        }
+      </div>
     }
-    @if (!loading && books.length > 0) {
+    @if (!loading.isLoading && books.length > 0) {
       <div class="book-list">
         @for (book of books; track book.id) {
           <div class="book-card">
@@ -119,7 +115,9 @@
           @for (campusBook of campusBooks; track campusBook.id) {
             <div class="book-card">
               <img
-                [src]="campusBook.book_cover || placeholder"
+                [src]="
+                  campusBook.book_cover ? '/static/cover/' + campusBook.book_cover : placeholder
+                "
                 [alt]="campusBook.book_title"
                 class="book-cover"
               />
