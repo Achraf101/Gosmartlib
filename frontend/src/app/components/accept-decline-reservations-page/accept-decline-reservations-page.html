@@ -1,0 +1,165 @@
+<app-nav-bar />
+<div class="borrow-approval">
+  <p-card>
+    <ng-template pTemplate="header">
+      <div class="card-header">
+        <h2>Uitleenaanvragen</h2>
+        <span class="subtitle">Openstaande uitleenaanvragen</span>
+      </div>
+    </ng-template>
+
+    <p-table
+      [value]="loans"
+      [loading]="loading"
+      [paginator]="true"
+      [rows]="5"
+      [rowsPerPageOptions]="[5, 10, 20]"
+      sortField="start"
+      [sortOrder]="-1"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th pSortableColumn="created">Datum aangemaakt <p-sortIcon field="created" /></th>
+          <th pSortableColumn="userId">Gebruiker <p-sortIcon field="userId" /></th>
+          <!-- <th>Boek(en)</th> -->
+          <th>Begin-eind datum</th>
+          <!-- <th>Aangevraagde hoeveelheid</th> -->
+          <th class="col-actions">Acties</th>
+          <!-- <th>Notities</th> -->
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-loan>
+        <tr>
+          <td>{{ loan.created | date: 'dd/MM/yyyy HH:mm' }}</td>
+          <td>{{ loan.username }}</td>
+          <!-- <td>
+            <ul class="book-list">
+              @for (book of loan.books; track $index; let index = $index) {
+                <li>{{ index + 1 }}. {{ book.bookTitle }}</li>
+              }
+            </ul>
+          </td> -->
+          <td>{{ loan.start | date: 'dd/MM/yyyy' }} - {{ loan.end | date: 'dd/MM/yyyy' }}</td>
+          <!-- <td>
+            <ul class="book-list">
+              @for (book of loan.books; track $index; let index = $index) {
+                <li>{{ index + 1 }}. Aantal boeken: {{ book.requestedAmount }}</li>
+              }
+            </ul>
+          </td> -->
+          <td>
+            <p-button
+              icon="pi pi-check"
+              label="Goedkeuren"
+              severity="success"
+              size="small"
+              [outlined]="true"
+              (onClick)="acceptLoan(loan)"
+            />
+            <p-button
+              icon="pi pi-times"
+              label="Weigeren"
+              severity="danger"
+              size="small"
+              [outlined]="true"
+              (onClick)="declineLoan(loan)"
+            />
+            <p-button
+              icon="pi pi-info-circle"
+              label="Details"
+              severity="info"
+              size="small"
+              [outlined]="true"
+              (onClick)="selectedLoan = loan; infoDialogVisible = true"
+            >
+            </p-button>
+          </td>
+          <!-- <td>
+            <p-button
+              label="Notitie toevoegen/aanpassen"
+              (onClick)="openNoteDialog(loan)"
+            ></p-button>
+          </td> -->
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="6" class="empty-state">
+            <i class="pi pi-inbox"></i>
+            <span>Geen openstaande reservaties.</span>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+</div>
+
+<p-dialog
+  header="Notitie toevoegen/aanpassen"
+  [(visible)]="noteDialogVisible"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+>
+  <textarea
+    rows="5"
+    cols="40"
+    fluid
+    style="resize: vertical"
+    pTextarea
+    [(ngModel)]="note"
+  ></textarea>
+  <div class="btns">
+    <p-button
+      class="btn"
+      label="Annuleer"
+      severity="secondary"
+      (click)="noteDialogVisible = false"
+    />
+    <p-button class="btn" label="Opslaan" (onClick)="addOrChangeNote()" />
+  </div>
+</p-dialog>
+
+<p-dialog
+  header="Gedetailleerde informatie"
+  [(visible)]="infoDialogVisible"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+>
+  @if (selectedLoan) {
+    <div class="info-dialog-content">
+      <section>
+        <h3>Boeken</h3>
+        <ul class="book-list">
+          @for (book of selectedLoan.books; track $index; let index = $index) {
+            <li>
+              <span class="book-index">{{ index + 1 }}.</span>
+              <span class="book-title">{{ book.bookTitle }}</span>
+              <span class="book-amount">Aantal: {{ book.requestedAmount }}</span>
+            </li>
+          }
+        </ul>
+      </section>
+
+      <section>
+        <h3>Notities</h3>
+        @if (selectedLoan.note) {
+          <p>{{ selectedLoan.note }}</p>
+        } @else {
+          <p class="empty-note">Geen notitie.</p>
+        }
+        <p-button
+          label="Notitie toevoegen/aanpassen"
+          (onClick)="openNoteDialog(selectedLoan)"
+        ></p-button>
+      </section>
+    </div>
+  }
+
+  <div class="btns">
+    <p-button label="Sluiten" severity="secondary" (click)="infoDialogVisible = false" />
+  </div>
+</p-dialog>

@@ -11,6 +11,7 @@ import { CampusDetailPageComponent } from './components/campus-detail-page/campu
 import { FilterPage } from './components/filter-page/filter-page';
 import { SchoolComponent } from './components/school/school';
 import { FavoritePage } from './components/favorite-page/favorite-page';
+import { AcceptDeclineReservationsPageComponent } from './components/accept-decline-reservations-page/accept-decline-reservations-page';
 export const routes: Routes = [
   { path: 'login', component: AdminLoginComponent },
   { path: '', redirectTo: 'startpagina', pathMatch: 'full' },
@@ -24,6 +25,11 @@ export const routes: Routes = [
   { path: 'boek/:id', component: BookDetailPage, canActivate: [authGuard] },
   { path: 'campus', component: CampusDetailPageComponent, canActivate: [authGuard] },
   { path: 'favorieten', component: FavoritePage, canActivate: [authGuard] },
+  {
+    path: 'uitleenaanvragen',
+    component: AcceptDeclineReservationsPageComponent,
+    canActivate: [authGuard],
+  },
 
   // {
   //   path: 'boek',

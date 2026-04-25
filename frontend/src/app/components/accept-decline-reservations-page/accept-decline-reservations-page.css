@@ -1,0 +1,185 @@
+.borrow-approval {
+  padding: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+
+  @media (max-width: 768px) {
+    padding: 0.75rem;
+  }
+}
+
+.card-header {
+  padding: 1rem 1.25rem 0;
+
+  h2 {
+    margin: 0;
+    font-size: 1.4rem;
+    font-weight: 600;
+
+    @media (max-width: 768px) {
+      font-size: 1.2rem;
+    }
+  }
+
+  .subtitle {
+    font-size: 0.875rem;
+    color: var(--text-color-secondary);
+  }
+}
+
+.col-actions {
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem; 
+
+  .p-button {
+    margin-right: 0.5rem;
+
+    &:last-child {
+      margin-right: 0;
+    }
+
+    @media (max-width: 768px) {
+      margin-right: 0.25rem;
+    }
+  }
+
+  @media (max-width: 768px) {
+    white-space: normal;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+}
+
+.book-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    line-height: 1.8;
+  }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 2.5rem 0;
+  color: var(--text-color-secondary);
+
+  i {
+    font-size: 2rem;
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+}
+
+.reject-dialog-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 420px;
+
+  @media (max-width: 768px) {
+    min-width: unset;
+    width: 100%;
+  }
+}
+
+.reservation-summary {
+  background: var(--surface-50);
+  border: 1px solid var(--surface-200);
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+
+  p {
+    margin: 0.25rem 0;
+  }
+}
+
+.note-label {
+  font-weight: 600;
+  font-size: 0.9rem;
+
+  .optional {
+    font-weight: 400;
+    color: var(--text-color-secondary);
+    margin-left: 0.25rem;
+  }
+}
+
+.note-textarea {
+  width: 100%;
+  resize: vertical;
+}
+
+.info-dialog-content {
+  min-width: 400px;
+
+  @media (max-width: 768px) {
+    min-width: unset;
+    width: 100%;
+  }
+
+  section {
+    margin-bottom: 1.5rem;
+
+    h3 {
+      font-size: 0.875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-color-secondary);
+      margin-bottom: 0.5rem;
+    }
+  }
+
+  .book-list {
+    li {
+      padding: 0.375rem 0;
+      border-bottom: 1px solid var(--surface-border);
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      .book-index {
+        color: var(--text-color-secondary);
+      }
+
+      .book-title {
+        flex: 1;
+      }
+
+      .book-amount {
+        color: var(--text-color-secondary);
+        white-space: nowrap;
+      }
+    }
+  }
+
+  .empty-note {
+    color: var(--text-color-secondary);
+    font-style: italic;
+  }
+}
+
+.btns {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
+
+  @media (max-width: 768px) {
+    justify-content: stretch;
+
+    .p-button {
+      flex: 1;
+    }
+  }
+}
