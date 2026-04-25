@@ -33,6 +33,18 @@
             }
           </p>
         </div>
+        <p-button
+          class="btn"
+          label="Nu Ontlenen"
+          severity="primary"
+          (onClick)="loanFormVisible = true"
+        />
+        <p-button
+          class="btn"
+          label="Toevoegen aan ontlening"
+          severity="primary"
+          (onClick)="cartDialogVisible = true"
+        />
         <i
           (click)="toggleFavorite()"
           class="bookmark pi"
@@ -212,6 +224,89 @@
         </div>
       </div>
     }
+    <form [formGroup]="loanForm">
+      <div>
+        <p-dialog
+          header="Ontleen aanvraag:"
+          [modal]="true"
+          [(visible)]="loanFormVisible"
+          [style]="{ width: '30rem' }"
+          resizable="false"
+        >
+          <div>
+            <p-datepicker
+              formControlName="start"
+              dateFormat="dd/mm/yy"
+              placeholder="dd/mm/yyyy"
+              [minDate]="today"
+              [readonlyInput]="true"
+              appendTo="body"
+              (onSelect)="onStartDateSelect($event)"
+            />
+          </div>
+          <div>
+            <label for="end">Einddatum:</label>
+            <span id="end">
+              @if (loanForm.controls.end.value) {
+                {{ loanForm.controls.end.value | date: 'dd/MM/yyyy' }}
+              } @else {
+                (selecteer een start datum)
+              }
+            </span>
+          </div>
+          <div>
+            <p-ifta-label>
+              <label for="requestedAmount">Aantal:</label>
+              <p-inputNumber
+                inputId="requestedAmount"
+                formControlName="requestedAmount"
+                [showButtons]="true"
+                [min]="1"
+                [useGrouping]="false"
+              />
+            </p-ifta-label>
+          </div>
+
+          <div class="btns">
+            <p-button class="btn" label="Annuleer" severity="secondary" (click)="cancelLoan()" />
+            <p-button
+              class="btn"
+              label="Opslaan"
+              [disabled]="loanForm.invalid"
+              (onClick)="createLoan()"
+            />
+          </div>
+        </p-dialog>
+      </div>
+    </form>
+    <p-dialog
+      header="Voeg toe aan ontlening"
+      [(visible)]="cartDialogVisible"
+      [modal]="true"
+      [style]="{ width: '400px' }"
+    >
+      <form [formGroup]="cartForm" class="flex flex-col gap-3">
+        <p-ifta-label>
+          <p-inputnumber
+            formControlName="requestedAmount"
+            inputId="cartAmount"
+            [min]="1"
+            [max]="100"
+          />
+          <label for="cartAmount">Aantal exemplaren</label>
+        </p-ifta-label>
+      </form>
+
+      <ng-template pTemplate="footer">
+        <p-button label="Annuleren" severity="secondary" (onClick)="cancelCart()" />
+        <p-button
+          label="Toevoegen"
+          icon="pi pi-plus"
+          [disabled]="cartForm.invalid"
+          (onClick)="addToCart()"
+        />
+      </ng-template>
+    </p-dialog>
   </div>
 } @else {
   <p>Geen boeken gevonden.</p>
