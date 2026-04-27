@@ -17,6 +17,7 @@ import be.ap.backend.exception.BookAlreadyInCampusException;
 import be.ap.backend.exception.MissingArgumentsException;
 import be.ap.backend.repository.CampusBookRepository;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -62,6 +63,19 @@ public class CampusBookService {
         Pageable pageable = PageRequest.of(page, size);
         return campusBookRepository.findByCampusId(campusId, pageable)
                 .map(this::toDTO);
+    }
+
+    public CampusBookDetailDTO getCampusBook(Long campusId, Long bookId) {
+        CampusBook campusBook = campusBookRepository
+                .findByCampusIdAndBookId(campusId, bookId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "CampusBook niet gevonden voor campusId=" + campusId + ", bookId=" + bookId));
+        return toDTO(campusBook);
+    }
+
+    public CampusBookDetailDTO updateCurrentAmount(CampusBook campusBook, int requestedAmount) {
+        campusBook.setCurrentAmount(campusBook.getCurrentAmount() - requestedAmount);
+        return toDTO(campusBookRepository.save(campusBook));
     }
 
     private CampusBookDetailDTO toDTO(CampusBook campusBook) {

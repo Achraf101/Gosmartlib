@@ -14,8 +14,8 @@ public class LoanDTO {
     @JsonProperty("userId")
     private Long userId;
     private String username;
-    // @JsonProperty("campusId")
-    // private Long campusId;
+    @JsonProperty("campusId")
+    private Long campusId;
     private Byte extended;
     private LocalDate start;
     private LocalDate end;

@@ -26,9 +26,9 @@ public class Loan {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    // @ManyToOne
-    // @JoinColumn(name = "campus_id", nullable = false)
-    // private Campus campus;
+    @ManyToOne
+    @JoinColumn(name = "campus_id", nullable = false)
+    private Campus campus;
 
     @Column(name = "extended", nullable = false)
     private Byte extended = 0;

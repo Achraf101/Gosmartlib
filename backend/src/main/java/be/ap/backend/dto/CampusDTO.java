@@ -11,8 +11,11 @@ public class CampusDTO {
     private String adres;
     @JsonProperty("borrowLimit")
     private int borrowLimit;
+    @JsonProperty("borrowPeriod")
     private int borrowPeriod;
+    @JsonProperty("extendLimit")
     private int extendLimit;
+    @JsonProperty("extendPeriod")
     private int extendPeriod;
     @JsonProperty("schoolId")
     private Long schoolId;
