@@ -78,6 +78,19 @@ export interface CreateBook {
   didactic_material: boolean;
 }
 
+export interface BookLookupDTO {
+  title: string | null;
+  authorName: string | null;
+  publisherName: string | null;
+  description: string | null;
+  publishedYear: number | null;
+  pages: number | null;
+  languageCode: string | null;
+  genres: string[];
+  isbn: string;
+  coverUrl: string | null;
+}
+
 export interface BookFilter {
   type?: number[];
   genre?: number[];

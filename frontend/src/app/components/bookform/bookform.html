@@ -6,6 +6,61 @@
 </nav>
 <div class="container">
   @if (uploadMode === 'manual') {
+    @if (lookupMethod === null) {
+      <div class="method-choice">
+        <h2>Hoe wil je het boek toevoegen?</h2>
+        <div class="method-cards">
+          <p-card class="method-card" (click)="selectMethod('auto')">
+            <div class="method-card-content">
+              <i class="pi pi-search" style="font-size: 2rem"></i>
+              <h3>Automatisch via ISBN</h3>
+              <p>Voer een ISBN in en we vullen de gegevens automatisch in.</p>
+              <p-button label="Automatisch via ISBN" icon="pi pi-search" />
+            </div>
+          </p-card>
+          <p-card class="method-card" (click)="selectMethod('manual')">
+            <div class="method-card-content">
+              <i class="pi pi-pencil" style="font-size: 2rem"></i>
+              <h3>Manueel invullen</h3>
+              <p>Vul alle gegevens zelf in via het formulier.</p>
+              <p-button label="Manueel invullen" icon="pi pi-pencil" severity="secondary" />
+            </div>
+          </p-card>
+        </div>
+      </div>
+    }
+    @if (lookupMethod === 'auto') {
+      <div class="isbn-lookup">
+        <h2>Zoeken via ISBN</h2>
+        <div class="isbn-lookup-row">
+          <p-iftalabel>
+            <label for="isbn-lookup">ISBN</label>
+            <input
+              id="isbn-lookup"
+              type="text"
+              pInputText
+              [(ngModel)]="isbnLookupValue"
+              (keyup.enter)="lookupIsbn()"
+              class="input"
+            />
+          </p-iftalabel>
+          <p-button
+            label="Zoeken"
+            icon="pi pi-search"
+            [loading]="isLookingUp"
+            (onClick)="lookupIsbn()"
+            [disabled]="!isbnLookupValue"
+          />
+        </div>
+        <p-button
+          label="Toch manueel invullen"
+          severity="secondary"
+          [text]="true"
+          (onClick)="selectMethod('manual')"
+        />
+      </div>
+    }
+    @if (lookupMethod === 'manual') {
     <div class="bookform">
       <div class="card">
         <p-stepper [value]="1" class="basis-[50rem]" [linear]="true">
@@ -456,6 +511,7 @@
         </form>
       </p-dialog>
     </form>
+  }
   }
 
   @if (uploadMode === 'bulk') {

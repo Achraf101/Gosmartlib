@@ -6,6 +6,7 @@ import {
   FormGroup,
   Validators,
 } from '@angular/forms';
+import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
@@ -25,7 +26,7 @@ import { MessageModule } from 'primeng/message';
 import { Router } from '@angular/router';
 
 import { isbnValidator, maxEntries } from '../../utils/validator';
-import { CreateBook } from '../../models/book';
+import { BookLookupDTO, CreateBook } from '../../models/book';
 import { Author } from '../../models/author';
 import { Genre } from '../../models/genre';
 import { Publisher } from '../../models/publisher';
@@ -50,6 +51,7 @@ import { BulkUpload } from '../bulk-upload/bulk-upload';
   selector: 'app-bookform',
   standalone: true,
   imports: [
+    CardModule,
     ButtonModule,
     InputTextModule,
     TextareaModule,
@@ -122,6 +124,9 @@ export class BookformComponent implements OnInit {
   bookTypes: BookType[] | undefined;
   series: Series[] | undefined;
   uploadMode: 'manual' | 'bulk' = 'manual';
+  lookupMethod: null | 'auto' | 'manual' = null;
+  isbnLookupValue: string = '';
+  isLookingUp: boolean = false;
 
   newBookId: number | undefined;
   coverDisabled: boolean = true;
@@ -246,5 +251,71 @@ export class BookformComponent implements OnInit {
 
   setMode(mode: 'manual' | 'bulk'): void {
     this.uploadMode = mode;
+    this.lookupMethod = null;
+  }
+
+  selectMethod(method: 'auto' | 'manual'): void {
+    this.lookupMethod = method;
+  }
+
+  lookupIsbn(): void {
+    if (isbnValidator({ value: this.isbnLookupValue } as any) !== null) {
+      this.showError('Ongeldig ISBN. Voer een geldig ISBN-10 of ISBN-13 in.');
+      return;
+    }
+    this.isLookingUp = true;
+    this.bookService.lookupByIsbn(this.isbnLookupValue).subscribe({
+      next: (result) => {
+        this.prefillForm(result);
+        this.lookupMethod = 'manual';
+        this.isLookingUp = false;
+      },
+      error: () => {
+        this.showError('ISBN niet gevonden. Probeer het opnieuw of vul het boek manueel in.');
+        this.isLookingUp = false;
+      },
+    });
+  }
+
+  private prefillForm(data: BookLookupDTO): void {
+    this.bookForm.patchValue({
+      title: data.title ?? '',
+      isbn: data.isbn,
+      description: data.description ?? null,
+      pages: data.pages ?? null,
+      published: data.publishedYear ?? null,
+    });
+
+    if (data.authorName && this.authors) {
+      const match = this.authors.find(
+        (a) => a.name.toLowerCase() === data.authorName!.toLowerCase(),
+      );
+      if (match) this.bookForm.patchValue({ author: match.id });
+    }
+
+    if (data.publisherName && this.publishers) {
+      const match = this.publishers.find(
+        (p) => p.name.toLowerCase() === data.publisherName!.toLowerCase(),
+      );
+      if (match) this.bookForm.patchValue({ publisher: match.id });
+    }
+
+    if (data.languageCode && this.languages) {
+      const match = this.languages.find(
+        (l) => l.code.toLowerCase() === data.languageCode!.toLowerCase(),
+      );
+      if (match) this.bookForm.patchValue({ language: match.id });
+    }
+
+    if (data.genres?.length && this.genres) {
+      const matchedIds = data.genres
+        .map((gName) =>
+          this.genres!.find((g) => g.name.toLowerCase() === gName.toLowerCase()),
+        )
+        .filter((g): g is Genre => g !== undefined)
+        .map((g) => g.id)
+        .slice(0, 5);
+      if (matchedIds.length > 0) this.bookForm.patchValue({ genres: matchedIds });
+    }
   }
 }
