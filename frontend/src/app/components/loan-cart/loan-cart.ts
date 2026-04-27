@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -13,10 +13,16 @@ import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { DatePickerModule } from 'primeng/datepicker';
-import { BadgeModule } from 'primeng/badge';
 import { IftaLabel } from 'primeng/iftalabel';
 import { InputNumber } from 'primeng/inputnumber';
 import { LoanCartService } from '../../services/loan-cart';
+import { BookCardComponent } from '../misc/book-card/book-card';
+import { Campus } from '../../models/campus';
+import { CampusService } from '../../services/campus';
+import { CampusBookService } from '../../services/campusbook';
+import { CampusBook } from '../../models/CampusBook';
+import { TableModule } from 'primeng/table';
+import { Message } from 'primeng/message';
 
 @Component({
   selector: 'app-loan-cart',
@@ -27,54 +33,104 @@ import { LoanCartService } from '../../services/loan-cart';
     ButtonModule,
     DialogModule,
     DatePickerModule,
-    BadgeModule,
     IftaLabel,
     InputNumber,
     FormsModule,
+    BookCardComponent,
+    TableModule,
+    Message,
   ],
   templateUrl: './loan-cart.html',
   styleUrl: './loan-cart.css',
 })
 export class LoanCartComponent {
   constructor(
-    readonly cartService: LoanCartService,
     private readonly loanService: LoanService,
     private readonly messageService: MessageService,
+    private readonly campusService: CampusService,
+    private readonly campusBookService: CampusBookService,
   ) {}
+
+  readonly cartService = inject(LoanCartService);
 
   visible = false;
   today = new Date();
-  endDate = new Date();
+  items = this.cartService.items();
+  maxAmounts: Map<number, number> = new Map();
 
   // TODO: vervang met werkelijke ingelogde gebruiker zodra auth klaar is
   private readonly userId = 1;
+  campus?: Campus;
+  private readonly campusId = 1;
+
+  ngOnInit(): void {
+    this.campusService.getById(this.campusId).subscribe({
+      next: (campus) => {
+        ((this.campus = campus), this.cartService.setBorrowLimit(campus.borrowLimit));
+      },
+    });
+  }
+
+  loadMaxAmounts(): void {
+    for (const item of this.cartService.items()) {
+      this.campusBookService.getCampusBook(this.campusId, item.bookId).subscribe({
+        next: (campusBook: CampusBook) => {
+          this.maxAmounts.set(item.bookId, campusBook.current_amount);
+        },
+      });
+    }
+  }
+
+  getMaxAmount(bookId: number): number {
+    return this.maxAmounts.get(bookId) ?? 1;
+  }
 
   checkoutForm = new FormGroup({
     start: new FormControl<Date | null>(null, Validators.required),
-    end: new FormControl<Date | null>(null, Validators.required),
   });
+
+  calculatedEnd: Date | null = null;
 
   onStartDateSelect(date: Date) {
     const end = new Date(date);
-    end.setDate(end.getDate() + 14);
-    this.checkoutForm.controls.end.setValue(end);
+    console.log('campus at select time:', this.campus);
+    end.setDate(end.getDate() + (this.campus?.borrowPeriod ?? 14));
+    console.log('end result:', end);
+    this.calculatedEnd = end;
   }
 
   updateAmount(bookId: number, amount: number): void {
+    console.log('updateAmount aangeroepen', bookId, amount);
     if (amount < 1) return;
+
+    const max = this.getMaxAmount(bookId);
+
+    if (amount > max) {
+      this.cartService.updateAmount(bookId, max);
+      return;
+    }
     this.cartService.updateAmount(bookId, amount);
   }
 
   submitLoan(): void {
-    if (this.checkoutForm.invalid || this.cartService.isEmpty()) return;
+    if (this.checkoutForm.invalid || this.cartService.isEmpty() || !this.calculatedEnd) return;
 
-    const { start, end } = this.checkoutForm.value;
+    if (this.campus && this.cartService.items().length > this.campus.borrowLimit) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Limiet overschreden',
+        detail: `U mag maximaal ${this.campus.borrowLimit} verschillende boeken per ontlening aanvragen.`,
+        life: 4000,
+      });
+      return;
+    }
 
     const loan: CreateLoanDTO = {
       userId: this.userId,
+      campusId: this.campusId,
       extended: 0,
-      start: start!,
-      end: end!,
+      start: this.formatDate(this.checkoutForm.value.start!),
+      end: this.formatDate(this.calculatedEnd ?? new Date()),
       note: '',
       status: LoanStatus.REQUESTED,
       closed: false,
@@ -103,5 +159,8 @@ export class LoanCartComponent {
         console.error(err);
       },
     });
+  }
+  private formatDate(d: Date): string {
+    return d.toLocaleDateString('en-CA');
   }
 }

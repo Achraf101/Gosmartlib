@@ -1,82 +1,99 @@
-<div class="fixed bottom-6 right-6 z-50">
+<div>
   <p-button
-    icon="pi pi-shopping-cart"
+    icon="pi pi-receipt"
     [rounded]="true"
-    (onClick)="visible = true"
+    (onClick)="visible = true; loadMaxAmounts()"
     [disabled]="cartService.isEmpty()"
     pBadge
     [outlined]="true"
   />
 </div>
 
-<p-dialog
-  header="Uw ontleenlijst"
-  [(visible)]="visible"
-  [modal]="true"
-  [style]="{ width: '520px' }"
-  [draggable]="false"
->
-  <!-- Boeken in cart -->
-  <div class="flex flex-col gap-3 mb-4">
+<p-dialog header="Uw ontleenlijst" [(visible)]="visible" [modal]="true" [draggable]="false">
+  <div>
     @if (cartService.isEmpty()) {
-      <p class="text-center text-gray-400">Uw ontleenlijst is leeg.</p>
-    }
+      <p>Uw ontleenlijst is leeg.</p>
+    } @else {
+      <div>
+        <p-table [value]="cartService.items()" sortField="start" [sortOrder]="-1" stripedRows>
+          <ng-template pTemplate="header">
+            <tr>
+              <th style="width: 60%">Boek informatie</th>
+              <th style="width: 25%">Aantal</th>
+              <th style="width: 15%">Verwijderen</th>
+            </tr>
+          </ng-template>
 
-    @for (item of cartService.items(); track item.bookId) {
-      <div class="flex justify-between items-center border-b pb-3">
-        <span class="font-medium">Boek #{{ item.bookId }}</span>
-
-        <div class="flex items-center gap-3">
-          <p-inputnumber
-            [ngModel]="item.requestedAmount"
-            (ngModelChange)="updateAmount(item.bookId, $event)"
-            [min]="1"
-            [max]="100"
-            [showButtons]="true"
-            buttonLayout="horizontal"
-            decrementButtonIcon="pi pi-minus"
-            incrementButtonIcon="pi pi-plus"
-            [style]="{ width: '120px' }"
-          />
-          <p-button
-            icon="pi pi-trash"
-            severity="danger"
-            [text]="true"
-            (onClick)="cartService.removeBook(item.bookId)"
-          />
-        </div>
+          <ng-template pTemplate="body" let-item>
+            <tr>
+              <td>
+                <b-card [bookCard]="item" />
+              </td>
+              <td>
+                <p-inputnumber
+                  inputId="requestedAmount"
+                  [ngModel]="item.requestedAmount"
+                  (ngModelChange)="updateAmount(item.bookId, $event)"
+                  [min]="1"
+                  [max]="getMaxAmount(item.bookId)"
+                  [showButtons]="true"
+                  buttonLayout="vertical"
+                  [useGrouping]="false"
+                  class="inputnumber"
+                />
+              </td>
+              <td>
+                <p-button
+                  icon="pi pi-trash"
+                  severity="danger"
+                  [text]="true"
+                  (onClick)="cartService.removeBook(item.bookId)"
+                />
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
       </div>
     }
   </div>
 
-  <!-- Checkout form -->
   @if (!cartService.isEmpty()) {
-    <form [formGroup]="checkoutForm" class="flex flex-col gap-4 mt-2">
-      <p-ifta-label>
-        <p-datepicker
-          formControlName="start"
-          inputId="cartStart"
-          [minDate]="today"
-          [showIcon]="true"
-          (onSelect)="onStartDateSelect($event)"
-        />
-        <label for="cartStart">Startdatum</label>
-      </p-ifta-label>
-
-      <p-ifta-label>
-        <p-datepicker formControlName="end" inputId="cartEnd" [showIcon]="true" />
-        <label for="cartEnd">Einddatum</label>
-      </p-ifta-label>
-    </form>
+    <div class="dates">
+      <form [formGroup]="checkoutForm">
+        <p-ifta-label>
+          <p-datepicker
+            formControlName="start"
+            inputId="cartStart"
+            dateFormat="dd/mm/yy"
+            placeholder="dd/mm/yyyy"
+            [minDate]="today"
+            [readonlyInput]="true"
+            appendTo="body"
+            (onSelect)="onStartDateSelect($event)"
+          />
+          <label for="cartStart">Startdatum</label>
+        </p-ifta-label>
+        @if (checkoutForm.controls.start.invalid && checkoutForm.controls.start.touched) {
+          <small class="p-error">
+            <p-message severity="error" size="small" variant="simple"
+              >Geef een geldige datum in.</p-message
+            >
+          </small>
+        }
+        <p>(Einddatum: {{ calculatedEnd | date: 'dd-MM-yyyy' }})</p>
+      </form>
+    </div>
   }
 
   <ng-template pTemplate="footer">
-    <p-button label="Annuleren" severity="secondary" (onClick)="visible = false" />
-    <p-button
-      label="Ontlening aanvragen"
-      icon="pi pi-check"
-      [disabled]="checkoutForm.invalid || cartService.isEmpty()"
-      (onClick)="submitLoan()"
-    />
+    <div class="btns">
+      <p-button label="Annuleren" severity="secondary" (onClick)="visible = false" />
+      <p-button
+        label="Ontlening aanvragen"
+        icon="pi pi-check"
+        [disabled]="checkoutForm.invalid || cartService.isEmpty()"
+        (onClick)="submitLoan()"
+      />
+    </div>
   </ng-template>
 </p-dialog>

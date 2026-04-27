@@ -1,42 +1,41 @@
 import { Injectable, signal, computed } from '@angular/core';
-import { CreateLoanBookDTO } from '../models/loanBook';
-import { MessageService } from 'primeng/api';
-
-const CART_KEY = 'loan_cart';
+import { CartBook } from '../models/cartBook';
 
 @Injectable({ providedIn: 'root' })
 export class LoanCartService {
-  constructor(private messageService: MessageService) {}
+  private static readonly CART_KEY = 'loan_cart';
 
-  private _items = signal<CreateLoanBookDTO[]>(this.loadFromStorage());
+  private borrowLimit = signal<number>(100);
+  private _items = signal<CartBook[]>(this.loadFromStorage());
 
   readonly items = this._items.asReadonly();
   readonly count = computed(() => this._items().length);
   readonly isEmpty = computed(() => this.count() === 0);
 
-  addBook(book: CreateLoanBookDTO): Boolean {
-    const current = this._items();
+  setBorrowLimit(limit: number): void {
+    if (limit < 1) throw new Error('INVALID_BORROW_LIMIT');
+    this.borrowLimit.set(limit);
+  }
 
-    if (current.some((b) => b.bookId === book.bookId)) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Fout',
-        detail: 'Boek staat al in de ontleenlijst',
-        life: 3750,
-      });
-      return false;
-    }
+  addBook(book: CartBook): void {
+    const current = this._items();
+    if (current.length >= this.borrowLimit()) throw new Error('BORROW_LIMIT_REACHED');
+    if (current.some((b) => b.bookId === book.bookId)) throw new Error('ALREADY_IN_CART');
     this._items.set([...current, book]);
     this.persist();
-    return true;
   }
 
   removeBook(bookId: number): void {
+    const exists = this._items().some((b) => b.bookId === bookId);
+    if (!exists) throw new Error('BOOK_NOT_IN_CART');
     this._items.set(this._items().filter((b) => b.bookId !== bookId));
     this.persist();
   }
 
   updateAmount(bookId: number, requestedAmount: number): void {
+    if (requestedAmount < 1) throw new Error('INVALID_AMOUNT');
+    const exists = this._items().some((b) => b.bookId === bookId);
+    if (!exists) throw new Error('BOOK_NOT_IN_CART');
     this._items.set(
       this._items().map((b) => (b.bookId === bookId ? { ...b, requestedAmount } : b)),
     );
@@ -45,17 +44,20 @@ export class LoanCartService {
 
   clear(): void {
     this._items.set([]);
-    localStorage.removeItem(CART_KEY);
+    this.persist();
   }
 
   private persist(): void {
-    localStorage.setItem(CART_KEY, JSON.stringify(this._items()));
+    localStorage.setItem(LoanCartService.CART_KEY, JSON.stringify(this._items()));
   }
 
-  private loadFromStorage(): CreateLoanBookDTO[] {
+  private loadFromStorage(): CartBook[] {
     try {
-      const raw = localStorage.getItem(CART_KEY);
-      return raw ? JSON.parse(raw) : [];
+      const raw = localStorage.getItem(LoanCartService.CART_KEY);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return [];
+      return parsed as CartBook[];
     } catch {
       return [];
     }
