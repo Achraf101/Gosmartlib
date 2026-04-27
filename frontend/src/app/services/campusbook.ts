@@ -24,4 +24,7 @@ export class CampusBookService {
       `${this.endpoint}/campus/${campusId}?page=${page}&size=${rows}`,
     );
   }
+  getCampusBook(campusId: number, bookId: number): Observable<CampusBook> {
+    return this.apiService.get<CampusBook>(`${this.endpoint}/${campusId}/books/${bookId}`);
+  }
 }

@@ -16,12 +16,7 @@ export class LoanService {
   }
 
   createLoan(loan: Omit<CreateLoanDTO, 'id'>): Observable<CreateLoanDTO> {
-    const body = {
-      ...loan,
-      start: this.formatDate(loan.start),
-      end: this.formatDate(loan.end),
-    };
-    return this.apiService.post<CreateLoanDTO>(this.endpoint, body);
+    return this.apiService.post<CreateLoanDTO>(this.endpoint, loan);
   }
 
   updateNote(id: number, note: string): Observable<LoanDTO> {
@@ -32,12 +27,5 @@ export class LoanService {
     return this.apiService.put<LoanDTO>(`${this.endpoint}/${id}/status`, {
       status,
     });
-  }
-
-  private formatDate(date: Date): string {
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, '0');
-    const d = String(date.getDate()).padStart(2, '0');
-    return `${y}-${m}-${d}`;
   }
 }

@@ -3,8 +3,8 @@ export interface Campus {
   name: string;
   adres?: string;
   borrowLimit: number;
-  borrow_period: number;
-  extend_period: number;
-  extend_limit: number;
+  borrowPeriod: number;
+  extendPeriod: number;
+  extendLimit: number;
   schoolId: number;
 }

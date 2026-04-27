@@ -38,18 +38,7 @@
             }
           </p>
         </div>
-        <p-button
-          class="btn"
-          label="Nu Ontlenen"
-          severity="primary"
-          (onClick)="loanFormVisible = true"
-        />
-        <p-button
-          class="btn"
-          label="Toevoegen aan ontlening"
-          severity="primary"
-          (onClick)="cartDialogVisible = true"
-        />
+
         <i
           (click)="toggleFavorite()"
           class="bookmark pi"
@@ -83,6 +72,20 @@
           </p-accordion-panel>
         </p-accordion>
         <p class="show-desktop">{{ book.description }}</p>
+        <div class="btns">
+          <p-button
+            class="btn"
+            label="Nu Ontlenen"
+            severity="primary"
+            (onClick)="loanFormVisible = true"
+          />
+          <p-button
+            class="btn"
+            label="Toevoegen aan ontlening"
+            severity="primary"
+            (onClick)="cartDialogVisible = true"
+          />
+        </div>
       </div>
     </div>
 
@@ -229,15 +232,14 @@
         </div>
       </div>
     }
-    <form [formGroup]="loanForm">
-      <div>
-        <p-dialog
-          header="Ontleen aanvraag:"
-          [modal]="true"
-          [(visible)]="loanFormVisible"
-          [style]="{ width: '30rem' }"
-          resizable="false"
-        >
+    <p-dialog
+      header="Ontleen aanvraag"
+      [modal]="true"
+      [(visible)]="loanFormVisible"
+      resizable="false"
+    >
+      <form [formGroup]="loanForm">
+        <div class="loanForm">
           <div>
             <p-datepicker
               formControlName="start"
@@ -248,6 +250,13 @@
               appendTo="body"
               (onSelect)="onStartDateSelect($event)"
             />
+            @if (loanForm.controls.start.invalid && loanForm.controls.start.touched) {
+              <small class="p-error">
+                <p-message severity="error" size="small" variant="simple"
+                  >Geef een correcte datum!</p-message
+                >
+              </small>
+            }
           </div>
           <div>
             <label for="end">Einddatum:</label>
@@ -261,15 +270,25 @@
           </div>
           <div>
             <p-ifta-label>
-              <label for="requestedAmount">Aantal:</label>
               <p-inputNumber
                 inputId="requestedAmount"
                 formControlName="requestedAmount"
                 [showButtons]="true"
-                [min]="1"
+                [min]="0"
+                [max]="campusBook?.current_amount ?? 100"
                 [useGrouping]="false"
               />
+              <label for="requestedAmount">Aantal</label>
             </p-ifta-label>
+            @if (
+              loanForm.controls.requestedAmount.invalid && loanForm.controls.requestedAmount.touched
+            ) {
+              <small class="p-error">
+                <p-message severity="error" size="small" variant="simple"
+                  >Geef een geldig aantal in.</p-message
+                >
+              </small>
+            }
           </div>
 
           <div class="btns">
@@ -281,25 +300,31 @@
               (onClick)="createLoan()"
             />
           </div>
-        </p-dialog>
-      </div>
-    </form>
-    <p-dialog
-      header="Voeg toe aan ontlening"
-      [(visible)]="cartDialogVisible"
-      [modal]="true"
-      [style]="{ width: '400px' }"
-    >
+        </div>
+      </form>
+    </p-dialog>
+    <p-dialog header="Voeg toe aan ontlening" [(visible)]="cartDialogVisible" [modal]="true">
       <form [formGroup]="cartForm" class="flex flex-col gap-3">
         <p-ifta-label>
           <p-inputnumber
             formControlName="requestedAmount"
             inputId="cartAmount"
-            [min]="1"
-            [max]="100"
+            [min]="0"
+            [max]="campusBook?.current_amount ?? 100"
+            [showButtons]="true"
+            [useGrouping]="false"
           />
           <label for="cartAmount">Aantal exemplaren</label>
         </p-ifta-label>
+        @if (
+          cartForm.controls.requestedAmount.invalid && cartForm.controls.requestedAmount.touched
+        ) {
+          <small class="p-error">
+            <p-message severity="error" size="small" variant="simple"
+              >Geef een geldig aantal in.</p-message
+            >
+          </small>
+        }
       </form>
 
       <ng-template pTemplate="footer">

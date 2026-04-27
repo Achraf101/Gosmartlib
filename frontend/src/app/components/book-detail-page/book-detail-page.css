@@ -195,6 +195,20 @@ table td {
   color: #555;
 }
 
+.btns {
+ display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  width: 100%;
+  margin-top:1rem;
+}
+
+.loanForm {
+  display: flex;
+  flex-flow: column;
+  gap: 1rem;
+}
+
 @media (width>800px) {
   .show-desktop {
     display: inline-block;

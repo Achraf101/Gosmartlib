@@ -2,29 +2,18 @@ import { Component, OnInit } from '@angular/core';
 import { MessageService } from 'primeng/api';
 import { NavBarComponent } from '../nav-bar/nav-bar';
 import { LoanService } from '../../services/loan';
-import { Toast } from 'primeng/toast';
 import { Card } from 'primeng/card';
 import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { TableModule } from 'primeng/table';
-import { BadgeModule } from 'primeng/badge';
 import { LoanDTO, LoanStatus } from '../../models/loan';
+import { Message } from 'primeng/message';
 
 @Component({
   selector: 'app-accept-decline-reservations-page',
-  imports: [
-    NavBarComponent,
-    Toast,
-    Card,
-    Button,
-    Dialog,
-    FormsModule,
-    CommonModule,
-    TableModule,
-    BadgeModule,
-  ],
+  imports: [NavBarComponent, Card, Button, Dialog, FormsModule, CommonModule, TableModule, Message],
   templateUrl: './accept-decline-reservations-page.html',
   styleUrl: './accept-decline-reservations-page.css',
 })
