@@ -13,6 +13,7 @@ import { BookmarkedService } from '../../services/bookmarked-service';
 import { CarouselModule } from 'primeng/carousel';
 import { ProgressSpinner } from 'primeng/progressspinner';
 import { DelayedLoader } from '../../utils/delayed-loader';
+import { ReviewSectionComponent } from '../misc/review-section/review-section';
 
 @Component({
   imports: [
@@ -24,6 +25,7 @@ import { DelayedLoader } from '../../utils/delayed-loader';
     BookCardComponent,
     CarouselModule,
     ProgressSpinner,
+    ReviewSectionComponent
   ],
   templateUrl: './book-detail-page.html',
   styleUrl: './book-detail-page.css',
@@ -78,9 +80,8 @@ export class BookDetailPage implements OnInit {
     this.bookService.getById(this.bookId).subscribe({
       next: (book) => {
         this.book = book;
-        this.ratingValue =
-          Math.round((this.book?.rating_total! / this.book?.rating_count!) * 10) / 10;
-        this.ratingValueStars = Math.round(this.ratingValue);
+        this.ratingValue = this.book?.rating_count! > 0 ? this.book?.rating! : 0;
+this.ratingValueStars = this.ratingValue;
 
         this.genresString = (this.book?.genres || []).map((i) => i.name).join(', ');
 
@@ -114,4 +115,10 @@ export class BookDetailPage implements OnInit {
       },
     });
   }
+
+  getStarFill(position: number): number {
+  if (this.ratingValue >= position) return 100;
+  if (this.ratingValue <= position - 1) return 0;
+  return (this.ratingValue - (position - 1)) * 100;
+}
 }

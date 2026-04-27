@@ -66,7 +66,7 @@ p-image {
   height: 300px;
 }
 
-tr > td:nth-child(1) img,
+tr>td:nth-child(1) img,
 #book-available {
   margin-left: 20px;
   margin-right: 20px;
@@ -193,6 +193,59 @@ table td {
   font-weight: bold;
   width: 150px;
   color: #555;
+}
+
+.rating-display {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+}
+
+.rating-star {
+  font-size: 2rem;
+  color: var(--p-amber-400);
+}
+
+.rating-number {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--p-neutral-900);
+}
+
+.rating-sub {
+  font-size: 0.85rem;
+  color: var(--p-neutral-500);
+}
+
+.custom-stars {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 0.25rem;
+}
+
+.star-wrapper {
+  position: relative;
+  display: inline-block;
+  font-size: 2rem;
+  color: var(--p-neutral-300);
+}
+
+.star-empty {
+  display: block;
+  color: var(--p-neutral-300);
+}
+
+.star-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  color: var(--p-amber-400);
+}
+
+.star-fill .pi {
+  display: block;
 }
 
 @media (width>800px) {
