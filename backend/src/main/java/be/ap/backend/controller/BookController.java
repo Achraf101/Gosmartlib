@@ -12,16 +12,19 @@ import org.springframework.validation.annotation.Validated;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import be.ap.backend.dto.BookCardDTO;
+import be.ap.backend.dto.BookLookupDTO;
 import be.ap.backend.dto.BookResultDTO;
 import be.ap.backend.dto.CreateBookDTO;
 import be.ap.backend.entity.Book;
 import be.ap.backend.entity.Clib;
 import be.ap.backend.repository.BookRepository;
 import be.ap.backend.service.BookService;
+import be.ap.backend.service.IsbnLookupService;
 
 import java.util.List;
 
 import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -34,6 +37,7 @@ public class BookController {
 
     private final BookRepository bookRepository;
     private final BookService bookService;
+    private final IsbnLookupService isbnLookupService;
 
     @GetMapping
     public Page<Book> getAll(
@@ -86,6 +90,13 @@ public Page<Book> filter(
     @PostMapping
     public Book addBook(@RequestBody CreateBookDTO dto) {
         return bookService.saveBook(dto);
+    }
+
+    @GetMapping("/isbn/{isbn}")
+    public ResponseEntity<BookLookupDTO> lookupByIsbn(@PathVariable String isbn) {
+        return isbnLookupService.lookup(isbn)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/bookResult")
