@@ -3,10 +3,12 @@ import { BookResult as BookResultType } from '../../../models/book';
 import { Tag } from 'primeng/tag';
 import { Divider } from 'primeng/divider';
 import { BookCover } from '../book-cover/book-cover';
+import { DecimalPipe } from '@angular/common';
+
 
 @Component({
   selector: 'b-result',
-  imports: [Tag, Divider, BookCover],
+  imports: [Tag, Divider, BookCover,DecimalPipe],
   templateUrl: './book-result.html',
   styleUrl: './book-result.css',
 })

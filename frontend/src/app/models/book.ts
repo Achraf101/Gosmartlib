@@ -50,6 +50,7 @@ export interface BookDetail extends BookBase {
   clib?: string;
   pages?: number;
   font_size?: string;
+  rating : number;
   rating_total: number;
   rating_count: number;
   school?: number;

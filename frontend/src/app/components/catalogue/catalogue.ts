@@ -40,7 +40,6 @@ import { DelayedLoader } from '../../utils/delayed-loader';
     InputNumberModule,
     MultiSelectModule,
     SearchBar,
-    BookResultComponent,
     RouterLink,
   ],
   templateUrl: './catalogue.html',
@@ -55,7 +54,7 @@ export class CatalogueComponent implements OnInit {
   searchQuery = '';
   activeFilters: BookFilter | null = null;
 
-  // Sidebar filters
+  
   genres: Genre[] = [];
   languages: Language[] = [];
   sidebarGenres: number[] = [];
@@ -63,7 +62,7 @@ export class CatalogueComponent implements OnInit {
   sidebarPagesMin: number | null = null;
   sidebarPagesMax: number | null = null;
 
-  // Select mode
+  
   selectMode = false;
   sectionId: number | null = null;
   grade: number | null = null;

@@ -29,16 +29,24 @@
           <p-image src="/static/cover/{{ book.cover }}" preview alt="boek omslag" class="cover" />
         }
         <div id="stars">
-          <p-rating [(ngModel)]="ratingValueStars" [disabled]="true" />
-          <p>
-            @if (ratingValue > 0) {
-              ({{ ratingValue }})
-            } @else {
-              (0)
-            }
-          </p>
+          <div class="rating-display">
+            <div class="custom-stars">
+              @for (i of [1, 2, 3, 4, 5]; track i) {
+                <div class="star-wrapper">
+                  <i class="pi pi-star star-empty"></i>
+                  <div class="star-fill" [style.width]="getStarFill(i) + '%'">
+                    <i class="pi pi-star-fill"></i>
+                  </div>
+                </div>
+              }
+            </div>
+            <span class="rating-number">{{ ratingValue > 0 ? ratingValue : 0 }} / 5</span>
+            <span class="rating-sub"
+              >gebaseerd op {{ book.rating_count }}
+              {{ book.rating_count === 1 ? 'recensie' : 'recensies' }}</span
+            >
+          </div>
         </div>
-
         <i
           (click)="toggleFavorite()"
           class="bookmark pi"
@@ -232,6 +240,7 @@
         </div>
       </div>
     }
+
     <p-dialog
       header="Ontleen aanvraag"
       [modal]="true"
@@ -290,7 +299,6 @@
               </small>
             }
           </div>
-
           <div class="btns">
             <p-button class="btn" label="Annuleer" severity="secondary" (click)="cancelLoan()" />
             <p-button
@@ -303,6 +311,7 @@
         </div>
       </form>
     </p-dialog>
+
     <p-dialog header="Voeg toe aan ontlening" [(visible)]="cartDialogVisible" [modal]="true">
       <form [formGroup]="cartForm" class="flex flex-col gap-3">
         <p-ifta-label>
@@ -326,7 +335,6 @@
           </small>
         }
       </form>
-
       <ng-template pTemplate="footer">
         <p-button label="Annuleren" severity="secondary" (onClick)="cancelCart()" />
         <p-button
@@ -337,6 +345,10 @@
         />
       </ng-template>
     </p-dialog>
+
+    <div class="box">
+      <app-review-section [bookId]="bookId" (reviewAdded)="loadBook()" />
+    </div>
   </div>
 } @else if (!loading.isLoading && !error) {
   <p>Geen boeken gevonden.</p>
