@@ -7,12 +7,16 @@ import be.ap.backend.exception.ArgumentsInvalidException;
 import be.ap.backend.exception.BookAlreadyInCampusException;
 import be.ap.backend.exception.MissingArgumentsException;
 import be.ap.backend.service.CampusBookService;
+import jakarta.persistence.EntityNotFoundException;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -26,7 +30,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(controllers = CampusBookController.class)
+@WebMvcTest(controllers = CampusBookController.class, excludeAutoConfiguration = SecurityAutoConfiguration.class)
 @ContextConfiguration(classes = CampusBookController.class)
 public class CampusBookControllerTest {
 
@@ -114,7 +118,7 @@ public class CampusBookControllerTest {
 
         mockMvc.perform(get("/campusbook"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].book_title").value("De brief voor de koning"));
+                .andExpect(jsonPath("$[0].bookTitle").value("De brief voor de koning"));
     }
 
     @Test
@@ -128,7 +132,7 @@ public class CampusBookControllerTest {
 
         mockMvc.perform(get("/campusbook/campus/1?page=0&size=5"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content[0].book_title").value("Harry Potter"));
+                .andExpect(jsonPath("$.content[0].bookTitle").value("Harry Potter"));
     }
 
     @Test
@@ -139,5 +143,28 @@ public class CampusBookControllerTest {
         mockMvc.perform(get("/campusbook/campus/1?page=0&size=5"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isEmpty());
+    }
+
+    @Test
+    void getCampusBook_found_returnsOk() throws Exception {
+        CampusBookDetailDTO dto = new CampusBookDetailDTO();
+        dto.setId(1L);
+        dto.setBookTitle("De Hobbit");
+
+        when(campusBookService.getCampusBook(eq(1L), eq(2L))).thenReturn(dto);
+
+        mockMvc.perform(get("/campusbook/1/books/2"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.bookTitle").value("De Hobbit"));
+    }
+
+    @Test
+    void getCampusBook_notFound_returns404() throws Exception {
+        when(campusBookService.getCampusBook(eq(1L), eq(99L)))
+                .thenThrow(new EntityNotFoundException("CampusBook niet gevonden."));
+
+        mockMvc.perform(get("/campusbook/1/books/99"))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("CampusBook niet gevonden."));
     }
 }
