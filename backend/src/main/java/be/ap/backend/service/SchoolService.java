@@ -30,12 +30,16 @@ public class SchoolService {
         if (dto.getDescription().length() > 1000) {
             throw new ArgumentsInvalidException("Beschrijving mag niet langer zijn dan 1000 tekens!");
         }
+        if (dto.getSsSubdomain() == null) {
+            throw new MissingArgumentsException("Smartschool url is verplicht!");
+        }
 
         School saved = new School();
         saved.setName(dto.getName());
         saved.setAdres(dto.getAdres());
         saved.setContact(dto.getContact());
         saved.setDescription(dto.getDescription());
+        saved.setSsSubdomain(dto.getSsSubdomain());
 
         return toDTO(schoolRepository.save(saved));
     }
@@ -59,6 +63,7 @@ public class SchoolService {
         dto.setAdres(school.getAdres());
         dto.setContact(school.getContact());
         dto.setDescription(school.getDescription());
+        dto.setSsSubdomain(school.getSsSubdomain());
 
         List<CampusDTO> campusDTOs = school.getCampuses().stream()
                 .map(campus -> {
