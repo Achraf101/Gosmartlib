@@ -12,6 +12,7 @@ import { FilterPage } from './components/filter-page/filter-page';
 import { SchoolComponent } from './components/school/school';
 import { FavoritePage } from './components/favorite-page/favorite-page';
 import { AcceptDeclineReservationsPageComponent } from './components/accept-decline-reservations-page/accept-decline-reservations-page';
+import { UserLoansPageComponent } from './components/user-loans-page/user-loans-page';
 export const routes: Routes = [
   { path: 'login', component: AdminLoginComponent },
   { path: '', redirectTo: 'startpagina', pathMatch: 'full' },
@@ -30,7 +31,7 @@ export const routes: Routes = [
     component: AcceptDeclineReservationsPageComponent,
     canActivate: [authGuard],
   },
-
+  { path: 'uitleningen', component: UserLoansPageComponent, canActivate: [authGuard] },
   // {
   //   path: 'boek',
   //   component: BookformComponent,
