@@ -41,6 +41,7 @@ export class SchoolAddComponent {
     adres: new FormControl('', [Validators.maxLength(500)]),
     contact: new FormControl('', [Validators.maxLength(500)]),
     description: new FormControl('', [Validators.maxLength(1000)]),
+    subdomain: new FormControl('', [Validators.required, Validators.maxLength(255)]),
   });
 
   loading = false;
@@ -60,6 +61,7 @@ export class SchoolAddComponent {
       adres: rawValue.adres?.trim() ?? '',
       contact: rawValue.contact?.trim() ?? '',
       description: rawValue.description?.trim() ?? '',
+      subdomain: rawValue.subdomain?.trim() ?? '',
     };
 
     this.schoolService.addSchool(school).subscribe({
