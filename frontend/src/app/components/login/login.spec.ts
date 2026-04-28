@@ -4,7 +4,7 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter, Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
-import { AdminLoginComponent } from './admin-login';
+import { AdminLoginComponent } from './login';
 import { AuthService } from '../../services/auth';
 
 describe('AdminLoginComponent', () => {
