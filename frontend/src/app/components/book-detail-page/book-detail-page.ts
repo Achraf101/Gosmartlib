@@ -4,28 +4,59 @@ import { BookService } from '../../services/book-service';
 import { BookCard, BookDetail } from '../../models/book';
 import { ImageModule } from 'primeng/image';
 import { RatingModule } from 'primeng/rating';
-import { FormsModule } from '@angular/forms';
+import {
+  FormControl,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { NavBarComponent } from '../nav-bar/nav-bar';
 import { MessageService } from 'primeng/api';
 import { AccordionModule } from 'primeng/accordion';
 import { BookCardComponent } from '../misc/book-card/book-card';
 import { BookmarkedService } from '../../services/bookmarked-service';
+import { ButtonModule } from 'primeng/button';
+import { IftaLabel } from 'primeng/iftalabel';
+import { DialogModule } from 'primeng/dialog';
+import { DatePickerModule } from 'primeng/datepicker';
+import { InputNumber } from 'primeng/inputnumber';
+import { CreateLoanDTO, LoanStatus } from '../../models/loan';
+import { LoanService } from '../../services/loan';
+import { CreateLoanBookDTO } from '../../models/loanBook';
+import { DatePipe } from '@angular/common';
+import { LoanCartService } from '../../services/loan-cart';
 import { CarouselModule } from 'primeng/carousel';
 import { ProgressSpinner } from 'primeng/progressspinner';
 import { DelayedLoader } from '../../utils/delayed-loader';
+import { CartBook } from '../../models/cartBook';
+import { Campus } from '../../models/campus';
+import { CampusService } from '../../services/campus';
+import { CampusBook } from '../../models/CampusBook';
+import { CampusBookService } from '../../services/campusbook';
+import { Message } from 'primeng/message';
 import { ReviewSectionComponent } from '../misc/review-section/review-section';
 
 @Component({
+  selector: 'app-book-detail-page',
   imports: [
     ImageModule,
     RatingModule,
     FormsModule,
     NavBarComponent,
     AccordionModule,
+    ButtonModule,
+    IftaLabel,
+    DialogModule,
+    ReactiveFormsModule,
+    DatePickerModule,
+    InputNumber,
+    DatePipe,
     BookCardComponent,
     CarouselModule,
     ProgressSpinner,
-    ReviewSectionComponent
+    Message,
+    ReviewSectionComponent,
   ],
   templateUrl: './book-detail-page.html',
   styleUrl: './book-detail-page.css',
@@ -39,9 +70,16 @@ export class BookDetailPage implements OnInit {
   relatedBooks?: BookCard[];
   isBookmarked = false;
   genresString = '';
+  loanFormVisible = false;
+  cartDialogVisible = false;
+  today = new Date();
+  endDate = new Date();
   loading = new DelayedLoader();
+  campus?: Campus;
+  campusBook?: CampusBook;
 
   userId = 1;
+  campusId = 1;
 
   readonly placeholder = '/assets/no-cover.svg';
 
@@ -50,12 +88,17 @@ export class BookDetailPage implements OnInit {
     private readonly bookService: BookService,
     private readonly messageService: MessageService,
     private readonly bookmarkedService: BookmarkedService,
+    private readonly loanService: LoanService,
+    private readonly loanCartService: LoanCartService,
+    private readonly campusService: CampusService,
+    private readonly campusBookService: CampusBookService,
   ) {}
 
   ngOnInit(): void {
     this.route.paramMap.subscribe((params) => {
       this.bookId = Number(params.get('id'));
       this.loadBook();
+      this.loadCampusData();
     });
   }
 
@@ -81,7 +124,7 @@ export class BookDetailPage implements OnInit {
       next: (book) => {
         this.book = book;
         this.ratingValue = this.book?.rating_count! > 0 ? this.book?.rating! : 0;
-this.ratingValueStars = this.ratingValue;
+        this.ratingValueStars = this.ratingValue;
 
         this.genresString = (this.book?.genres || []).map((i) => i.name).join(', ');
 
@@ -116,9 +159,164 @@ this.ratingValueStars = this.ratingValue;
     });
   }
 
+  loanForm = new FormGroup({
+    start: new FormControl<Date | null>(null, Validators.required),
+    end: new FormControl<Date | null>(null, Validators.required),
+    requestedAmount: new FormControl<number | null>(null, [
+      Validators.required,
+      Validators.min(1),
+      Validators.max(100),
+      Validators.pattern('^[0-9]*$'),
+    ]),
+  });
+
+  cartForm = new FormGroup({
+    requestedAmount: new FormControl<number | null>(null, [
+      Validators.required,
+      Validators.min(1),
+      Validators.max(100),
+      Validators.pattern('^[0-9]*$'),
+    ]),
+  });
+
+  onStartDateSelect(date: Date) {
+    const end = new Date(date);
+    end.setDate(end.getDate() + (this.campus?.borrowPeriod ?? 14));
+    this.loanForm.controls.end.setValue(end);
+  }
+
+  createLoan(): void {
+    if (this.loanForm.invalid || !this.book) return;
+    const rawValue = this.loanForm.value;
+
+    const book: CreateLoanBookDTO = {
+      bookId: this.bookId,
+      requestedAmount: rawValue.requestedAmount ?? 1,
+      receivedAmount: 0,
+      returnedAmount: 0,
+    };
+
+    const loan: CreateLoanDTO = {
+      userId: this.userId,
+      campusId: this.campusId,
+      extended: 0,
+      start: this.formatDate(rawValue.start ?? new Date()),
+      end: this.formatDate(rawValue.end ?? new Date()),
+      note: '',
+      status: LoanStatus.REQUESTED,
+      closed: false,
+      books: [book],
+    };
+
+    this.loanService.createLoan(loan).subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Succes',
+          detail: 'Ontleenverzoek succesvol verzonden!',
+          life: 3000,
+        });
+
+        this.loanForm.reset();
+        this.loanFormVisible = false;
+      },
+      error: () => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Fout',
+          detail: 'Er is iets misgegaan bij het versturen van dit ontleenverzoek, probeer opnieuw.',
+          life: 3000,
+        });
+      },
+    });
+  }
+  cancelLoan(): void {
+    this.loanFormVisible = false;
+    this.loanForm.reset();
+  }
+  addToCart(): void {
+    if (this.cartForm.invalid || !this.book) return;
+
+    const book: CartBook = {
+      id: this.bookId,
+      bookId: this.bookId,
+      title: this.book.title,
+      author: this.book.author,
+      author_name: this.book.author_name,
+      cover: this.book.cover,
+      requestedAmount: this.cartForm.value.requestedAmount ?? 1,
+      receivedAmount: 0,
+      returnedAmount: 0,
+    };
+    try {
+      this.loanCartService.addBook(book);
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Toegevoegd',
+        detail: `"${this.book.title}" is toegevoegd aan uw ontleenlijst.`,
+        life: 3000,
+      });
+      this.cartForm.reset();
+      this.cartDialogVisible = false;
+    } catch (e) {
+      const message =
+        e instanceof Error && e.message === 'BORROW_LIMIT_REACHED'
+          ? 'U heeft het maximum aantal boeken bereikt.'
+          : 'Dit boek staat al in uw ontleenlijst.';
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Fout',
+        detail: message,
+        life: 3750,
+      });
+    }
+  }
+
+  cancelCart(): void {
+    this.cartDialogVisible = false;
+    this.cartForm.reset();
+  }
+
+  private loadCampusData(): void {
+    this.campusService.getById(this.campusId).subscribe({
+      next: (campus) => {
+        this.campus = campus;
+      },
+    });
+    this.campusBookService.getCampusBook(this.campusId, this.bookId).subscribe({
+      next: (campusBook) => {
+        this.campusBook = campusBook;
+        this.setAmountValidators(campusBook.current_amount);
+      },
+      error: () =>
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Fout',
+          detail: 'Jou campus heeft dit boek niet of het is niet meer beschikbaar.',
+          life: 3000,
+        }),
+    });
+  }
+
+  private formatDate(d: Date): string {
+    return d.toLocaleDateString('en-CA');
+  }
+
+  private setAmountValidators(maxAmount: number): void {
+    const validators = [
+      Validators.required,
+      Validators.min(1),
+      Validators.max(maxAmount),
+      Validators.pattern('^[0-9]*$'),
+    ];
+    this.loanForm.controls.requestedAmount.setValidators(validators);
+    this.cartForm.controls.requestedAmount.setValidators(validators);
+    this.loanForm.controls.requestedAmount.updateValueAndValidity();
+    this.cartForm.controls.requestedAmount.updateValueAndValidity();
+  }
   getStarFill(position: number): number {
-  if (this.ratingValue >= position) return 100;
-  if (this.ratingValue <= position - 1) return 0;
-  return (this.ratingValue - (position - 1)) * 100;
-}
+    if (this.ratingValue >= position) return 100;
+    if (this.ratingValue <= position - 1) return 0;
+    return (this.ratingValue - (position - 1)) * 100;
+  }
 }

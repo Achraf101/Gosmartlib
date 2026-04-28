@@ -1,0 +1,50 @@
+
+:host ::ng-deep .p-dialog {
+  @media (max-width: 768px) {
+    width: 70vw !important;
+    max-width: 95vw !important;
+    overflow: visible;
+  }
+}
+
+:host ::ng-deep .p-datatable {
+  .p-datatable-wrapper {
+    overflow-x: hidden;
+  }
+
+  th, td {
+    @media (max-width: 768px) {
+      padding: 0.4rem 0.3rem;
+      vertical-align: middle;
+    }
+  }
+}
+
+.dates {
+  margin: 1rem;
+
+  @media (max-width: 768px) {
+    margin: 0.5rem;
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      align-items: flex-start;
+    }
+  }
+}
+
+.inputnumber {
+  width: 3.5rem;
+}
+
+.btns {
+  display: flex;
+  gap: 10vw;
+  @media (max-width: 768px){
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}

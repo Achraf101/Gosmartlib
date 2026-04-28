@@ -13,7 +13,6 @@ import be.ap.backend.repository.CampusRepository;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 
-
 @Service
 @RequiredArgsConstructor
 public class CampusService {
@@ -29,11 +28,11 @@ public class CampusService {
                 || dto.getExtendPeriod() <= 0) {
             throw new ArgumentsInvalidException("Getallen moeten minimaal 1 zijn!");
         }
-        if (dto.getBorrowLimit() > 999 || dto.getBorrowPeriod() > 999 || dto.getExtendLimit() > 999) {
+        if (dto.getBorrowLimit() > 999 || dto.getBorrowPeriod() > 999 || dto.getExtendPeriod() > 999) {
             throw new ArgumentsInvalidException(
                     "Uitleenlimiet, uitleenperiode en verlengperiode mogen niet groter zijn dan 999!");
         }
-        if (dto.getExtendPeriod() > 10) {
+        if (dto.getExtendLimit() > 10) {
             throw new ArgumentsInvalidException("Maximaal aantal verlengingen mag niet meer zijn dan 10!");
         }
 
@@ -68,6 +67,9 @@ public class CampusService {
         dto.setName(campus.getName());
         dto.setAdres(campus.getAdres());
         dto.setBorrowLimit(campus.getBorrowLimit());
+        dto.setBorrowPeriod(campus.getBorrowPeriod());
+        dto.setExtendLimit(campus.getExtendLimit());
+        dto.setExtendPeriod(campus.getExtendPeriod());
         if (campus.getSchool() != null) {
             dto.setSchoolId(campus.getSchool().getId());
         }

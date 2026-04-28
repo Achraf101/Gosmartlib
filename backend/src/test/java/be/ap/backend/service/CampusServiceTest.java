@@ -21,6 +21,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import be.ap.backend.dto.CampusDTO;
 import be.ap.backend.entity.Campus;
 import be.ap.backend.entity.School;
+import be.ap.backend.exception.ArgumentsInvalidException;
+import be.ap.backend.exception.MissingArgumentsException;
 import be.ap.backend.repository.CampusRepository;
 import jakarta.persistence.EntityManager;
 
@@ -49,16 +51,17 @@ public class CampusServiceTest {
         campus.setName("Campus Noord");
         campus.setAdres("Hoofdstraat 1");
         campus.setBorrowLimit(5);
+        campus.setBorrowPeriod(14);
+        campus.setExtendLimit(3);
+        campus.setExtendPeriod(7);
         campus.setSchool(school);
     }
 
+    // ── createCampus ──────────────────────────────────────────────
+
     @Test
-    void createCampus_withSchool_success() {
-        CampusDTO dto = new CampusDTO();
-        dto.setName("Campus Noord");
-        dto.setAdres("Hoofdstraat 1");
-        dto.setBorrowLimit(5);
-        dto.setSchoolId(1L);
+    void createCampus_success() {
+        CampusDTO dto = validDto();
 
         when(entityManager.find(School.class, 1L)).thenReturn(school);
         when(campusRepository.save(any(Campus.class))).thenReturn(campus);
@@ -74,27 +77,114 @@ public class CampusServiceTest {
     }
 
     @Test
-    void createCampus_withoutSchool_success() {
-        CampusDTO dto = new CampusDTO();
-        dto.setName("Campus South");
-        dto.setAdres("Second Street 5");
-        dto.setBorrowLimit(10);
+    void createCampus_missingSchoolId_throwsMissingArgumentsException() {
+        CampusDTO dto = validDto();
+        dto.setSchoolId(null);
 
-        Campus saved = new Campus();
-        saved.setId(2L);
-        saved.setName("Campus Zuid");
-        saved.setAdres("Second Street 5");
-        saved.setBorrowLimit(10);
+        assertThatThrownBy(() -> campusService.createCampus(dto))
+                .isInstanceOf(MissingArgumentsException.class)
+                .hasMessageContaining("School is verplicht");
 
-        when(campusRepository.save(any(Campus.class))).thenReturn(saved);
-
-        CampusDTO result = campusService.createCampus(dto);
-
-        assertThat(result.getName()).isEqualTo("Campus Zuid");
-        assertThat(result.getSchoolId()).isNull();
-        verify(entityManager, never()).find(any(), any());
-        verify(campusRepository).save(any(Campus.class));
+        verify(campusRepository, never()).save(any());
     }
+
+    @Test
+    void createCampus_borrowLimitZero_throwsArgumentsInvalidException() {
+        CampusDTO dto = validDto();
+        dto.setBorrowLimit(0);
+
+        assertThatThrownBy(() -> campusService.createCampus(dto))
+                .isInstanceOf(ArgumentsInvalidException.class)
+                .hasMessageContaining("minimaal 1");
+
+        verify(campusRepository, never()).save(any());
+    }
+
+    @Test
+    void createCampus_borrowPeriodZero_throwsArgumentsInvalidException() {
+        CampusDTO dto = validDto();
+        dto.setBorrowPeriod(0);
+
+        assertThatThrownBy(() -> campusService.createCampus(dto))
+                .isInstanceOf(ArgumentsInvalidException.class)
+                .hasMessageContaining("minimaal 1");
+
+        verify(campusRepository, never()).save(any());
+    }
+
+    @Test
+    void createCampus_extendLimitZero_throwsArgumentsInvalidException() {
+        CampusDTO dto = validDto();
+        dto.setExtendLimit(0);
+
+        assertThatThrownBy(() -> campusService.createCampus(dto))
+                .isInstanceOf(ArgumentsInvalidException.class)
+                .hasMessageContaining("minimaal 1");
+
+        verify(campusRepository, never()).save(any());
+    }
+
+    @Test
+    void createCampus_extendPeriodZero_throwsArgumentsInvalidException() {
+        CampusDTO dto = validDto();
+        dto.setExtendPeriod(0);
+
+        assertThatThrownBy(() -> campusService.createCampus(dto))
+                .isInstanceOf(ArgumentsInvalidException.class)
+                .hasMessageContaining("minimaal 1");
+
+        verify(campusRepository, never()).save(any());
+    }
+
+    @Test
+    void createCampus_borrowLimitTooHigh_throwsArgumentsInvalidException() {
+        CampusDTO dto = validDto();
+        dto.setBorrowLimit(1000);
+
+        assertThatThrownBy(() -> campusService.createCampus(dto))
+                .isInstanceOf(ArgumentsInvalidException.class)
+                .hasMessageContaining("999");
+
+        verify(campusRepository, never()).save(any());
+    }
+
+    @Test
+    void createCampus_borrowPeriodTooHigh_throwsArgumentsInvalidException() {
+        CampusDTO dto = validDto();
+        dto.setBorrowPeriod(1000);
+
+        assertThatThrownBy(() -> campusService.createCampus(dto))
+                .isInstanceOf(ArgumentsInvalidException.class)
+                .hasMessageContaining("999");
+
+        verify(campusRepository, never()).save(any());
+    }
+
+    @Test
+    void createCampus_extendPeriodTooHigh_throwsArgumentsInvalidException() {
+        CampusDTO dto = validDto();
+        dto.setExtendPeriod(1000);
+
+        assertThatThrownBy(() -> campusService.createCampus(dto))
+                .isInstanceOf(ArgumentsInvalidException.class)
+                .hasMessageContaining("999");
+
+        verify(campusRepository, never()).save(any());
+    }
+
+    @Test
+    void createCampus_extendLimitTooHigh_throwsArgumentsInvalidException() {
+        CampusDTO dto = validDto();
+        dto.setExtendLimit(11);
+
+        assertThatThrownBy(() -> campusService.createCampus(dto))
+                .isInstanceOf(ArgumentsInvalidException.class)
+                .hasMessageContaining("10");
+
+        verify(campusRepository, never()).save(any());
+    }
+
+    // ── findById ──────────────────────────────────────────────────
 
     @Test
     void findById_exists_returnsDTO() {
@@ -115,6 +205,8 @@ public class CampusServiceTest {
                 .isInstanceOf(NoSuchElementException.class);
     }
 
+    // ── findAll ───────────────────────────────────────────────────
+
     @Test
     void findAll_returnsListOfDTOs() {
         when(campusRepository.findAll()).thenReturn(List.of(campus));
@@ -132,5 +224,19 @@ public class CampusServiceTest {
         List<CampusDTO> result = campusService.findAll();
 
         assertThat(result).isEmpty();
+    }
+
+    // ── helper ────────────────────────────────────────────────────
+
+    private CampusDTO validDto() {
+        CampusDTO dto = new CampusDTO();
+        dto.setName("Campus Noord");
+        dto.setAdres("Hoofdstraat 1");
+        dto.setSchoolId(1L);
+        dto.setBorrowLimit(5);
+        dto.setBorrowPeriod(14);
+        dto.setExtendLimit(3);
+        dto.setExtendPeriod(7);
+        return dto;
     }
 }
