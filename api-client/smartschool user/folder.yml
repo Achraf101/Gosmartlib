@@ -1,0 +1,28 @@
+info:
+  name: smartschool user
+  type: folder
+  seq: 1
+
+request:
+  auth:
+    type: oauth2
+    flow: authorization_code
+    authorizationUrl: https://oauth.smartschool.be/OAuth
+    accessTokenUrl: https://aphogeschool.smartschool.be/OAuth/index/token
+    refreshTokenUrl: https://aphogeschool.smartschool.be/OAuth/index/token
+    callbackUrl: "{{callback}}"
+    credentials:
+      clientId: "{{client_id}}"
+      clientSecret: "{{client_secret}}"
+      placement: body
+    scope: userinfo groupinfo sendmessage sendnotif
+    pkce:
+      disabled: true
+    tokenConfig:
+      id: credentials
+      placement:
+        header: Bearer
+      source: access_token
+    settings:
+      autoFetchToken: true
+      autoRefreshToken: true

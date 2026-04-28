@@ -1,50 +1,74 @@
 package be.ap.backend.entity;
 
 import jakarta.persistence.*;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 
 @Entity
-@Table(name = "users")
+@Table(name = "user")
+@Data
 @NoArgsConstructor
-public class User implements UserDetails {
+public class User implements UserDetails, Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false, length = 100)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false)
+    private UserRole role;
+
+    @Column(name = "username", unique = true, nullable = true, length = 60)
     private String username;
 
-    @Column(nullable = false, length = 255)
+    @Column(name = "password", nullable = true, length = 60)
     private String password;
 
-    public User(String username, String password) {
+    @ManyToOne
+    @JoinColumn(name = "school_id", nullable = true)
+    private School school;
+
+    @ManyToOne
+    @JoinColumn(name = "campus_id", nullable = true)
+    private Campus campus;
+
+    @Column(name = "ss_name", length = 255)
+    private String ssName;
+
+    @Column(name = "ss_id", unique = true, length = 255)
+    private String ssId;
+
+    @Column(name = "ss_access", length = 1023)
+    private String ssAccess;
+
+    @Column(name = "ss_refresh", length = 1023)
+    private String ssRefresh;
+
+    public User(String username, String password, UserRole role) {
         this.username = username;
         this.password = password;
+        this.role = role;
+    }
+
+    @Override
+    public String getPassword() {
+        return password;
+    }
+
+    @Override
+    public String getUsername() {
+        return username;
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_ADMIN"));
+        return List.of(role);
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    @Override
-    public String getPassword() { return password; }
-
-    @Override
-    public String getUsername() { return username; }
 }

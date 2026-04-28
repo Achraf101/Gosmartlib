@@ -11,6 +11,23 @@
   max-width: 400px;
 }
 
+.ss-btn {
+  display: flex;
+  justify-content: center;
+  padding: 0.25rem;
+  border-radius: var(--p-button-border-radius);
+  background-color: #ff4f0a;
+  margin-bottom: 1rem;
+}
+
+.divider {
+  margin: 1.5rem 0;
+}
+
+.ss-btn svg {
+  height: 2rem;
+}
+
 .login-header {
   display: flex;
   justify-content: center;
@@ -24,7 +41,7 @@
 .login-title {
   text-align: center;
   color: #7a1e2e;
-  margin: 0 0 1.5rem;
+  margin-bottom: 2rem;
   font-size: 1.4rem;
 }
 
@@ -34,13 +51,12 @@
   gap: 1rem;
 }
 
-/* if this is not present the input field is smaller than it's supposed to be */
-::ng-deep .p-password input {
-  width: 100%;
-}
-
 label {
   font-size: 0.9rem;
   font-weight: 500;
   color: #333;
+}
+
+.p-accordionpanel {
+  border: none;
 }

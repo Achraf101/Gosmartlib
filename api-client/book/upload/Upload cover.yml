@@ -5,13 +5,13 @@ info:
 
 http:
   method: POST
-  url: http://localhost:8080/api/upload/cover
+  url: https://localhost:8080/api/upload/cover
   body:
     type: multipart-form
     data:
       - name: book_id
         type: text
-        value: "1"
+        value: "2"
       - name: file
         type: text
         value: ""

@@ -11,5 +11,6 @@ public class SchoolDTO {
     private String adres;
     private String contact;
     private String description;
+    private String ssSubdomain;
     private List<CampusDTO> campuses;
 }

@@ -1,6 +1,7 @@
 package be.ap.backend.controller;
 
 import be.ap.backend.config.SecurityConfig;
+import be.ap.backend.controller.auth.AuthController;
 import be.ap.backend.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +15,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(AuthController.class)
-@ContextConfiguration(classes = {AuthController.class, SecurityConfig.class})
+@ContextConfiguration(classes = { AuthController.class, SecurityConfig.class })
 public class AuthControllerTest {
 
     @Autowired

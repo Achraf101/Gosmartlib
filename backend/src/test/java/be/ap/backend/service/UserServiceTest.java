@@ -17,6 +17,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import be.ap.backend.entity.User;
+import be.ap.backend.entity.UserRole;
 import be.ap.backend.repository.UserRepository;
 
 @ExtendWith(MockitoExtension.class)
@@ -36,7 +37,7 @@ public class UserServiceTest {
     @Test
     void loadUserByUsername_shouldReturnUser_whenUserExists() {
         // Arrange
-        User user = new User("admin", "encodedPassword");
+        User user = new User("admin", "encodedPassword", UserRole.ADMIN);
         when(userRepository.findByUsername("admin")).thenReturn(Optional.of(user));
 
         // Act
