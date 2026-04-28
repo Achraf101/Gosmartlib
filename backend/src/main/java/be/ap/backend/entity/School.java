@@ -30,13 +30,18 @@ public class School {
     @Column(nullable = true, length = 1000, name = "description")
     private String description;
 
+    @Column(nullable = false, unique = true, length = 255, name = "ss_subdomain")
+    private String ssSubdomain;
+
+    // One school has many campuses
     @OneToMany(mappedBy = "school", cascade = CascadeType.ALL)
     private List<Campus> campuses = new ArrayList<>();
 
-    public School(String name, String adres, String contact, String description) {
+    public School(String name, String adres, String contact, String description, String ssSubdomain) {
         this.name = name;
         this.adres = adres;
         this.contact = contact;
         this.description = description;
+        this.ssSubdomain = ssSubdomain;
     }
 }

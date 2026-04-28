@@ -1,7 +1,8 @@
 package be.ap.backend.config;
 
-import be.ap.backend.controller.AuthController;
+import be.ap.backend.controller.auth.AuthController;
 import be.ap.backend.entity.User;
+import be.ap.backend.entity.UserRole;
 import be.ap.backend.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +21,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(AuthController.class)
-@ContextConfiguration(classes = {AuthController.class, SecurityConfig.class})
+@ContextConfiguration(classes = { AuthController.class, SecurityConfig.class })
 public class SecurityConfigTest {
 
     @Autowired
@@ -39,15 +40,15 @@ public class SecurityConfigTest {
     void loginWithValidCredentials_shouldReturn200() throws Exception {
         String rawPassword = "password123";
         String encoded = new BCryptPasswordEncoder().encode(rawPassword);
-        User user = new User("admin", encoded);
+        User user = new User("admin", encoded, UserRole.ADMIN);
 
         when(userService.loadUserByUsername("admin")).thenReturn(user);
 
         mockMvc.perform(post("/auth/login")
-                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                        .param("username", "admin")
-                        .param("password", rawPassword)
-                        .with(csrf()))
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("username", "admin")
+                .param("password", rawPassword)
+                .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Login successful"));
     }
@@ -55,13 +56,14 @@ public class SecurityConfigTest {
     @Test
     void loginWithInvalidCredentials_shouldReturn401() throws Exception {
         when(userService.loadUserByUsername("admin"))
-                .thenThrow(new org.springframework.security.core.userdetails.UsernameNotFoundException("User not found"));
+                .thenThrow(
+                        new org.springframework.security.core.userdetails.UsernameNotFoundException("User not found"));
 
         mockMvc.perform(post("/auth/login")
-                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                        .param("username", "admin")
-                        .param("password", "wrongpassword")
-                        .with(csrf()))
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("username", "admin")
+                .param("password", "wrongpassword")
+                .with(csrf()))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.message").value("Invalid credentials"));
     }
@@ -69,13 +71,14 @@ public class SecurityConfigTest {
     @Test
     void loginEndpoint_shouldBeAccessibleWithoutAuthentication() throws Exception {
         when(userService.loadUserByUsername("admin"))
-                .thenThrow(new org.springframework.security.core.userdetails.UsernameNotFoundException("User not found"));
+                .thenThrow(
+                        new org.springframework.security.core.userdetails.UsernameNotFoundException("User not found"));
 
         mockMvc.perform(post("/auth/login")
-                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                        .param("username", "admin")
-                        .param("password", "test")
-                        .with(csrf()))
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("username", "admin")
+                .param("password", "test")
+                .with(csrf()))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -83,7 +86,7 @@ public class SecurityConfigTest {
     @WithMockUser
     void logout_shouldReturn200AndInvalidateSession() throws Exception {
         mockMvc.perform(post("/auth/logout")
-                        .with(csrf()))
+                .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Logged out"));
     }

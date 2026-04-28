@@ -1,0 +1,14 @@
+{
+  "properties": [
+    {
+      "name": "app.bcrypt-rounds",
+      "type": "java.lang.String",
+      "description": "Amount of rounds for bcrypt algorithm"
+    },
+    {
+      "name": "app.upload-dir",
+      "type": "java.lang.String",
+      "description": "Where the all the file uploads are stored"
+    }
+  ]
+}

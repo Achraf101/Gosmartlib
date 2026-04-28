@@ -3,17 +3,39 @@ import { CanActivateFn, Router } from '@angular/router';
 import { AuthService } from '../services/auth';
 import { map, take } from 'rxjs/operators';
 
-export const authGuard: CanActivateFn = () => {
-  const authService = inject(AuthService);
-  const router = inject(Router);
+// export const authGuard: CanActivateFn = () => {
+//   const authService = inject(AuthService);
+//   const router = inject(Router);
 
-  return authService.currentUser$.pipe(
-    take(1),
-    map(user => {
-      if (user) {
+//   return authService.currentUser$.pipe(
+//     take(1),
+//     map(user => {
+//       if (user) {
+//         return true;
+//       }
+//       return router.createUrlTree(['/login']);
+//     })
+//   );
+// };
+
+export const authGuard = (allowedRoles: string[]): CanActivateFn => {
+  return () => {
+    const authService = inject(AuthService);
+    const router = inject(Router);
+
+    return authService.currentUser$.pipe(
+      take(1),
+      map((user) => {
+        if (!user) {
+          return router.createUrlTree(['/login']);
+        }
+
+        if (!allowedRoles.includes(user.role)) {
+          return router.createUrlTree(['/']);
+        }
+
         return true;
-      }
-      return router.createUrlTree(['/login']);
-    })
-  );
+      }),
+    );
+  };
 };

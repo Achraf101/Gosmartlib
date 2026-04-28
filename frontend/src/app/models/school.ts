@@ -6,5 +6,6 @@ export interface School {
   adres?: string;
   contact?: string;
   description?: string;
+  subdomain: string;
   campuses?: Campus[];
 }

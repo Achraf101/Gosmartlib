@@ -1,0 +1,15 @@
+info:
+  name: Get userinfo
+  type: http
+  seq: 11
+
+http:
+  method: GET
+  url: https://aphogeschool.smartschool.be/Api/V1/userinfo
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
