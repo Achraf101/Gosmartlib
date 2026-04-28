@@ -51,6 +51,9 @@ services:
       DB_URL: ${DB_URL}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
       UPLOAD_DIR: ${UPLOAD_DIR}
+      COOKIE_SECURE: ${COOKIE_SECURE}
+      CLIENT_ID: ${CLIENT_ID}
+      CLIENT_SECRET: ${CLIENT_SECRET}
     build:
       context: ./backend
       dockerfile: Dockerfile
