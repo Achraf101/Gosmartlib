@@ -71,7 +71,7 @@ public class ReviewControllerTest {
 
         when(reviewService.addReview(1L, input)).thenReturn(saved);
 
-        ReviewDTO result = controller.addReview(1L, input);
+        ReviewDTO result = (ReviewDTO) controller.addReview(1L, input).getBody();
 
         assertNotNull(result);
         assertEquals(1L, result.getId());
@@ -92,7 +92,7 @@ public class ReviewControllerTest {
 
         when(reviewService.addReview(1L, input)).thenReturn(saved);
 
-        ReviewDTO result = controller.addReview(1L, input);
+        ReviewDTO result = (ReviewDTO) controller.addReview(1L, input).getBody();
 
         assertNotNull(result);
         assertEquals(3, result.getRating());
