@@ -35,6 +35,9 @@ public class ReviewService {
         if (filterService.containsBadWord(dto.getContent())) {
             throw new IllegalArgumentException("Je recensie bevat ongepaste taal.");
         }
+        if (filterService.containsUrl(dto.getContent())) {
+            throw new IllegalArgumentException("Je recensie mag geen URLs bevatten.");
+        }
         review.setContent(dto.getContent());
 
         Review saved = reviewRepository.save(review);
