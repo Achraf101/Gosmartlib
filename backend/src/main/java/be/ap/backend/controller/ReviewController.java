@@ -4,6 +4,8 @@ import be.ap.backend.dto.ReviewDTO;
 import be.ap.backend.service.ReviewService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,7 +23,11 @@ public class ReviewController {
     }
 
     @PostMapping("/book/{bookId}")
-    public ReviewDTO addReview(@PathVariable Long bookId, @Valid @RequestBody ReviewDTO dto) {
-        return reviewService.addReview(bookId, dto);
+    public ResponseEntity<?> addReview(@PathVariable Long bookId, @Valid @RequestBody ReviewDTO dto) {
+        try {
+            return ResponseEntity.ok(reviewService.addReview(bookId, dto));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 }
