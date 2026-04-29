@@ -30,4 +30,14 @@ public class FilterService {
         return badWords.stream().anyMatch(lower::contains);
     }
 
+    private static final java.util.regex.Pattern URL_PATTERN = java.util.regex.Pattern.compile(
+            "((https?|ftp)://|www\\.)[^\\s]{2,}",
+            java.util.regex.Pattern.CASE_INSENSITIVE);
+
+    public boolean containsUrl(String text) {
+        if (text == null || text.isBlank())
+            return false;
+        return URL_PATTERN.matcher(text).find();
+    }
+
 }
