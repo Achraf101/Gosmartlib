@@ -163,8 +163,19 @@ export class BookformComponent implements OnInit {
     this.publisherService.getAll().subscribe((p) => (this.publishers = p));
     this.authorService.getAll().subscribe((a) => (this.authors = a));
     this.languageService.getAll().subscribe((l) => (this.languages = l));
-    this.bookTypeService.getAll().subscribe((bt) => (this.bookTypes = bt));
+    this.bookTypeService.getAll().subscribe((bt) => {
+      this.bookTypes = bt;
+      this.setDefaultBookType();
+    });
     this.seriesService.getAll().subscribe((s) => (this.series = s));
+  }
+
+  private setDefaultBookType(): void {
+    if (this.bookForm.value.book_type !== null || !this.bookTypes?.length) return;
+    const defaultType = this.bookTypes.find(
+      (type) => type.name.toLowerCase() === 'boek' || type.name.toLowerCase() === 'book',
+    );
+    if (defaultType) this.bookForm.patchValue({ book_type: defaultType.id });
   }
 
   private showError(detail: string) {
@@ -316,9 +327,7 @@ export class BookformComponent implements OnInit {
 
     if (data.author_name) {
       const target = this.normalizeName(data.author_name);
-      const match = this.authors?.find(
-        (a) => this.normalizeName(a.name) === target,
-      );
+      const match = this.authors?.find((a) => this.normalizeName(a.name) === target);
       if (match) {
         this.bookForm.patchValue({ author: match.id });
       } else {
