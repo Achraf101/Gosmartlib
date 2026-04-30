@@ -12,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import be.ap.backend.dto.SharedListResponseDTO;
-import be.ap.backend.entity.Book;
 import be.ap.backend.entity.BookList;
 import be.ap.backend.entity.BookListItem;
 import be.ap.backend.service.BookListService;
