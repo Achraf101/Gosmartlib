@@ -23,6 +23,7 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -256,6 +257,33 @@ public class LoanServiceTest {
                 .hasMessageContaining("niet meer beschikbaar");
     }
 
+    @Test
+    void createLoan_bookNotFoundInEntityManager_throwsEntityNotFoundException() {
+        LoanDTO dto = validLoanDTO();
+
+        when(entityManager.find(User.class, 1L)).thenReturn(user);
+        when(entityManager.find(Campus.class, 1L)).thenReturn(campus);
+        when(entityManager.find(Book.class, 1L)).thenReturn(null);
+
+        assertThatThrownBy(() -> loanService.createLoan(dto))
+                .isInstanceOf(EntityNotFoundException.class)
+                .hasMessageContaining("Boek niet gevonden met id");
+    }
+
+    @Test
+    void createLoan_bookNotFoundOnCampus_throwsEntityNotFoundException() {
+        LoanDTO dto = validLoanDTO();
+
+        when(entityManager.find(User.class, 1L)).thenReturn(user);
+        when(entityManager.find(Campus.class, 1L)).thenReturn(campus);
+        when(entityManager.find(Book.class, 1L)).thenReturn(book);
+        when(campusBookRepository.findByCampusIdAndBookId(1L, 1L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> loanService.createLoan(dto))
+                .isInstanceOf(EntityNotFoundException.class)
+                .hasMessageContaining("Boek niet gevonden in campus");
+    }
+
     // ── getRequested ──────────────────────────────────────────────
 
     @Test
@@ -286,7 +314,7 @@ public class LoanServiceTest {
         when(loanRepository.findById(1L)).thenReturn(Optional.of(loan));
         when(loanRepository.save(loan)).thenReturn(loan);
 
-        loanService.updateNote(1L, "Nieuwe opmerking"); // ← service aanroepen
+        loanService.updateNote(1L, "Nieuwe opmerking");
 
         assertThat(loan.getNote()).isEqualTo("Nieuwe opmerking");
         verify(loanRepository).save(loan);
@@ -310,6 +338,17 @@ public class LoanServiceTest {
         assertThatThrownBy(() -> loanService.updateNote(1L, longNote))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("te lang");
+    }
+
+    @Test
+    void updateNote_exactly255Chars_succeeds() {
+        loan.setLoanBooks(new HashSet<>());
+        String boundaryNote = "a".repeat(255);
+        when(loanRepository.findById(1L)).thenReturn(Optional.of(loan));
+        when(loanRepository.save(loan)).thenReturn(loan);
+
+        assertThatNoException().isThrownBy(() -> loanService.updateNote(1L, boundaryNote));
+        assertThat(loan.getNote()).isEqualTo(boundaryNote);
     }
 
     // ── updateStatus ──────────────────────────────────────────────
@@ -349,6 +388,63 @@ public class LoanServiceTest {
         loanService.updateStatus(1L, LoanStatus.DECLINED);
 
         verify(campusBookService).updateCurrentAmount(campusBook, -2);
+    }
+
+    @Test
+    void updateStatus_declined_campusBookNotFound_throwsEntityNotFoundException() {
+        LoanBook loanBook = new LoanBook();
+        loanBook.setBook(book);
+        loanBook.setRequestedAmount(2);
+        loan.setLoanBooks(Set.of(loanBook));
+
+        when(loanRepository.findById(1L)).thenReturn(Optional.of(loan));
+        when(campusBookRepository.findByCampusIdAndBookId(1L, 1L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> loanService.updateStatus(1L, LoanStatus.DECLINED))
+                .isInstanceOf(EntityNotFoundException.class)
+                .hasMessageContaining("Book not found on campus");
+    }
+
+    // ── getByUserId ───────────────────────────────────────────────
+
+    @Test
+    void getByUserId_returnsLoansForUser() {
+        loan.setLoanBooks(new HashSet<>());
+        when(loanRepository.findByUserId(1L)).thenReturn(List.of(loan));
+
+        List<LoanDTO> result = loanService.getByUserId(1L);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getUserId()).isEqualTo(1L);
+    }
+
+    @Test
+    void getByUserId_noLoans_returnsEmptyList() {
+        when(loanRepository.findByUserId(99L)).thenReturn(List.of());
+
+        List<LoanDTO> result = loanService.getByUserId(99L);
+
+        assertThat(result).isEmpty();
+    }
+
+    // ── deleteLoan ────────────────────────────────────────────────
+
+    @Test
+    void deleteLoan_success() {
+        when(loanRepository.existsById(1L)).thenReturn(true);
+
+        assertThatNoException().isThrownBy(() -> loanService.deleteLoan(1L));
+
+        verify(loanRepository).deleteById(1L);
+    }
+
+    @Test
+    void deleteLoan_notFound_throwsRuntimeException() {
+        when(loanRepository.existsById(99L)).thenReturn(false);
+
+        assertThatThrownBy(() -> loanService.deleteLoan(99L))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("Uitlening niet gevonden");
     }
 
     // ── helper ────────────────────────────────────────────────────
