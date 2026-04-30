@@ -41,9 +41,15 @@ export class ReviewSectionComponent implements OnInit {
     });
   }
 
-  submitReview(): void {
-    if (this.newRating === 0) {
+ submitReview(): void {
+     if (this.newRating === 0) {
       this.error = 'Geef een beoordeling.';
+      return;
+    }
+    
+    const urlPattern = /((https?|ftp):\/\/|www\.)\S{2,}/i;
+    if (urlPattern.test(this.newContent)) {
+      this.error = 'Je recensie mag geen URLs bevatten.';
       return;
     }
     this.error = '';
@@ -58,6 +64,9 @@ export class ReviewSectionComponent implements OnInit {
         this.loadReviews();
         this.reviewAdded.emit();
       },
+      error: (err) => {
+        this.error = err.error ?? 'Er is een fout opgetreden.';
+      }
     });
   }
 
