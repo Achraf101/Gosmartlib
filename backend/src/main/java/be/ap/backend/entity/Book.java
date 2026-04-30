@@ -89,7 +89,7 @@ public class Book {
     private Integer pages;
 
     @Column(name = "rating")
-    private int rating;
+    private double rating;
 
     @Column(name = "rating_count")
     private int ratingCount;

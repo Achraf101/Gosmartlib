@@ -1,7 +1,7 @@
 info:
-  name: user
+  name: auth
   type: folder
-  seq: 4
+  seq: 11
 
 request:
   auth: inherit

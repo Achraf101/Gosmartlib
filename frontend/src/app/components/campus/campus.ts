@@ -93,9 +93,9 @@ export class CampusComponent {
       adres: rawValue.adres?.trim() ?? '',
       // Only convert if there is a value; otherwise, keep it as null or undefined
       borrowLimit: Number(rawValue.borrowLimit),
-      borrow_period: Number(rawValue.borrowPeriod),
-      extend_limit: Number(rawValue.extendLimit),
-      extend_period: Number(rawValue.extendPeriod),
+      borrowPeriod: Number(rawValue.borrowPeriod),
+      extendLimit: Number(rawValue.extendLimit),
+      extendPeriod: Number(rawValue.extendPeriod),
       schoolId: Number(this.schoolId),
     };
     console.log('Sending to API:', campus);

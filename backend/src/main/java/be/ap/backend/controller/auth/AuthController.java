@@ -1,0 +1,22 @@
+package be.ap.backend.controller.auth;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import jakarta.servlet.http.HttpSession;
+
+import java.util.Map;
+
+@RestController
+@RequestMapping("auth")
+public class AuthController {
+
+    @GetMapping("me")
+    public ResponseEntity<?> me(HttpSession session) {
+
+        final String username = (String) session.getAttribute("username");
+        final String role = (String) session.getAttribute("role");
+
+        return ResponseEntity.ok(Map.of("username", username, "role", role));
+    }
+}

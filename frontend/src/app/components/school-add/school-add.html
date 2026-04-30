@@ -76,6 +76,15 @@
         [maxLength]="1000"
       ></app-char-counter>
     </p-iftaLabel>
+    <p-iftaLabel>
+      <label for="schoolDomain">Smartschool url*</label>
+      <input
+        id="schoolDomain"
+        pTooltip="bvb: https://school.smartschool.be/"
+        pInputText
+        formControlName="subdomain"
+      />
+    </p-iftaLabel>
     @if (form.controls.description.invalid && form.controls.description.touched) {
       <small class="p-error"
         ><p-message severity="error" size="small" variant="simple"

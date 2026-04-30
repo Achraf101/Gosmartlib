@@ -19,6 +19,7 @@ import be.ap.backend.exception.ArgumentsInvalidException;
 import be.ap.backend.exception.BookAlreadyInCampusException;
 import be.ap.backend.exception.MissingArgumentsException;
 import be.ap.backend.service.CampusBookService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -52,5 +53,16 @@ public class CampusBookController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size) {
         return campusBookService.findByCampus(campusId, page, size);
+    }
+
+    @GetMapping("/{campusId}/books/{bookId}")
+    public ResponseEntity<?> getCampusBook(
+            @PathVariable Long campusId,
+            @PathVariable Long bookId) {
+        try {
+            return ResponseEntity.ok(campusBookService.getCampusBook(campusId, bookId));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
+        }
     }
 }

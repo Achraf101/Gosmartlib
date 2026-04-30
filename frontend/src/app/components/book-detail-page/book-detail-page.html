@@ -29,14 +29,23 @@
           <p-image src="/static/cover/{{ book.cover }}" preview alt="boek omslag" class="cover" />
         }
         <div id="stars">
-          <p-rating [(ngModel)]="ratingValueStars" [disabled]="true" />
-          <p>
-            @if (ratingValue > 0) {
-              ({{ ratingValue }})
-            } @else {
-              (0)
-            }
-          </p>
+          <div class="rating-display">
+            <div class="custom-stars">
+              @for (i of [1, 2, 3, 4, 5]; track i) {
+                <div class="star-wrapper">
+                  <i class="pi pi-star star-empty"></i>
+                  <div class="star-fill" [style.width]="getStarFill(i) + '%'">
+                    <i class="pi pi-star-fill"></i>
+                  </div>
+                </div>
+              }
+            </div>
+            <span class="rating-number">{{ ratingValue > 0 ? ratingValue : 0 }} / 5</span>
+            <span class="rating-sub"
+              >gebaseerd op {{ book.rating_count }}
+              {{ book.rating_count === 1 ? 'recensie' : 'recensies' }}</span
+            >
+          </div>
         </div>
         <div class="bookmark">
           <div class="dropdown-list">
@@ -92,6 +101,20 @@
           </p-accordion-panel>
         </p-accordion>
         <p class="show-desktop">{{ book.description }}</p>
+        <div class="btns">
+          <p-button
+            class="btn"
+            label="Nu Ontlenen"
+            severity="primary"
+            (onClick)="loanFormVisible = true"
+          />
+          <p-button
+            class="btn"
+            label="Toevoegen aan ontlening"
+            severity="primary"
+            (onClick)="cartDialogVisible = true"
+          />
+        </div>
       </div>
     </div>
 
@@ -238,6 +261,115 @@
         </div>
       </div>
     }
+
+    <p-dialog
+      header="Ontleen aanvraag"
+      [modal]="true"
+      [(visible)]="loanFormVisible"
+      resizable="false"
+    >
+      <form [formGroup]="loanForm">
+        <div class="loanForm">
+          <div>
+            <p-datepicker
+              formControlName="start"
+              dateFormat="dd/mm/yy"
+              placeholder="dd/mm/yyyy"
+              [minDate]="today"
+              [readonlyInput]="true"
+              appendTo="body"
+              (onSelect)="onStartDateSelect($event)"
+            />
+            @if (loanForm.controls.start.invalid && loanForm.controls.start.touched) {
+              <small class="p-error">
+                <p-message severity="error" size="small" variant="simple"
+                  >Geef een correcte datum!</p-message
+                >
+              </small>
+            }
+          </div>
+          <div>
+            <label for="end">Einddatum:</label>
+            <span id="end">
+              @if (loanForm.controls.end.value) {
+                {{ loanForm.controls.end.value | date: 'dd/MM/yyyy' }}
+              } @else {
+                (selecteer een start datum)
+              }
+            </span>
+          </div>
+          <div>
+            <p-ifta-label>
+              <p-inputNumber
+                inputId="requestedAmount"
+                formControlName="requestedAmount"
+                [showButtons]="true"
+                [min]="0"
+                [max]="campusBook?.current_amount ?? 100"
+                [useGrouping]="false"
+              />
+              <label for="requestedAmount">Aantal</label>
+            </p-ifta-label>
+            @if (
+              loanForm.controls.requestedAmount.invalid && loanForm.controls.requestedAmount.touched
+            ) {
+              <small class="p-error">
+                <p-message severity="error" size="small" variant="simple"
+                  >Geef een geldig aantal in.</p-message
+                >
+              </small>
+            }
+          </div>
+          <div class="btns">
+            <p-button class="btn" label="Annuleer" severity="secondary" (click)="cancelLoan()" />
+            <p-button
+              class="btn"
+              label="Opslaan"
+              [disabled]="loanForm.invalid"
+              (onClick)="createLoan()"
+            />
+          </div>
+        </div>
+      </form>
+    </p-dialog>
+
+    <p-dialog header="Voeg toe aan ontlening" [(visible)]="cartDialogVisible" [modal]="true">
+      <form [formGroup]="cartForm" class="flex flex-col gap-3">
+        <p-ifta-label>
+          <p-inputnumber
+            formControlName="requestedAmount"
+            inputId="cartAmount"
+            [min]="0"
+            [max]="campusBook?.current_amount ?? 100"
+            [showButtons]="true"
+            [useGrouping]="false"
+          />
+          <label for="cartAmount">Aantal exemplaren</label>
+        </p-ifta-label>
+        @if (
+          cartForm.controls.requestedAmount.invalid && cartForm.controls.requestedAmount.touched
+        ) {
+          <small class="p-error">
+            <p-message severity="error" size="small" variant="simple"
+              >Geef een geldig aantal in.</p-message
+            >
+          </small>
+        }
+      </form>
+      <ng-template pTemplate="footer">
+        <p-button label="Annuleren" severity="secondary" (onClick)="cancelCart()" />
+        <p-button
+          label="Toevoegen"
+          icon="pi pi-plus"
+          [disabled]="cartForm.invalid"
+          (onClick)="addToCart()"
+        />
+      </ng-template>
+    </p-dialog>
+
+    <div class="box">
+      <app-review-section [bookId]="bookId" (reviewAdded)="loadBook()" />
+    </div>
   </div>
 } @else if (!loading.isLoading && !error) {
   <p>Geen boeken gevonden.</p>

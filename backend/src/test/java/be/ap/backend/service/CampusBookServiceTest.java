@@ -11,6 +11,7 @@ import be.ap.backend.exception.BookAlreadyInCampusException;
 import be.ap.backend.exception.MissingArgumentsException;
 import be.ap.backend.repository.CampusBookRepository;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,6 +22,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -65,6 +67,8 @@ public class CampusBookServiceTest {
         campusBook.setCurrentAmount(3);
         campusBook.setLocation("Rek A");
     }
+
+    // ── createCampusBook ──────────────────────────────────────────
 
     @Test
     void createCampusBook_success() {
@@ -147,6 +151,8 @@ public class CampusBookServiceTest {
                 .hasMessage("Dit boek is al toegevoegd aan deze campus.");
     }
 
+    // ── findAll ───────────────────────────────────────────────────
+
     @Test
     void findAll_returnsListOfDTOs() {
         when(campusBookRepository.findAll()).thenReturn(List.of(campusBook));
@@ -166,6 +172,8 @@ public class CampusBookServiceTest {
 
         assertThat(result).isEmpty();
     }
+
+    // ── findByCampus ──────────────────────────────────────────────
 
     @Test
     void findByCampus_returnsPageOfDTOs() {
@@ -190,5 +198,53 @@ public class CampusBookServiceTest {
         var result = campusBookService.findByCampus(1L, 0, 5);
 
         assertThat(result.getContent()).isEmpty();
+    }
+
+    // ── getCampusBook ─────────────────────────────────────────────
+
+    @Test
+    void getCampusBook_found_returnsDTO() {
+        when(campusBookRepository.findByCampusIdAndBookId(1L, 1L))
+                .thenReturn(Optional.of(campusBook));
+
+        CampusBookDetailDTO result = campusBookService.getCampusBook(1L, 1L);
+
+        assertThat(result.getBookTitle()).isEqualTo("De brief voor de koning");
+        assertThat(result.getCampusId()).isEqualTo(1L);
+        assertThat(result.getBookId()).isEqualTo(1L);
+    }
+
+    @Test
+    void getCampusBook_notFound_throwsEntityNotFoundException() {
+        when(campusBookRepository.findByCampusIdAndBookId(1L, 99L))
+                .thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> campusBookService.getCampusBook(1L, 99L))
+                .isInstanceOf(EntityNotFoundException.class)
+                .hasMessageContaining("campusId=1")
+                .hasMessageContaining("bookId=99");
+    }
+
+    // ── updateCurrentAmount ───────────────────────────────────────
+
+    @Test
+    void updateCurrentAmount_reducesCurrentAmount() {
+        // geen when() nodig — we testen alleen de mutatie van currentAmount
+        when(campusBookRepository.save(campusBook)).thenReturn(campusBook);
+
+        campusBookService.updateCurrentAmount(campusBook, 2);
+
+        assertThat(campusBook.getCurrentAmount()).isEqualTo(1);
+        verify(campusBookRepository).save(campusBook);
+    }
+
+    @Test
+    void updateCurrentAmount_returnsUpdatedDTO() {
+        campusBook.setCurrentAmount(3);
+        when(campusBookRepository.save(campusBook)).thenReturn(campusBook);
+
+        CampusBookDetailDTO result = campusBookService.updateCurrentAmount(campusBook, 3);
+
+        assertThat(result.getCurrentAmount()).isEqualTo(0);
     }
 }
