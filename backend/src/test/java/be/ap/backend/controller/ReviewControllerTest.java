@@ -5,6 +5,7 @@ import be.ap.backend.service.ReviewService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.List;
@@ -71,7 +72,7 @@ public class ReviewControllerTest {
 
         when(reviewService.addReview(1L, input)).thenReturn(saved);
 
-        ReviewDTO result = controller.addReview(1L, input);
+        ReviewDTO result = (ReviewDTO) controller.addReview(1L, input).getBody();
 
         assertNotNull(result);
         assertEquals(1L, result.getId());
@@ -92,11 +93,43 @@ public class ReviewControllerTest {
 
         when(reviewService.addReview(1L, input)).thenReturn(saved);
 
-        ReviewDTO result = controller.addReview(1L, input);
+        ReviewDTO result = (ReviewDTO) controller.addReview(1L, input).getBody();
 
         assertNotNull(result);
         assertEquals(3, result.getRating());
         assertNull(result.getContent());
+        verify(reviewService, times(1)).addReview(1L, input);
+    }
+
+    @Test
+    void givenReviewWithBadWord_whenAddReview_thenReturnBadRequest() {
+        ReviewDTO input = new ReviewDTO();
+        input.setRating(3);
+        input.setContent("Dit boek is echt kut.");
+
+        when(reviewService.addReview(1L, input))
+                .thenThrow(new IllegalArgumentException("Je recensie bevat ongepaste taal."));
+
+        ResponseEntity<?> result = controller.addReview(1L, input);
+
+        assertEquals(400, result.getStatusCode().value());
+        assertEquals("Je recensie bevat ongepaste taal.", result.getBody());
+        verify(reviewService, times(1)).addReview(1L, input);
+    }
+
+    @Test
+    void givenReviewWithUrl_whenAddReview_thenReturnBadRequest() {
+        ReviewDTO input = new ReviewDTO();
+        input.setRating(3);
+        input.setContent("Kijk op www.spam.com voor meer info.");
+
+        when(reviewService.addReview(1L, input))
+                .thenThrow(new IllegalArgumentException("Je recensie mag geen URLs bevatten."));
+
+        ResponseEntity<?> result = controller.addReview(1L, input);
+
+        assertEquals(400, result.getStatusCode().value());
+        assertEquals("Je recensie mag geen URLs bevatten.", result.getBody());
         verify(reviewService, times(1)).addReview(1L, input);
     }
 }

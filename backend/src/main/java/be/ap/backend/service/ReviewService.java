@@ -17,6 +17,7 @@ public class ReviewService {
 
     private final ReviewRepository reviewRepository;
     private final BookRepository bookRepository;
+    private final FilterService filterService;
 
     public List<ReviewDTO> getReviewsForBook(Long bookId) {
         return reviewRepository.findByBookIdAndHiddenFalse(bookId).stream()
@@ -31,6 +32,12 @@ public class ReviewService {
         Review review = new Review();
         review.setBook(book);
         review.setRating(dto.getRating());
+        if (filterService.containsBadWord(dto.getContent())) {
+            throw new IllegalArgumentException("Je recensie bevat ongepaste taal.");
+        }
+        if (filterService.containsUrl(dto.getContent())) {
+            throw new IllegalArgumentException("Je recensie mag geen URLs bevatten.");
+        }
         review.setContent(dto.getContent());
 
         Review saved = reviewRepository.save(review);
