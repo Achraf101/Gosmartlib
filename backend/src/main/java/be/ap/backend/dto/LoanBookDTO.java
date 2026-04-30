@@ -2,6 +2,7 @@ package be.ap.backend.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import be.ap.backend.entity.Author;
 import lombok.Data;
 
 @Data
@@ -17,4 +18,6 @@ public class LoanBookDTO {
     private Integer returnedAmount;
     @JsonProperty("bookTitle")
     private String bookTitle;
+    private String cover;
+    private Author author;
 }

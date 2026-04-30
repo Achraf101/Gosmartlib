@@ -169,6 +169,20 @@ public class LoanService {
         return toDTO(loanRepository.save(loan));
     }
 
+    public List<LoanDTO> getByUserId(Long userId) {
+        return loanRepository.findByUserId(userId).stream()
+                .map(this::toDTO)
+                .toList();
+    }
+
+    public void deleteLoan(Long id) {
+        if (!loanRepository.existsById(id)) {
+            throw new RuntimeException("Uitlening niet gevonden!");
+        }
+
+        loanRepository.deleteById(id);
+    }
+
     private LoanDTO toDTO(Loan loan) {
         LoanDTO dto = new LoanDTO();
         dto.setId(loan.getId());
@@ -192,6 +206,8 @@ public class LoanService {
                     lbDto.setReceivedAmount(lb.getReceivedAmount());
                     lbDto.setReturnedAmount(lb.getReturnedAmount());
                     lbDto.setBookTitle(lb.getBook().getTitle());
+                    lbDto.setCover(lb.getBook().getCover());
+                    lbDto.setAuthor(lb.getBook().getAuthor());
                     return lbDto;
                 })
                 .toArray(LoanBookDTO[]::new);
