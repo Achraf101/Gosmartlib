@@ -3,6 +3,7 @@ package be.ap.backend.controller;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,6 +16,7 @@ import be.ap.backend.dto.LoanDTO;
 import be.ap.backend.dto.UpdateNoteDTO;
 import be.ap.backend.dto.UpdateStatusDTO;
 import be.ap.backend.service.LoanService;
+import jakarta.servlet.http.HttpSession;
 
 @RestController
 @RequestMapping("loan")
@@ -43,5 +45,18 @@ public class LoanController {
     @PutMapping("/{id}/status")
     public ResponseEntity<LoanDTO> updateStatus(@PathVariable Long id, @RequestBody UpdateStatusDTO dto) {
         return ResponseEntity.ok(loanService.updateStatus(id, dto.status()));
+    }
+
+    @GetMapping("/user")
+    public ResponseEntity<List<LoanDTO>> getByUserId(HttpSession session) {
+        Object raw = session.getAttribute("userId");
+        Long userId = (raw != null) ? Long.valueOf(raw.toString()) : null;
+        return ResponseEntity.ok(loanService.getByUserId(userId));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteLoan(@PathVariable Long id) {
+        loanService.deleteLoan(id);
+        return ResponseEntity.noContent().build();
     }
 }

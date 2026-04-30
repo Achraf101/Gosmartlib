@@ -14,4 +14,6 @@ import be.ap.backend.entity.LoanStatus;
 public interface LoanRepository extends JpaRepository<Loan, Long> {
     @Query("SELECT DISTINCT l FROM Loan l LEFT JOIN FETCH l.loanBooks lb LEFT JOIN FETCH lb.book WHERE l.status = :status ORDER BY l.created ASC")
     List<Loan> findByStatusWithBooks(@Param("status") LoanStatus status);
+
+    List<Loan> findByUserId(@Param("userId") Long userId);
 }

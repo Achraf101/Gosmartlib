@@ -1,0 +1,92 @@
+.loans-page {
+  padding: 2rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.loans-table td {
+  align-items: center;
+  padding: 0.75rem 1rem;
+}
+
+.loans-table tr th *{
+  display: flex;
+  justify-content: center;
+}
+
+.loans-table td > * {
+  display: flex;
+  justify-content: center;
+}
+
+.cover{
+  height: 5rem;
+  width: 30%;
+  flex-shrink: 0; 
+}
+
+.book-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.overdue {
+  color: var(--red-500);
+  font-weight: 600;
+}
+
+.empty-state {
+  padding: 3rem 1rem;
+  text-align: center;
+  color: var(--text-color-secondary);
+  font-size: 0.95rem;
+}
+.book-info {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 0.75rem;
+}
+
+.book-title {
+  font-weight: 600;
+  font-size: 0.95rem;
+  flex: 1; 
+  text-align: left;
+  width: 50%;
+}
+
+.book-author {
+  font-size: 0.85rem;
+  text-align: right;
+  width: 20%;
+  flex-shrink: 0;
+}
+
+.btns {
+  display: flex;
+  flex-direction: row;
+  gap: 0.1rem;
+}
+
+.note {
+  margin: 1rem;
+  font-size: 120%;
+  font-weight: 600;
+  overflow-wrap: break-word;
+  max-width: 50vw;
+}
+
+@media(width < 700px){
+  .loans-table td {
+    justify-content: center;
+    display: flex;
+  }
+  .show-desktop {
+    display: none;
+  }
+}
