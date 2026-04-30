@@ -24,6 +24,7 @@ export const routes: Routes = [
   { path: 'boek/:id', component: BookDetailPage, canActivate: [authGuard] },
   { path: 'campus', component: CampusDetailPageComponent, canActivate: [authGuard] },
   { path: 'favorieten', component: FavoritePage, canActivate: [authGuard] },
+  { path: 'lijst/:token/delen', component: FavoritePage, canActivate: [authGuard] },
 
   // {
   //   path: 'boek',
