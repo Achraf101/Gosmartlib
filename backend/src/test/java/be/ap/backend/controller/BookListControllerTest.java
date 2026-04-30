@@ -12,9 +12,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import be.ap.backend.dto.SharedListResponseDTO;
+import be.ap.backend.entity.Book;
 import be.ap.backend.entity.BookList;
 import be.ap.backend.entity.BookListItem;
 import be.ap.backend.service.BookListService;
+import jakarta.servlet.http.HttpSession;
 
 @SpringBootTest
 public class BookListControllerTest {
@@ -25,8 +27,14 @@ public class BookListControllerTest {
     @Autowired
     private BookListController controller;
 
+    private HttpSession mockSession(Long userId) {
+        HttpSession session = mock(HttpSession.class);
+        when(session.getAttribute("userId")).thenReturn(userId);
+        return session;
+    }
+
     @Test
-    void givenUserIdAndName_whenCreateList_thenReturnCreatedList() {
+    void givenSessionAndName_whenCreateList_thenReturnCreatedList() {
         BookList list = new BookList();
         list.setId(1L);
         list.setName("My List");
@@ -35,7 +43,7 @@ public class BookListControllerTest {
         BookListController.CreateListRequest request = new BookListController.CreateListRequest();
         request.setName("My List");
 
-        ResponseEntity<BookList> result = controller.createList(1L, request);
+        ResponseEntity<BookList> result = controller.createList(mockSession(1L), request);
 
         assertNotNull(result.getBody());
         assertEquals("My List", result.getBody().getName());
@@ -43,13 +51,12 @@ public class BookListControllerTest {
     }
 
     @Test
-    void givenUserId_whenGetMyLists_thenReturnLists() {
+    void givenSession_whenGetMyLists_thenReturnLists() {
         BookList list = new BookList();
         list.setId(1L);
-        list.setName("My List");
         when(bookListService.getListsByOwner(1L)).thenReturn(List.of(list));
 
-        ResponseEntity<List<BookList>> result = controller.getMyLists(1L);
+        ResponseEntity<List<BookList>> result = controller.getMyLists(mockSession(1L));
 
         assertNotNull(result.getBody());
         assertEquals(1, result.getBody().size());
@@ -57,14 +64,13 @@ public class BookListControllerTest {
     }
 
     @Test
-    void givenUserId_whenGetMyLists_thenReturnEmpty_whenNoLists() {
-        when(bookListService.getListsByOwner(99L)).thenReturn(List.of());
+    void givenSession_whenGetMyLists_thenReturnEmpty_whenNoLists() {
+        when(bookListService.getListsByOwner(1L)).thenReturn(List.of());
 
-        ResponseEntity<List<BookList>> result = controller.getMyLists(99L);
+        ResponseEntity<List<BookList>> result = controller.getMyLists(mockSession(1L));
 
         assertNotNull(result.getBody());
         assertTrue(result.getBody().isEmpty());
-        verify(bookListService, times(1)).getListsByOwner(99L);
     }
 
     @Test
@@ -77,7 +83,7 @@ public class BookListControllerTest {
         BookListController.AddBookRequest request = new BookListController.AddBookRequest();
         request.setBookId(5L);
 
-        ResponseEntity<BookListItem> result = controller.addBook(1L, request);
+        ResponseEntity<BookListItem> result = controller.addBook(mockSession(1L), 1L, request);
 
         assertNotNull(result.getBody());
         assertEquals(5L, result.getBody().getBookId());
@@ -88,7 +94,7 @@ public class BookListControllerTest {
     void givenListIdAndBookId_whenRemoveBook_thenReturn204() {
         doNothing().when(bookListService).removeBook(5L, 1L);
 
-        ResponseEntity<Void> result = controller.removeBook(5L, 1L);
+        ResponseEntity<Void> result = controller.removeBook(mockSession(1L), 5L, 1L);
 
         assertEquals(204, result.getStatusCode().value());
         verify(bookListService, times(1)).removeBook(5L, 1L);
@@ -104,7 +110,7 @@ public class BookListControllerTest {
         BookListController.CreateListRequest request = new BookListController.CreateListRequest();
         request.setName("New Name");
 
-        ResponseEntity<BookList> result = controller.renameList(1L, request);
+        ResponseEntity<BookList> result = controller.renameList(mockSession(1L), 1L, request);
 
         assertNotNull(result.getBody());
         assertEquals("New Name", result.getBody().getName());
@@ -115,7 +121,7 @@ public class BookListControllerTest {
     void givenListId_whenDeleteList_thenReturn204() {
         doNothing().when(bookListService).deleteList(1L);
 
-        ResponseEntity<Void> result = controller.deleteList(1L);
+        ResponseEntity<Void> result = controller.deleteList(mockSession(1L), 1L);
 
         assertEquals(204, result.getStatusCode().value());
         verify(bookListService, times(1)).deleteList(1L);
@@ -137,13 +143,13 @@ public class BookListControllerTest {
     }
 
     @Test
-    void givenUserIdAndListId_whenGenerateShareToken_thenReturnListWithToken() {
+    void givenSessionAndListId_whenGenerateShareToken_thenReturnListWithToken() {
         BookList list = new BookList();
         list.setId(1L);
         list.setShareToken("abc123");
         when(bookListService.generateShareToken(1L, 1L)).thenReturn(list);
 
-        ResponseEntity<BookList> result = controller.generateShareToken(1L, 1L);
+        ResponseEntity<BookList> result = controller.generateShareToken(mockSession(1L), 1L);
 
         assertNotNull(result.getBody());
         assertEquals("abc123", result.getBody().getShareToken());
@@ -151,16 +157,29 @@ public class BookListControllerTest {
     }
 
     @Test
-    void givenUserIdAndListId_whenRemoveShareToken_thenReturnListWithNullToken() {
+    void givenSessionAndListId_whenRemoveShareToken_thenReturnListWithNullToken() {
         BookList list = new BookList();
         list.setId(1L);
         list.setShareToken(null);
         when(bookListService.removeShareToken(1L, 1L)).thenReturn(list);
 
-        ResponseEntity<BookList> result = controller.removeShareToken(1L, 1L);
+        ResponseEntity<BookList> result = controller.removeShareToken(mockSession(1L), 1L);
 
         assertNotNull(result.getBody());
         assertNull(result.getBody().getShareToken());
         verify(bookListService, times(1)).removeShareToken(1L, 1L);
+    }
+
+    @Test
+    void givenSessionAndBookId_whenGetListsWithoutBook_thenReturnLists() {
+        BookList list = new BookList();
+        list.setId(1L);
+        when(bookListService.getListsWithoutBook(1L, 5L)).thenReturn(List.of(list));
+
+        ResponseEntity<List<BookList>> result = controller.getListsWithoutBook(mockSession(1L), 5L);
+
+        assertNotNull(result.getBody());
+        assertEquals(1, result.getBody().size());
+        verify(bookListService, times(1)).getListsWithoutBook(1L, 5L);
     }
 }

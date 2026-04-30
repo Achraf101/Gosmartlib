@@ -20,6 +20,7 @@ import be.ap.backend.entity.BookListItem;
 import be.ap.backend.service.BookListService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.servlet.http.HttpSession;
 import be.ap.backend.dto.SharedListResponseDTO;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -34,37 +35,39 @@ public class BookListController {
     @PersistenceContext
     private EntityManager entityManager;
 
-    @PostMapping("/{userId}")
-    public ResponseEntity<BookList> createList(@PathVariable Long userId, @RequestBody CreateListRequest request) {
+    @PostMapping
+    public ResponseEntity<BookList> createList(HttpSession session, @RequestBody CreateListRequest request) {
+        Long userId = Long.valueOf(session.getAttribute("userId").toString());
         BookList list = bookListService.createList(userId, request.getName());
         return ResponseEntity.ok(list);
     }
 
-    @GetMapping("/{userId}")
-    public ResponseEntity<List<BookList>> getMyLists(@PathVariable Long userId) {
+    @GetMapping
+    public ResponseEntity<List<BookList>> getMyLists(HttpSession session) {
+        Long userId = Long.valueOf(session.getAttribute("userId").toString());
         return ResponseEntity.ok(bookListService.getListsByOwner(userId));
     }
 
-    @PostMapping("/{userId}/{listId}/books")
-    public ResponseEntity<BookListItem> addBook(@PathVariable Long listId, @RequestBody AddBookRequest request) {
+    @PostMapping("/{listId}/books")
+    public ResponseEntity<BookListItem> addBook(HttpSession session, @PathVariable Long listId, @RequestBody AddBookRequest request) {
         BookListItem book = bookListService.addBook(listId, request.getBookId());
         return ResponseEntity.ok(book);
     }
 
-    @DeleteMapping("/{userId}/{listId}/books/{bookId}")
-    public ResponseEntity<Void> removeBook(@PathVariable Long bookId, @PathVariable Long listId) {
+    @DeleteMapping("/{listId}/books/{bookId}")
+    public ResponseEntity<Void> removeBook(HttpSession session, @PathVariable Long bookId, @PathVariable Long listId) {
         bookListService.removeBook(bookId, listId);
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("/{userId}/{listId}")
-    public ResponseEntity<BookList> renameList(@PathVariable Long listId, @RequestBody CreateListRequest request) {
+    @PutMapping("/{listId}")
+    public ResponseEntity<BookList> renameList(HttpSession session, @PathVariable Long listId, @RequestBody CreateListRequest request) {
         BookList list = bookListService.renameList(listId, request.getName());
         return ResponseEntity.ok(list);
     }
 
-    @DeleteMapping("/{userId}/{listId}")
-    public ResponseEntity<Void> deleteList(@PathVariable Long listId) {
+    @DeleteMapping("/{listId}")
+    public ResponseEntity<Void> deleteList(HttpSession session, @PathVariable Long listId) {
         bookListService.deleteList(listId);
         return ResponseEntity.noContent().build();
     }
@@ -74,27 +77,27 @@ public class BookListController {
         return ResponseEntity.ok(bookListService.getSharedList(token));
     }
 
-    @GetMapping("/{userId}/{listId}/books")
+    @GetMapping("/{listId}/books")
     public ResponseEntity<List<Book>> getBooksInList(@PathVariable Long listId) {
         return ResponseEntity.ok(bookListService.getBooksInList(listId));
     }
 
-    @GetMapping("/{userId}/exclude-book/{bookId}")
-    public ResponseEntity<List<BookList>> getListsWithoutBook(
-            @PathVariable Long userId,
-            @PathVariable Long bookId) {
-
+    @GetMapping("/exclude-book/{bookId}")
+    public ResponseEntity<List<BookList>> getListsWithoutBook(HttpSession session, @PathVariable Long bookId) {
+        Long userId = Long.valueOf(session.getAttribute("userId").toString());
         return ResponseEntity.ok(bookListService.getListsWithoutBook(userId, bookId));
     }
 
-    @PostMapping("/{userId}/{listId}/share")
-    public ResponseEntity<BookList> generateShareToken(@PathVariable Long userId, @PathVariable Long listId) {
+    @PostMapping("/{listId}/share")
+    public ResponseEntity<BookList> generateShareToken(HttpSession session, @PathVariable Long listId) {
+        Long userId = Long.valueOf(session.getAttribute("userId").toString());
         BookList list = bookListService.generateShareToken(userId, listId);
         return ResponseEntity.ok(list);
     }
 
-    @DeleteMapping("/{userId}/{listId}/share")
-    public ResponseEntity<BookList> removeShareToken(@PathVariable Long userId, @PathVariable Long listId) {
+    @DeleteMapping("/{listId}/share")
+    public ResponseEntity<BookList> removeShareToken(HttpSession session, @PathVariable Long listId) {
+        Long userId = Long.valueOf(session.getAttribute("userId").toString());
         return ResponseEntity.ok(bookListService.removeShareToken(userId, listId));
     }
 

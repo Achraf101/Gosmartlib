@@ -10,9 +10,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import be.ap.backend.dto.SharedListResponseDTO;
 import be.ap.backend.entity.BookList;
 import be.ap.backend.entity.SavedList;
 import be.ap.backend.service.SavedListService;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -22,26 +24,30 @@ public class SavedListController {
 
     private final SavedListService savedListService;
 
-    @GetMapping("/{userId}")
-    public ResponseEntity<List<be.ap.backend.dto.SharedListResponseDTO>> getSavedLists(@PathVariable Long userId) {
+    @GetMapping
+    public ResponseEntity<List<SharedListResponseDTO>> getSavedLists(HttpSession session) {
+        Long userId = Long.valueOf(session.getAttribute("userId").toString());
         return ResponseEntity.ok(savedListService.getSavedLists(userId));
     }
 
-    @PostMapping("/{userId}/{token}")
-    public ResponseEntity<SavedList> saveList(@PathVariable Long userId, @PathVariable String token) {
+    @PostMapping("/{token}")
+    public ResponseEntity<SavedList> saveList(HttpSession session, @PathVariable String token) {
+        Long userId = Long.valueOf(session.getAttribute("userId").toString());
         BookList list = savedListService.getListByToken(token);
         SavedList saved = savedListService.saveList(userId, list.getId());
         return ResponseEntity.ok(saved);
     }
 
-    @DeleteMapping("/{userId}/{bookListId}")
-    public ResponseEntity<Void> unsaveList(@PathVariable Long userId, @PathVariable Long bookListId) {
+    @DeleteMapping("/{bookListId}")
+    public ResponseEntity<Void> unsaveList(HttpSession session, @PathVariable Long bookListId) {
+        Long userId = Long.valueOf(session.getAttribute("userId").toString());
         savedListService.unsaveList(userId, bookListId);
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/{userId}/{bookListId}/exists")
-    public ResponseEntity<Boolean> isSaved(@PathVariable Long userId, @PathVariable Long bookListId) {
+    @GetMapping("/{bookListId}/exists")
+    public ResponseEntity<Boolean> isSaved(HttpSession session, @PathVariable Long bookListId) {
+        Long userId = Long.valueOf(session.getAttribute("userId").toString());
         return ResponseEntity.ok(savedListService.isSaved(userId, bookListId));
     }
 }
