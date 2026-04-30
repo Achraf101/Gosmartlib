@@ -6,7 +6,6 @@ import {
   FormGroup,
   Validators,
 } from '@angular/forms';
-import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
@@ -26,7 +25,7 @@ import { MessageModule } from 'primeng/message';
 import { Router } from '@angular/router';
 
 import { isbnValidator, maxEntries } from '../../utils/validator';
-import { BookLookupDTO, CreateBook } from '../../models/book';
+import { BookCard, BookLookupDTO, CreateBook } from '../../models/book';
 import { Author } from '../../models/author';
 import { Genre } from '../../models/genre';
 import { Publisher } from '../../models/publisher';
@@ -46,12 +45,12 @@ import { SeriesService } from '../../services/series';
 import { CharCounterComponent } from '../char-counter/char-counter';
 import { NavBarComponent } from '../nav-bar/nav-bar';
 import { BulkUpload } from '../bulk-upload/bulk-upload';
+import { BookCardComponent } from '../misc/book-card/book-card';
 
 @Component({
   selector: 'app-bookform',
   standalone: true,
   imports: [
-    CardModule,
     ButtonModule,
     InputTextModule,
     TextareaModule,
@@ -72,6 +71,7 @@ import { BulkUpload } from '../bulk-upload/bulk-upload';
     ToastModule,
     MessageModule,
     BulkUpload,
+    BookCardComponent,
   ],
   templateUrl: './bookform.html',
   styleUrl: './bookform.css',
@@ -87,6 +87,7 @@ export class BookformComponent implements OnInit {
     clib: new FormControl<string | null>(null),
     series: new FormControl<number | null>(null),
     series_count: new FormControl<number | null>(null),
+    contributors: new FormControl<number[]>([]),
     didactic_material: new FormControl<boolean>(false, Validators.required),
     publisher: new FormControl<number | null>(null),
     fiction: new FormControl<boolean>(true, Validators.required),
@@ -124,9 +125,12 @@ export class BookformComponent implements OnInit {
   bookTypes: BookType[] | undefined;
   series: Series[] | undefined;
   uploadMode: 'manual' | 'bulk' = 'manual';
-  lookupMethod: null | 'auto' | 'manual' = null;
+  lookupMethod: 'auto' | 'manual' = 'auto';
   isbnLookupValue: string = '';
   isLookingUp: boolean = false;
+  lookupCoverUrl: string | null = null;
+  lookupResult: BookLookupDTO | null = null;
+  suggestionCard: BookCard | null = null;
 
   newBookId: number | undefined;
   coverDisabled: boolean = true;
@@ -169,7 +173,10 @@ export class BookformComponent implements OnInit {
 
   addBook(activateCallback: (step: number) => void): void {
     if (this.bookForm.valid) {
-      const book: CreateBook = this.bookForm.value as any;
+      const book: CreateBook = {
+        ...(this.bookForm.value as any),
+        cover_url: this.lookupCoverUrl ?? undefined,
+      };
       this.bookService.addBook(book).subscribe({
         next: (savedBook) => {
           this.messageService.add({
@@ -251,11 +258,13 @@ export class BookformComponent implements OnInit {
 
   setMode(mode: 'manual' | 'bulk'): void {
     this.uploadMode = mode;
-    this.lookupMethod = null;
+    this.lookupMethod = 'auto';
+    this.rejectSuggestion();
   }
 
   selectMethod(method: 'auto' | 'manual'): void {
     this.lookupMethod = method;
+    if (method === 'manual') this.rejectSuggestion();
   }
 
   lookupIsbn(): void {
@@ -266,8 +275,14 @@ export class BookformComponent implements OnInit {
     this.isLookingUp = true;
     this.bookService.lookupByIsbn(this.isbnLookupValue).subscribe({
       next: (result) => {
-        this.prefillForm(result);
-        this.lookupMethod = 'manual';
+        this.lookupResult = result;
+        this.suggestionCard = {
+          id: 0,
+          title: result.title ?? '',
+          author: { id: 0, name: result.author_name ?? '' },
+          author_name: result.author_name ?? '',
+          cover: result.cover_url ?? undefined,
+        };
         this.isLookingUp = false;
       },
       error: () => {
@@ -277,45 +292,78 @@ export class BookformComponent implements OnInit {
     });
   }
 
+  acceptSuggestion(): void {
+    if (!this.lookupResult) return;
+    this.prefillForm(this.lookupResult);
+    this.lookupMethod = 'manual';
+  }
+
+  rejectSuggestion(): void {
+    this.lookupResult = null;
+    this.suggestionCard = null;
+  }
+
   private prefillForm(data: BookLookupDTO): void {
     this.bookForm.patchValue({
       title: data.title ?? '',
       isbn: data.isbn,
       description: data.description ?? null,
       pages: data.pages ?? null,
-      published: data.publishedYear ?? null,
+      published: data.published_year ?? null,
     });
 
-    if (data.authorName && this.authors) {
-      const match = this.authors.find(
-        (a) => a.name.toLowerCase() === data.authorName!.toLowerCase(),
+    this.lookupCoverUrl = data.cover_url ?? null;
+
+    if (data.author_name) {
+      const target = this.normalizeName(data.author_name);
+      const match = this.authors?.find(
+        (a) => this.normalizeName(a.name) === target,
       );
-      if (match) this.bookForm.patchValue({ author: match.id });
+      if (match) {
+        this.bookForm.patchValue({ author: match.id });
+      } else {
+        this.authorService.addAuthor({ name: data.author_name } as Author).subscribe({
+          next: (a) => {
+            this.authors = [...(this.authors || []), a];
+            this.bookForm.patchValue({ author: a.id });
+            this.matchContributors(data);
+          },
+          error: () => this.showError('Auteur niet automatisch aangemaakt.'),
+        });
+      }
     }
 
-    if (data.publisherName && this.publishers) {
+    if (data.publisher_name && this.publishers) {
       const match = this.publishers.find(
-        (p) => p.name.toLowerCase() === data.publisherName!.toLowerCase(),
+        (p) => p.name.toLowerCase() === data.publisher_name!.toLowerCase(),
       );
       if (match) this.bookForm.patchValue({ publisher: match.id });
     }
 
-    if (data.languageCode && this.languages) {
+    if (data.language_code && this.languages) {
       const match = this.languages.find(
-        (l) => l.code.toLowerCase() === data.languageCode!.toLowerCase(),
+        (l) => l.code.toLowerCase() === data.language_code!.toLowerCase(),
       );
       if (match) this.bookForm.patchValue({ language: match.id });
     }
 
-    if (data.genres?.length && this.genres) {
-      const matchedIds = data.genres
-        .map((gName) =>
-          this.genres!.find((g) => g.name.toLowerCase() === gName.toLowerCase()),
-        )
-        .filter((g): g is Genre => g !== undefined)
-        .map((g) => g.id)
-        .slice(0, 5);
-      if (matchedIds.length > 0) this.bookForm.patchValue({ genres: matchedIds });
-    }
+    this.matchContributors(data);
+  }
+
+  private matchContributors(data: BookLookupDTO): void {
+    if (!data.contributors?.length || !this.authors) return;
+    const matchedIds = data.contributors
+      .map((name) => {
+        const target = this.normalizeName(name);
+        return this.authors!.find((a) => this.normalizeName(a.name) === target);
+      })
+      .filter((a): a is Author => a !== undefined)
+      .map((a) => a.id)
+      .filter((id) => id !== this.bookForm.value.author);
+    if (matchedIds.length > 0) this.bookForm.patchValue({ contributors: matchedIds });
+  }
+
+  private normalizeName(name: string): string {
+    return name.toLowerCase().replace(/\s+/g, '');
   }
 }

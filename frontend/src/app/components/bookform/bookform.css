@@ -218,57 +218,6 @@ p-dialog .flex-column p-iftalabel {
   }
 }
 
-.method-choice {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2rem;
-  padding: 3rem 1rem;
-}
-
-.method-choice h2 {
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin: 0;
-}
-
-.method-cards {
-  display: flex;
-  gap: 2rem;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-:host ::ng-deep .method-card {
-  cursor: pointer;
-  transition: box-shadow 0.2s;
-}
-
-:host ::ng-deep .method-card:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-}
-
-.method-card-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 1rem 2rem;
-  text-align: center;
-  min-width: 220px;
-}
-
-.method-card-content h3 {
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin: 0;
-}
-
-.method-card-content p {
-  color: #6b7280;
-  font-size: 0.875rem;
-  margin: 0;
-}
 
 .isbn-lookup {
   display: flex;
@@ -296,12 +245,50 @@ p-dialog .flex-column p-iftalabel {
 }
 
 @media (max-width: 600px) {
-  .method-cards {
-    flex-direction: column;
-  }
-
   .isbn-lookup-row {
     flex-direction: column;
     align-items: stretch;
   }
+}
+
+.cover-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.cover-preview img {
+  max-width: 160px;
+  height: auto;
+  border-radius: 4px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+
+.cover-preview-note {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.isbn-suggestion {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  text-align: center;
+}
+
+.isbn-suggestion-intro {
+  margin: 0;
+  font-size: 1rem;
+  color: #374151;
+}
+
+.isbn-suggestion-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: center;
 }

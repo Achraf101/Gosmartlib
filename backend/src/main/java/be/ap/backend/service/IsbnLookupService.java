@@ -54,7 +54,14 @@ public class IsbnLookupService {
 
             BookLookupDTO dto = new BookLookupDTO();
             dto.setIsbn(isbn);
-            dto.setTitle(textOrNull(volumeInfo, "title"));
+
+            String title = textOrNull(volumeInfo, "title");
+            String subtitle = textOrNull(volumeInfo, "subtitle");
+            if (title != null && subtitle != null && !subtitle.isBlank()) {
+                title = title + ": " + subtitle;
+            }
+            dto.setTitle(title);
+
             dto.setPublisherName(textOrNull(volumeInfo, "publisher"));
 
             String rawDesc = textOrNull(volumeInfo, "description");
@@ -78,15 +85,14 @@ public class IsbnLookupService {
             JsonNode authors = volumeInfo.path("authors");
             if (authors.isArray() && authors.size() > 0) {
                 dto.setAuthorName(authors.get(0).asText(null));
-            }
-
-            JsonNode categories = volumeInfo.path("categories");
-            if (categories.isArray()) {
-                List<String> genres = new ArrayList<>();
-                for (JsonNode cat : categories) {
-                    genres.add(cat.asText());
+                if (authors.size() > 1) {
+                    List<String> contributors = new ArrayList<>();
+                    for (int i = 1; i < authors.size(); i++) {
+                        String name = authors.get(i).asText(null);
+                        if (name != null) contributors.add(name);
+                    }
+                    dto.setContributors(contributors);
                 }
-                dto.setGenres(genres);
             }
 
             JsonNode imageLinks = volumeInfo.path("imageLinks");

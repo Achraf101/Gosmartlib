@@ -12,7 +12,7 @@ public class BookLookupDTO {
     private Integer publishedYear;
     private Integer pages;
     private String languageCode;
-    private List<String> genres;
+    private List<String> contributors;
     private String isbn;
     private String coverUrl;
 }
