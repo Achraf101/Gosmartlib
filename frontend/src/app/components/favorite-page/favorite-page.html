@@ -1,4 +1,38 @@
 <app-nav-bar></app-nav-bar>
+<p-confirmpopup />
+
+@if (showConfirmPopup && pendingList) {
+  <div class="popup-overlay">
+    <div class="popup">
+      <h2>{{ pendingList.list.name }}</h2>
+      @if ((listItems.get(pendingList.list.id) ?? []).length > 0) {
+        <p-carousel
+          [value]="listItems.get(pendingList.list.id) ?? []"
+          [numVisible]="4"
+          [numScroll]="2"
+        >
+          <ng-template pTemplate="item" let-book>
+            <div class="book-card">
+              <b-card [bookCard]="book"></b-card>
+              <i
+                (click)="deleteFromList(pendingList.list.id, book.id); $event.stopPropagation()"
+                class="bookmark pi"
+                [class.pi-times]="true"
+              ></i>
+            </div>
+          </ng-template>
+        </p-carousel>
+      } @else {
+        <p>Er zijn nog geen boeken toegevoegd aan deze lijst.</p>
+      }
+      <div class="popup-buttons">
+        <p-button (click)="confirmSave()">Toevoegen</p-button>
+        <p-button (click)="cancelSave()">Anuleren</p-button>
+      </div>
+    </div>
+  </div>
+}
+
 @if (bookmarked.length > 0) {
   <h1>Jouw favorieten</h1>
   <div class="book-card-list">
@@ -17,6 +51,113 @@
   </div>
 } @else if (!loading.isLoading && bookmarked.length === 0) {
   <h1>Je hebt nog geen favorieten</h1>
+}
+
+<p-divider align="center">eigen lijsten</p-divider>
+@if (lists.length > 0) {
+  @for (list of lists; track $index) {
+    <div class="list-header">
+      <div class="list-name">
+        @if (isEditing) {
+          <input
+            [(ngModel)]="list.name"
+            (blur)="stopEditing()"
+            (keydown.enter)="renameList(list.id, list.name)"
+            autofocus
+          />
+        } @else {
+          <h2 (click)="startEditing()">{{ list.name }}</h2>
+        }
+        <i
+          (click)="startEditing(); $event.stopPropagation()"
+          class="bookmark pi"
+          [class.pi-pen-to-square]="true"
+        ></i>
+      </div>
+      <div>
+        @if (list.share_token) {
+          <i
+            (click)="confirmStopSharing($event, list)"
+            class="bookmark pi"
+            [class.pi-minus-circle]="true"
+          ></i>
+        }
+        <i
+          (click)="confirmShareList($event, list); $event.stopPropagation()"
+          class="bookmark pi"
+          [class.pi-share-alt]="true"
+        ></i>
+        <i
+          (click)="confirmDeleteList($event, list.id, list.name)"
+          class="bookmark pi"
+          [class.pi-times]="true"
+        ></i>
+      </div>
+    </div>
+    <div class="book-card-list">
+      @if ((listItems.get(list.id) ?? []).length > 0) {
+        <p-carousel [value]="listItems.get(list.id) ?? []" [numVisible]="4" [numScroll]="2">
+          <ng-template pTemplate="item" let-book>
+            <div class="book-card">
+              <b-card [bookCard]="book"></b-card>
+              <i
+                (click)="
+                  confirmDeleteBook($event, list.id, book.id, list.name, book.title);
+                  $event.stopPropagation()
+                "
+                class="bookmark pi"
+                [class.pi-times]="true"
+              ></i>
+            </div>
+          </ng-template>
+        </p-carousel>
+      } @else {
+        <p>Er zijn nog geen boeken toegevoegd aan deze lijst.</p>
+      }
+    </div>
+  }
+}
+<div class="add-list">
+  <input [(ngModel)]="listName" placeholder="Lijst naam" />
+  <i
+    (click)="submitList(); $event.stopPropagation()"
+    class="bookmark pi"
+    [class.pi-plus]="true"
+  ></i>
+</div>
+
+@if (savedLists.length > 0) {
+  <p-divider align="center">Gedeelde lijsten</p-divider>
+
+  <div class="savedlist-container">
+    @for (saved of savedLists; track $index) {
+      <div class="list-header">
+        <h2>{{ saved.list.name }}</h2>
+        <i
+          (click)="confirmDeleteSavedList($event, saved.list.id, saved.list.name)"
+          class="bookmark pi"
+          [class.pi-times]="true"
+        ></i>
+      </div>
+      <div class="book-card-list">
+        @if ((savedListItems.get(saved.list.id) ?? []).length > 0) {
+          <p-carousel
+            [value]="savedListItems.get(saved.list.id) ?? []"
+            [numVisible]="4"
+            [numScroll]="2"
+          >
+            <ng-template pTemplate="item" let-book>
+              <div class="book-card">
+                <b-card [bookCard]="book"></b-card>
+              </div>
+            </ng-template>
+          </p-carousel>
+        } @else {
+          <p>Er zijn nog geen boeken toegevoegd aan deze lijst.</p>
+        }
+      </div>
+    }
+  </div>
 }
 
 @if (loading.visible) {

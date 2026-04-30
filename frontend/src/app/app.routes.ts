@@ -31,6 +31,7 @@ export const routes: Routes = [
     component: AcceptDeclineReservationsPageComponent,
     canActivate: [authGuard],
   },
+  { path: 'lijst/:token/delen', component: FavoritePage, canActivate: [authGuard] },
   { path: 'uitleningen', component: UserLoansPageComponent, canActivate: [authGuard] },
   // {
   //   path: 'boek',
