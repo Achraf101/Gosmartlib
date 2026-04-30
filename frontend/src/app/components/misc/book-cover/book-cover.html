@@ -8,6 +8,6 @@
       />
     </svg>
   } @else {
-    <img src="/static/cover/{{ bookCard.cover }}" alt="book cover" class="cover" />
+    <img [src]="coverSrc" alt="book cover" class="cover" />
   }
 </div>
