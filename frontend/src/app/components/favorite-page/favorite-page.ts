@@ -84,11 +84,11 @@ export class FavoritePage implements OnInit {
       },
     });
 
-    this.bookListService.getMyLists(this.userId).subscribe({
+    this.bookListService.getMyLists().subscribe({
       next: (data) => {
         this.lists = data;
         data.forEach((d) => {
-          this.bookListService.getBooksInList(this.userId, d.id).subscribe((items) => {
+          this.bookListService.getBooksInList(d.id).subscribe((items) => {
             this.listItems.set(d.id, items);
           });
         });
@@ -113,7 +113,7 @@ export class FavoritePage implements OnInit {
   }
 
   deleteFromList(listId: number, bookId: number) {
-    this.bookListService.removeBook(this.userId, listId, bookId).subscribe({
+    this.bookListService.removeBook(listId, bookId).subscribe({
       next: () => {
         const current = this.listItems.get(listId) ?? [];
         this.listItems.set(
@@ -131,7 +131,7 @@ export class FavoritePage implements OnInit {
   }
 
   deleteList(listId: number) {
-    this.bookListService.deleteList(this.userId, listId).subscribe({
+    this.bookListService.deleteList(listId).subscribe({
       next: () => {
         this.lists = this.lists.filter((list) => list.id !== listId);
         this.messageService.add({
@@ -153,13 +153,13 @@ export class FavoritePage implements OnInit {
   }
 
   renameList(listId: number, listName: string) {
-    this.bookListService.renameList(this.userId, listId, listName).subscribe();
+    this.bookListService.renameList(listId, listName).subscribe();
     this.stopEditing();
   }
 
   submitList() {
     if (!this.listName.trim()) return;
-    this.bookListService.createList(this.userId, this.listName).subscribe({
+    this.bookListService.createList(this.listName).subscribe({
       next: (list) => {
         this.lists.push(list);
         this.listName = '';
@@ -173,7 +173,7 @@ export class FavoritePage implements OnInit {
       const link = `${window.location.origin}/lijst/${list.share_token}/delen`;
       navigator.clipboard.writeText(link);
     } else {
-      this.bookListService.generateShareToken(this.userId, list.id).subscribe({
+      this.bookListService.generateShareToken(list.id).subscribe({
         next: (updated) => {
           list.share_token = updated.share_token;
           const link = `${window.location.origin}/lijst/${updated.share_token}/delen`;
@@ -190,7 +190,7 @@ export class FavoritePage implements OnInit {
   }
 
   loadSavedLists() {
-    this.bookListService.getSavedLists(this.userId).subscribe({
+    this.bookListService.getSavedLists().subscribe({
       next: (data) => {
         this.savedLists = data;
         data.forEach((saved) => {
@@ -203,7 +203,7 @@ export class FavoritePage implements OnInit {
 
   confirmSave() {
     if (!this.pendingToken) return;
-    this.bookListService.saveList(this.userId, this.pendingToken).subscribe({
+    this.bookListService.saveList(this.pendingToken).subscribe({
       next: () => {
         this.loadSavedLists();
         this.showConfirmPopup = false;
@@ -239,7 +239,7 @@ export class FavoritePage implements OnInit {
   }
 
   deleteSavedList(bookListId: number) {
-    this.bookListService.unsaveList(this.userId, bookListId).subscribe({
+    this.bookListService.unsaveList(bookListId).subscribe({
       next: () => {
         this.savedLists = this.savedLists.filter((s) => s.list.id !== bookListId);
         this.messageService.add({
@@ -299,7 +299,7 @@ export class FavoritePage implements OnInit {
   }
 
   stopSharing(list: BookList) {
-    this.bookListService.removeShareToken(this.userId, list.id).subscribe({
+    this.bookListService.removeShareToken(list.id).subscribe({
       next: (updated) => {
         list.share_token = updated.share_token;
       },

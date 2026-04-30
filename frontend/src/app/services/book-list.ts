@@ -13,65 +13,65 @@ export class BookListService {
 
   constructor(private apiService: ApiService) {}
 
-  createList(userId: number, name: string): Observable<BookList> {
-    return this.apiService.post<BookList>(`${this.endpoint}/${userId}`, { name });
+  createList(name: string): Observable<BookList> {
+    return this.apiService.post<BookList>(`${this.endpoint}`, { name });
   }
 
-  getMyLists(userId: number): Observable<BookList[]> {
-    return this.apiService.get<BookList[]>(`${this.endpoint}/${userId}`);
+  getMyLists(): Observable<BookList[]> {
+    return this.apiService.get<BookList[]>(`${this.endpoint}`);
   }
 
-  addBook(userId: number, listId: number, bookId: number): Observable<BookListItem> {
-    return this.apiService.post<BookListItem>(`${this.endpoint}/${userId}/${listId}/books`, {
+  addBook(listId: number, bookId: number): Observable<BookListItem> {
+    return this.apiService.post<BookListItem>(`${this.endpoint}/${listId}/books`, {
       bookId,
     });
   }
 
-  removeBook(userId: number, listId: number, bookId: number): Observable<void> {
-    return this.apiService.delete<void>(`${this.endpoint}/${userId}/${listId}/books/${bookId}`);
+  removeBook(listId: number, bookId: number): Observable<void> {
+    return this.apiService.delete<void>(`${this.endpoint}/${listId}/books/${bookId}`);
   }
 
-  renameList(userId: number, listId: number, name: string): Observable<BookList> {
-    return this.apiService.put<BookList>(`${this.endpoint}/${userId}/${listId}`, { name });
+  renameList(listId: number, name: string): Observable<BookList> {
+    return this.apiService.put<BookList>(`${this.endpoint}/${listId}`, { name });
   }
 
-  deleteList(userId: number, listId: number): Observable<void> {
-    return this.apiService.delete<void>(`${this.endpoint}/${userId}/${listId}`);
+  deleteList(listId: number): Observable<void> {
+    return this.apiService.delete<void>(`${this.endpoint}/${listId}`);
   }
 
   getSharedList(token: string): Observable<SharedListResponse> {
     return this.apiService.get<SharedListResponse>(`${this.endpoint}/shared/${token}`);
   }
 
-  getBooksInList(userId: number, listId: number): Observable<BookResult[]> {
-    return this.apiService.get<BookResult[]>(`${this.endpoint}/${userId}/${listId}/books`);
+  getBooksInList(listId: number): Observable<BookResult[]> {
+    return this.apiService.get<BookResult[]>(`${this.endpoint}/${listId}/books`);
   }
 
-  saveList(userId: number, token: string): Observable<SavedList> {
-    return this.apiService.post<SavedList>(`saved-lists/${userId}/${token}`, {});
+  saveList(token: string): Observable<SavedList> {
+    return this.apiService.post<SavedList>(`saved-lists/${token}`, {});
   }
 
-  getSavedLists(userId: number): Observable<SharedListResponse[]> {
-    return this.apiService.get<SharedListResponse[]>(`saved-lists/${userId}`);
+  getSavedLists(): Observable<SharedListResponse[]> {
+    return this.apiService.get<SharedListResponse[]>(`saved-lists`);
   }
 
-  getListsWithoutBook(userId: number, bookId: number): Observable<BookList[]> {
-    return this.apiService.get<BookList[]>(`${this.endpoint}/${userId}/exclude-book/${bookId}`);
+  getListsWithoutBook(bookId: number): Observable<BookList[]> {
+    return this.apiService.get<BookList[]>(`${this.endpoint}/exclude-book/${bookId}`);
   }
 
-  isSaved(userId: number, bookListId: number): Observable<boolean> {
-    return this.apiService.get<boolean>(`saved-lists/${userId}/${bookListId}/exists`);
+  isSaved(bookListId: number): Observable<boolean> {
+    return this.apiService.get<boolean>(`saved-lists/${bookListId}/exists`);
   }
 
-  unsaveList(userId: number, bookListId: number): Observable<void> {
-    return this.apiService.delete<void>(`saved-lists/${userId}/${bookListId}`);
+  unsaveList(bookListId: number): Observable<void> {
+    return this.apiService.delete<void>(`saved-lists/${bookListId}`);
   }
 
-  generateShareToken(userId: number, listId: number): Observable<BookList> {
-    return this.apiService.post<BookList>(`${this.endpoint}/${userId}/${listId}/share`, {});
+  generateShareToken(listId: number): Observable<BookList> {
+    return this.apiService.post<BookList>(`${this.endpoint}/${listId}/share`, {});
   }
 
-  removeShareToken(userId: number, listId: number): Observable<BookList> {
-    return this.apiService.delete<BookList>(`${this.endpoint}/${userId}/${listId}/share`);
+  removeShareToken(listId: number): Observable<BookList> {
+    return this.apiService.delete<BookList>(`${this.endpoint}/${listId}/share`);
   }
 }

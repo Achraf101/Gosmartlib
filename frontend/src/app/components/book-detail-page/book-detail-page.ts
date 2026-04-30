@@ -106,7 +106,7 @@ export class BookDetailPage implements OnInit {
       this.bookId = Number(params.get('id'));
       this.loadBook();
       this.showDropdown = false;
-      this.bookListService.getListsWithoutBook(this.userId, this.bookId).subscribe((lists) => {
+      this.bookListService.getListsWithoutBook(this.bookId).subscribe((lists) => {
         this.lists = lists;
       });
       this.loadCampusData();
@@ -177,7 +177,7 @@ export class BookDetailPage implements OnInit {
   addToList(listId: number) {
     if (!this.book) return;
     const list = this.lists.find((l) => l.id === listId);
-    this.bookListService.addBook(this.userId, listId, this.book.id).subscribe({
+    this.bookListService.addBook(listId, this.book.id).subscribe({
       next: () => {
         this.showDropdown = false;
         this.messageService.add({
