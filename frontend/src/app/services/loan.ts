@@ -28,4 +28,12 @@ export class LoanService {
       status,
     });
   }
+
+  getByUser(): Observable<LoanDTO[]> {
+    return this.apiService.get<LoanDTO[]>(`${this.endpoint}/user`);
+  }
+
+  delete(loanId: number): Observable<void> {
+    return this.apiService.delete<void>(`${this.endpoint}/${loanId}`);
+  }
 }

@@ -52,6 +52,6 @@ public class Loan {
     @Column(name = "closed", nullable = false)
     private Boolean closed = false;
 
-    @OneToMany(mappedBy = "loan")
+    @OneToMany(mappedBy = "loan", cascade = CascadeType.ALL)
     private Set<LoanBook> loanBooks = new HashSet<>();
 }
