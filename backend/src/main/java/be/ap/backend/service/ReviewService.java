@@ -25,12 +25,13 @@ public class ReviewService {
                 .collect(Collectors.toList());
     }
 
-    public ReviewDTO addReview(Long bookId, ReviewDTO dto) {
+    public ReviewDTO addReview(Long bookId, ReviewDTO dto, Long userId) {
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new RuntimeException("Boek niet gevonden"));
 
         Review review = new Review();
         review.setBook(book);
+        review.setUserId(userId);
         review.setRating(dto.getRating());
         if (filterService.containsBadWord(dto.getContent())) {
             throw new IllegalArgumentException("Je recensie bevat ongepaste taal.");
@@ -57,6 +58,16 @@ public class ReviewService {
         bookRepository.save(book);
     }
 
+    public void deleteReview(Long reviewId, Long userId) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new IllegalArgumentException("Recensie niet gevonden."));
+        if (!review.getUserId().equals(userId)) {
+            throw new IllegalArgumentException("Je kan alleen je eigen recensie verwijderen.");
+        }
+        reviewRepository.deleteById(reviewId);
+        updateBookRating(review.getBook().getId());
+    }
+
     private ReviewDTO toDTO(Review review) {
         ReviewDTO dto = new ReviewDTO();
         dto.setId(review.getId());
@@ -64,6 +75,7 @@ public class ReviewService {
         dto.setRating(review.getRating());
         dto.setContent(review.getContent());
         dto.setAdded(review.getAdded());
+        dto.setUserId(review.getUserId());
         return dto;
     }
 }
