@@ -6,15 +6,8 @@ import { MenuModule } from 'primeng/menu';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ConfirmationService, MenuItem } from 'primeng/api';
 import { ApiService } from '../../../services/api';
+import { Review } from '../../../models/review';
 
-interface ReviewDTO {
-  id?: number;
-  bookId?: number;
-  rating: number;
-  content: string;
-  added?: string;
-  userId?: number;
-}
 
 @Component({
   selector: 'app-review-section',
@@ -28,7 +21,7 @@ export class ReviewSectionComponent implements OnInit {
   @Input() bookId!: number;
   @Output() reviewAdded = new EventEmitter<void>();
 
-  reviews: ReviewDTO[] = [];
+  reviews: Review[] = [];
   menuItems: MenuItem[] = [];
   newRating = 0;
   newContent = '';
@@ -50,7 +43,7 @@ export class ReviewSectionComponent implements OnInit {
   }
 
   loadReviews(): void {
-    this.apiService.get<ReviewDTO[]>(`review/book/${this.bookId}`).subscribe({
+    this.apiService.get<Review[]>(`review/book/${this.bookId}`).subscribe({
       next: (reviews) => (this.reviews = reviews),
     });
   }
@@ -67,7 +60,7 @@ export class ReviewSectionComponent implements OnInit {
       return;
     }
     this.error = '';
-    this.apiService.post<ReviewDTO>(`review/book/${this.bookId}`, {
+    this.apiService.post<Review>(`review/book/${this.bookId}`, {
       rating: this.newRating,
       content: this.newContent,
     }).subscribe({
@@ -84,11 +77,11 @@ export class ReviewSectionComponent implements OnInit {
     });
   }
 
-  onMenuShow(review: ReviewDTO): void {
+  onMenuShow(review: Review): void {
   this.menuItems = this.getMenuItems(review);
   }
 
-  getMenuItems(review: ReviewDTO): MenuItem[] {
+  getMenuItems(review: Review): MenuItem[] {
     const items: MenuItem[] = [
       {
         label: 'Recensie rapporteren',
@@ -97,7 +90,7 @@ export class ReviewSectionComponent implements OnInit {
       }
     ];
 
-    if (review.userId === this.currentUserId) {
+    if (review.user_id === this.currentUserId) {
       items.unshift({
         label: 'Recensie verwijderen',
         icon: 'pi pi-trash',
@@ -108,7 +101,7 @@ export class ReviewSectionComponent implements OnInit {
     return items;
   }
 
-  confirmDelete(review: ReviewDTO): void {
+  confirmDelete(review: Review): void {
     this.confirmationService.confirm({
       message: 'Ben je zeker dat je deze recensie wilt verwijderen?',
       header: 'Recensie verwijderen',
@@ -125,7 +118,7 @@ export class ReviewSectionComponent implements OnInit {
     });
   }
 
-  reportReview(review: ReviewDTO): void {
+  reportReview(review: Review): void {
     // later implementeren
   }
 
