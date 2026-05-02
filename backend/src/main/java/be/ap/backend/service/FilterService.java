@@ -27,7 +27,10 @@ public class FilterService {
         if (text == null || text.isBlank())
             return false;
         String lower = text.toLowerCase();
-        return badWords.stream().anyMatch(lower::contains);
+        return badWords.stream().anyMatch(badWord -> {
+            String pattern = "(?<![a-zà-ÿ])" + java.util.regex.Pattern.quote(badWord) + "(?![a-zà-ÿ])";
+            return java.util.regex.Pattern.compile(pattern).matcher(lower).find();
+        });
     }
 
     private static final java.util.regex.Pattern URL_PATTERN = java.util.regex.Pattern.compile(

@@ -8,6 +8,7 @@ import be.ap.backend.repository.ReviewRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.List;
@@ -18,6 +19,12 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest
+@TestPropertySource(properties = {
+        "app.bcrypt-rounds=10",
+        "app.smartschool.client-id=test",
+        "app.smartschool.client-secret=test",
+        "app.smartschool.callback=http://localhost:8080/oauth"
+})
 public class ReviewServiceTest {
 
     @MockitoBean
@@ -77,7 +84,7 @@ public class ReviewServiceTest {
         when(reviewRepository.findAverageRatingByBookId(1L)).thenReturn(5.0);
         when(reviewRepository.findReviewCountByBookId(1L)).thenReturn(1L);
 
-        ReviewDTO result = reviewService.addReview(1L, dto);
+        ReviewDTO result = reviewService.addReview(1L, dto, 1L);
 
         assertNotNull(result);
         assertEquals(5, result.getRating());
@@ -92,7 +99,7 @@ public class ReviewServiceTest {
         ReviewDTO dto = new ReviewDTO();
         dto.setRating(3);
 
-        assertThrows(RuntimeException.class, () -> reviewService.addReview(99L, dto));
+        assertThrows(RuntimeException.class, () -> reviewService.addReview(99L, dto, 1L));
         verify(reviewRepository, never()).save(any());
     }
 
@@ -114,8 +121,48 @@ public class ReviewServiceTest {
         when(reviewRepository.findAverageRatingByBookId(1L)).thenReturn(3.5);
         when(reviewRepository.findReviewCountByBookId(1L)).thenReturn(2L);
 
-        reviewService.addReview(1L, dto);
+        reviewService.addReview(1L, dto, 1L);
 
         verify(bookRepository).save(argThat(b -> b.getRating() == 3.5 && b.getRatingCount() == 2));
+    }
+
+    @Test
+    void givenOwnReview_whenDeleteReview_thenDeleteSuccessfully() {
+        Book book = new Book();
+        book.setId(1L);
+
+        Review review = new Review();
+        review.setId(1L);
+        review.setBook(book);
+        review.setUserId(1L);
+
+        when(reviewRepository.findById(1L)).thenReturn(Optional.of(review));
+        when(reviewRepository.findAverageRatingByBookId(1L)).thenReturn(4.0);
+        when(reviewRepository.findReviewCountByBookId(1L)).thenReturn(1L);
+        when(bookRepository.findById(1L)).thenReturn(Optional.of(book));
+
+        reviewService.deleteReview(1L, 1L);
+
+        verify(reviewRepository, times(1)).deleteById(1L);
+    }
+
+    @Test
+    void givenOtherUsersReview_whenDeleteReview_thenThrowException() {
+        Review review = new Review();
+        review.setId(1L);
+        review.setUserId(1L);
+
+        when(reviewRepository.findById(1L)).thenReturn(Optional.of(review));
+
+        assertThrows(IllegalArgumentException.class, () -> reviewService.deleteReview(1L, 2L));
+        verify(reviewRepository, never()).deleteById(any());
+    }
+
+    @Test
+    void givenNonExistingReview_whenDeleteReview_thenThrowException() {
+        when(reviewRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThrows(IllegalArgumentException.class, () -> reviewService.deleteReview(99L, 1L));
+        verify(reviewRepository, never()).deleteById(any());
     }
 }
