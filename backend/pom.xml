@@ -98,11 +98,6 @@
             <groupId>org.springframework.session</groupId>
             <artifactId>spring-session-jdbc</artifactId>
         </dependency>
-        <dependency>
-           <groupId>com.nimbusds</groupId>
-           <artifactId>oauth2-oidc-sdk</artifactId>
-           <version>11.19.1</version>
-        </dependency>
     </dependencies>
 
     <build>
