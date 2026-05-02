@@ -151,3 +151,29 @@
   color: var(--p-neutral-400);
   align-self: flex-end;
 }
+
+.delete-btn {
+  background: none;
+  border: none;
+  color: var(--p-neutral-400);
+  cursor: pointer;
+  padding: 0.2rem;
+  border-radius: 4px;
+}
+
+.delete-btn:hover {
+  color: var(--p-rose-800);
+}
+
+.menu-btn {
+  background: none;
+  border: none;
+  color: var(--p-neutral-400);
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+}
+
+.menu-btn:hover {
+  color: var(--p-neutral-700);
+}

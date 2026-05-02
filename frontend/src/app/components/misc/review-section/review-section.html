@@ -19,6 +19,8 @@
   </div>
   }
 
+  <p-confirmDialog />
+
   <div class="reviews-list">
     @if (reviews.length === 0) {
     <p class="no-reviews">Nog geen recensies voor dit boek.</p>
@@ -40,7 +42,13 @@
           <i class="pi pi-star"></i>
           }
         </div>
-        <span class="review-date">{{ review.added | date: 'dd/MM/yyyy' }}</span>
+        <div style="display:flex; align-items:center; gap: 0.5rem;">
+          <span class="review-date">{{ review.added | date: 'dd/MM/yyyy' }}</span>
+          <button class="menu-btn" (click)="onMenuShow(review); menu.toggle($event)">
+            <i class="pi pi-ellipsis-v"></i>
+          </button>
+          <p-menu #menu [model]="menuItems" [popup]="true" appendTo="body" />
+        </div>
       </div>
       @if (review.content) {
       <p class="review-content">{{ review.content }}</p>

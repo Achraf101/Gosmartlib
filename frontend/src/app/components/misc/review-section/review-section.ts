@@ -1,7 +1,10 @@
-import { Component, Input, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, Input, OnInit, Output, EventEmitter, ViewChildren, QueryList } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RatingModule } from 'primeng/rating';
+import { MenuModule } from 'primeng/menu';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ConfirmationService, MenuItem } from 'primeng/api';
 import { ApiService } from '../../../services/api';
 
 interface ReviewDTO {
@@ -10,12 +13,14 @@ interface ReviewDTO {
   rating: number;
   content: string;
   added?: string;
+  userId?: number;
 }
 
 @Component({
   selector: 'app-review-section',
   standalone: true,
-  imports: [CommonModule, FormsModule, RatingModule],
+  imports: [CommonModule, FormsModule, RatingModule, MenuModule, ConfirmDialogModule],
+  providers: [ConfirmationService],
   templateUrl: './review-section.html',
   styleUrl: './review-section.css',
 })
@@ -24,15 +29,24 @@ export class ReviewSectionComponent implements OnInit {
   @Output() reviewAdded = new EventEmitter<void>();
 
   reviews: ReviewDTO[] = [];
+  menuItems: MenuItem[] = [];
   newRating = 0;
   newContent = '';
   error = '';
   submitted = false;
+  currentUserId: number | null = null;
 
-  constructor(private apiService: ApiService) {}
+  constructor(private apiService: ApiService, private confirmationService: ConfirmationService) {}
 
   ngOnInit(): void {
     this.loadReviews();
+    this.loadCurrentUser();
+  }
+
+  loadCurrentUser(): void {
+    this.apiService.get<any>('auth/me').subscribe({
+    next: (user) => (this.currentUserId = user.userId),
+    });
   }
 
   loadReviews(): void {
@@ -41,12 +55,12 @@ export class ReviewSectionComponent implements OnInit {
     });
   }
 
- submitReview(): void {
-     if (this.newRating === 0) {
+  submitReview(): void {
+    if (this.newRating === 0) {
       this.error = 'Geef een beoordeling.';
       return;
     }
-    
+
     const urlPattern = /((https?|ftp):\/\/|www\.)\S{2,}/i;
     if (urlPattern.test(this.newContent)) {
       this.error = 'Je recensie mag geen URLs bevatten.';
@@ -68,6 +82,51 @@ export class ReviewSectionComponent implements OnInit {
         this.error = err.error ?? 'Er is een fout opgetreden.';
       }
     });
+  }
+
+  onMenuShow(review: ReviewDTO): void {
+  this.menuItems = this.getMenuItems(review);
+  }
+
+  getMenuItems(review: ReviewDTO): MenuItem[] {
+    const items: MenuItem[] = [
+      {
+        label: 'Recensie rapporteren',
+        icon: 'pi pi-flag',
+        command: () => this.reportReview(review),
+      }
+    ];
+
+    if (review.userId === this.currentUserId) {
+      items.unshift({
+        label: 'Recensie verwijderen',
+        icon: 'pi pi-trash',
+        command: () => this.confirmDelete(review),
+      });
+    }
+
+    return items;
+  }
+
+  confirmDelete(review: ReviewDTO): void {
+    this.confirmationService.confirm({
+      message: 'Ben je zeker dat je deze recensie wilt verwijderen?',
+      header: 'Recensie verwijderen',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Ja, verwijderen',
+      rejectLabel: 'Annuleren',
+      accept: () => this.deleteReview(review.id!),
+    });
+  }
+
+  deleteReview(reviewId: number): void {
+    this.apiService.delete(`review/${reviewId}`).subscribe({
+      next: () => this.loadReviews(),
+    });
+  }
+
+  reportReview(review: ReviewDTO): void {
+    // later implementeren
   }
 
   getStars(rating: number): number[] {
