@@ -18,4 +18,11 @@ public class AuthController {
         final String role = (String) session.getAttribute("role");
         return ResponseEntity.ok(Map.of("username", username, "role", role));
     }
+
+    @GetMapping("me/id")
+    public ResponseEntity<?> meId(HttpSession session) {
+        final Object raw = session.getAttribute("userId");
+        final Long userId = (raw != null) ? Long.valueOf(raw.toString()) : null;
+        return ResponseEntity.ok(Map.of("userId", userId));
+    }
 }
