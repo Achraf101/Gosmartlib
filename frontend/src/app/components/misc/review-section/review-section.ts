@@ -37,10 +37,10 @@ export class ReviewSectionComponent implements OnInit {
   }
 
   loadCurrentUser(): void {
-    this.apiService.get<any>('auth/me').subscribe({
-    next: (user) => (this.currentUserId = user.userId),
+    this.apiService.get<any>('auth/me/id').subscribe({
+        next: (user) => (this.currentUserId = user.userId),
     });
-  }
+}
 
   loadReviews(): void {
     this.apiService.get<Review[]>(`review/book/${this.bookId}`).subscribe({
