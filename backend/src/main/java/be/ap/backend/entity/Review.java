@@ -34,6 +34,9 @@ public class Review {
     @Column(name = "added")
     private LocalDateTime added;
 
+    @Column(name = "user_id")
+    private Long userId;
+
     @PrePersist
     public void prePersist() {
         this.added = LocalDateTime.now();

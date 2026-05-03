@@ -6,6 +6,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockHttpSession;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.List;
@@ -14,6 +16,12 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest
+@TestPropertySource(properties = {
+        "app.bcrypt-rounds=10",
+        "app.smartschool.client-id=test",
+        "app.smartschool.client-secret=test",
+        "app.smartschool.callback=http://localhost:8080/oauth"
+})
 public class ReviewControllerTest {
 
     @MockitoBean
@@ -60,6 +68,9 @@ public class ReviewControllerTest {
 
     @Test
     void givenValidReview_whenAddReview_thenReturnSavedReview() {
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("userId", "1");
+
         ReviewDTO input = new ReviewDTO();
         input.setRating(5);
         input.setContent("Geweldig boek!");
@@ -70,19 +81,22 @@ public class ReviewControllerTest {
         saved.setRating(5);
         saved.setContent("Geweldig boek!");
 
-        when(reviewService.addReview(1L, input)).thenReturn(saved);
+        when(reviewService.addReview(1L, input, 1L)).thenReturn(saved);
 
-        ReviewDTO result = (ReviewDTO) controller.addReview(1L, input).getBody();
+        ReviewDTO result = (ReviewDTO) controller.addReview(1L, input, session).getBody();
 
         assertNotNull(result);
         assertEquals(1L, result.getId());
         assertEquals(5, result.getRating());
         assertEquals("Geweldig boek!", result.getContent());
-        verify(reviewService, times(1)).addReview(1L, input);
+        verify(reviewService, times(1)).addReview(1L, input, 1L);
     }
 
     @Test
-    void givenReviewWithoutRating_whenAddReview_thenReturnReview() {
+    void givenReviewWithoutContent_whenAddReview_thenReturnReview() {
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("userId", "1");
+
         ReviewDTO input = new ReviewDTO();
         input.setRating(3);
 
@@ -91,45 +105,79 @@ public class ReviewControllerTest {
         saved.setBookId(1L);
         saved.setRating(3);
 
-        when(reviewService.addReview(1L, input)).thenReturn(saved);
+        when(reviewService.addReview(1L, input, 1L)).thenReturn(saved);
 
-        ReviewDTO result = (ReviewDTO) controller.addReview(1L, input).getBody();
+        ReviewDTO result = (ReviewDTO) controller.addReview(1L, input, session).getBody();
 
         assertNotNull(result);
         assertEquals(3, result.getRating());
         assertNull(result.getContent());
-        verify(reviewService, times(1)).addReview(1L, input);
+        verify(reviewService, times(1)).addReview(1L, input, 1L);
     }
 
     @Test
     void givenReviewWithBadWord_whenAddReview_thenReturnBadRequest() {
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("userId", "1");
+
         ReviewDTO input = new ReviewDTO();
         input.setRating(3);
         input.setContent("Dit boek is echt kut.");
 
-        when(reviewService.addReview(1L, input))
+        when(reviewService.addReview(1L, input, 1L))
                 .thenThrow(new IllegalArgumentException("Je recensie bevat ongepaste taal."));
 
-        ResponseEntity<?> result = controller.addReview(1L, input);
+        ResponseEntity<?> result = controller.addReview(1L, input, session);
 
         assertEquals(400, result.getStatusCode().value());
         assertEquals("Je recensie bevat ongepaste taal.", result.getBody());
-        verify(reviewService, times(1)).addReview(1L, input);
+        verify(reviewService, times(1)).addReview(1L, input, 1L);
     }
 
     @Test
     void givenReviewWithUrl_whenAddReview_thenReturnBadRequest() {
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("userId", "1");
+
         ReviewDTO input = new ReviewDTO();
         input.setRating(3);
         input.setContent("Kijk op www.spam.com voor meer info.");
 
-        when(reviewService.addReview(1L, input))
+        when(reviewService.addReview(1L, input, 1L))
                 .thenThrow(new IllegalArgumentException("Je recensie mag geen URLs bevatten."));
 
-        ResponseEntity<?> result = controller.addReview(1L, input);
+        ResponseEntity<?> result = controller.addReview(1L, input, session);
 
         assertEquals(400, result.getStatusCode().value());
         assertEquals("Je recensie mag geen URLs bevatten.", result.getBody());
-        verify(reviewService, times(1)).addReview(1L, input);
+        verify(reviewService, times(1)).addReview(1L, input, 1L);
+    }
+
+    @Test
+    void givenOwnReview_whenDeleteReview_thenReturnOk() {
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("userId", "1");
+
+        doNothing().when(reviewService).deleteReview(1L, 1L);
+
+        ResponseEntity<?> result = controller.deleteReview(1L, session);
+
+        assertEquals(200, result.getStatusCode().value());
+        verify(reviewService, times(1)).deleteReview(1L, 1L);
+    }
+
+    @Test
+    void givenOtherUsersReview_whenDeleteReview_thenReturnBadRequest() {
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("userId", "2");
+
+        doThrow(new IllegalArgumentException("Je kan alleen je eigen recensie verwijderen."))
+                .when(reviewService).deleteReview(1L, 2L);
+
+        ResponseEntity<?> result = controller.deleteReview(1L, session);
+
+        assertEquals(400, result.getStatusCode().value());
+        assertEquals("Je kan alleen je eigen recensie verwijderen.", result.getBody());
+        verify(reviewService, times(1)).deleteReview(1L, 2L);
     }
 }
