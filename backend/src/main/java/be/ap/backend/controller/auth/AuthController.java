@@ -16,6 +16,7 @@ public class AuthController {
 
         final String username = (String) session.getAttribute("username");
         final String role = (String) session.getAttribute("role");
-        return ResponseEntity.ok(Map.of("username", username, "role", role));
+        final Object campus = session.getAttribute("campus");
+        return ResponseEntity.ok(Map.of("username", username, "role", role, "campusId", campus != null ? campus : 0));
     }
 }
