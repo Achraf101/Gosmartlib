@@ -211,7 +211,7 @@ public class DataSeeder implements CommandLineRunner {
         Section boekVanDeMaandSection = createSection("Boek van de maand", (byte) 1);
 
         for (int i = 0; i < inDeKijkerBooks.size(); i++) {
-            saveSectionBook(inDeKijker, inDeKijkerBooks.get(i), (short) i);
+            saveSectionBook(inDeKijker, inDeKijkerBooks.get(i), (short) (i + 1));
         }
         saveSectionBook(boekVanDeMaandSection, boekVanDeMaand, (short) 0);
     }
