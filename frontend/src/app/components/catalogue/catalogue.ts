@@ -13,7 +13,7 @@ import { MultiSelectModule } from 'primeng/multiselect';
 import { BookService } from '../../services/book';
 import { SectionService } from '../../services/section';
 import { ApiService } from '../../services/api';
-import { BookFilter, BookResult } from '../../models/book';
+import { BookCard, BookFilter, BookResult } from '../../models/book';
 import { Genre } from '../../models/genre';
 import { Language } from '../../models/language';
 import { NavBarComponent } from '../nav-bar/nav-bar';
@@ -22,6 +22,7 @@ import { SearchBar } from '../misc/search-bar/search-bar';
 import { BookResult as BookResultComponent } from '../misc/book-result/book-result';
 import { RouterLink } from '@angular/router';
 import { DelayedLoader } from '../../utils/delayed-loader';
+import { BookCover } from '../misc/book-cover/book-cover';
 
 @Component({
   selector: 'app-catalogue',
@@ -41,6 +42,7 @@ import { DelayedLoader } from '../../utils/delayed-loader';
     MultiSelectModule,
     SearchBar,
     RouterLink,
+    BookCover,
   ],
   templateUrl: './catalogue.html',
   styleUrl: './catalogue.css',
@@ -54,7 +56,6 @@ export class CatalogueComponent implements OnInit {
   searchQuery = '';
   activeFilters: BookFilter | null = null;
 
-  
   genres: Genre[] = [];
   languages: Language[] = [];
   sidebarGenres: number[] = [];
@@ -62,11 +63,11 @@ export class CatalogueComponent implements OnInit {
   sidebarPagesMin: number | null = null;
   sidebarPagesMax: number | null = null;
 
-  
   selectMode = false;
   sectionId: number | null = null;
   grade: number | null = null;
   selectedBook: BookResult | null = null;
+  ranking: number | null = null;
   showDialog = false;
 
   readonly placeholder = '/assets/no-cover.svg';
@@ -89,6 +90,7 @@ export class CatalogueComponent implements OnInit {
       this.selectMode = params['selectMode'] === 'true';
       this.sectionId = params['sectionId'] ? Number(params['sectionId']) : null;
       this.grade = params['grade'] ? Number(params['grade']) : null;
+      this.ranking = params['ranking'] ? Number(params['ranking']) : null;
 
       this.sidebarGenres = params['genres'] ? params['genres'].split(',').map(Number) : [];
       this.sidebarLanguage = params['language'] ? Number(params['language']) : null;
@@ -196,6 +198,21 @@ export class CatalogueComponent implements OnInit {
     });
   }
 
+  setAsSpotlight(): void {
+    if (!this.sectionId || !this.ranking || !this.selectedBook) return;
+    this.sectionService
+      .setSpotlightBook(this.sectionId, this.selectedBook.id, this.ranking)
+      .subscribe({
+        next: () => {
+          this.showDialog = false;
+          this.router.navigate(['/dashboard/bibliotheek-beheerder']);
+        },
+        error: () => {
+          this.showDialog = false;
+        },
+      });
+  }
+
   loadBooks(): void {
     this.loading.start();
     const request = this.activeFilters
@@ -251,5 +268,15 @@ export class CatalogueComponent implements OnInit {
 
   get activeQueryParams(): any {
     return this.route.snapshot.queryParams;
+  }
+
+  getAsBookCard(book: BookResult): BookCard {
+    return {
+      id: book.id,
+      title: book.title,
+      author: book.author,
+      author_name: book.author_name,
+      cover: book.cover,
+    };
   }
 }
