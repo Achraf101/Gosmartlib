@@ -1,22 +1,31 @@
 package be.ap.backend.controller;
 
+import be.ap.backend.dto.SectionBookDTO;
 import be.ap.backend.entity.Book;
 import be.ap.backend.entity.Section;
 import be.ap.backend.service.SectionService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(SectionController.class)
+@WebMvcTest(controllers = SectionController.class, excludeAutoConfiguration = SecurityAutoConfiguration.class)
 @ContextConfiguration(classes = SectionController.class)
 public class SectionControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
 
     @MockitoBean
     private SectionService sectionService;
@@ -86,5 +95,33 @@ public class SectionControllerTest {
         assertNotNull(result);
         assertEquals("Harry Potter en de vuurbeker", result.getTitle());
         verify(sectionService, times(1)).setBookOfMonth(1L, 2L, (byte) 1);
+    }
+
+        @Test
+    void setSpotlightBook_success() throws Exception {
+        Book book = new Book();
+        book.setId(1L);
+        book.setTitle("De brief voor de koning");
+
+        when(sectionService.setSpotlightBook(eq(1L), eq(1L), eq((short) 1))).thenReturn(book);
+
+        mockMvc.perform(put("/section/1/spotlight")
+                .param("bookId", "1")
+                .param("ranking", "1"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void getSpotlightBooks_returnsListOfDTOs() throws Exception {
+        Book book = new Book();
+        book.setId(1L);
+        book.setTitle("De brief voor de koning");
+        SectionBookDTO dto = new SectionBookDTO((short) 1, book);
+
+        when(sectionService.getSpotlightBooks(eq(1L))).thenReturn(List.of(dto));
+
+        mockMvc.perform(get("/section/1/spotlight"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].ranking").value(1));
     }
 }
