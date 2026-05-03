@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import be.ap.backend.dto.LoanBookDTO;
 import be.ap.backend.dto.LoanDTO;
+import be.ap.backend.dto.TopBookDTO;
 import be.ap.backend.entity.Book;
 import be.ap.backend.entity.Campus;
 import be.ap.backend.entity.CampusBook;
@@ -213,5 +215,56 @@ public class LoanService {
                 .toArray(LoanBookDTO[]::new);
         dto.setBooks(books);
         return dto;
+    }
+
+    public int getOverdueLoansLength(Long campusId){
+        List<LoanStatus> activeStatuses = List.of(LoanStatus.RECEIVED, LoanStatus.ACCEPTED);
+        return loanRepository.countOverdueLoans(activeStatuses, LocalDate.now(), campusId);
+    }
+
+    public List<LoanDTO> getOverdueLoans(Long campusId) {
+        List<LoanStatus> activeStatuses = List.of(LoanStatus.RECEIVED, LoanStatus.ACCEPTED);
+        return loanRepository.findOverdueLoans(activeStatuses, LocalDate.now(), campusId)
+            .stream().map(this::toDTO).toList();
+    }
+
+    public List<TopBookDTO> getTopBooksThisMonth(Long campusId) {
+        LocalDate from = LocalDate.now().withDayOfMonth(1);
+        LocalDate to = LocalDate.now();
+        List<LoanStatus> statuses = List.of(LoanStatus.RECEIVED, LoanStatus.RETURNED, LoanStatus.ACCEPTED);
+
+        return loanRepository.findByDateRangeWithBooks(from, to, statuses, campusId).stream()
+            .flatMap(l -> l.getLoanBooks().stream())
+            .collect(Collectors.groupingBy(
+                lb -> lb.getBook().getTitle(),
+                Collectors.summingInt(lb -> 1)
+            ))
+            .entrySet().stream()
+            .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
+            .limit(5)
+            .map(e -> new TopBookDTO(e.getKey(), e.getValue()))
+            .toList();
+    }
+
+    public List<LoanDTO> getDueSoonLoans(Long campusId) {
+        List<LoanStatus> activeStatuses = List.of(LoanStatus.RECEIVED, LoanStatus.ACCEPTED);
+        return loanRepository.findDueSoonLoans(activeStatuses, LocalDate.now(), LocalDate.now().plusDays(7), campusId)
+            .stream().map(this::toDTO).toList();
+    }
+
+    public int getDueSoonLoansLength(Long campusId){
+        List<LoanStatus> activeStatuses = List.of(LoanStatus.RECEIVED, LoanStatus.ACCEPTED);
+        return loanRepository.countDueSoonLoans(activeStatuses, LocalDate.now(), LocalDate.now().plusDays(7), campusId);
+    }
+
+    public List<TopBookDTO> getTopGenresThisMonth(Long campusId) {
+        LocalDate from = LocalDate.now().withDayOfMonth(1);
+        LocalDate to = LocalDate.now();
+        List<LoanStatus> statuses = List.of(LoanStatus.RECEIVED, LoanStatus.RETURNED, LoanStatus.ACCEPTED);
+
+        return loanRepository.findTopGenres(statuses, from, to, campusId).stream()
+            .limit(5)
+            .map(row -> new TopBookDTO((String) row[0], ((Long) row[1]).intValue()))
+            .toList();
     }
 }
