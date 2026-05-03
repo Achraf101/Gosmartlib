@@ -13,6 +13,7 @@ import { SchoolComponent } from './components/school/school';
 import { FavoritePage } from './components/favorite-page/favorite-page';
 import { AcceptDeclineReservationsPageComponent } from './components/accept-decline-reservations-page/accept-decline-reservations-page';
 import { UserLoansPageComponent } from './components/user-loans-page/user-loans-page';
+import { DashboardLibraryManager } from './components/dashboard-library-manager/dashboard-library-manager';
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: '', redirectTo: 'startpagina', pathMatch: 'full' },
@@ -32,7 +33,11 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   { path: 'lijst/:token/delen', component: FavoritePage, canActivate: [authGuard] },
-  { path: 'uitleningen', component: UserLoansPageComponent, canActivate: [authGuard] },
+  { path: 'uitleningen', component: UserLoansPageComponent, canActivate: [authGuard] },{ 
+    path: 'dashboard/bibliotheek-beheerder', 
+    component: DashboardLibraryManager,
+    canActivate: [authGuard(["BIBLIOTHEEKBEHEERDER"])]
+  }
   // {
   //   path: 'boek',
   //   component: BookformComponent,
