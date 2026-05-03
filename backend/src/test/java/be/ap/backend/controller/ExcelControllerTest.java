@@ -123,17 +123,13 @@ class ExcelControllerTest {
             row.createCell(6).setCellValue("");               // clib
             row.createCell(7).setCellValue("JA");             // fictie
             row.createCell(8).setCellValue("Roman");          // boektype
-            row.createCell(9).setCellValue("Fantasy");        // genre 1
-            row.createCell(10).setCellValue("");              // genre 2
-            row.createCell(11).setCellValue("");              // genre 3
-            row.createCell(12).setCellValue("");              // genre 4
-            row.createCell(13).setCellValue("");              // genre 5
-            row.createCell(14).setCellValue("2001");          // jaar
-            row.createCell(15).setCellValue("Nederlands");    // taal
-            row.createCell(16).setCellValue("309");           // paginas
-            row.createCell(17).setCellValue("");              // lettergrootte
-            row.createCell(18).setCellValue("NEE");           // enkel school
-            row.createCell(19).setCellValue("");              // cover
+            row.createCell(9).setCellValue("Fantasy");        // genres (csv)
+            row.createCell(10).setCellValue("2001");          // jaar
+            row.createCell(11).setCellValue("Nederlands");    // taal
+            row.createCell(12).setCellValue("309");           // paginas
+            row.createCell(13).setCellValue("");              // lettergrootte
+            row.createCell(14).setCellValue("NEE");           // enkel school
+            row.createCell(15).setCellValue("");              // cover
         });
 
         MvcResult result = mockMvc.perform(multipart("/excel/book/bulk-upload").file(file))
@@ -158,7 +154,7 @@ class ExcelControllerTest {
             row.createCell(3).setCellValue("Beschrijving");
             row.createCell(8).setCellValue("Roman");
             row.createCell(9).setCellValue("Fantasy");
-            row.createCell(15).setCellValue("Nederlands");
+            row.createCell(11).setCellValue("Nederlands");
         });
 
         MvcResult result = mockMvc.perform(multipart("/excel/book/bulk-upload").file(file))
@@ -185,7 +181,7 @@ class ExcelControllerTest {
             row.createCell(3).setCellValue(longDesc);
             row.createCell(8).setCellValue("Roman");
             row.createCell(9).setCellValue("Fantasy");
-            row.createCell(15).setCellValue("Nederlands");
+            row.createCell(11).setCellValue("Nederlands");
         });
 
         MvcResult result = mockMvc.perform(multipart("/excel/book/bulk-upload").file(file))
@@ -211,7 +207,7 @@ class ExcelControllerTest {
             row.createCell(3).setCellValue("Beschrijving");
             row.createCell(8).setCellValue("Roman");
             row.createCell(9).setCellValue("Fantasy");
-            row.createCell(15).setCellValue("Nederlands");
+            row.createCell(11).setCellValue("Nederlands");
         });
 
         MvcResult result = mockMvc.perform(multipart("/excel/book/bulk-upload").file(file))
@@ -239,9 +235,9 @@ class ExcelControllerTest {
             row1.createCell(7).setCellValue("JA");
             row1.createCell(8).setCellValue("Roman");
             row1.createCell(9).setCellValue("Fantasy");
-            row1.createCell(15).setCellValue("Nederlands");
-            row1.createCell(16).setCellValue("300");
-            row1.createCell(18).setCellValue("NEE");
+            row1.createCell(11).setCellValue("Nederlands");
+            row1.createCell(12).setCellValue("300");
+            row1.createCell(14).setCellValue("NEE");
 
             // row 2 — same isbn
             Row row2 = sheet.createRow(2);
@@ -253,9 +249,9 @@ class ExcelControllerTest {
             row2.createCell(7).setCellValue("JA");
             row2.createCell(8).setCellValue("Roman");
             row2.createCell(9).setCellValue("Fantasy");
-            row2.createCell(15).setCellValue("Nederlands");
-            row2.createCell(16).setCellValue("300");
-            row2.createCell(18).setCellValue("NEE");
+            row2.createCell(11).setCellValue("Nederlands");
+            row2.createCell(12).setCellValue("300");
+            row2.createCell(14).setCellValue("NEE");
         });
 
         MvcResult result = mockMvc.perform(multipart("/excel/book/bulk-upload").file(file))
@@ -279,7 +275,7 @@ class ExcelControllerTest {
             row.createCell(3).setCellValue("Beschrijving");
             row.createCell(8).setCellValue("Roman");
             row.createCell(9).setCellValue("Fantasy");
-            row.createCell(15).setCellValue("Nederlands");
+            row.createCell(11).setCellValue("Nederlands");
         });
 
         MvcResult result = mockMvc.perform(multipart("/excel/book/bulk-upload").file(file))
@@ -303,7 +299,7 @@ class ExcelControllerTest {
             row.createCell(6).setCellValue("X");               // invalid CLIB
             row.createCell(8).setCellValue("Roman");
             row.createCell(9).setCellValue("Fantasy");
-            row.createCell(15).setCellValue("Nederlands");
+            row.createCell(11).setCellValue("Nederlands");
         });
 
         MvcResult result = mockMvc.perform(multipart("/excel/book/bulk-upload").file(file))
@@ -387,17 +383,13 @@ class ExcelControllerTest {
             header.createCell(6).setCellValue("CLIB");
             header.createCell(7).setCellValue("Fictie");
             header.createCell(8).setCellValue("Boektype *");
-            header.createCell(9).setCellValue("Genre 1 *");
-            header.createCell(10).setCellValue("Genre 2");
-            header.createCell(11).setCellValue("Genre 3");
-            header.createCell(12).setCellValue("Genre 4");
-            header.createCell(13).setCellValue("Genre 5");
-            header.createCell(14).setCellValue("Jaar van uitgave");
-            header.createCell(15).setCellValue("Taal *");
-            header.createCell(16).setCellValue("Aantal pagina's");
-            header.createCell(17).setCellValue("Lettergrootte");
-            header.createCell(18).setCellValue("Enkel zichtbaar");
-            header.createCell(19).setCellValue("Cover");
+            header.createCell(9).setCellValue("Genres *");
+            header.createCell(10).setCellValue("Jaar van uitgave");
+            header.createCell(11).setCellValue("Taal *");
+            header.createCell(12).setCellValue("Aantal pagina's");
+            header.createCell(13).setCellValue("Lettergrootte");
+            header.createCell(14).setCellValue("Enkel zichtbaar");
+            header.createCell(15).setCellValue("Cover");
 
             populator.populate(sheet);
             wb.write(out);

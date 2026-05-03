@@ -2,25 +2,34 @@ package be.ap.backend.controller;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.time.Year;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.ss.usermodel.DataValidation;
+import org.apache.poi.ss.usermodel.DataValidationConstraint;
+import org.apache.poi.ss.usermodel.DataValidationConstraint.OperatorType;
 import org.apache.poi.ss.usermodel.DateUtil;
+import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.ss.util.CellRangeAddressList;
+import org.apache.poi.ss.util.CellReference;
+import org.apache.poi.xssf.usermodel.XSSFDataValidationHelper;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -52,6 +61,8 @@ import be.ap.backend.service.UploadService;
 @RestController
 @RequestMapping("/excel/book")
 public class ExcelController {
+
+    private static final int MAX_DATA_ROWS = 500;
 
     private final AuthorRepository authorRepository;
     private final BookRepository bookRepository;
@@ -86,7 +97,7 @@ public class ExcelController {
         List<BookType> bookTypes = bookTypeRepository.findAll();
         List<Genre> genres = genreRepository.findAll();
         List<Language> languages = languageRepository.findAll();
-        
+
         try {
             byte[] xlsx = buildTemplateXlsx(authors, publishers, bookTypes, genres, languages);
             return ResponseEntity.ok()
@@ -100,219 +111,174 @@ public class ExcelController {
     }
 
     private byte[] buildTemplateXlsx(List<Author> authors,
-                                  List<Publisher> publishers,
-                                  List<BookType> bookTypes,
-                                  List<Genre> genres,
-                                  List<Language> languages) throws IOException {
+                                     List<Publisher> publishers,
+                                     List<BookType> bookTypes,
+                                     List<Genre> genres,
+                                     List<Language> languages) throws IOException {
 
-        String authorList    = toQuotedCsv(authors.stream().map(Author::getName).sorted().toList());
-        String publisherList = toQuotedCsv(publishers.stream().map(Publisher::getName).sorted().toList());
-        String bookTypeList  = toQuotedCsv(bookTypes.stream().map(BookType::getName).sorted().toList());
-        String genreList     = toQuotedCsv(genres.stream().map(Genre::getName).sorted().toList());
-        String languageList  = toQuotedCsv(languages.stream().map(Language::getName).sorted().toList());
+        try (XSSFWorkbook wb = new XSSFWorkbook();
+             ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
 
-        String sheetXml = buildSheetXml(
-            authorList, publisherList, bookTypeList, genreList, languageList);
+            XSSFSheet sheet = wb.createSheet("Books");
+            XSSFSheet lists = wb.createSheet("_lists");
+            wb.setSheetHidden(wb.getSheetIndex(lists), true);
 
-        String workbookXml = """
-            <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-            <workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
-                    xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
-            <sheets>
-                <sheet name="Books" sheetId="1" r:id="rId1"/>
-            </sheets>
-            </workbook>
-            """;
+            String authorRef    = writeListColumn(lists, 0, sortedNames(authors,    Author::getName));
+            String publisherRef = writeListColumn(lists, 1, sortedNames(publishers, Publisher::getName));
+            String bookTypeRef  = writeListColumn(lists, 2, sortedNames(bookTypes,  BookType::getName));
+            // Genre values are written for reference (CSV column has no list validation).
+            writeListColumn(lists, 3, sortedNames(genres, Genre::getName));
+            String languageRef  = writeListColumn(lists, 4, sortedNames(languages,  Language::getName));
 
-        String contentTypes = """
-            <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-            <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
-            <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
-            <Default Extension="xml" ContentType="application/xml"/>
-            <Override PartName="/xl/workbook.xml"
-                ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
-            <Override PartName="/xl/worksheets/sheet1.xml"
-                ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
-            </Types>
-            """;
+            CellStyle headerStyle = wb.createCellStyle();
+            Font headerFont = wb.createFont();
+            headerFont.setBold(true);
+            headerStyle.setFont(headerFont);
 
-        String rootRels = """
-            <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-            <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-            <Relationship Id="rId1"
-                Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument"
-                Target="xl/workbook.xml"/>
-            </Relationships>
-            """;
+            CellStyle textStyle = wb.createCellStyle();
+            textStyle.setDataFormat(wb.createDataFormat().getFormat("@"));
 
-        String workbookRels = """
-            <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-            <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-            <Relationship Id="rId1"
-                Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet"
-                Target="worksheets/sheet1.xml"/>
-            </Relationships>
-            """;
+            CellStyle intStyle = wb.createCellStyle();
+            intStyle.setDataFormat(wb.createDataFormat().getFormat("0"));
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try (ZipOutputStream zos = new ZipOutputStream(baos)) {
-            writeZipEntry(zos, "[Content_Types].xml", contentTypes);
-            writeZipEntry(zos, "_rels/.rels", rootRels);
-            writeZipEntry(zos, "xl/workbook.xml", workbookXml);
-            writeZipEntry(zos, "xl/_rels/workbook.xml.rels", workbookRels);
-            writeZipEntry(zos, "xl/worksheets/sheet1.xml", sheetXml);
+            String[] headers = {
+                "ISBN (optioneel)",
+                "Titel *",
+                "Auteur * (kies uit lijst)",
+                "Beschrijving * (max 500 tekens)",
+                "Didactisch materiaal (JA/NEE)",
+                "Uitgever (optioneel, kies uit lijst)",
+                "CLIB (optioneel, A/B/C/D)",
+                "Fictie (JA/NEE)",
+                "Boektype * (kies uit lijst)",
+                "Genres * (gescheiden door komma's, zie tabblad _lists)",
+                "Jaar van uitgave (optioneel)",
+                "Taal * (kies uit lijst)",
+                "Aantal pagina's *",
+                "Lettergrootte (optioneel: groot/medium/klein)",
+                "Enkel zichtbaar voor deze school (JA/NEE)",
+                "Cover (optioneel, URL)"
+            };
+            int[] widths = { 18, 32, 28, 60, 22, 28, 12, 12, 22, 45, 14, 22, 14, 24, 30, 35 };
+
+            Row header = sheet.createRow(0);
+            for (int i = 0; i < headers.length; i++) {
+                Cell c = header.createCell(i);
+                c.setCellValue(headers[i]);
+                c.setCellStyle(headerStyle);
+                sheet.setColumnWidth(i, widths[i] * 256);
+            }
+
+            sheet.setDefaultColumnStyle(0, textStyle);   // ISBN
+            sheet.setDefaultColumnStyle(10, intStyle);   // Jaar
+            sheet.setDefaultColumnStyle(12, intStyle);   // Pagina's
+
+            sheet.createFreezePane(0, 1);
+
+            XSSFDataValidationHelper dvh = new XSSFDataValidationHelper(sheet);
+
+            addListValidation(sheet, dvh, 2,  authorRef,    true,
+                "Ongeldige auteur",   "Kies een auteur uit de lijst.");
+            addListValidation(sheet, dvh, 5,  publisherRef, true,
+                "Ongeldige uitgever", "Kies een uitgever uit de lijst.");
+            addListValidation(sheet, dvh, 8,  bookTypeRef,  false,
+                "Ongeldig boektype",  "Kies een boektype uit de lijst.");
+            addListValidation(sheet, dvh, 11, languageRef,  false,
+                "Ongeldige taal",     "Kies een taal uit de lijst.");
+
+            addExplicitListValidation(sheet, dvh, 6,  new String[]{"A","B","C","D"}, true,
+                "Ongeldig CLIB niveau",  "Kies A, B, C of D.");
+            addExplicitListValidation(sheet, dvh, 13, new String[]{"groot","medium","klein"}, true,
+                "Ongeldige lettergrootte", "Kies groot, medium of klein.");
+            addExplicitListValidation(sheet, dvh, 4,  new String[]{"JA","NEE"}, false,
+                "Ongeldig", "Vul JA of NEE in.");
+            addExplicitListValidation(sheet, dvh, 7,  new String[]{"JA","NEE"}, false,
+                "Ongeldig", "Vul JA of NEE in.");
+            addExplicitListValidation(sheet, dvh, 14, new String[]{"JA","NEE"}, false,
+                "Ongeldig", "Vul JA of NEE in.");
+
+            DataValidationConstraint yearConstraint = dvh.createIntegerConstraint(
+                OperatorType.GREATER_OR_EQUAL, "1000", null);
+            DataValidation yearVal = dvh.createValidation(yearConstraint,
+                new CellRangeAddressList(1, MAX_DATA_ROWS, 10, 10));
+            yearVal.setEmptyCellAllowed(true);
+            yearVal.setShowErrorBox(true);
+            yearVal.createErrorBox("Ongeldig jaar", "Vul een geldig jaar in (bv. 2000).");
+            sheet.addValidationData(yearVal);
+
+            DataValidationConstraint pagesConstraint = dvh.createIntegerConstraint(
+                OperatorType.GREATER_OR_EQUAL, "1", null);
+            DataValidation pagesVal = dvh.createValidation(pagesConstraint,
+                new CellRangeAddressList(1, MAX_DATA_ROWS, 12, 12));
+            pagesVal.setEmptyCellAllowed(true);
+            pagesVal.setShowErrorBox(true);
+            pagesVal.createErrorBox("Ongeldig aantal pagina's", "Vul een positief geheel getal in.");
+            sheet.addValidationData(pagesVal);
+
+            DataValidationConstraint descConstraint = dvh.createTextLengthConstraint(
+                OperatorType.LESS_OR_EQUAL, "500", null);
+            DataValidation descVal = dvh.createValidation(descConstraint,
+                new CellRangeAddressList(1, MAX_DATA_ROWS, 3, 3));
+            descVal.setShowErrorBox(true);
+            descVal.createErrorBox("Beschrijving te lang", "Beschrijving mag maximaal 500 tekens bevatten.");
+            sheet.addValidationData(descVal);
+
+            wb.write(baos);
+            return baos.toByteArray();
         }
-        return baos.toByteArray();
     }
 
-    private String buildSheetXml(String authorList, String publisherList,
-                                String bookTypeList, String genreList,
-                                String languageList) {
-
-        return """
-            <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-            <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
-            <sheetViews>
-                <sheetView workbookViewId="0" tabSelected="1">
-                <pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/>
-                </sheetView>
-            </sheetViews>
-            <sheetData>
-                <row r="1">
-                <c r="A1" t="inlineStr"><is><t>ISBN (optioneel)</t></is></c>
-                <c r="B1" t="inlineStr"><is><t>Titel *</t></is></c>
-                <c r="C1" t="inlineStr"><is><t>Auteur * (kies uit lijst)</t></is></c>
-                <c r="D1" t="inlineStr"><is><t>Beschrijving * (max 500 tekens)</t></is></c>
-                <c r="E1" t="inlineStr"><is><t>Didactisch materiaal (JA/NEE)</t></is></c>
-                <c r="F1" t="inlineStr"><is><t>Uitgever (optioneel, kies uit lijst)</t></is></c>
-                <c r="G1" t="inlineStr"><is><t>CLIB (optioneel, A/B/C/D)</t></is></c>
-                <c r="H1" t="inlineStr"><is><t>Fictie (JA/NEE)</t></is></c>
-                <c r="I1" t="inlineStr"><is><t>Boektype * (kies uit lijst)</t></is></c>
-                <c r="J1" t="inlineStr"><is><t>Genre 1 * (kies uit lijst)</t></is></c>
-                <c r="K1" t="inlineStr"><is><t>Genre 2 (optioneel)</t></is></c>
-                <c r="L1" t="inlineStr"><is><t>Genre 3 (optioneel)</t></is></c>
-                <c r="M1" t="inlineStr"><is><t>Genre 4 (optioneel)</t></is></c>
-                <c r="N1" t="inlineStr"><is><t>Genre 5 (optioneel)</t></is></c>
-                <c r="O1" t="inlineStr"><is><t>Jaar van uitgave (optioneel)</t></is></c>
-                <c r="P1" t="inlineStr"><is><t>Taal * (kies uit lijst)</t></is></c>
-                <c r="Q1" t="inlineStr"><is><t>Aantal pagina's *</t></is></c>
-                <c r="R1" t="inlineStr"><is><t>Lettergrootte (optioneel: groot/medium/klein)</t></is></c>
-                <c r="S1" t="inlineStr"><is><t>Enkel zichtbaar voor deze school (JA/NEE)</t></is></c>
-                <c r="T1" t="inlineStr"><is><t>Cover (optioneel, URL)</t></is></c>
-                </row>
-            </sheetData>
-            <dataValidations count="13">
-                <dataValidation type="list" allowBlank="1" showDropDown="0"
-                    showErrorMessage="1" errorTitle="Ongeldige auteur"
-                    error="Kies een auteur uit de lijst."
-                    sqref="C2:C501">
-                <formula1>%s</formula1>
-                </dataValidation>
-                <dataValidation type="list" allowBlank="1" showDropDown="0"
-                    showErrorMessage="1" errorTitle="Ongeldige uitgever"
-                    error="Kies een uitgever uit de lijst."
-                    sqref="F2:F501">
-                <formula1>%s</formula1>
-                </dataValidation>
-                <dataValidation type="list" allowBlank="0" showDropDown="0"
-                    showErrorMessage="1" errorTitle="Ongeldig CLIB niveau"
-                    error="Kies A, B, C of D."
-                    sqref="G2:G501">
-                <formula1>"A,B,C,D"</formula1>
-                </dataValidation>
-                <dataValidation type="list" allowBlank="0" showDropDown="0"
-                    showErrorMessage="1" errorTitle="Ongeldig boektype"
-                    error="Kies een boektype uit de lijst."
-                    sqref="I2:I501">
-                <formula1>%s</formula1>
-                </dataValidation>
-                <dataValidation type="list" allowBlank="0" showDropDown="0"
-                    showErrorMessage="1" errorTitle="Ongeldig genre"
-                    error="Kies een genre uit de lijst."
-                    sqref="J2:J501">
-                <formula1>%s</formula1>
-                </dataValidation>
-                <dataValidation type="list" allowBlank="1" showDropDown="0"
-                    showErrorMessage="1" errorTitle="Ongeldig genre"
-                    error="Kies een genre uit de lijst."
-                    sqref="K2:N501">
-                <formula1>%s</formula1>
-                </dataValidation>
-                <dataValidation type="list" allowBlank="0" showDropDown="0"
-                    showErrorMessage="1" errorTitle="Ongeldige taal"
-                    error="Kies een taal uit de lijst."
-                    sqref="P2:P501">
-                <formula1>%s</formula1>
-                </dataValidation>
-                <dataValidation type="list" allowBlank="1" showDropDown="0"
-                    showErrorMessage="1" errorTitle="Ongeldige lettergrootte"
-                    error="Kies groot, medium of klein."
-                    sqref="R2:R501">
-                <formula1>"groot,medium,klein"</formula1>
-                </dataValidation>
-                <dataValidation type="list" allowBlank="0" showDropDown="0"
-                    showErrorMessage="1" errorTitle="Ongeldig"
-                    error="Vul JA of NEE in."
-                    sqref="E2:E501">
-                <formula1>"JA,NEE"</formula1>
-                </dataValidation>
-                <dataValidation type="list" allowBlank="0" showDropDown="0"
-                    showErrorMessage="1" errorTitle="Ongeldig"
-                    error="Vul JA of NEE in."
-                    sqref="H2:H501">
-                <formula1>"JA,NEE"</formula1>
-                </dataValidation>
-                <dataValidation type="list" allowBlank="0" showDropDown="0"
-                    showErrorMessage="1" errorTitle="Ongeldig"
-                    error="Vul JA of NEE in."
-                    sqref="S2:S501">
-                <formula1>"JA,NEE"</formula1>
-                </dataValidation>
-                <dataValidation type="decimal" allowBlank="1" showDropDown="0"
-                    operator="greaterThanOrEqual" showErrorMessage="1"
-                    errorTitle="Ongeldig jaar"
-                    error="Vul een geldig jaar in (bv. 2000)."
-                    sqref="O2:O501">
-                <formula1>1000</formula1>
-                </dataValidation>
-                <dataValidation type="textLength" allowBlank="0" showDropDown="0"
-                    operator="lessThanOrEqual" showErrorMessage="1"
-                    errorTitle="Beschrijving te lang"
-                    error="Beschrijving mag maximaal 500 tekens bevatten."
-                    sqref="D2:D501">
-                <formula1>500</formula1>
-                </dataValidation>
-            </dataValidations>
-            </worksheet>
-            """.formatted(
-                authorList,    
-                publisherList, 
-                bookTypeList, 
-                genreList,
-                genreList,
-                languageList
-            );
+    private <T> List<String> sortedNames(List<T> items, Function<T, String> nameFn) {
+        return items.stream()
+            .map(nameFn)
+            .sorted(Comparator.naturalOrder())
+            .toList();
     }
 
-    private String toQuotedCsv(List<String> values) {
-        String joined = values.stream()
-            .map(this::escapeXml)
-            .collect(Collectors.joining(","));
-        return "\"" + joined + "\"";
+    private String writeListColumn(XSSFSheet listSheet, int columnIndex, List<String> values) {
+        String header = "list_" + columnIndex;
+        Row headerRow = listSheet.getRow(0);
+        if (headerRow == null) headerRow = listSheet.createRow(0);
+        headerRow.createCell(columnIndex).setCellValue(header);
+
+        for (int i = 0; i < values.size(); i++) {
+            Row row = listSheet.getRow(i + 1);
+            if (row == null) row = listSheet.createRow(i + 1);
+            row.createCell(columnIndex).setCellValue(values.get(i));
+        }
+
+        if (values.isEmpty()) {
+            // Empty range still needs a valid reference; point at the header cell only.
+            String cell = CellReference.convertNumToColString(columnIndex) + "1";
+            return "_lists!$" + cell.replace("1", "$1");
+        }
+
+        String col = CellReference.convertNumToColString(columnIndex);
+        return "_lists!$" + col + "$2:$" + col + "$" + (values.size() + 1);
     }
 
-    private void writeZipEntry(ZipOutputStream zos, String name, String content) throws IOException {
-        zos.putNextEntry(new ZipEntry(name));
-        zos.write(content.getBytes(StandardCharsets.UTF_8));
-        zos.closeEntry();
+    private void addListValidation(Sheet sheet, XSSFDataValidationHelper dvh, int colIdx,
+                                   String formulaRef, boolean allowBlank,
+                                   String errorTitle, String errorMsg) {
+        DataValidationConstraint constraint = dvh.createFormulaListConstraint(formulaRef);
+        DataValidation validation = dvh.createValidation(constraint,
+            new CellRangeAddressList(1, MAX_DATA_ROWS, colIdx, colIdx));
+        validation.setEmptyCellAllowed(allowBlank);
+        validation.setShowErrorBox(true);
+        validation.createErrorBox(errorTitle, errorMsg);
+        sheet.addValidationData(validation);
     }
 
-    private String escapeXml(String value) {
-        return value.replace("&", "&amp;")
-                    .replace("<", "&lt;")
-                    .replace(">", "&gt;")
-                    .replace("\"", "&quot;")
-                    .replace("'", "&apos;");
+    private void addExplicitListValidation(Sheet sheet, XSSFDataValidationHelper dvh, int colIdx,
+                                           String[] values, boolean allowBlank,
+                                           String errorTitle, String errorMsg) {
+        DataValidationConstraint constraint = dvh.createExplicitListConstraint(values);
+        DataValidation validation = dvh.createValidation(constraint,
+            new CellRangeAddressList(1, MAX_DATA_ROWS, colIdx, colIdx));
+        validation.setEmptyCellAllowed(allowBlank);
+        validation.setShowErrorBox(true);
+        validation.createErrorBox(errorTitle, errorMsg);
+        sheet.addValidationData(validation);
     }
 
     @PostMapping("bulk-upload")
@@ -354,17 +320,13 @@ public class ExcelController {
                 String clib          = getCellString(row, 6);
                 String fictie        = getCellString(row, 7);
                 String boektypeNaam  = getCellString(row, 8);
-                String genre1        = getCellString(row, 9);
-                String genre2        = getCellString(row, 10);
-                String genre3        = getCellString(row, 11);
-                String genre4        = getCellString(row, 12);
-                String genre5        = getCellString(row, 13);
-                String jaarStr       = getCellString(row, 14);
-                String taalNaam      = getCellString(row, 15);
-                String paginasStr    = getCellString(row, 16);
-                String lettergrootte = getCellString(row, 17);
-                String enkelSchool   = getCellString(row, 18);
-                String cover         = getCellString(row, 19);
+                String genresCsv     = getCellString(row, 9);
+                String jaarStr       = getCellString(row, 10);
+                String taalNaam      = getCellString(row, 11);
+                String paginasStr    = getCellString(row, 12);
+                String lettergrootte = getCellString(row, 13);
+                String enkelSchool   = getCellString(row, 14);
+                String cover         = getCellString(row, 15);
 
                 int rowNum = i + 1;
 
@@ -388,7 +350,7 @@ public class ExcelController {
                     result.addError(rowNum, "Boektype is verplicht");
                     continue;
                 }
-                if (genre1.isBlank()) {
+                if (genresCsv.isBlank()) {
                     result.addError(rowNum, "Minstens 1 genre is verplicht");
                     continue;
                 }
@@ -405,7 +367,7 @@ public class ExcelController {
                         result.addSkipped(rowNum, "ISBN komt meerdere keren voor in dit bestand: " + isbn);
                         continue;
                     }
-                    seenIsbns.add(isbn); 
+                    seenIsbns.add(isbn);
                 }
 
                 Author auteur = authorMap.get(auteurNaam.toLowerCase());
@@ -436,11 +398,17 @@ public class ExcelController {
                     continue;
                 }
 
-                List<String> genreNamen = Stream.of(genre1, genre2, genre3, genre4, genre5)
+                List<String> genreNamen = Arrays.stream(genresCsv.split(","))
+                    .map(String::trim)
                     .filter(g -> !g.isBlank())
                     .map(String::toLowerCase)
                     .distinct()
                     .toList();
+
+                if (genreNamen.isEmpty()) {
+                    result.addError(rowNum, "Minstens 1 genre is verplicht");
+                    continue;
+                }
 
                 List<Genre> genres = new ArrayList<>();
                 boolean genreError = false;
@@ -527,7 +495,7 @@ public class ExcelController {
                         book.setClib(Clib.valueOf(clib.trim().toUpperCase()));
                     } catch (IllegalArgumentException e) {
                         result.addError(rowNum, "Ongeldige CLIB: " + clib);
-                        continue;                    
+                        continue;
                     }
                 }
 
@@ -536,7 +504,7 @@ public class ExcelController {
                         book.setFontSize(FontSize.valueOf(lettergrootte.trim().toUpperCase()));
                     } catch (IllegalArgumentException e) {
                         result.addError(rowNum, "Ongeldige lettergrootte: " + lettergrootte);
-                        continue;       
+                        continue;
                     }
                 }
                 if (!cover.isBlank()) {
@@ -567,7 +535,7 @@ public class ExcelController {
     private String getCellString(Row row, int cellIndex) {
         Cell cell = row.getCell(cellIndex, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
         if (cell == null) return "";
-        
+
         return switch (cell.getCellType()) {
             case STRING  -> cell.getStringCellValue().trim();
             case NUMERIC -> {
@@ -582,20 +550,18 @@ public class ExcelController {
     }
 
     private String getCellIsbn(Row row, int cellIndex) {
-    Cell cell = row.getCell(cellIndex, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
-    if (cell == null) return "";
+        Cell cell = row.getCell(cellIndex, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
+        if (cell == null) return "";
 
-    String raw = switch (cell.getCellType()) {
-        case STRING  -> cell.getStringCellValue().trim();
-        case NUMERIC -> {
-            // convert directly from double to avoid scientific notation entirely
-            long val = (long) cell.getNumericCellValue();
-            yield String.valueOf(val);
-        }
-        case FORMULA -> new DataFormatter().formatCellValue(cell).trim();
-        default      -> "";
-    };
-
-    return raw;
-}
+        return switch (cell.getCellType()) {
+            case STRING  -> cell.getStringCellValue().trim();
+            case NUMERIC -> {
+                // convert directly from double to avoid scientific notation entirely
+                long val = (long) cell.getNumericCellValue();
+                yield String.valueOf(val);
+            }
+            case FORMULA -> new DataFormatter().formatCellValue(cell).trim();
+            default      -> "";
+        };
+    }
 }
