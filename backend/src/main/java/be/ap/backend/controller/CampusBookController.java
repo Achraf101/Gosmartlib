@@ -14,12 +14,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import be.ap.backend.dto.CampusBookDTO;
 import be.ap.backend.dto.CampusBookDetailDTO;
+import be.ap.backend.dto.CampusStatsDTO;
 import be.ap.backend.entity.CampusBook;
 import be.ap.backend.exception.ArgumentsInvalidException;
 import be.ap.backend.exception.BookAlreadyInCampusException;
 import be.ap.backend.exception.MissingArgumentsException;
 import be.ap.backend.service.CampusBookService;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -64,5 +66,11 @@ public class CampusBookController {
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(404).body(e.getMessage());
         }
+    }
+
+    @GetMapping("/stats")
+    public ResponseEntity<CampusStatsDTO> getCampusStats(HttpSession session) {
+        Long campusId = Long.valueOf(session.getAttribute("campus").toString());
+        return ResponseEntity.ok(campusBookService.getStatsForCampus(campusId));
     }
 }

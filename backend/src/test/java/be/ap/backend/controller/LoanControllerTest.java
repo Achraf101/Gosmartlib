@@ -219,4 +219,60 @@ public class LoanControllerTest {
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("Uitlening niet gevonden");
     }
+
+    @Test
+    void getOverdueLoans_returnsOk() throws Exception {
+        when(loanService.getOverdueLoans(eq(1L))).thenReturn(List.of());
+
+        mockMvc.perform(get("/loan/overdue")
+                .sessionAttr("campus", "1"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void getOverdueLoansLength_returnsCount() throws Exception {
+        when(loanService.getOverdueLoansLength(eq(1L))).thenReturn(3);
+
+        mockMvc.perform(get("/loan/overdue/length")
+                .sessionAttr("campus", "1"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("3"));
+    }
+
+    @Test
+    void getDueSoonLoans_returnsOk() throws Exception {
+        when(loanService.getDueSoonLoans(eq(1L))).thenReturn(List.of());
+
+        mockMvc.perform(get("/loan/due-soon")
+                .sessionAttr("campus", "1"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void getDueSoonLoansLength_returnsCount() throws Exception {
+        when(loanService.getDueSoonLoansLength(eq(1L))).thenReturn(7);
+
+        mockMvc.perform(get("/loan/due-soon/length")
+                .sessionAttr("campus", "1"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("7"));
+    }
+
+    @Test
+    void getTopBooksThisMonth_returnsOk() throws Exception {
+        when(loanService.getTopBooksThisMonth(eq(1L))).thenReturn(List.of());
+
+        mockMvc.perform(get("/loan/top-books")
+                .sessionAttr("campus", "1"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void getTopGenresThisMonth_returnsOk() throws Exception {
+        when(loanService.getTopGenresThisMonth(eq(1L))).thenReturn(List.of());
+
+        mockMvc.perform(get("/loan/top-genres")
+                .sessionAttr("campus", "1"))
+                .andExpect(status().isOk());
+    }
 }

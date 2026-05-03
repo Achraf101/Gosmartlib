@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { ApiService } from './api';
 import { Observable } from 'rxjs';
 import { HttpParams } from '@angular/common/http';
+import { BookDetail } from '../models/book';
 
 @Injectable({
   providedIn: 'root',
@@ -25,9 +26,20 @@ export class SectionService {
   }
 
   setBookOfMonth(sectionId: number, bookId: number, grade: number): Observable<any> {
-  return this.apiService.put<any>(
-    `${this.endpoint}/${sectionId}/book?bookId=${bookId}&grade=${grade}`,
-    {}
-  );
-}
+    return this.apiService.put<any>(
+      `${this.endpoint}/${sectionId}/book?bookId=${bookId}&grade=${grade}`,
+      {},
+    );
+  }
+
+  setSpotlightBook(sectionId: number, bookId: number, ranking: number): Observable<any> {
+    return this.apiService.put(
+      `${this.endpoint}/${sectionId}/spotlight?bookId=${bookId}&ranking=${ranking}`,
+      {},
+    );
+  }
+
+  getSpotlightBooks(sectionId: number): Observable<{ ranking: number; book: BookDetail }[]> {
+    return this.apiService.get(`${this.endpoint}/${sectionId}/spotlight`);
+  }
 }

@@ -4,24 +4,32 @@ import java.time.Year;
 import java.util.Set;
 
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import be.ap.backend.entity.Author;
 import be.ap.backend.entity.Book;
 import be.ap.backend.entity.BookType;
+import be.ap.backend.entity.Campus;
 import be.ap.backend.entity.Genre;
 import be.ap.backend.entity.Hello;
 import be.ap.backend.entity.Language;
+import be.ap.backend.entity.School;
 import be.ap.backend.entity.Section;
 import be.ap.backend.entity.SectionBook;
+import be.ap.backend.entity.User;
+import be.ap.backend.entity.UserRole;
 import be.ap.backend.repository.AuthorRepository;
 import be.ap.backend.repository.BookRepository;
 import be.ap.backend.repository.BookTypeRepository;
+import be.ap.backend.repository.CampusRepository;
 import be.ap.backend.repository.GenreRepository;
 import be.ap.backend.repository.HelloRepository;
 import be.ap.backend.repository.LanguageRepository;
+import be.ap.backend.repository.SchoolRepository;
 import be.ap.backend.repository.SectionBookRepository;
 import be.ap.backend.repository.SectionRepository;
+import be.ap.backend.repository.UserRepository;
 
 import org.springframework.beans.factory.annotation.Value;
 
@@ -40,11 +48,15 @@ public class DataSeeder implements CommandLineRunner {
     private final AuthorRepository authorRepository;
     private final SectionRepository sectionRepository;
     private final SectionBookRepository sectionBookRepository;
+        private final UserRepository userRepository;
+    private final CampusRepository campusRepository;
+    private final SchoolRepository schoolRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public DataSeeder(HelloRepository helloRepository, LanguageRepository languageRepository,
             BookTypeRepository bookTypeRepository, GenreRepository genreRepository,
             BookRepository bookRepository, AuthorRepository authorRepository,
-            SectionRepository sectionRepository, SectionBookRepository sectionBookRepository) {
+            SectionRepository sectionRepository, SectionBookRepository sectionBookRepository, UserRepository userRepository, CampusRepository campusRepository, SchoolRepository schoolRepository, PasswordEncoder passwordEncoder) {
         this.helloRepository = helloRepository;
         this.languageRepository = languageRepository;
         this.bookTypeRepository = bookTypeRepository;
@@ -53,6 +65,10 @@ public class DataSeeder implements CommandLineRunner {
         this.authorRepository = authorRepository;
         this.sectionRepository = sectionRepository;
         this.sectionBookRepository = sectionBookRepository;
+                this.userRepository = userRepository;
+        this.campusRepository = campusRepository;
+        this.schoolRepository = schoolRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -74,6 +90,7 @@ public class DataSeeder implements CommandLineRunner {
         BookType boek = seedBookTypes();
         seedGenres();
         seedBooks(boek);
+        makeLibraryManager();
     }
 
     private void seedLanguages() {
@@ -237,5 +254,21 @@ public class DataSeeder implements CommandLineRunner {
         sb.setBook(book);
         sb.setRanking(ranking);
         sectionBookRepository.save(sb);
+    }
+
+    private void makeLibraryManager(){
+        if (userRepository.findByUsername("beheerder").isEmpty()) {
+            Campus campus = campusRepository.findById(1L).orElse(null);
+            School school = schoolRepository.findById(1L).orElse(null);
+
+            User user = new User();
+            user.setUsername("beheerder");
+            user.setPassword(passwordEncoder.encode("test1234"));
+            user.setRole(UserRole.BIBLIOTHEEKBEHEERDER);
+            user.setCampus(campus);
+            user.setSchool(school);
+
+            userRepository.save(user);
+        }
     }
 }

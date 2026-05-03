@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { CampusBook } from '../models/CampusBook';
 import { ApiService } from './api';
 import { Observable } from 'rxjs';
+import { CampusStats } from '../models/CampusBookDetail';
 
 @Injectable({
   providedIn: 'root',
@@ -26,5 +27,9 @@ export class CampusBookService {
   }
   getCampusBook(campusId: number, bookId: number): Observable<CampusBook> {
     return this.apiService.get<CampusBook>(`${this.endpoint}/${campusId}/books/${bookId}`);
+  }
+
+  getCampusStats(): Observable<CampusStats> {
+    return this.apiService.get<CampusStats>(`${this.endpoint}/stats`);
   }
 }

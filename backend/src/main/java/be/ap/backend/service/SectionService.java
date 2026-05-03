@@ -1,5 +1,6 @@
 package be.ap.backend.service;
 
+import be.ap.backend.dto.SectionBookDTO;
 import be.ap.backend.entity.Book;
 import be.ap.backend.entity.Section;
 import be.ap.backend.entity.SectionBook;
@@ -58,5 +59,31 @@ public class SectionService {
         sectionBookRepository.save(sectionBook);
 
         return book;
+    }
+
+    public Book setSpotlightBook(Long sectionId, Long bookId, Short ranking) {
+        Section section = sectionRepository.findById(sectionId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Sectie niet gevonden"));
+
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Boek niet gevonden"));
+
+        sectionBookRepository.findBySectionIdAndRanking(sectionId, ranking)
+                .ifPresent(sectionBookRepository::delete);
+
+        SectionBook sectionBook = new SectionBook();
+        sectionBook.setSection(section);
+        sectionBook.setBook(book);
+        sectionBook.setRanking(ranking);
+        sectionBookRepository.save(sectionBook);
+
+        return book;
+    }
+
+    public List<SectionBookDTO> getSpotlightBooks(Long sectionId) {
+        return sectionBookRepository.findBySectionIdAndGradeIsNullOrderByRankingAsc(sectionId)
+            .stream()
+            .map(sb -> new SectionBookDTO(sb.getRanking(), sb.getBook()))
+            .collect(Collectors.toList());
     }
 }
