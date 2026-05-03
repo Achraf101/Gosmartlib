@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import {
   FormsModule,
   ReactiveFormsModule,
@@ -156,6 +156,7 @@ export class BookformComponent implements OnInit {
     private upLoadService: UpLoadService,
     private seriesService: SeriesService,
     private router: Router,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit() {
@@ -314,6 +315,20 @@ export class BookformComponent implements OnInit {
   rejectSuggestion(): void {
     this.lookupResult = null;
     this.suggestionCard = null;
+  }
+
+  resetForm(): void {
+    this.bookForm.reset({ didactic_material: false, fiction: true, school: false, contributors: [] });
+    this.lookupMethod = 'auto';
+    this.isbnLookupValue = '';
+    this.lookupCoverUrl = null;
+    this.lookupResult = null;
+    this.suggestionCard = null;
+    this.newBookId = undefined;
+    this.coverDisabled = true;
+    this.setDefaultBookType();
+    this.cdr.detectChanges();
+    document.getElementById('isbn-lookup')?.focus();
   }
 
   private prefillForm(data: BookLookupDTO): void {
