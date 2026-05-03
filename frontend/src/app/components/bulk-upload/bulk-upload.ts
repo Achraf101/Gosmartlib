@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { HttpClient, HttpEventType } from '@angular/common/http';
-import { BulkUpload as BulkUpload_1 } from '../../services/BulkUpload';
+import { timeout } from 'rxjs/operators';
+import { BulkUpload as BulkUpload_1, BulkPreviewResult } from '../../services/BulkUpload';
 import { ButtonModule } from 'primeng/button';
 
 interface RowIssue {
@@ -18,6 +19,8 @@ interface BulkUploadResult {
   fullSuccess: boolean;
 }
 
+const LOOKUP_TIMEOUT_MS = 5 * 60 * 1000;
+
 @Component({
   selector: 'app-bulk-upload',
   templateUrl: './bulk-upload.html',
@@ -28,7 +31,9 @@ export class BulkUpload {
   selectedFile: File | null = null;
   isDragging = false;
   isUploading = false;
+  isPreviewing = false;
   uploadProgress = 0;
+  preview: BulkPreviewResult | null = null;
   result: BulkUploadResult | null = null;
   uploadError: string | null = null;
 
@@ -66,14 +71,41 @@ export class BulkUpload {
     }
     this.selectedFile = file;
     this.uploadError = null;
+    this.preview = null;
     this.result = null;
   }
 
   clearFile(): void {
     this.selectedFile = null;
     this.uploadProgress = 0;
+    this.preview = null;
     this.result = null;
     this.uploadError = null;
+  }
+
+  runPreview(): void {
+    if (!this.selectedFile || this.isPreviewing) return;
+
+    this.isPreviewing = true;
+    this.uploadError = null;
+    this.preview = null;
+
+    this.bulkUpload
+      .preview(this.selectedFile)
+      .pipe(timeout(LOOKUP_TIMEOUT_MS))
+      .subscribe({
+        next: (result) => {
+          this.preview = result;
+          this.isPreviewing = false;
+        },
+        error: (err) => {
+          this.uploadError =
+            err?.name === 'TimeoutError'
+              ? 'ISBN-opzoeking duurde te lang. Probeer opnieuw.'
+              : (err?.error?.message ?? 'Voorbeeld mislukt. Probeer opnieuw.');
+          this.isPreviewing = false;
+        },
+      });
   }
 
   upload(): void {
@@ -91,6 +123,7 @@ export class BulkUpload {
         reportProgress: true,
         observe: 'events',
       })
+      .pipe(timeout(LOOKUP_TIMEOUT_MS))
       .subscribe({
         next: (event) => {
           if (event.type === HttpEventType.UploadProgress && event.total) {
@@ -101,7 +134,10 @@ export class BulkUpload {
           }
         },
         error: (err) => {
-          this.uploadError = err.error?.message ?? 'Upload failed. Please try again.';
+          this.uploadError =
+            err?.name === 'TimeoutError'
+              ? 'Import duurde te lang. Probeer opnieuw.'
+              : (err?.error?.message ?? 'Upload failed. Please try again.');
           this.isUploading = false;
         },
       });
@@ -109,6 +145,7 @@ export class BulkUpload {
 
   reset(): void {
     this.selectedFile = null;
+    this.preview = null;
     this.result = null;
     this.uploadProgress = 0;
     this.uploadError = null;

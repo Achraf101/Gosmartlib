@@ -303,6 +303,10 @@ table {
     background: #fee2e2;
     color: #dc2626;
   }
+  &.ok {
+    background: #dcfce7;
+    color: #16a34a;
+  }
 }
 
 .hint {
