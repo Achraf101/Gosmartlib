@@ -20,6 +20,7 @@
                 [(ngModel)]="isbnLookupValue"
                 (keyup.enter)="lookupIsbn()"
                 class="input"
+                autofocus
               />
             </p-iftalabel>
             <p-button
@@ -87,6 +88,7 @@
                         }
                       </div>
                       <div class="inputitem field-author">
+                        <p-iftalabel>
                         <p-select
                           [options]="authors"
                           [filter]="true"
@@ -94,7 +96,6 @@
                           optionLabel="name"
                           optionValue="id"
                           formControlName="author"
-                          placeholder="Auteur*"
                           class="select"
                           [showClear]="true"
                           id="author"
@@ -113,6 +114,8 @@
                             </div>
                           </ng-template>
                         </p-select>
+                        <label for="author">Auteur*</label>
+                        </p-iftalabel>
                         @if (bookForm.controls.author.invalid && bookForm.controls.author.touched) {
                           <small class="p-error">
                             <p-message severity="error" size="small" variant="simple"
@@ -193,6 +196,7 @@
                   <ng-template #content let-activateCallback="activateCallback">
                     <div class="inputrow">
                       <div class="inputitem field-series">
+                        <p-iftalabel>
                         <p-select
                           [options]="series"
                           [filter]="true"
@@ -200,9 +204,9 @@
                           optionLabel="name"
                           optionValue="id"
                           formControlName="series"
-                          placeholder="Serie (optioneel)"
                           class="select"
                           [showClear]="true"
+                          id="series"
                         >
                           <ng-template #footer>
                             <div class="p-3">
@@ -218,74 +222,85 @@
                             </div>
                           </ng-template>
                         </p-select>
+                        <label for="series">Serie (optioneel)</label>
+                        </p-iftalabel>
                       </div>
 
                       <div class="inputitem field-series-nr">
-                        <label for="series_count" class="static-label">Volgnummer</label>
-                        <p-inputNumber
-                          id="series_count"
-                          formControlName="series_count"
-                          [showButtons]="true"
-                          [min]="1"
-                          [useGrouping]="false"
-                          styleClass="w-full"
-                          placeholder="Bv. 1"
-                        />
+                        <p-iftalabel>
+                          <p-inputNumber
+                            id="series_count"
+                            formControlName="series_count"
+                            [showButtons]="true"
+                            [min]="1"
+                            [useGrouping]="false"
+                            class="w-full"
+                          />
+                          <label for="series_count">Volgnummer</label>
+                        </p-iftalabel>
                       </div>
                     </div>
 
                     <div class="inputitem">
-                      <p-multiselect
-                        display="chip"
-                        [options]="authors"
-                        formControlName="contributors"
-                        placeholder="Mede-auteurs (optioneel)"
-                        optionLabel="name"
-                        optionValue="id"
-                        [filter]="true"
-                        filterBy="name"
-                        [showClear]="true"
-                        class="select w-full"
-                      />
+                      <p-iftalabel>
+                        <p-multiselect
+                          display="chip"
+                          [options]="authors"
+                          formControlName="contributors"
+                          optionLabel="name"
+                          optionValue="id"
+                          [filter]="true"
+                          filterBy="name"
+                          [showClear]="true"
+                          class="select w-full"
+                          id="contributors"
+                        />
+                        <label for="contributors">Mede-auteurs (optioneel)</label>
+                      </p-iftalabel>
                     </div>
 
                     <div class="inputrow">
                       <div class="inputitem field-publisher">
-                        <p-select
-                          [options]="publishers"
-                          [filter]="true"
-                          filterBy="name"
-                          optionLabel="name"
-                          optionValue="id"
-                          formControlName="publisher"
-                          placeholder="Uitgever (optioneel)"
-                          class="select"
-                          [showClear]="true"
-                        >
-                          <ng-template #footer>
-                            <div class="p-3">
-                              <p-button
-                                label="Nieuwe uitgever"
-                                fluid
-                                severity="secondary"
-                                text
-                                size="small"
-                                icon="pi pi-plus"
-                                (click)="publisherFormVisible = true"
-                              />
-                            </div>
-                          </ng-template>
-                        </p-select>
+                        <p-iftalabel>
+                          <p-select
+                            [options]="publishers"
+                            [filter]="true"
+                            filterBy="name"
+                            optionLabel="name"
+                            optionValue="id"
+                            formControlName="publisher"
+                            class="select"
+                            [showClear]="true"
+                            id="publisher"
+                          >
+                            <ng-template #footer>
+                              <div class="p-3">
+                                <p-button
+                                  label="Nieuwe uitgever"
+                                  fluid
+                                  severity="secondary"
+                                  text
+                                  size="small"
+                                  icon="pi pi-plus"
+                                  (click)="publisherFormVisible = true"
+                                />
+                              </div>
+                            </ng-template>
+                          </p-select>
+                          <label for="publisher">Uitgever (optioneel)</label>
+                        </p-iftalabel>
                       </div>
                       <div class="inputitem field-clib">
-                        <p-select
-                          [options]="cLIBS"
-                          formControlName="clib"
-                          id="clib"
-                          class="select"
-                          placeholder="CLIB (optioneel)"
-                          [showClear]="true"
-                        />
+                        <p-iftalabel>
+                          <p-select
+                            [options]="cLIBS"
+                            formControlName="clib"
+                            id="clib"
+                            class="select"
+                            [showClear]="true"
+                          />
+                          <label for="clib">CLIB (optioneel)</label>
+                        </p-iftalabel>
                       </div>
                     </div>
 
@@ -309,28 +324,34 @@
                       </div>
                     </div>
                     <div class="inputitem dropdowns">
-                      <p-select
-                        [options]="bookTypes"
-                        [filter]="true"
-                        filterBy="name"
-                        optionLabel="name"
-                        optionValue="id"
-                        formControlName="book_type"
-                        placeholder="Boektype*"
-                        class="select"
-                      />
-                      <p-multiselect
-                        display="chip"
-                        [options]="genres"
-                        formControlName="genres"
-                        placeholder="Genre(s)*"
-                        [selectionLimit]="5"
-                        optionLabel="name"
-                        optionValue="id"
-                        showToggleAll="false"
-                        [showClear]="true"
-                        class="select"
-                      />
+                      <p-iftalabel>
+                        <p-select
+                          [options]="bookTypes"
+                          [filter]="true"
+                          filterBy="name"
+                          optionLabel="name"
+                          optionValue="id"
+                          formControlName="book_type"
+                          class="select"
+                          id="book_type"
+                        />
+                        <label for="book_type">Boektype*</label>
+                      </p-iftalabel>
+                      <p-iftalabel>
+                        <p-multiselect
+                          display="chip"
+                          [options]="genres"
+                          formControlName="genres"
+                          [selectionLimit]="5"
+                          optionLabel="name"
+                          optionValue="id"
+                          showToggleAll="false"
+                          [showClear]="true"
+                          class="select"
+                          id="genres"
+                        />
+                        <label for="genres">Genre(s)*</label>
+                      </p-iftalabel>
                     </div>
                     <div class="inputitem">
                       <p-iftalabel>
@@ -339,20 +360,23 @@
                           [showButtons]="true"
                           [min]="1"
                           [useGrouping]="false"
-                          styleClass="w-full"
+                          class="w-full"
                         />
                         <label for="published">Jaar van uitgave</label>
                       </p-iftalabel>
                     </div>
                     <div class="inputitem">
-                      <p-select
-                        [options]="languages"
-                        formControlName="language"
-                        optionValue="id"
-                        optionLabel="name"
-                        placeholder="Taal*"
-                        class="language"
-                      />
+                      <p-iftalabel>
+                        <p-select
+                          [options]="languages"
+                          formControlName="language"
+                          optionValue="id"
+                          optionLabel="name"
+                          class="language"
+                          id="language"
+                        />
+                        <label for="language">Taal*</label>
+                      </p-iftalabel>
                     </div>
                     <div class="inputitem">
                       <p-iftalabel>
@@ -362,21 +386,24 @@
                           [showButtons]="true"
                           [min]="1"
                           [useGrouping]="false"
-                          styleClass="w-full"
+                          class="w-full"
                         />
                         <label for="pages">Aantal pagina's</label>
                       </p-iftalabel>
                     </div>
                     <div class="inputitem">
-                      <p-select
-                        [options]="font_sizes"
-                        formControlName="font_size"
-                        optionValue="value"
-                        optionLabel="name"
-                        placeholder="Lettergrootte (optioneel)"
-                        [showClear]="true"
-                        class="w-full"
-                      />
+                      <p-iftalabel>
+                        <p-select
+                          [options]="font_sizes"
+                          formControlName="font_size"
+                          optionValue="value"
+                          optionLabel="name"
+                          [showClear]="true"
+                          class="w-full"
+                          id="font_size"
+                        />
+                        <label for="font_size">Lettergrootte (optioneel)</label>
+                      </p-iftalabel>
                     </div>
                     <div class="inputitem">
                       <p>

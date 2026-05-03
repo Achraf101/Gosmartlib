@@ -27,7 +27,8 @@ public class IsbnLookupService {
 
     public Optional<BookLookupDTO> lookup(String isbn) {
         try {
-            URL url = new URI("https://www.googleapis.com/books/v1/volumes?q=isbn:" + isbn).toURL();
+            String cleanIsbn = isbn.replaceAll("[^0-9Xx]", "");
+            URL url = new URI("https://www.googleapis.com/books/v1/volumes?q=isbn:" + cleanIsbn).toURL();
 
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");

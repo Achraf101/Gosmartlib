@@ -279,12 +279,14 @@ export class BookformComponent implements OnInit {
   }
 
   lookupIsbn(): void {
+    if (this.isLookingUp) return;
     if (isbnValidator({ value: this.isbnLookupValue } as any) !== null) {
       this.showError('Ongeldig ISBN. Voer een geldig ISBN-10 of ISBN-13 in.');
       return;
     }
     this.isLookingUp = true;
-    this.bookService.lookupByIsbn(this.isbnLookupValue).subscribe({
+    const cleanIsbn = this.isbnLookupValue.replace(/[-\s]/g, '');
+    this.bookService.lookupByIsbn(cleanIsbn).subscribe({
       next: (result) => {
         this.lookupResult = result;
         this.suggestionCard = {
