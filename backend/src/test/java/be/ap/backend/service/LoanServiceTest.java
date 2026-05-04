@@ -2,6 +2,7 @@ package be.ap.backend.service;
 
 import be.ap.backend.dto.LoanBookDTO;
 import be.ap.backend.dto.LoanDTO;
+import be.ap.backend.dto.TopBookDTO;
 import be.ap.backend.entity.*;
 import be.ap.backend.repository.CampusBookRepository;
 import be.ap.backend.repository.LoanBookRepository;
@@ -16,6 +17,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -25,6 +27,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -461,5 +465,198 @@ public class LoanServiceTest {
         dto.setEnd(LocalDate.now().plusDays(15));
         dto.setBooks(new LoanBookDTO[] { loanBookDTO });
         return dto;
+    }
+
+    @Test
+    void getOverdueLoans_returnsListOfDTOs() {
+        loan.setStatus(LoanStatus.RECEIVED);
+        loan.setEnd(LocalDate.now().minusDays(1));
+
+        when(loanRepository.findOverdueLoans(anyList(), any(LocalDate.class), eq(1L)))
+                .thenReturn(List.of(loan));
+
+        List<LoanDTO> result = loanService.getOverdueLoans(1L);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getUserId()).isEqualTo(1L);
+    }
+
+    @Test
+    void getOverdueLoans_empty_returnsEmptyList() {
+        when(loanRepository.findOverdueLoans(anyList(), any(LocalDate.class), eq(1L)))
+                .thenReturn(List.of());
+
+        List<LoanDTO> result = loanService.getOverdueLoans(1L);
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void getOverdueLoansLength_returnsCount() {
+        when(loanRepository.countOverdueLoans(anyList(), any(LocalDate.class), eq(1L)))
+                .thenReturn(3);
+
+        int result = loanService.getOverdueLoansLength(1L);
+
+        assertThat(result).isEqualTo(3);
+    }
+
+    @Test
+    void getOverdueLoansLength_noOverdue_returnsZero() {
+        when(loanRepository.countOverdueLoans(anyList(), any(LocalDate.class), eq(1L)))
+                .thenReturn(0);
+
+        int result = loanService.getOverdueLoansLength(1L);
+
+        assertThat(result).isEqualTo(0);
+    }
+
+    @Test
+    void getDueSoonLoans_returnsListOfDTOs() {
+        loan.setStatus(LoanStatus.RECEIVED);
+        loan.setEnd(LocalDate.now().plusDays(3));
+
+        when(loanRepository.findDueSoonLoans(anyList(), any(LocalDate.class), any(LocalDate.class), eq(1L)))
+                .thenReturn(List.of(loan));
+
+        List<LoanDTO> result = loanService.getDueSoonLoans(1L);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getUserId()).isEqualTo(1L);
+    }
+
+    @Test
+    void getDueSoonLoans_empty_returnsEmptyList() {
+        when(loanRepository.findDueSoonLoans(anyList(), any(LocalDate.class), any(LocalDate.class), eq(1L)))
+                .thenReturn(List.of());
+
+        List<LoanDTO> result = loanService.getDueSoonLoans(1L);
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void getDueSoonLoansLength_returnsCount() {
+        when(loanRepository.countDueSoonLoans(anyList(), any(LocalDate.class), any(LocalDate.class), eq(1L)))
+                .thenReturn(7);
+
+        int result = loanService.getDueSoonLoansLength(1L);
+
+        assertThat(result).isEqualTo(7);
+    }
+
+    @Test
+    void getDueSoonLoansLength_noSoonDue_returnsZero() {
+        when(loanRepository.countDueSoonLoans(anyList(), any(LocalDate.class), any(LocalDate.class), eq(1L)))
+                .thenReturn(0);
+
+        int result = loanService.getDueSoonLoansLength(1L);
+
+        assertThat(result).isEqualTo(0);
+    }
+
+    @Test
+    void getTopBooksThisMonth_returnsTopBooks() {
+        LoanBook loanBook = new LoanBook();
+        loanBook.setBook(book);
+        loan.setLoanBooks(Set.of(loanBook));
+
+        when(loanRepository.findByDateRangeWithBooks(any(), any(), anyList(), eq(1L)))
+                .thenReturn(List.of(loan));
+
+        List<TopBookDTO> result = loanService.getTopBooksThisMonth(1L);
+
+        assertThat(result).isNotEmpty();
+        assertThat(result.get(0).title()).isEqualTo("De brief voor de koning");
+        assertThat(result.get(0).count()).isEqualTo(1);
+    }
+
+    @Test
+    void getTopBooksThisMonth_limitsToFive() {
+        LoanBook loanBook = new LoanBook();
+        loanBook.setBook(book);
+
+        Book book2 = new Book(); book2.setId(2L); book2.setTitle("Het kerstvarken");
+        LoanBook lb2 = new LoanBook(); lb2.setBook(book2);
+
+        Book book3 = new Book(); book3.setId(3L); book3.setTitle("Onze versplinterde zielen");
+        LoanBook lb3 = new LoanBook(); lb3.setBook(book3);
+
+        Book book4 = new Book(); book4.setId(4L); book4.setTitle("Kruistocht");
+        LoanBook lb4 = new LoanBook(); lb4.setBook(book4);
+
+        Book book5 = new Book(); book5.setId(5L); book5.setTitle("Geef me de ruimte");
+        LoanBook lb5 = new LoanBook(); lb5.setBook(book5);
+
+        Book book6 = new Book(); book6.setId(6L); book6.setTitle("Extra boek");
+        LoanBook lb6 = new LoanBook(); lb6.setBook(book6);
+
+        Loan l1 = new Loan(); l1.setLoanBooks(Set.of(loanBook));
+        Loan l2 = new Loan(); l2.setLoanBooks(Set.of(lb2));
+        Loan l3 = new Loan(); l3.setLoanBooks(Set.of(lb3));
+        Loan l4 = new Loan(); l4.setLoanBooks(Set.of(lb4));
+        Loan l5 = new Loan(); l5.setLoanBooks(Set.of(lb5));
+        Loan l6 = new Loan(); l6.setLoanBooks(Set.of(lb6));
+
+        when(loanRepository.findByDateRangeWithBooks(any(), any(), anyList(), eq(1L)))
+                .thenReturn(List.of(l1, l2, l3, l4, l5, l6));
+
+        List<TopBookDTO> result = loanService.getTopBooksThisMonth(1L);
+
+        assertThat(result.size()).isLessThanOrEqualTo(5);
+    }
+
+    @Test
+    void getTopBooksThisMonth_empty_returnsEmptyList() {
+        when(loanRepository.findByDateRangeWithBooks(any(), any(), anyList(), eq(1L)))
+                .thenReturn(List.of());
+
+        List<TopBookDTO> result = loanService.getTopBooksThisMonth(1L);
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void getTopGenresThisMonth_returnsTopGenres() {
+    Object[] row = {"Fantasy", 5L};
+    List<Object[]> rows = new ArrayList<>();
+    rows.add(row);
+    when(loanRepository.findTopGenres(anyList(), any(), any(), eq(1L)))
+        .thenReturn(rows);
+
+        List<TopBookDTO> result = loanService.getTopGenresThisMonth(1L);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).title()).isEqualTo("Fantasy");
+        assertThat(result.get(0).count()).isEqualTo(5);
+    }
+
+    @Test
+    void getTopGenresThisMonth_empty_returnsEmptyList() {
+        when(loanRepository.findTopGenres(anyList(), any(), any(), eq(1L)))
+                .thenReturn(List.of());
+
+        List<TopBookDTO> result = loanService.getTopGenresThisMonth(1L);
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void getTopGenresThisMonth_limitsToFive() {
+        List<Object[]> rows = List.of(
+            new Object[]{"Fantasy", 10L},
+            new Object[]{"Horror", 9L},
+            new Object[]{"Humor", 8L},
+            new Object[]{"Avontuur", 7L},
+            new Object[]{"Poëzie", 6L},
+            new Object[]{"Romantiek", 5L}
+        );
+
+        when(loanRepository.findTopGenres(anyList(), any(), any(), eq(1L)))
+                .thenReturn(rows);
+
+        List<TopBookDTO> result = loanService.getTopGenresThisMonth(1L);
+
+        assertThat(result.size()).isLessThanOrEqualTo(5);
     }
 }

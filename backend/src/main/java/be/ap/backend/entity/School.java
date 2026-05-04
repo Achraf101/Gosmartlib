@@ -1,17 +1,19 @@
 package be.ap.backend.entity;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @Table(name = "school")
 @Data
 @NoArgsConstructor
-public class School {
+public class School implements Serializable{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,6 +36,7 @@ public class School {
     private String ssSubdomain;
 
     // One school has many campuses
+    @ToString.Exclude
     @OneToMany(mappedBy = "school", cascade = CascadeType.ALL)
     private List<Campus> campuses = new ArrayList<>();
 

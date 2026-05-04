@@ -13,6 +13,9 @@ import { FormsModule } from '@angular/forms';
 import { BookCardComponent } from '../misc/book-card/book-card';
 import { BookResult } from '../misc/book-result/book-result';
 import { DelayedLoader } from '../../utils/delayed-loader';
+import { CampusSettings } from '../../models/campus-settings';
+import { CampusSettingsService } from '../../services/campus-settings';
+import { isVisible } from '../../models/campus-settings';
 
 @Component({
   selector: 'app-book-section',
@@ -39,6 +42,8 @@ export class BookSectionComponent implements OnInit {
   selectedGrade: number = 1;
   monthlyBook: BookDetail | null = null;
   loading = new DelayedLoader();
+  campusSettings: CampusSettings | null = null;
+  isVisible = isVisible;
 
   grades = [
     { label: 'Graad 1', value: 1 },
@@ -50,6 +55,7 @@ export class BookSectionComponent implements OnInit {
     private sectionService: SectionService,
     private messageService: MessageService,
     private router: Router,
+    private campusSettingsService: CampusSettingsService,
   ) {}
 
   ngOnInit(): void {
@@ -58,7 +64,7 @@ export class BookSectionComponent implements OnInit {
       next: (sections) => {
         this.sections = sections;
         if (this.sections.length > 0) {
-          this.selectSection(this.sections[0]);
+          this.selectSection(this.visibleSections[0]);
         } else {
           this.loading.stop();
         }
@@ -73,10 +79,33 @@ export class BookSectionComponent implements OnInit {
         });
       },
     });
+
+    this.campusSettingsService.getSettings().subscribe({
+      next: (settings) => {
+        this.campusSettings = settings;
+        if (
+          this.visibleSections.length > 0 &&
+          !this.visibleSections.includes(this.activeSection!)
+        ) {
+          this.selectSection(this.visibleSections[0]);
+        }
+      },
+      error: () => (this.campusSettings = null),
+    });
   }
 
   get isMonthlySection(): boolean {
     return this.activeSection?.title === 'Boek van de maand';
+  }
+
+  get visibleSections(): Section[] {
+    return this.sections.filter((s) => {
+      if (s.title === 'Boek van de maand')
+        return this.campusSettings ? isVisible(this.campusSettings, 'HOME', 'MONTHLY_BOOK') : true;
+      if (s.title === 'In de kijker')
+        return this.campusSettings ? isVisible(this.campusSettings, 'HOME', 'IN_SPOTLIGHT') : true;
+      return true;
+    });
   }
 
   selectSection(section: Section): void {

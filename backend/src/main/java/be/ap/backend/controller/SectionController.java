@@ -1,10 +1,12 @@
 package be.ap.backend.controller;
 
+import be.ap.backend.dto.SectionBookDTO;
 import be.ap.backend.entity.Book;
 import be.ap.backend.entity.Section;
 import be.ap.backend.service.SectionService;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -39,5 +41,18 @@ public class SectionController {
             @RequestParam Long bookId,
             @RequestParam Byte grade) {
         return sectionService.setBookOfMonth(id, bookId, grade);
+    }
+
+    @PutMapping("/{sectionId}/spotlight")
+    public ResponseEntity<?> setSpotlightBook(
+        @PathVariable Long sectionId,
+        @RequestParam Long bookId,
+        @RequestParam Short ranking) {
+        return ResponseEntity.ok(sectionService.setSpotlightBook(sectionId, bookId, ranking));
+    }
+
+    @GetMapping("/{id}/spotlight")
+    public ResponseEntity<List<SectionBookDTO>> getSpotlightBooks(@PathVariable Long id) {
+        return ResponseEntity.ok(sectionService.getSpotlightBooks(id));
     }
 }

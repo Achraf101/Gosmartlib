@@ -1,11 +1,14 @@
 package be.ap.backend.service;
 
+import be.ap.backend.dto.SectionBookDTO;
 import be.ap.backend.entity.Book;
 import be.ap.backend.entity.Section;
 import be.ap.backend.entity.SectionBook;
 import be.ap.backend.repository.BookRepository;
 import be.ap.backend.repository.SectionBookRepository;
 import be.ap.backend.repository.SectionRepository;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -16,7 +19,10 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -136,5 +142,107 @@ public class SectionServiceTest {
         assertThrows(ResponseStatusException.class, () -> {
             sectionService.setBookOfMonth(1L, 99L, (byte) 1);
         });
+    }
+
+    private Section section;
+    private Book book;
+    private SectionBook sectionBook;
+
+    @BeforeEach
+    void setUp() {
+        section = new Section();
+        section.setId(1L);
+        section.setTitle("In de kijker");
+
+        book = new Book();
+        book.setId(1L);
+        book.setTitle("De brief voor de koning");
+
+        sectionBook = new SectionBook();
+        sectionBook.setSection(section);
+        sectionBook.setBook(book);
+        sectionBook.setRanking((short) 1);
+    }
+
+    @Test
+    void setSpotlightBook_success() {
+        when(sectionRepository.findById(1L)).thenReturn(Optional.of(section));
+        when(bookRepository.findById(1L)).thenReturn(Optional.of(book));
+        when(sectionBookRepository.findBySectionIdAndRanking(1L, (short) 1)).thenReturn(Optional.empty());
+        when(sectionBookRepository.save(any())).thenReturn(sectionBook);
+
+        Book result = sectionService.setSpotlightBook(1L, 1L, (short) 1);
+
+        assertThat(result).isNotNull();
+        assertThat(result.getTitle()).isEqualTo("De brief voor de koning");
+        verify(sectionBookRepository).save(any());
+    }
+
+    @Test
+    void setSpotlightBook_replacesExistingBook() {
+        SectionBook existing = new SectionBook();
+        existing.setRanking((short) 1);
+
+        when(sectionRepository.findById(1L)).thenReturn(Optional.of(section));
+        when(bookRepository.findById(1L)).thenReturn(Optional.of(book));
+        when(sectionBookRepository.findBySectionIdAndRanking(1L, (short) 1)).thenReturn(Optional.of(existing));
+
+        sectionService.setSpotlightBook(1L, 1L, (short) 1);
+
+        verify(sectionBookRepository).delete(existing);
+        verify(sectionBookRepository).save(any());
+    }
+
+    @Test
+    void setSpotlightBook_sectionNotFound_throwsResponseStatusException() {
+        when(sectionRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> sectionService.setSpotlightBook(99L, 1L, (short) 1))
+                .isInstanceOf(ResponseStatusException.class);
+    }
+
+    @Test
+    void setSpotlightBook_bookNotFound_throwsResponseStatusException() {
+        when(sectionRepository.findById(1L)).thenReturn(Optional.of(section));
+        when(bookRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> sectionService.setSpotlightBook(1L, 99L, (short) 1))
+                .isInstanceOf(ResponseStatusException.class);
+    }
+
+    @Test
+    void getSpotlightBooks_returnsListOfDTOs() {
+        when(sectionBookRepository.findBySectionIdAndGradeIsNullOrderByRankingAsc(1L))
+                .thenReturn(List.of(sectionBook));
+
+        List<SectionBookDTO> result = sectionService.getSpotlightBooks(1L);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).ranking()).isEqualTo((short) 1);
+        assertThat(result.get(0).book().getTitle()).isEqualTo("De brief voor de koning");
+    }
+
+    @Test
+    void getSpotlightBooks_empty_returnsEmptyList() {
+        when(sectionBookRepository.findBySectionIdAndGradeIsNullOrderByRankingAsc(1L))
+                .thenReturn(List.of());
+
+        List<SectionBookDTO> result = sectionService.getSpotlightBooks(1L);
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void getSpotlightBooks_orderedByRanking() {
+        SectionBook sb1 = new SectionBook(); sb1.setRanking((short) 1); sb1.setBook(book);
+        SectionBook sb2 = new SectionBook(); sb2.setRanking((short) 3); sb2.setBook(book);
+
+        when(sectionBookRepository.findBySectionIdAndGradeIsNullOrderByRankingAsc(1L))
+                .thenReturn(List.of(sb1, sb2));
+
+        List<SectionBookDTO> result = sectionService.getSpotlightBooks(1L);
+
+        assertThat(result.get(0).ranking()).isEqualTo((short) 1);
+        assertThat(result.get(1).ranking()).isEqualTo((short) 3);
     }
 }

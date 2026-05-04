@@ -1,5 +1,7 @@
 package be.ap.backend.entity;
 
+import java.io.Serializable;
+
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "campus")
 @Data
 @NoArgsConstructor
-public class Campus {
+public class Campus implements Serializable{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")

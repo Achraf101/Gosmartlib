@@ -5,7 +5,6 @@ import be.ap.backend.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.util.Map;
-import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -113,7 +112,7 @@ public class SecurityConfig {
     private Map<String, String> getUserDetails(Authentication auth) {
         User u = (User) auth.getPrincipal();
 
-        String campus = Objects.toString(u.getCampus(), "");
+        String campus = u.getCampus() != null ? u.getCampus().getId().toString() : "";
 
         System.out.println(u.getUsername());
         Map<String, String> usr = Map.of(
