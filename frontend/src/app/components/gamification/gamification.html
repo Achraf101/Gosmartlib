@@ -1,0 +1,80 @@
+@if (gamification) {
+<div class="gamification-wrapper">
+
+  <div class="streak-card">
+    <div class="streak-top">
+      <div class="streak-badge-circle">
+        <span class="streak-emoji">{{ getNextBadge()?.icon ?? '🌟' }}</span>
+      </div>
+      <div class="streak-info">
+        <span class="streak-title">{{ gamification.streakLevel }}</span>
+        @if (getNextBadge()) {
+        <span class="streak-sub">Nog <strong>{{ getNextBadge()!.required - gamification.totalBooks }}</strong> {{
+          (getNextBadge()!.required - gamification.totalBooks) === 1 ? 'boek' : 'boeken' }} tot {{ getNextBadge()!.label
+          }}</span>
+        } @else {
+        <span class="streak-sub">Je hebt alle badges behaald! 🎉</span>
+        }
+      </div>
+      <div class="streak-total">
+        <span class="streak-number">{{ gamification.totalBooks }}</span>
+        <span class="streak-label">boeken</span>
+      </div>
+    </div>
+
+    <div class="progress-bar-container">
+      <div class="progress-bar" [style.width.%]="getBadgeProgress()"></div>
+    </div>
+
+    <div class="badges-row">
+      @for (badge of badges; track badge.required) {
+      <div class="badge-item" [class.unlocked]="isUnlocked(badge)" [class.locked]="!isUnlocked(badge)">
+        <div class="badge-icon-wrap">
+          <span class="badge-emoji">{{ badge.icon }}</span>
+        </div>
+        <span class="badge-name">{{ badge.label }}</span>
+        <span class="badge-req">{{ badge.required }} {{ badge.required === 1 ? 'boek' : 'boeken' }}</span>
+      </div>
+      }
+    </div>
+  </div>
+
+  <div class="challenges-card">
+    <div class="challenges-header">
+      <div class="challenges-title">
+        <span class="challenges-icon">🎯</span>
+        <div>
+          <h3>Uitdagingen deze maand</h3>
+          <p>Voltooi uitdagingen door boeken te ontlenen</p>
+        </div>
+      </div>
+      <div class="challenges-score">
+        <span class="score-number">{{ getCompletedCount() }}</span>
+        <span class="score-total">/ {{ gamification.challenges.length }}</span>
+      </div>
+    </div>
+
+    <div class="challenges-list">
+      @for (challenge of gamification.challenges; track challenge.id) {
+      <div class="challenge-item" [class.done]="challenge.completed">
+        <div class="challenge-left">
+          <div class="challenge-check" [class.checked]="challenge.completed">
+            @if (challenge.completed) {
+            <i class="pi pi-check"></i>
+            }
+          </div>
+          <div class="challenge-text">
+            <span class="challenge-desc">{{ challenge.description }}</span>
+            <span class="challenge-type">{{ getTypeLabel(challenge.conditionType) }}</span>
+          </div>
+        </div>
+        @if (challenge.completed) {
+        <span class="challenge-badge">Voltooid ✓</span>
+        }
+      </div>
+      }
+    </div>
+  </div>
+
+</div>
+}
