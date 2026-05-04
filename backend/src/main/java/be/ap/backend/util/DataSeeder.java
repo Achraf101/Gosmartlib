@@ -14,6 +14,7 @@ import be.ap.backend.entity.Hello;
 import be.ap.backend.entity.Language;
 import be.ap.backend.entity.Section;
 import be.ap.backend.entity.SectionBook;
+import be.ap.backend.entity.Theme;
 import be.ap.backend.repository.AuthorRepository;
 import be.ap.backend.repository.BookRepository;
 import be.ap.backend.repository.BookTypeRepository;
@@ -22,6 +23,7 @@ import be.ap.backend.repository.HelloRepository;
 import be.ap.backend.repository.LanguageRepository;
 import be.ap.backend.repository.SectionBookRepository;
 import be.ap.backend.repository.SectionRepository;
+import be.ap.backend.repository.ThemeRepository;
 
 import org.springframework.beans.factory.annotation.Value;
 
@@ -40,11 +42,13 @@ public class DataSeeder implements CommandLineRunner {
     private final AuthorRepository authorRepository;
     private final SectionRepository sectionRepository;
     private final SectionBookRepository sectionBookRepository;
+    private final ThemeRepository themeRepository;
 
     public DataSeeder(HelloRepository helloRepository, LanguageRepository languageRepository,
             BookTypeRepository bookTypeRepository, GenreRepository genreRepository,
             BookRepository bookRepository, AuthorRepository authorRepository,
-            SectionRepository sectionRepository, SectionBookRepository sectionBookRepository) {
+            SectionRepository sectionRepository, SectionBookRepository sectionBookRepository,
+            ThemeRepository themeRepository) {
         this.helloRepository = helloRepository;
         this.languageRepository = languageRepository;
         this.bookTypeRepository = bookTypeRepository;
@@ -53,11 +57,13 @@ public class DataSeeder implements CommandLineRunner {
         this.authorRepository = authorRepository;
         this.sectionRepository = sectionRepository;
         this.sectionBookRepository = sectionBookRepository;
+        this.themeRepository = themeRepository;
     }
 
     @Override
     public void run(String... args) {
-        if(!seedingEnabled) return;
+        if (!seedingEnabled)
+            return;
 
         if (bookRepository.count() > 0) {
             if (sectionRepository.count() == 0) {
@@ -73,11 +79,13 @@ public class DataSeeder implements CommandLineRunner {
         seedLanguages();
         BookType boek = seedBookTypes();
         seedGenres();
+        seedThemes();
         seedBooks(boek);
     }
 
     private void seedLanguages() {
-        if(languageRepository.count() > 0) return;
+        if (languageRepository.count() > 0)
+            return;
         languageRepository.save(new Language("Nederlands", "nl"));
         languageRepository.save(new Language("Frans", "fr"));
         languageRepository.save(new Language("Engels", "en"));
@@ -85,7 +93,8 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     private BookType seedBookTypes() {
-        if(bookRepository.count() > 0) return bookTypeRepository.findByName("Boek");
+        if (bookRepository.count() > 0)
+            return bookTypeRepository.findByName("Boek");
         BookType boek = bookTypeRepository.save(new BookType("Boek"));
         bookTypeRepository.save(new BookType("Stripboek"));
         bookTypeRepository.save(new BookType("Magazine"));
@@ -94,12 +103,13 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     private void seedGenres() {
-        if (genreRepository.count() > 0) return;
+        if (genreRepository.count() > 0)
+            return;
 
         // fictie
         genreRepository.save(new Genre("Literaire roman"));
         genreRepository.save(new Genre("Spanning / thriller"));
-        genreRepository.save(new Genre("Detective / misdaad")); 
+        genreRepository.save(new Genre("Detective / misdaad"));
         genreRepository.save(new Genre("Fantasy"));
         genreRepository.save(new Genre("Sciencefiction"));
         genreRepository.save(new Genre("Dystopie"));
@@ -130,6 +140,8 @@ public class DataSeeder implements CommandLineRunner {
         Genre avontuur = genreRepository.findByName("Avontuur");
         Genre fantasy = genreRepository.findByName("Fantasy");
         Genre geschiedenis = genreRepository.findByName("Geschiedenis");
+        Theme avontuurEnOntdekking = themeRepository.findByName("Avontuur & ontdekking");
+        Theme identiteitEnZelfbeeld = themeRepository.findByName("Identiteit & zelfbeeld");
 
         Author tonke = createAuthor("Tonke Dragt");
         Author thea = createAuthor("Thea Beckman");
@@ -141,37 +153,37 @@ public class DataSeeder implements CommandLineRunner {
                 "Vijf jongelingen moeten, voordat ze tot ridder geslagen worden, de nacht biddend en wakend doorbrengen.",
                 true, Year.of(1962), 449, boek, nl, tonke,
                 "eacc8ca9ee1827042fc7835e7de56227.webp",
-                Set.of(roman, avontuur));
+                Set.of(roman, avontuur), Set.of(avontuurEnOntdekking));
 
         Book b2 = saveBook("Harry Potter en de vuurbeker",
                 "Als tovenaar-in-de-dop Harry Potter deelneemt aan een internationaal tovenaarstoernooi, dreigt er onverwacht gevaar.",
                 true, Year.of(2000), 546, boek, nl, jk,
                 "b983a2f49e023bb4e2b8c5370552c0f4.webp",
-                Set.of(fantasy, avontuur));
+                Set.of(fantasy, avontuur), Set.of(avontuurEnOntdekking));
 
         Book b3 = saveBook("Kruistocht in Spijkerbroek",
                 "Dolf Wega belandt door een tijdmachine plotseling in de kinderkruistocht van 1212.",
                 true, Year.of(1973), 264, boek, nl, thea,
                 "5a6539e1224f4a55659a0136a0de562f.webp",
-                Set.of(roman, avontuur));
+                Set.of(roman, avontuur), Set.of(avontuurEnOntdekking));
 
         Book b4 = saveBook("Geef me de ruimte!",
                 "De lotgevallen van een Vlaams meisje dat van huis wegloopt en in het middeleeuwse Frankrijk een zwervend bestaan gaat leiden.",
                 true, Year.of(1976), 406, boek, nl, thea,
                 "6353feab95305a1264c9430a565515de.webp",
-                Set.of(roman, avontuur));
+                Set.of(roman, avontuur), Set.of(identiteitEnZelfbeeld));
 
         Book b5 = saveBook("De Zwendelprins",
                 "Simran (17) werkt als keukenhulp in het paleis van de maharadja van Suryan als ze wordt ontvoerd door een mysterieuze prins.",
                 true, Year.of(2019), 399, boek, nl, rima,
                 "811278f6a3909b01ed523a55f4b6b817.webp",
-                Set.of(fantasy, avontuur));
+                Set.of(fantasy, avontuur), Set.of(avontuurEnOntdekking));
 
         saveBook("Een geschiedenis van België voor nieuwsgierige kinderen",
                 "Geschiedenis van België vanaf 1830 tot 2003 in hoofdlijnen.",
                 false, Year.of(2012), 319, boek, nl, benno,
                 "82f15cee848b29e0f9684f691f2f020e.webp",
-                Set.of(geschiedenis));
+                Set.of(geschiedenis), Set.of());
 
         seedSectionsWithBooks(b1, b2, b3, b4, b5);
     }
@@ -200,8 +212,8 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     private Book saveBook(String title, String description, boolean fiction,
-        Year published, int pages, BookType bookType, Language language,
-        Author author, String cover, Set<Genre> genres) {
+            Year published, int pages, BookType bookType, Language language,
+            Author author, String cover, Set<Genre> genres, Set<Theme> themes) {
         Book book = new Book();
         book.setTitle(title);
         book.setDescription(description);
@@ -213,6 +225,7 @@ public class DataSeeder implements CommandLineRunner {
         book.setAuthor(author);
         book.setCover(cover);
         book.setGenres(genres);
+        book.setThemes(themes);
         return bookRepository.save(book);
     }
 
@@ -237,5 +250,27 @@ public class DataSeeder implements CommandLineRunner {
         sb.setBook(book);
         sb.setRanking(ranking);
         sectionBookRepository.save(sb);
+    }
+
+    private void seedThemes() {
+        if (themeRepository.count() > 0)
+            return;
+
+        themeRepository.save(new Theme("Liefde & relaties"));
+        themeRepository.save(new Theme("Vriendschap"));
+        themeRepository.save(new Theme("Identiteit & zelfbeeld"));
+        themeRepository.save(new Theme("Gender & seksualiteit"));
+        themeRepository.save(new Theme("Diversiteit & inclusie"));
+        themeRepository.save(new Theme("Mentale gezondheid"));
+        themeRepository.save(new Theme("Rouw & verlies"));
+        themeRepository.save(new Theme("Familie"));
+        themeRepository.save(new Theme("School & prestatiedruk"));
+        themeRepository.save(new Theme("Sociale media"));
+        themeRepository.save(new Theme("Migratie & afkomst"));
+        themeRepository.save(new Theme("Armoede & ongelijkheid"));
+        themeRepository.save(new Theme("Macht & onrecht"));
+        themeRepository.save(new Theme("Avontuur & ontdekking"));
+        themeRepository.save(new Theme("Overleven"));
+        themeRepository.save(new Theme("Toekomst & technologie"));
     }
 }
