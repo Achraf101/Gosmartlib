@@ -9,4 +9,6 @@ import java.util.Optional;
 public interface SectionBookRepository extends JpaRepository<SectionBook, Long> {
     List<SectionBook> findBySectionId(Long sectionId);
     Optional<SectionBook> findBySectionIdAndGrade(Long sectionId, Byte grade);
+    Optional<SectionBook> findBySectionIdAndRanking(Long sectionId, Short ranking);
+    List<SectionBook> findBySectionIdAndGradeIsNullOrderByRankingAsc(Long sectionId);
 }

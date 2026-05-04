@@ -36,4 +36,28 @@ export class LoanService {
   delete(loanId: number): Observable<void> {
     return this.apiService.delete<void>(`${this.endpoint}/${loanId}`);
   }
+
+  getOverdue(): Observable<LoanDTO[]> {
+    return this.apiService.get<LoanDTO[]>(`${this.endpoint}/overdue`);
+  }
+
+  getTopBooks(): Observable<{ title: string; count: number }[]> {
+    return this.apiService.get<{ title: string; count: number }[]>(`${this.endpoint}/top-books`);
+  }
+
+  getOverdueLength(): Observable<number> {
+    return this.apiService.get<number>(`${this.endpoint}/overdue/length`);
+  }
+
+  getDueSoon(): Observable<LoanDTO[]> {
+    return this.apiService.get<LoanDTO[]>(`${this.endpoint}/due-soon`);
+  }
+
+  getDueSoonLength(): Observable<number> {
+    return this.apiService.get<number>(`${this.endpoint}/due-soon/length`);
+  }
+
+  getTopGenres(): Observable<{ title: string; count: number }[]> {
+    return this.apiService.get<{ title: string; count: number }[]>(`${this.endpoint}/top-genres`);
+  }
 }

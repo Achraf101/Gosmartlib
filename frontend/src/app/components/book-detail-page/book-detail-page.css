@@ -47,15 +47,29 @@ h2.show-desktop {
   margin-left: 15px;
 }
 
-.bookmark {
+div.bookmark {
   position: absolute;
   right: 20px;
   top: 20px;
+}
+
+i.bookmark {
   font-size: 1.3rem;
+  margin-top: 6px;
 }
 
 .bookmark:hover {
   cursor: pointer;
+}
+
+.bookmark {
+  display: flex;
+  gap: 5px;
+}
+
+.dropdown-list {
+  background-color: var(--p-zinc-100);
+  padding: 2px 20px;
 }
 
 .description {

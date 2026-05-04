@@ -47,12 +47,33 @@
             >
           </div>
         </div>
-        <i
-          (click)="toggleFavorite()"
-          class="bookmark pi"
-          [class.pi-bookmark]="!isBookmarked"
-          [class.pi-bookmark-fill]="isBookmarked"
-        ></i>
+        <div class="bookmark">
+          <div class="dropdown-list">
+            <p-button
+              label="voeg toe aan lijst"
+              fluid
+              severity="secondary"
+              text
+              size="small"
+              icon="pi pi-plus"
+              (click)="toggleDropdown()"
+            />
+
+            @if (showDropdown) {
+              <div>
+                @for (list of lists; track $index) {
+                  <p (click)="addToList(list.id)">{{ list.name }}</p>
+                }
+              </div>
+            }
+          </div>
+          <i
+            (click)="toggleFavorite()"
+            class="bookmark pi"
+            [class.pi-bookmark]="!isBookmarked"
+            [class.pi-bookmark-fill]="isBookmarked"
+          ></i>
+        </div>
       </div>
       <div id="book-info-text">
         <h2 class="show-desktop">{{ book.title }}</h2>

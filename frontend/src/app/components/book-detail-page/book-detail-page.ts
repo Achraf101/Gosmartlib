@@ -28,6 +28,9 @@ import { LoanCartService } from '../../services/loan-cart';
 import { CarouselModule } from 'primeng/carousel';
 import { ProgressSpinner } from 'primeng/progressspinner';
 import { DelayedLoader } from '../../utils/delayed-loader';
+import { BookList } from '../../models/book-list';
+import { BookListService } from '../../services/book-list';
+import { Button } from 'primeng/button';
 import { CartBook } from '../../models/cartBook';
 import { Campus } from '../../models/campus';
 import { CampusService } from '../../services/campus';
@@ -55,6 +58,7 @@ import { BookService } from '../../services/book';
     BookCardComponent,
     CarouselModule,
     ProgressSpinner,
+    Button,
     Message,
     ReviewSectionComponent,
   ],
@@ -76,6 +80,8 @@ export class BookDetailPage implements OnInit {
   today = new Date();
   endDate = new Date();
   loading = new DelayedLoader();
+  lists: BookList[] = [];
+  showDropdown = false;
   campus?: Campus;
   campusBook?: CampusBook;
 
@@ -89,6 +95,7 @@ export class BookDetailPage implements OnInit {
     private readonly bookService: BookService,
     private readonly messageService: MessageService,
     private readonly bookmarkedService: BookmarkedService,
+    private readonly bookListService: BookListService,
     private readonly loanService: LoanService,
     private readonly loanCartService: LoanCartService,
     private readonly campusService: CampusService,
@@ -99,6 +106,10 @@ export class BookDetailPage implements OnInit {
     this.route.paramMap.subscribe((params) => {
       this.bookId = Number(params.get('id'));
       this.loadBook();
+      this.showDropdown = false;
+      this.bookListService.getListsWithoutBook(this.bookId).subscribe((lists) => {
+        this.lists = lists;
+      });
       this.loadCampusData();
     });
   }
@@ -161,6 +172,26 @@ export class BookDetailPage implements OnInit {
     });
   }
 
+  toggleDropdown() {
+    this.showDropdown = !this.showDropdown;
+  }
+
+  addToList(listId: number) {
+    if (!this.book) return;
+    const list = this.lists.find((l) => l.id === listId);
+    this.bookListService.addBook(listId, this.book.id).subscribe({
+      next: () => {
+        this.showDropdown = false;
+        this.messageService.add({
+          severity: 'success',
+          summary: 'succes',
+          detail: `Boek succesvol toegevoegd aan lijst: "${list?.name}"`,
+          life: 3000,
+        });
+      },
+    });
+    this.lists = this.lists.filter((l) => l.id !== listId);
+  }
   loanForm = new FormGroup({
     start: new FormControl<Date | null>(null, Validators.required),
     end: new FormControl<Date | null>(null, Validators.required),

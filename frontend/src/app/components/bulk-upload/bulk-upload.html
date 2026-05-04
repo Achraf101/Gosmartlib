@@ -50,14 +50,83 @@
         <p class="error">{{ uploadError }}</p>
       }
 
+      @if (isPreviewing) {
+        <p class="hint">ISBN's worden opgezocht, dit kan even duren...</p>
+      }
+
+      @if (!preview) {
+        <p-button (click)="runPreview()" [disabled]="!selectedFile || isPreviewing">
+          {{ isPreviewing ? 'Bezig met opzoeken...' : 'ISBN-voorbeeld bekijken' }}
+        </p-button>
+      }
+    </div>
+  }
+
+  @if (preview && !result) {
+    <div class="card">
+      <span class="step-label">Stap 3</span>
+      <h3>Voorbeeld van ISBN-opzoeking</h3>
+
+      <div class="metrics">
+        <div class="metric success">
+          <span class="value">{{ preview.foundCount }}</span>
+          <span class="label">Gevonden</span>
+        </div>
+        <div class="metric warn">
+          <span class="value">{{ preview.notFoundCount }}</span>
+          <span class="label">Niet gevonden</span>
+        </div>
+        <div class="metric neutral">
+          <span class="value">{{ preview.total }}</span>
+          <span class="label">Totaal</span>
+        </div>
+      </div>
+
+      @if (preview.items.length) {
+        <table>
+          <thead>
+            <tr>
+              <th>Rij</th>
+              <th>ISBN</th>
+              <th>Status</th>
+              <th>Titel</th>
+              <th>Auteur</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of preview.items; track $index) {
+              <tr>
+                <td>{{ item.row }}</td>
+                <td>{{ item.isbn }}</td>
+                <td>
+                  @if (item.found) {
+                    <span class="badge ok">Gevonden</span>
+                  } @else {
+                    <span class="badge skip">Niet gevonden</span>
+                  }
+                </td>
+                <td>{{ item.title || '—' }}</td>
+                <td>{{ item.author || '—' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      } @else {
+        <p class="hint">Geen ISBN's gevonden in dit bestand. U kan toch importeren — verplichte velden moeten dan in de template staan.</p>
+      }
+
+      @if (uploadError) {
+        <p class="error">{{ uploadError }}</p>
+      }
+
       @if (isUploading) {
         <div class="progress-bar">
           <div class="progress-fill" [style.width.%]="uploadProgress"></div>
         </div>
       }
 
-      <p-button (click)="upload()" [disabled]="!selectedFile || isUploading">
-        {{ isUploading ? 'Aan het uploaden...' : 'Uploaden' }}
+      <p-button (click)="upload()" [disabled]="isUploading">
+        {{ isUploading ? 'Aan het importeren...' : 'Importeren' }}
       </p-button>
     </div>
   }

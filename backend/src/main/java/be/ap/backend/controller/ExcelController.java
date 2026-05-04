@@ -5,12 +5,14 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Year;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -32,6 +34,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import be.ap.backend.dto.BookLookupDTO;
+import be.ap.backend.dto.BulkPreviewDTO;
 import be.ap.backend.dto.BulkUploadDTO;
 import be.ap.backend.entity.Author;
 import be.ap.backend.entity.Book;
@@ -49,6 +53,7 @@ import be.ap.backend.repository.GenreRepository;
 import be.ap.backend.repository.LanguageRepository;
 import be.ap.backend.repository.PublisherRepository;
 import be.ap.backend.repository.ThemeRepository;
+import be.ap.backend.service.IsbnLookupService;
 import be.ap.backend.service.UploadService;
 
 @RestController
@@ -63,6 +68,7 @@ public class ExcelController {
     private final LanguageRepository languageRepository;
     private final UploadService uploadService;
     private final ThemeRepository themeRepository;
+    private final IsbnLookupService isbnLookupService;
 
     public ExcelController(AuthorRepository authorRepository,
             BookRepository bookRepository,
@@ -70,7 +76,8 @@ public class ExcelController {
             BookTypeRepository bookTypeRepository,
             GenreRepository genreRepository,
             LanguageRepository languageRepository,
-            UploadService uploadService, ThemeRepository themeRepository) {
+            UploadService uploadService,
+            IsbnLookupService isbnLookupService, ThemeRepository themeRepository) {
         this.authorRepository = authorRepository;
         this.bookRepository = bookRepository;
         this.publisherRepository = publisherRepository;
@@ -79,19 +86,13 @@ public class ExcelController {
         this.languageRepository = languageRepository;
         this.uploadService = uploadService;
         this.themeRepository = themeRepository;
+        this.isbnLookupService = isbnLookupService;
     }
 
     @GetMapping("template")
     public ResponseEntity<byte[]> downloadTemplate() {
-        List<Author> authors = authorRepository.findAll();
-        List<Publisher> publishers = publisherRepository.findAll();
-        List<BookType> bookTypes = bookTypeRepository.findAll();
-        List<Genre> genres = genreRepository.findAll();
-        List<Theme> themes = themeRepository.findAll();
-        List<Language> languages = languageRepository.findAll();
-
         try {
-            byte[] xlsx = buildTemplateXlsx(authors, publishers, bookTypes, genres, languages, themes);
+            byte[] xlsx = buildTemplateXlsx();
             return ResponseEntity.ok()
                     .header("Content-Disposition", "attachment; filename=book-upload-template.xlsx")
                     .contentType(MediaType.APPLICATION_OCTET_STREAM)
@@ -102,21 +103,9 @@ public class ExcelController {
         }
     }
 
-    private byte[] buildTemplateXlsx(List<Author> authors,
-            List<Publisher> publishers,
-            List<BookType> bookTypes,
-            List<Genre> genres,
-            List<Language> languages, List<Theme> themes) throws IOException {
+    private byte[] buildTemplateXlsx() throws IOException {
 
-        String authorList = toQuotedCsv(authors.stream().map(Author::getName).sorted().toList());
-        String publisherList = toQuotedCsv(publishers.stream().map(Publisher::getName).sorted().toList());
-        String bookTypeList = toQuotedCsv(bookTypes.stream().map(BookType::getName).sorted().toList());
-        String genreList = toQuotedCsv(genres.stream().map(Genre::getName).sorted().toList());
-        String languageList = toQuotedCsv(languages.stream().map(Language::getName).sorted().toList());
-        String themeList = toQuotedCsv(themes.stream().map(Theme::getName).sorted().toList());
-
-        String sheetXml = buildSheetXml(
-                authorList, publisherList, bookTypeList, genreList, languageList, themeList);
+        String sheetXml = buildSheetXml();
 
         String workbookXml = """
                 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -315,6 +304,39 @@ public class ExcelController {
         return "\"" + joined + "\"";
     }
 
+    private String buildSheetXml() {
+        return """
+                <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+                <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+                <sheetViews>
+                    <sheetView workbookViewId="0" tabSelected="1">
+                    <pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/>
+                    </sheetView>
+                </sheetViews>
+                <sheetData>
+                    <row r="1">
+                    <c r="A1" t="inlineStr"><is><t>ISBN (optioneel)</t></is></c>
+                    <c r="B1" t="inlineStr"><is><t>Titel *</t></is></c>
+                    <c r="C1" t="inlineStr"><is><t>Auteur *</t></is></c>
+                    <c r="D1" t="inlineStr"><is><t>Beschrijving * (max 500 tekens)</t></is></c>
+                    <c r="E1" t="inlineStr"><is><t>Didactisch materiaal (JA/NEE)</t></is></c>
+                    <c r="F1" t="inlineStr"><is><t>Uitgever (optioneel)</t></is></c>
+                    <c r="G1" t="inlineStr"><is><t>CLIB (optioneel, A/B/C/D)</t></is></c>
+                    <c r="H1" t="inlineStr"><is><t>Fictie (JA/NEE)</t></is></c>
+                    <c r="I1" t="inlineStr"><is><t>Boektype *</t></is></c>
+                    <c r="J1" t="inlineStr"><is><t>Genres * (gescheiden door spaties)</t></is></c>
+                    <c r="K1" t="inlineStr"><is><t>Jaar van uitgave (optioneel)</t></is></c>
+                    <c r="L1" t="inlineStr"><is><t>Taal *</t></is></c>
+                    <c r="M1" t="inlineStr"><is><t>Aantal pagina's *</t></is></c>
+                    <c r="N1" t="inlineStr"><is><t>Lettergrootte (optioneel: groot/medium/klein)</t></is></c>
+                    <c r="O1" t="inlineStr"><is><t>Enkel zichtbaar voor deze school (JA/NEE)</t></is></c>
+                    <c r="P1" t="inlineStr"><is><t>Cover (optioneel, URL)</t></is></c>
+                    </row>
+                </sheetData>
+                </worksheet>
+                """;
+    }
+
     private void writeZipEntry(ZipOutputStream zos, String name, String content) throws IOException {
         zos.putNextEntry(new ZipEntry(name));
         zos.write(content.getBytes(StandardCharsets.UTF_8));
@@ -329,23 +351,67 @@ public class ExcelController {
                 .replace("'", "&apos;");
     }
 
+    @PostMapping("bulk-preview")
+    public ResponseEntity<BulkPreviewDTO> bulkPreview(@RequestParam("file") MultipartFile file) {
+        BulkPreviewDTO result = new BulkPreviewDTO();
+
+        try (Workbook wb = WorkbookFactory.create(file.getInputStream())) {
+            Sheet sheet = wb.getSheet("Books");
+
+            if (sheet == null) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Ongeldig bestand: geen 'Books' tabblad gevonden. Gebruik de template.");
+            }
+
+            Set<String> seen = new HashSet<>();
+            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                Row row = sheet.getRow(i);
+                if (row == null)
+                    continue;
+
+                String isbn = getCellIsbn(row, 0);
+                if (isbn.isBlank() || !seen.add(isbn))
+                    continue;
+
+                int rowNum = i + 1;
+                Optional<BookLookupDTO> lookup = isbnLookupService.lookup(isbn);
+                if (lookup.isPresent()) {
+                    BookLookupDTO data = lookup.get();
+                    result.addFound(rowNum, isbn, data.getTitle(), data.getAuthorName(), data.getCoverUrl());
+                } else {
+                    result.addNotFound(rowNum, isbn);
+                }
+            }
+        } catch (IOException e) {
+            throw new ResponseStatusException(
+                    HttpStatus.INTERNAL_SERVER_ERROR, "Kon bestand niet lezen", e);
+        }
+
+        return ResponseEntity.ok(result);
+    }
+
     @PostMapping("bulk-upload")
     public ResponseEntity<BulkUploadDTO> bulkUpload(@RequestParam("file") MultipartFile file) {
         Map<String, Author> authorMap = authorRepository.findAll().stream()
-                .collect(Collectors.toMap(a -> a.getName().toLowerCase(), a -> a));
+                .collect(Collectors.toMap(a -> a.getName().toLowerCase(), a -> a, (a, b) -> a));
         Map<String, Publisher> publisherMap = publisherRepository.findAll().stream()
-                .collect(Collectors.toMap(p -> p.getName().toLowerCase(), p -> p));
+                .collect(Collectors.toMap(p -> p.getName().toLowerCase(), p -> p, (a, b) -> a));
         Map<String, BookType> bookTypeMap = bookTypeRepository.findAll().stream()
-                .collect(Collectors.toMap(b -> b.getName().toLowerCase(), b -> b));
+                .collect(Collectors.toMap(b -> b.getName().toLowerCase(), b -> b, (a, b) -> a));
         Map<String, Genre> genreMap = genreRepository.findAll().stream()
-                .collect(Collectors.toMap(g -> g.getName().toLowerCase(), g -> g));
+                .collect(Collectors.toMap(g -> g.getName().toLowerCase(), g -> g, (a, b) -> a));
         Map<String, Language> languageMap = languageRepository.findAll().stream()
-                .collect(Collectors.toMap(l -> l.getName().toLowerCase(), l -> l));
+                .collect(Collectors.toMap(l -> l.getName().toLowerCase(), l -> l, (a, b) -> a));
+        Map<String, Language> languageByCode = languageRepository.findAll().stream()
+                .filter(l -> l.getCode() != null)
+                .collect(Collectors.toMap(l -> l.getCode().toLowerCase(), l -> l, (a, b) -> a));
         Map<String, Theme> themeMap = themeRepository.findAll().stream()
-                .collect(Collectors.toMap(t -> t.getName().toLowerCase(), t -> t));
+                .collect(Collectors.toMap(t -> t.getName().toLowerCase(), t -> t, (a, b) -> a));
 
         Set<String> existingIsbns = bookRepository.findAllIsbns();
         Set<String> seenIsbns = new HashSet<>();
+        Map<String, BookLookupDTO> lookupCache = new HashMap<>();
         BulkUploadDTO result = new BulkUploadDTO();
 
         try (Workbook wb = WorkbookFactory.create(file.getInputStream())) {
@@ -371,24 +437,44 @@ public class ExcelController {
                 String clib = getCellString(row, 6);
                 String fictie = getCellString(row, 7);
                 String boektypeNaam = getCellString(row, 8);
-                String genre1 = getCellString(row, 9);
-                String genre2 = getCellString(row, 10);
-                String genre3 = getCellString(row, 11);
-                String genre4 = getCellString(row, 12);
-                String genre5 = getCellString(row, 13);
-                String jaarStr = getCellString(row, 14);
-                String taalNaam = getCellString(row, 15);
-                String paginasStr = getCellString(row, 16);
-                String theme1 = getCellString(row, 17);
-                String theme2 = getCellString(row, 18);
-                String theme3 = getCellString(row, 19);
-                String theme4 = getCellString(row, 20);
-                String theme5 = getCellString(row, 21);
-                String lettergrootte = getCellString(row, 22);
-                String enkelSchool = getCellString(row, 23);
-                String cover = getCellString(row, 24);
+                String genresRaw = getCellString(row, 9);
+                String jaarStr = getCellString(row, 10);
+                String taalNaam = getCellString(row, 11);
+                String paginasStr = getCellString(row, 12);
+                String themesRaw = getCellString(row, 13);
+                String lettergrootte = getCellString(row, 14);
+                String enkelSchool = getCellString(row, 15);
+                String cover = getCellString(row, 16);
 
                 int rowNum = i + 1;
+
+                BookLookupDTO lookup = null;
+                if (!isbn.isBlank()) {
+                    lookup = lookupCache.computeIfAbsent(isbn,
+                            key -> isbnLookupService.lookup(key).orElse(null));
+                }
+
+                if (lookup != null) {
+                    if (titel.isBlank() && lookup.getTitle() != null)
+                        titel = lookup.getTitle();
+                    if (auteurNaam.isBlank() && lookup.getAuthorName() != null)
+                        auteurNaam = lookup.getAuthorName();
+                    if (beschrijving.isBlank() && lookup.getDescription() != null)
+                        beschrijving = lookup.getDescription();
+                    if (uitgeverNaam.isBlank() && lookup.getPublisherName() != null)
+                        uitgeverNaam = lookup.getPublisherName();
+                    if (jaarStr.isBlank() && lookup.getPublishedYear() != null)
+                        jaarStr = String.valueOf(lookup.getPublishedYear());
+                    if (paginasStr.isBlank() && lookup.getPages() != null)
+                        paginasStr = String.valueOf(lookup.getPages());
+                    if (cover.isBlank() && lookup.getCoverUrl() != null)
+                        cover = lookup.getCoverUrl();
+                    if (taalNaam.isBlank() && lookup.getLanguageCode() != null) {
+                        Language byCode = languageByCode.get(lookup.getLanguageCode().toLowerCase());
+                        if (byCode != null)
+                            taalNaam = byCode.getName();
+                    }
+                }
 
                 if (titel.isBlank()) {
                     result.addError(rowNum, "Titel is verplicht");
@@ -403,14 +489,13 @@ public class ExcelController {
                     continue;
                 }
                 if (beschrijving.length() > 500) {
-                    result.addError(rowNum, "Beschrijving mag maximaal 500 tekens bevatten");
-                    continue;
+                    beschrijving = beschrijving.substring(0, 500);
                 }
                 if (boektypeNaam.isBlank()) {
                     result.addError(rowNum, "Boektype is verplicht");
                     continue;
                 }
-                if (genre1.isBlank()) {
+                if (genresRaw.isBlank()) {
                     result.addError(rowNum, "Minstens 1 genre is verplicht");
                     continue;
                 }
@@ -459,15 +544,15 @@ public class ExcelController {
                     continue;
                 }
 
-                List<String> genreNamen = Stream.of(genre1, genre2, genre3, genre4, genre5)
-                        .filter(g -> !g.isBlank())
-                        .map(String::toLowerCase)
-                        .distinct()
-                        .toList();
+                Set<String> genreNames = new LinkedHashSet<>();
+                for (String token : genresRaw.split("\\s+")) {
+                    if (!token.isBlank())
+                        genreNames.add(token.toLowerCase());
+                }
 
                 List<Genre> genres = new ArrayList<>();
                 boolean genreError = false;
-                for (String naam : genreNamen) {
+                for (String naam : genreNames) {
                     Genre genre = genreMap.get(naam);
                     if (genre == null) {
                         result.addError(rowNum, "Onbekend genre: " + naam);
@@ -478,10 +563,12 @@ public class ExcelController {
                 }
                 if (genreError)
                     continue;
-                List<String> themeNames = Stream.of(theme1, theme2, theme3, theme4, theme5)
-                        .filter(t -> !t.isBlank())
-                        .map(String::toLowerCase)
-                        .distinct().toList();
+
+                Set<String> themeNames = new LinkedHashSet<>();
+                for (String token : themesRaw.split("\\s+")) {
+                    if (!token.isBlank())
+                        themeNames.add(token.toLowerCase());
+                }
 
                 List<Theme> themes = new ArrayList<>();
                 boolean themeError = false;
@@ -551,7 +638,6 @@ public class ExcelController {
                 book.setTitle(titel);
                 book.setAuthor(auteur);
                 book.setDescription(beschrijving);
-                // book.setDidactischMateriaal(parseBoolean(didactisch, false));
                 book.setFiction(parseBoolean(fictie, true));
                 book.setBookType(boektype);
                 book.setGenres(new HashSet<>(genres));
@@ -561,7 +647,6 @@ public class ExcelController {
                     book.setPublished(Year.of(jaarVanUitgave));
                 if (aantalPaginas != null)
                     book.setPages(aantalPaginas);
-                // book.setEnkelZichtbaarVoorDezeSchool(parseBoolean(enkelSchool, false));
 
                 if (!isbn.isBlank())
                     book.setIsbn(isbn);
@@ -619,7 +704,6 @@ public class ExcelController {
         return switch (cell.getCellType()) {
             case STRING -> cell.getStringCellValue().trim();
             case NUMERIC -> {
-                // Prevents ISBN like 9781234567890 coming back as "9.78123456789E12"
                 if (DateUtil.isCellDateFormatted(cell))
                     yield "";
                 yield new DataFormatter().formatCellValue(cell).trim();
@@ -638,7 +722,6 @@ public class ExcelController {
         String raw = switch (cell.getCellType()) {
             case STRING -> cell.getStringCellValue().trim();
             case NUMERIC -> {
-                // convert directly from double to avoid scientific notation entirely
                 long val = (long) cell.getNumericCellValue();
                 yield String.valueOf(val);
             }

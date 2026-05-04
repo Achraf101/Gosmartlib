@@ -1,0 +1,322 @@
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  padding: 1.5rem;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  padding: 1.5rem;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+:host ::ng-deep .nav-card {
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+
+:host ::ng-deep .nav-card:hover {
+  transform: translateY(-2px);
+}
+
+:host ::ng-deep .monthly-card,
+:host ::ng-deep .wide-card {
+  grid-column: 1 / -1;
+  cursor: default;
+}
+
+.card-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  text-align: center;
+}
+
+.card-icon {
+  font-size: 2rem;
+  color: var(--p-primary-color);
+}
+.card-icon-small {
+  font-size: 1.25rem;
+  color: var(--p-primary-color);
+}
+.card-title {
+  font-size: 1rem;
+  font-weight: 500;
+}
+.card-desc {
+  font-size: 0.85rem;
+  color: var(--p-text-muted-color);
+}
+.card-desc.pending {
+  color: var(--p-orange-500);
+  font-weight: 500;
+}
+
+.card-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.loan-icon-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loan-badge {
+  position: absolute;
+  top: -8px;
+  right: -12px;
+  background: var(--p-orange-500);
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 600;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 99px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+}
+
+.monthly-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.grades-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+.grade-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.grade-label {
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: var(--p-text-muted-color);
+  text-align: center;
+}
+
+.no-book {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 2rem 1rem;
+  border: 1.5px dashed var(--p-content-border-color);
+  border-radius: 12px;
+  color: var(--p-text-muted-color);
+  font-size: 0.85rem;
+  width: 100%;
+}
+
+.no-book i {
+  font-size: 1.5rem;
+}
+
+.grade-col b-card {
+  display: block;
+  transform-origin: top center;
+  transform: scale(0.85);
+}
+
+.dialog-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+}
+
+.dialog-field label {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+.dialog-field input,
+.dialog-field textarea {
+  width: 100%;
+}
+
+.overdue-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.overdue-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.overdue-title-wrap i {
+  color: var(--p-primary-color);
+}
+
+.overdue-title-wrap .pi-clock {
+  color: var(--p-orange-500);
+}
+
+.overdue-title-wrap .pi-hourglass {
+  color: var(--p-yellow-500);
+}
+
+.overdue-title-wrap .card-desc {
+  margin-left: auto;
+  font-size: 0.75rem;
+}
+
+.overdue-title-wrap .pi-tags {
+  color: var(--p-primary-color);
+}
+
+.no-overdue {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1.5rem;
+  color: var(--p-text-muted-color);
+  font-size: 0.85rem;
+}
+
+.no-overdue i {
+  font-size: 1.5rem;
+  color: var(--p-green-500);
+}
+
+.overdue-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.overdue-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 0.75rem;
+  border-radius: 8px;
+  background: var(--p-content-hover-background);
+  gap: 0.5rem;
+}
+
+.overdue-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.overdue-username {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+.overdue-books {
+  font-size: 0.8rem;
+  color: var(--p-text-muted-color);
+}
+
+.overdue-more {
+  font-size: 0.75rem;
+  background: var(--p-content-border-color);
+  padding: 1px 5px;
+  border-radius: 99px;
+  margin-left: 4px;
+}
+
+.overdue-date {
+  font-size: 0.75rem;
+  color: var(--p-orange-500);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.top-books-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.top-book-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 8px;
+  background: var(--p-content-hover-background);
+}
+
+.top-book-rank {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--p-text-muted-color);
+  width: 24px;
+  flex-shrink: 0;
+}
+
+.top-book-title {
+  flex: 1;
+  font-size: 0.875rem;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.top-book-count {
+  font-size: 0.8rem;
+  color: var(--p-primary-color);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.personolized-title {
+  margin-bottom: 1rem;
+}
+
+@media (min-width: 600px) {
+  .grades-row {
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: 1fr;
+  }
+
+  .spotlight-row {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .stats-grid {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .stats-grid > * {
+    min-width: 0;
+  }
+}

@@ -33,4 +33,9 @@
   <a routerLink="/favorieten" routerLinkActive="active" class="nav-link"
     >Mijn leeslijst &amp; favorieten</a
   >
+  @if (authService.hasRole('BIBLIOTHEEKBEHEERDER')) {
+    <a routerLink="/dashboard/bibliotheek-beheerder" routerLinkActive="active" class="nav-link"
+      >Dashboard</a
+    >
+  }
 </nav>

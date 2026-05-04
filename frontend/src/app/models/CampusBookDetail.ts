@@ -9,3 +9,8 @@ export interface CampusBookDetail {
   current_amount: number;
   location: string;
 }
+
+export interface CampusStats {
+  total_books: number;
+  available_books: number;
+}

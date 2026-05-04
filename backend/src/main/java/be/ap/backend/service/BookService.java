@@ -37,6 +37,7 @@ public class BookService {
 
     private final BookRepository bookRepository;
     private final EntityManager entityManager;
+    private final UploadService uploadService;
 
     public Book saveBook(CreateBookDTO dto) {
         Book book = new Book();
@@ -100,6 +101,13 @@ public class BookService {
 
         if (dto.getClib() != null) {
             book.setClib(dto.getClib());
+        }
+
+        if (dto.getCoverUrl() != null && !dto.getCoverUrl().isBlank()) {
+            String savedCover = uploadService.saveCoverFromUrl(dto.getCoverUrl());
+            if (savedCover != null) {
+                book.setCover(savedCover);
+            }
         }
 
         return bookRepository.save(book);

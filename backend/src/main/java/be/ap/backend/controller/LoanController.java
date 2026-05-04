@@ -13,10 +13,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import be.ap.backend.dto.LoanDTO;
+import be.ap.backend.dto.TopBookDTO;
 import be.ap.backend.dto.UpdateNoteDTO;
 import be.ap.backend.dto.UpdateStatusDTO;
 import be.ap.backend.service.LoanService;
 import jakarta.servlet.http.HttpSession;
+
 
 @RestController
 @RequestMapping("loan")
@@ -58,5 +60,41 @@ public class LoanController {
     public ResponseEntity<Void> deleteLoan(@PathVariable Long id) {
         loanService.deleteLoan(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/overdue/length")
+    public ResponseEntity<Integer> getOverdueLoansLength(HttpSession session) {
+        Long campusId = Long.valueOf(session.getAttribute("campus").toString());
+        return ResponseEntity.ok(loanService.getOverdueLoansLength(campusId));
+    }
+    
+    @GetMapping("/overdue")
+    public ResponseEntity<List<LoanDTO>> getOverdueLoans(HttpSession session) {
+        Long campusId = Long.valueOf(session.getAttribute("campus").toString());
+        return ResponseEntity.ok(loanService.getOverdueLoans(campusId));
+    }
+
+    @GetMapping("/top-books")
+    public ResponseEntity<List<TopBookDTO>> getTopBooksThisMonth(HttpSession session) {
+        Long campusId = Long.valueOf(session.getAttribute("campus").toString());
+        return ResponseEntity.ok(loanService.getTopBooksThisMonth(campusId));
+    }
+
+    @GetMapping("/due-soon/length")
+    public ResponseEntity<Integer> getDueSoonLoansLength(HttpSession session) {
+        Long campusId = Long.valueOf(session.getAttribute("campus").toString());
+        return ResponseEntity.ok(loanService.getDueSoonLoansLength(campusId));
+    }
+
+    @GetMapping("/due-soon")
+    public ResponseEntity<List<LoanDTO>> getDueSoonLoans(HttpSession session) {
+        Long campusId = Long.valueOf(session.getAttribute("campus").toString());
+        return ResponseEntity.ok(loanService.getDueSoonLoans(campusId));
+    }
+
+    @GetMapping("/top-genres")
+    public ResponseEntity<List<TopBookDTO>> getTopGenresThisMonth(HttpSession session) {
+        Long campusId = Long.valueOf(session.getAttribute("campus").toString());
+        return ResponseEntity.ok(loanService.getTopGenresThisMonth(campusId));
     }
 }

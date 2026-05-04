@@ -65,6 +65,7 @@ export interface CreateBook {
   title: string;
   author: number;
   cover?: string;
+  cover_url?: string;
   isbn?: string;
   series?: number;
   series_count?: number;
@@ -81,6 +82,19 @@ export interface CreateBook {
   font_size?: string;
   school?: boolean;
   didactic_material: boolean;
+}
+
+export interface BookLookupDTO {
+  title: string | null;
+  author_name: string | null;
+  publisher_name: string | null;
+  description: string | null;
+  published_year: number | null;
+  pages: number | null;
+  language_code: string | null;
+  contributors: string[] | null;
+  isbn: string;
+  cover_url: string | null;
 }
 
 export interface BookFilter {

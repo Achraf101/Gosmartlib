@@ -12,6 +12,7 @@ public class CreateBookDTO {
     private String title;
     private Long author;
     private String cover;
+    private String coverUrl;
     private String isbn;
     private Long series;
     private Integer seriesCount;

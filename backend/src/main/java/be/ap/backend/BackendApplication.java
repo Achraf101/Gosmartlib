@@ -35,7 +35,7 @@ public class BackendApplication implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        if (userRepository.count() == 0) {
+        if (userRepository.findByUsername("admin").isEmpty()) {
             userRepository.save(new User("admin", passwordEncoder.encode(adminPassword), UserRole.ADMIN));
         }
 

@@ -2,14 +2,15 @@
 
 <section class="spotlight-section">
   <div class="section-tabs">
-    <button
-      class="tab"
-      *ngFor="let section of sections"
-      [class.active]="activeSection?.id === section.id"
-      (click)="selectSection(section)"
-    >
-      {{ section.title }}
-    </button>
+    @for (section of visibleSections; track $index) {
+      <button
+        class="tab"
+        [class.active]="activeSection?.id === section.id"
+        (click)="selectSection(section)"
+      >
+        {{ section.title }}
+      </button>
+    }
   </div>
 
   @if (loading.visible) {
@@ -17,18 +18,18 @@
       <p-progressSpinner />
     </div>
   }
-
-  <!-- In de kijker: grid van boeken -->
-  <div
-    class="books-grid"
-    *ngIf="!loading.isLoading && !isMonthlySection && activeSection && books.length > 0"
-  >
-    <div class="book-card" *ngFor="let book of books" [routerLink]="['/boek', book.id]">
-      <b-card [bookCard]="book" size="large"></b-card>
+  @if (!isMonthlySection && isVisible(campusSettings, 'HOME', 'IN_SPOTLIGHT')) {
+    <!-- In de kijker: grid van boeken -->
+    <div
+      class="books-grid"
+      *ngIf="!loading.isLoading && !isMonthlySection && activeSection && books.length > 0"
+    >
+      <div class="book-card" *ngFor="let book of books" [routerLink]="['/boek', book.id]">
+        <b-card [bookCard]="book" size="large"></b-card>
+      </div>
     </div>
-  </div>
-
-  @if (isMonthlySection) {
+  }
+  @if (isMonthlySection && isVisible(campusSettings, 'HOME', 'MONTHLY_BOOK')) {
     <div class="monthly-header">
       <p-select
         [(ngModel)]="selectedGrade"

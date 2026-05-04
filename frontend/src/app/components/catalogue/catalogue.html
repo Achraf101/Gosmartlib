@@ -123,7 +123,7 @@
 >
   <div class="dialog-content">
     @if (selectedBook?.cover) {
-      <img [src]="selectedBook!.cover" [alt]="selectedBook!.title" class="dialog-cover" />
+      <b-cover [bookCard]="getAsBookCard(selectedBook!)"></b-cover>
     }
     <p *ngIf="selectedBook?.author">{{ selectedBook!.author!.name }}</p>
   </div>
@@ -135,11 +135,20 @@
       (onClick)="viewBookDetails()"
     />
     @if (selectMode) {
-      <p-button
-        label="Instellen als boek van de maand"
-        icon="pi pi-check"
-        (onClick)="setAsBookOfMonth()"
-      />
+      @if (grade) {
+        <p-button
+          label="Instellen als boek van de maand"
+          icon="pi pi-check"
+          (onClick)="setAsBookOfMonth()"
+        />
+      }
+      @if (ranking) {
+        <p-button
+          label="Instellen als uitgelicht boek"
+          icon="pi pi-check"
+          (onClick)="setAsSpotlight()"
+        />
+      }
     }
   </ng-template>
 </p-dialog>

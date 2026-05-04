@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import be.ap.backend.dto.CampusBookDTO;
 import be.ap.backend.dto.CampusBookDetailDTO;
+import be.ap.backend.dto.CampusStatsDTO;
 import be.ap.backend.entity.Book;
 import be.ap.backend.entity.Campus;
 import be.ap.backend.entity.CampusBook;
@@ -90,5 +91,11 @@ public class CampusBookService {
         dto.setCurrentAmount(campusBook.getCurrentAmount());
         dto.setLocation(campusBook.getLocation());
         return dto;
+    }
+
+    public CampusStatsDTO getStatsForCampus(Long campusId) {
+        int total = campusBookRepository.sumAmountByCampusId(campusId);
+        int available = campusBookRepository.sumCurrentAmountByCampusId(campusId);
+        return new CampusStatsDTO(total, available);
     }
 }

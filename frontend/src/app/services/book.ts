@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { ApiService } from './api';
 import { Observable } from 'rxjs';
-import { BookCard, BookDetail, BookFilter, BookResult, CreateBook } from '../models/book';
+import { BookCard, BookDetail, BookFilter, BookLookupDTO, BookResult, CreateBook } from '../models/book';
 import { Page } from '../models/page';
 import { HttpParams } from '@angular/common/http';
 
@@ -36,6 +36,12 @@ export class BookService {
 
   addBook(book: CreateBook): Observable<BookDetail> {
     return this.apiService.post<BookDetail>(this.endpoint, book);
+  }
+
+  lookupByIsbn(isbn: string): Observable<BookLookupDTO> {
+    return this.apiService.get<BookLookupDTO>(
+      `${this.endpoint}/isbn/${encodeURIComponent(isbn)}`
+    );
   }
 
   // get all bookResults
