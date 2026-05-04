@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { BookService } from '../../services/book-service';
 import { BookCard, BookDetail } from '../../models/book';
 import { ImageModule } from 'primeng/image';
 import { RatingModule } from 'primeng/rating';
@@ -36,6 +35,7 @@ import { CampusBook } from '../../models/CampusBook';
 import { CampusBookService } from '../../services/campusbook';
 import { Message } from 'primeng/message';
 import { ReviewSectionComponent } from '../misc/review-section/review-section';
+import { BookService } from '../../services/book';
 
 @Component({
   selector: 'app-book-detail-page',
@@ -70,6 +70,7 @@ export class BookDetailPage implements OnInit {
   relatedBooks?: BookCard[];
   isBookmarked = false;
   genresString = '';
+  themesString = '';
   loanFormVisible = false;
   cartDialogVisible = false;
   today = new Date();
@@ -127,6 +128,7 @@ export class BookDetailPage implements OnInit {
         this.ratingValueStars = this.ratingValue;
 
         this.genresString = (this.book?.genres || []).map((i) => i.name).join(', ');
+        this.themesString = (this.book?.themes || []).map((t) => t.name).join(', ');
 
         this.bookmarkedService.isBookmarked(this.userId, this.bookId).subscribe({
           next: (result) => (this.isBookmarked = result),
