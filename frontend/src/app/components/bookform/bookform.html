@@ -264,7 +264,20 @@
                       [showClear]="true"
                       class="select"
                     />
+                    <p-multiselect
+                      display="chip"
+                      [options]="themes"
+                      formControlName="themes"
+                      placeholder="Thema('s)*"
+                      [selectionLimit]="5"
+                      optionLabel="name"
+                      optionValue="id"
+                      showToggleAll="false"
+                      [showClear]="true"
+                      class="select"
+                    />
                   </div>
+
                   <div class="inputitem">
                     <p-iftalabel>
                       <p-inputNumber
@@ -336,6 +349,7 @@
                   </div>
                   <div class="btns">
                     <p-button label="Terug" severity="secondary" (onClick)="activateCallback(1)" />
+                    <pre>{{ invalidControls | json }}</pre>
                     <p-button
                       [disabled]="bookForm.invalid"
                       class="btn"
