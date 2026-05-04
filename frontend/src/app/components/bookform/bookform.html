@@ -65,7 +65,7 @@
           <p-stepper [value]="1" [linear]="true">
             <form [formGroup]="bookForm">
               <p-step-item [value]="1">
-                <p-step>Basisinfo:</p-step>
+                <p-step>Basisinfo</p-step>
                 <p-step-panel>
                   <ng-template #content let-activateCallback="activateCallback">
                     <div class="inputrow">
@@ -192,7 +192,7 @@
               </p-step-item>
 
               <p-step-item [value]="2">
-                <p-step>Extra info:</p-step>
+                <p-step>Extra info</p-step>
                 <p-step-panel>
                   <ng-template #content let-activateCallback="activateCallback">
                     <div class="inputitem">
@@ -238,22 +238,20 @@
                           optionLabel="name"
                           optionValue="id"
                           showToggleAll="false"
-                          [showClear]="true"
                           id="genres"
                         />
                         <label for="genres">Genre(s)*</label>
                       </p-iftalabel>
                       <p-ifta-label>
                         <p-multiselect
+                          fluid
                           display="chip"
                           [options]="themes"
                           formControlName="themes"
-                          placeholder="Thema('s)*"
                           [selectionLimit]="5"
                           optionLabel="name"
                           optionValue="id"
                           showToggleAll="false"
-                          [showClear]="true"
                           class="select"
                         />
                         <Label for="themes">Thema('s)</Label>
@@ -461,7 +459,7 @@
               </p-step-item>
 
               <p-step-item [value]="3">
-                <p-step>Boekomslag:</p-step>
+                <p-step>Boekomslag</p-step>
                 <p-step-panel>
                   <ng-template #content let-activateCallback="activateCallback">
                     @if (lookupCoverUrl) {

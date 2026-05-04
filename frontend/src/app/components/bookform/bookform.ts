@@ -96,7 +96,7 @@ export class BookformComponent implements OnInit {
     publisher: new FormControl<number | null>(null),
     fiction: new FormControl<boolean>(true, Validators.required),
     genres: new FormControl<number[] | null>([], [maxEntries(5), Validators.required]),
-    themes: new FormControl<number[] | null>([], [maxEntries(5), Validators.required]),
+    themes: new FormControl<number[] | null>([], [maxEntries(5)]),
     description: new FormControl<string | null>(null, [
       Validators.maxLength(500),
       Validators.required,

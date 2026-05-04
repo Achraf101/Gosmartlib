@@ -45,6 +45,7 @@ import { BookCover } from '../misc/book-cover/book-cover';
     SearchBar,
     RouterLink,
     BookResultComponent,
+    BookCover,
   ],
   templateUrl: './catalogue.html',
   styleUrl: './catalogue.css',
