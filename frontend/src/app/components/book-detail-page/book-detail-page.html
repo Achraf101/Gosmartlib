@@ -139,7 +139,35 @@
         </tr>
       </table>
     </div>
-
+    <!-- TODO check if user is teacher -->
+    @if (auth.hasRole('LEERKRACHT')) {
+      <div class="material box">
+        <div>
+          <h2>Lesmateriaal</h2>
+          <p-fileupload
+            #fileuploader
+            mode="basic"
+            name="file"
+            chooseIcon="pi pi-upload"
+            maxFileSize="8000000"
+            (onSelect)="uploadMaterial($event, fileuploader)"
+            [customUpload]="true"
+          />
+        </div>
+        <p-accordion (click)="getMaterial()">
+          <p-accordion-panel value="0">
+            <p-accordion-header></p-accordion-header>
+            <p-accordion-content>
+              @if (materialFetched === true && materials !== null) {
+                @for (material of materials; track material.id) {
+                  <app-material [material]="material" />
+                }
+              }
+            </p-accordion-content>
+          </p-accordion-panel>
+        </p-accordion>
+      </div>
+    }
     <div id="book-detail" class="box">
       <table>
         <caption>
