@@ -42,6 +42,7 @@ public class BookService {
         book.setBookType(entityManager.find(BookType.class, dto.getBookType()));
         book.setLanguage(entityManager.find(Language.class, dto.getLanguage()));
         book.setFiction(dto.getFiction());
+        book.setDidactic(dto.getDidactic());
 
         if (dto.getAuthor() != null) {
             book.setAuthor(entityManager.find(Author.class, dto.getAuthor()));
@@ -104,6 +105,7 @@ public class BookService {
             Integer pagesMin,
             Integer pagesMax,
             List<Clib> clibs,
+            Boolean didactic,
             Pageable pageable) {
 
         if (seriesIds != null && seriesIds.isEmpty()) {
@@ -119,6 +121,7 @@ public class BookService {
                 pagesMin,
                 pagesMax,
                 clibs,
+                didactic,
                 pageable);
     }
 

@@ -20,11 +20,11 @@ import jakarta.transaction.Transactional;
 public interface BookRepository extends JpaRepository<Book, Long> {
 
     Page<Book> findAll(Pageable pageable);
+
     boolean existsByIsbn(String isbn);
 
     @Query("SELECT b.isbn FROM Book b WHERE b.isbn IS NOT NULL")
     Set<String> findAllIsbns();
-
 
     @Query("""
             SELECT DISTINCT new be.ap.backend.dto.BookCardDTO(
@@ -99,6 +99,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
             "LEFT JOIN b.series s " +
             "WHERE (:genres IS NULL OR g.id IN :genres) " +
             "AND (:language IS NULL OR l.id = :language) " +
+            "AND (:didactic IS NULL OR b.didactic = :didactic) " +
             "AND (:fiction IS NULL OR b.fiction = :fiction) " +
             "AND (:authorIds IS NULL OR a.id IN :authorIds) " +
             "AND (COALESCE(:seriesIds, NULL) IS NULL OR s.id IN :seriesIds) " +
@@ -114,6 +115,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
             @Param("pagesMin") Integer pagesMin,
             @Param("pagesMax") Integer pagesMax,
             @Param("clibs") List<Clib> clibs,
+            @Param("didactic") Boolean didactic,
             Pageable pageable);
 
     @Modifying

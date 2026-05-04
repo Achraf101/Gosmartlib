@@ -105,6 +105,9 @@ public class Book {
     @JoinColumn(name = "series_id")
     private Series series;
 
+    @Column(nullable = false, name = "didactic")
+    private Boolean didactic = false;
+
     @JsonProperty("series_name")
     public String getSeriesName() {
         return series != null ? series.getName() : null;

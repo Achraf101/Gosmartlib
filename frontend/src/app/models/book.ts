@@ -19,9 +19,9 @@ export interface BookCard extends BookBase {
 export interface BookResult extends BookBase {
   author_name: string;
   book_type: BookType;
-  series_id?: number;      
-  series_name?: string;    
-  series_number?: number;  
+  series_id?: number;
+  series_name?: string;
+  series_number?: number;
   language?: Language;
   published?: number;
   description?: string;
@@ -36,9 +36,9 @@ export interface BookResult extends BookBase {
 export interface BookDetail extends BookBase {
   author_name: string;
   book_type: BookType;
-  isbn?: string;         
-  series_name?: string;  
-  series_number?: number; 
+  isbn?: string;
+  series_name?: string;
+  series_number?: number;
   contributors?: Author[];
   publisher?: Publisher;
   genres: Genre[];
@@ -50,11 +50,12 @@ export interface BookDetail extends BookBase {
   clib?: string;
   pages?: number;
   font_size?: string;
-  rating : number;
+  rating: number;
   rating_total: number;
   rating_count: number;
   school?: number;
   added: string;
+  didactic: boolean;
 }
 
 export interface CreateBook {
@@ -63,8 +64,8 @@ export interface CreateBook {
   author: number;
   cover?: string;
   isbn?: string;
-  series?: number;        
-  series_count?: number;  
+  series?: number;
+  series_count?: number;
   contributors?: number[];
   publisher?: number;
   genres: number[];
@@ -76,16 +77,17 @@ export interface CreateBook {
   pages?: number;
   font_size?: string;
   school?: boolean;
-  didactic_material: boolean;
+  didactic: boolean;
 }
 
 export interface BookFilter {
   type?: number[];
+  didactic?: boolean;
   genre?: number[];
   fiction?: boolean;
   language?: number;
   pages?: [number, number];
-  series?: number[];    
+  series?: number[];
   author?: number[];
   clibs?: string[];
   published?: [number, number];

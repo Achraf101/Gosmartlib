@@ -26,4 +26,5 @@ public class CreateBookDTO {
     private int pages;
     private FontSize fontSize;
     private long schoolId;
+    private Boolean didactic;
 }

@@ -39,7 +39,7 @@ import { PublisherService } from '../../services/publisher';
 import { BookService } from '../../services/book';
 import { LanguageService } from '../../services/language';
 import { BookTypeService } from '../../services/book-type';
-import { UpLoadService } from '../../services/upload';
+import { UploadService } from '../../services/upload';
 import { SeriesService } from '../../services/series';
 
 import { CharCounterComponent } from '../char-counter/char-counter';
@@ -85,7 +85,7 @@ export class BookformComponent implements OnInit {
     clib: new FormControl<string | null>(null),
     series: new FormControl<number | null>(null),
     series_count: new FormControl<number | null>(null),
-    didactic_material: new FormControl<boolean>(false, Validators.required),
+    didactic: new FormControl<boolean>(false, Validators.required),
     publisher: new FormControl<number | null>(null),
     fiction: new FormControl<boolean>(true, Validators.required),
     genres: new FormControl<number[]>([], [maxEntries(5), Validators.required]),
@@ -144,7 +144,7 @@ export class BookformComponent implements OnInit {
     private bookService: BookService,
     private languageService: LanguageService,
     private bookTypeService: BookTypeService,
-    private upLoadService: UpLoadService,
+    private uploadService: UploadService,
     private seriesService: SeriesService,
     private router: Router,
   ) {}
@@ -235,12 +235,12 @@ export class BookformComponent implements OnInit {
     formData.append('file', $event.files[0]);
     formData.append('book_id', this.newBookId.toString());
 
-    this.upLoadService.addCover(formData).subscribe({
+    this.uploadService.addCover(formData).subscribe({
       next: () => {
         this.router.navigate(['/boek', this.newBookId]);
         fileUploader.clear();
       },
-      error: () => this.showError('Boekomslag niet toegevoegd.'),
+      error: () => this.showError('Probleem hij het uploaden van cover.'),
     });
   }
 

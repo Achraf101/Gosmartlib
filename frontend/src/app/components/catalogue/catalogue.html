@@ -28,9 +28,31 @@
           [showClear]="true"
           [showToggleAll]="false"
           selectedItemsLabel="{0} genres "
-          styleClass="w-full"
         />
       </div>
+      @if (auth.hasRole('LEERKRACHT')) {
+        <div class="sidebar-section">
+          <label for="">Didactisch materiaal</label>
+          <div>
+            <p-radio-button
+              name="didactic"
+              [value]="false"
+              [(ngModel)]="sidebarDidactic"
+              inputId="val1"
+            />
+            <label for="val2"> Nee</label>
+          </div>
+          <div>
+            <p-radio-button
+              name="didactic"
+              [value]="true"
+              [(ngModel)]="sidebarDidactic"
+              inputId="val2"
+            />
+            <label for="val2"> Ja</label>
+          </div>
+        </div>
+      }
 
       <div class="sidebar-section">
         <label>Taal</label>

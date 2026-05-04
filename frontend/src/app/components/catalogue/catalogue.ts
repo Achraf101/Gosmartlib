@@ -22,6 +22,8 @@ import { SearchBar } from '../misc/search-bar/search-bar';
 import { BookResult as BookResultComponent } from '../misc/book-result/book-result';
 import { RouterLink } from '@angular/router';
 import { DelayedLoader } from '../../utils/delayed-loader';
+import { AuthService } from '../../services/auth';
+import { RadioButton } from 'primeng/radiobutton';
 
 @Component({
   selector: 'app-catalogue',
@@ -41,6 +43,7 @@ import { DelayedLoader } from '../../utils/delayed-loader';
     MultiSelectModule,
     SearchBar,
     RouterLink,
+    RadioButton,
   ],
   templateUrl: './catalogue.html',
   styleUrl: './catalogue.css',
@@ -54,15 +57,14 @@ export class CatalogueComponent implements OnInit {
   searchQuery = '';
   activeFilters: BookFilter | null = null;
 
-  
   genres: Genre[] = [];
   languages: Language[] = [];
   sidebarGenres: number[] = [];
+  sidebarDidactic: boolean = false;
   sidebarLanguage: number | null = null;
   sidebarPagesMin: number | null = null;
   sidebarPagesMax: number | null = null;
 
-  
   selectMode = false;
   sectionId: number | null = null;
   grade: number | null = null;
@@ -77,6 +79,7 @@ export class CatalogueComponent implements OnInit {
     private apiService: ApiService,
     private route: ActivatedRoute,
     private router: Router,
+    public auth: AuthService,
   ) {}
 
   ngOnInit(): void {
@@ -103,6 +106,7 @@ export class CatalogueComponent implements OnInit {
         params['seriesIds'] ||
         params['pagesMin'] ||
         params['pagesMax'] ||
+        params['didactic'] ||
         params['clibs'];
 
       if (hasFilters) {
@@ -113,6 +117,7 @@ export class CatalogueComponent implements OnInit {
           author: params['authorIds'] ? params['authorIds'].split(',').map(Number) : undefined,
           series: params['seriesIds'] ? params['seriesIds'].split(',').map(Number) : undefined,
           clibs: params['clibs'] ? params['clibs'].split(',') : undefined,
+          didactic: params['didactic'] !== undefined ? params['didactic'] === 'true' : undefined,
           pages:
             params['pagesMin'] || params['pagesMax']
               ? [
@@ -151,12 +156,19 @@ export class CatalogueComponent implements OnInit {
     } else {
       delete params['pagesMax'];
     }
+    if (this.sidebarDidactic === true) {
+      params['didactic'] = true;
+      alert('got to here ' + this.sidebarDidactic);
+    } else {
+      params['didactic'] = false;
+    }
     params['pagina'] = 1;
     this.router.navigate([], { relativeTo: this.route, queryParams: params });
   }
 
   clearSidebarFilters(): void {
     this.sidebarGenres = [];
+    this.sidebarDidactic = false;
     this.sidebarLanguage = null;
     this.sidebarPagesMin = null;
     this.sidebarPagesMax = null;
@@ -165,6 +177,7 @@ export class CatalogueComponent implements OnInit {
     delete params['language'];
     delete params['pagesMin'];
     delete params['pagesMax'];
+    delete params['didactic'];
     params['pagina'] = 1;
     this.router.navigate([], { relativeTo: this.route, queryParams: params });
   }
