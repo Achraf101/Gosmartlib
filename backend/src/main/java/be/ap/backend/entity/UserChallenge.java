@@ -23,11 +23,15 @@ public class UserChallenge {
     private Challenge challenge;
 
     @Column(name = "month", nullable = false)
-    private String month; 
+    private String month;
 
     @Column(name = "completed")
     private boolean completed = false;
 
     @Column(name = "completed_at")
     private LocalDate completedAt;
+
+    @Column(name = "assigned_at")
+    private LocalDate assignedAt;
+
 }
