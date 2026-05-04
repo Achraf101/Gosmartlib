@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import be.ap.backend.entity.Author;
 import be.ap.backend.entity.Book;
 import be.ap.backend.entity.BookType;
+import be.ap.backend.entity.Challenge;
 import be.ap.backend.entity.Genre;
 import be.ap.backend.entity.Hello;
 import be.ap.backend.entity.Language;
@@ -17,6 +18,7 @@ import be.ap.backend.entity.SectionBook;
 import be.ap.backend.repository.AuthorRepository;
 import be.ap.backend.repository.BookRepository;
 import be.ap.backend.repository.BookTypeRepository;
+import be.ap.backend.repository.ChallengeRepository;
 import be.ap.backend.repository.GenreRepository;
 import be.ap.backend.repository.HelloRepository;
 import be.ap.backend.repository.LanguageRepository;
@@ -39,12 +41,14 @@ public class DataSeeder implements CommandLineRunner {
     private final BookRepository bookRepository;
     private final AuthorRepository authorRepository;
     private final SectionRepository sectionRepository;
+    private final ChallengeRepository challengeRepository;
     private final SectionBookRepository sectionBookRepository;
 
     public DataSeeder(HelloRepository helloRepository, LanguageRepository languageRepository,
             BookTypeRepository bookTypeRepository, GenreRepository genreRepository,
             BookRepository bookRepository, AuthorRepository authorRepository,
-            SectionRepository sectionRepository, SectionBookRepository sectionBookRepository) {
+            SectionRepository sectionRepository, SectionBookRepository sectionBookRepository,
+            ChallengeRepository challengeRepository) {
         this.helloRepository = helloRepository;
         this.languageRepository = languageRepository;
         this.bookTypeRepository = bookTypeRepository;
@@ -53,11 +57,15 @@ public class DataSeeder implements CommandLineRunner {
         this.authorRepository = authorRepository;
         this.sectionRepository = sectionRepository;
         this.sectionBookRepository = sectionBookRepository;
+        this.challengeRepository = challengeRepository;
     }
 
     @Override
     public void run(String... args) {
-        if(!seedingEnabled) return;
+        if (!seedingEnabled)
+            return;
+
+        seedChallenges();
 
         if (bookRepository.count() > 0) {
             if (sectionRepository.count() == 0) {
@@ -66,6 +74,7 @@ public class DataSeeder implements CommandLineRunner {
             return;
         }
         seedDatabase();
+
     }
 
     private void seedDatabase() {
@@ -77,7 +86,8 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     private void seedLanguages() {
-        if(languageRepository.count() > 0) return;
+        if (languageRepository.count() > 0)
+            return;
         languageRepository.save(new Language("Nederlands", "nl"));
         languageRepository.save(new Language("Frans", "fr"));
         languageRepository.save(new Language("Engels", "en"));
@@ -85,7 +95,8 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     private BookType seedBookTypes() {
-        if(bookRepository.count() > 0) return bookTypeRepository.findByName("Boek");
+        if (bookRepository.count() > 0)
+            return bookTypeRepository.findByName("Boek");
         BookType boek = bookTypeRepository.save(new BookType("Boek"));
         bookTypeRepository.save(new BookType("Stripboek"));
         bookTypeRepository.save(new BookType("Magazine"));
@@ -94,12 +105,13 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     private void seedGenres() {
-        if (genreRepository.count() > 0) return;
+        if (genreRepository.count() > 0)
+            return;
 
         // fictie
         genreRepository.save(new Genre("Literaire roman"));
         genreRepository.save(new Genre("Spanning / thriller"));
-        genreRepository.save(new Genre("Detective / misdaad")); 
+        genreRepository.save(new Genre("Detective / misdaad"));
         genreRepository.save(new Genre("Fantasy"));
         genreRepository.save(new Genre("Sciencefiction"));
         genreRepository.save(new Genre("Dystopie"));
@@ -199,9 +211,66 @@ public class DataSeeder implements CommandLineRunner {
         saveSectionBook(boekVanDeMaandSection, boekVanDeMaand, (short) 0);
     }
 
+    private void seedChallenges() {
+        if (challengeRepository.count() > 0)
+            return;
+
+        String[][] challenges = {
+                { "Lees een Fantasy boek", "genre", "Fantasy" },
+                { "Lees een Sciencefiction boek", "genre", "Sciencefiction" },
+                { "Lees een Thriller boek", "genre", "Spanning / thriller" },
+                { "Lees een Detective boek", "genre", "Detective / misdaad" },
+                { "Lees een Dystopie boek", "genre", "Dystopie" },
+                { "Lees een Historische roman", "genre", "Historische roman" },
+                { "Lees een Romantiek boek", "genre", "Romantiek" },
+                { "Lees een Coming-of-age boek", "genre", "Coming-of-age" },
+                { "Lees een Avontuur boek", "genre", "Avontuur" },
+                { "Lees een Oorlog & conflict boek", "genre", "Oorlog & conflict" },
+                { "Lees een Horror boek", "genre", "Horror" },
+                { "Lees een Humor boek", "genre", "Humor" },
+                { "Lees een Graphic novel of strip", "genre", "Graphic novel / strip" },
+                { "Lees een Poëzie boek", "genre", "Poëzie" },
+                { "Lees een Biografie of autobiografie", "genre", "Biografie / autobiografie" },
+                { "Lees een boek over Wetenschap & technologie", "genre", "Wetenschap & technologie" },
+                { "Lees een Filosofie boek", "genre", "Filosofie" },
+                { "Lees een boek over Maatschappij & politiek", "genre", "Maatschappij & politiek" },
+                { "Lees een Psychologie boek", "genre", "Psychologie" },
+                { "Lees een Geschiedenis boek", "genre", "Geschiedenis" },
+                { "Lees een Kunst & cultuur boek", "genre", "Kunst & cultuur" },
+                { "Lees een Literaire roman", "genre", "Literaire roman" },
+                { "Lees een boek in het Frans", "language", "fr" },
+                { "Lees een boek in het Engels", "language", "en" },
+                { "Lees een boek in het Duits", "language", "de" },
+                { "Lees een boek in het Nederlands", "language", "nl" },
+                { "Lees een boek van meer dan 100 pagina's", "pages", "100" },
+                { "Lees een boek van meer dan 200 pagina's", "pages", "200" },
+                { "Lees een boek van meer dan 300 pagina's", "pages", "300" },
+                { "Lees een boek van meer dan 400 pagina's", "pages", "400" },
+                { "Lees een boek van meer dan 500 pagina's", "pages", "500" },
+                { "Lees een boek van meer dan 150 pagina's", "pages", "150" },
+                { "Lees een boek van meer dan 250 pagina's", "pages", "250" },
+                { "Lees een boek van meer dan 350 pagina's", "pages", "350" },
+                { "Lees een boek gepubliceerd voor 2000", "year", "2000" },
+                { "Lees een boek gepubliceerd voor 1990", "year", "1990" },
+                { "Lees een boek gepubliceerd voor 1980", "year", "1980" },
+                { "Lees een boek gepubliceerd na 2010", "year", "2010" },
+                { "Lees een boek gepubliceerd na 2015", "year", "2015" },
+                { "Lees een boek gepubliceerd na 2018", "year", "2018" },
+                { "Lees een boek gepubliceerd na 2020", "year", "2020" },
+        };
+
+        for (String[] c : challenges) {
+            Challenge challenge = new Challenge();
+            challenge.setDescription(c[0]);
+            challenge.setConditionType(c[1]);
+            challenge.setConditionValue(c[2]);
+            challengeRepository.save(challenge);
+        }
+    }
+
     private Book saveBook(String title, String description, boolean fiction,
-        Year published, int pages, BookType bookType, Language language,
-        Author author, String cover, Set<Genre> genres) {
+            Year published, int pages, BookType bookType, Language language,
+            Author author, String cover, Set<Genre> genres) {
         Book book = new Book();
         book.setTitle(title);
         book.setDescription(description);
