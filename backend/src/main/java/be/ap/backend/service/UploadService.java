@@ -11,7 +11,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.security.SecureRandom;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -19,7 +18,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import be.ap.backend.dto.CoverDTO;
 import be.ap.backend.entity.Book;
+import be.ap.backend.entity.Material;
 import be.ap.backend.repository.BookRepository;
+import be.ap.backend.repository.MaterialRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
@@ -28,6 +29,8 @@ import lombok.Setter;
 public class UploadService {
 
     private final BookRepository bookRepository;
+
+    private final MaterialRepository materialRepository;
 
     private final int idLength = 16;
 
@@ -44,9 +47,8 @@ public class UploadService {
      */
     public CoverDTO saveCover(MultipartFile file, Long bookId) {
         // first find book and current cover
-        Optional<Book> opt = bookRepository.findById(bookId);
+        Book book = bookRepository.findById(bookId).orElse(null);
 
-        Book book = opt.orElse(null);
         // if a current cover delete file
         if (book == null) {
             return null;
@@ -97,6 +99,45 @@ public class UploadService {
         return cover;
     }
 
+    /**
+     * Saves a course item to db and filesystem
+     * 
+     * @param file
+     * @param bookId
+     * @return
+     */
+    public Material saveMaterial(MultipartFile file, Long bookId) {
+        // find book
+        Book book = bookRepository.findById(bookId).orElse(null);
+
+        // if a current cover delete file
+        if (book == null) {
+            return null;
+        }
+
+        String fileId = generateId();
+        Material material = new Material();
+        material.setBook(book);
+        material.setFileName(file.getOriginalFilename());
+        material.setFileId(fileId);
+        material.setSize(file.getSize());
+
+        // write to database
+        Material m = materialRepository.save(material);
+
+        // save file to disk as 61d1dd8d8c95a5219...
+        Path coverPath = Paths.get(uploadDir, "file", fileId);
+        try {
+            file.transferTo(coverPath);
+        } catch (IllegalStateException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return m;
+    }
+
     SecureRandom random = new SecureRandom();
 
     public String generateId() {
@@ -136,8 +177,8 @@ public class UploadService {
             }
 
             String fileName = extension != null
-                ? generateId() + "." + extension
-                : generateId();
+                    ? generateId() + "." + extension
+                    : generateId();
 
             Path coverPath = Paths.get(uploadDir, "cover", fileName);
             Files.createDirectories(coverPath.getParent());
@@ -154,13 +195,14 @@ public class UploadService {
     }
 
     private String getExtensionFromContentType(String contentType) {
-        if (contentType == null) return null;
+        if (contentType == null)
+            return null;
         return switch (contentType.split(";")[0].trim().toLowerCase()) {
             case "image/jpeg" -> "jpg";
-            case "image/png"  -> "png";
+            case "image/png" -> "png";
             case "image/webp" -> "webp";
-            case "image/gif"  -> "gif";
-            default           -> null;
+            case "image/gif" -> "gif";
+            default -> null;
         };
     }
 }

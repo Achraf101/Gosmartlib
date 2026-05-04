@@ -111,6 +111,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
             "LEFT JOIN b.themes t " +
             "WHERE (:genres IS NULL OR g.id IN :genres) " +
             "AND (:language IS NULL OR l.id = :language) " +
+            "AND (:didactic IS NULL OR b.didactic = :didactic) " +
             "AND (:fiction IS NULL OR b.fiction = :fiction) " +
             "AND (:authorIds IS NULL OR a.id IN :authorIds) " +
             "AND (COALESCE(:seriesIds, NULL) IS NULL OR s.id IN :seriesIds) " +
@@ -128,6 +129,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
             @Param("pagesMax") Integer pagesMax,
             @Param("clibs") List<Clib> clibs,
             @Param("themes") List<Long> themes,
+            @Param("didactic") Boolean didactic,
             Pageable pageable);
 
     @Modifying

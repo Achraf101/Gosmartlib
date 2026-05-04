@@ -39,6 +39,12 @@ import { CampusBookService } from '../../services/campusbook';
 import { Message } from 'primeng/message';
 import { ReviewSectionComponent } from '../misc/review-section/review-section';
 import { BookService } from '../../services/book';
+import { Material } from '../../models/material';
+import { MaterialService } from '../../services/material';
+import { UploadService } from '../../services/upload';
+import { FileSelectEvent, FileUploadModule } from 'primeng/fileupload';
+import { MaterialComponent } from '../material/material';
+import { AuthService } from '../../services/auth';
 
 @Component({
   selector: 'app-book-detail-page',
@@ -61,6 +67,8 @@ import { BookService } from '../../services/book';
     Button,
     Message,
     ReviewSectionComponent,
+    FileUploadModule,
+    MaterialComponent,
   ],
   templateUrl: './book-detail-page.html',
   styleUrl: './book-detail-page.css',
@@ -72,6 +80,8 @@ export class BookDetailPage implements OnInit {
   ratingValue = 0;
   ratingValueStars = 0;
   relatedBooks?: BookCard[];
+  materials?: Material[];
+  materialFetched = false;
   isBookmarked = false;
   genresString = '';
   themesString = '';
@@ -100,6 +110,9 @@ export class BookDetailPage implements OnInit {
     private readonly loanCartService: LoanCartService,
     private readonly campusService: CampusService,
     private readonly campusBookService: CampusBookService,
+    private readonly materialService: MaterialService,
+    private readonly uploadService: UploadService,
+    public auth: AuthService,
   ) {}
 
   ngOnInit(): void {
@@ -323,10 +336,44 @@ export class BookDetailPage implements OnInit {
       },
       error: () =>
         this.messageService.add({
+          severity: 'info',
+          summary: '',
+          detail: 'Uw campus heeft dit boek niet of het is niet meer beschikbaar.',
+          life: 3000,
+        }),
+    });
+  }
+
+  getMaterial(): void {
+    if (this.materialFetched === true) {
+      return;
+    }
+
+    // fetch the materials
+    this.materialService.getAll(this.bookId).subscribe({
+      next: (materials) => {
+        this.materials = materials;
+        this.materialFetched = true;
+      },
+    });
+  }
+
+  uploadMaterial($event: FileSelectEvent, fileUploader: any): void {
+    if (!this.bookId) return;
+    const formData = new FormData();
+    formData.append('file', $event.files[0]);
+    formData.append('book_id', this.bookId.toString());
+
+    this.uploadService.addMaterial(formData).subscribe({
+      next: () => {
+        fileUploader.clear();
+      },
+      error: () =>
+        this.messageService.add({
           severity: 'error',
           summary: 'Fout',
-          detail: 'Jou campus heeft dit boek niet of het is niet meer beschikbaar.',
-          life: 3000,
+          detail: 'Probleem met het uploaden van lesmateriaal.',
+          life: 3200,
         }),
     });
   }

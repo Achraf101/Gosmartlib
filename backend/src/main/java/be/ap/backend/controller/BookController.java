@@ -76,8 +76,9 @@ public class BookController {
             @RequestParam(required = false) @Min(0) Integer pagesMin,
             @RequestParam(required = false) @Min(0) Integer pagesMax,
             @RequestParam(required = false) List<Clib> clibs,
-            @RequestParam(defaultValue = "0") int page,
             @RequestParam(required = false) List<Long> themes,
+            @RequestParam(required = false) Boolean didactic,
+            @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size) {
 
         if (pagesMin != null && pagesMax != null && pagesMin > pagesMax) {
@@ -86,6 +87,7 @@ public class BookController {
 
         Pageable pageable = PageRequest.of(page, size);
         return bookService.filter(genres, language, fiction, authorIds, seriesIds, pagesMin, pagesMax, clibs, themes,
+                didactic,
                 pageable);
     }
 

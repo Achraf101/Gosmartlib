@@ -143,30 +143,30 @@ class BookServiceTest {
     @Test
     void filter_emptySeriesIds_passesNullToRepository() {
         Pageable pageable = PageRequest.of(0, 10);
-        when(bookRepository.filter(any(), any(), any(), any(), isNull(), any(), any(), any(), any(), any()))
+        when(bookRepository.filter(any(), any(), any(), any(), isNull(), any(), any(), any(), any(), any(), any()))
                 .thenReturn(Page.empty());
 
-        bookService.filter(null, null, null, null, List.of(), null, null, null, null, pageable);
+        bookService.filter(null, null, null, null, List.of(), null, null, null, null, null, pageable);
 
         verify(bookRepository).filter(
                 isNull(), isNull(), isNull(), isNull(),
                 isNull(),
-                isNull(), isNull(), isNull(), isNull(),
+                isNull(), isNull(), isNull(), isNull(), isNull(),
                 eq(pageable));
     }
 
     @Test
     void filter_nullSeriesIds_remainsNull() {
         Pageable pageable = PageRequest.of(0, 10);
-        when(bookRepository.filter(any(), any(), any(), any(), isNull(), any(), any(), any(), any(), any()))
+        when(bookRepository.filter(any(), any(), any(), any(), isNull(), any(), any(), any(), any(), any(), any()))
                 .thenReturn(Page.empty());
 
-        bookService.filter(null, null, null, null, null, null, null, null, null, pageable);
+        bookService.filter(null, null, null, null, null, null, null, null, null, null, pageable);
 
         verify(bookRepository).filter(
                 isNull(), isNull(), isNull(), isNull(),
                 isNull(),
-                isNull(), isNull(), isNull(), isNull(),
+                isNull(), isNull(), isNull(), isNull(), isNull(),
                 eq(pageable));
     }
 
@@ -174,15 +174,15 @@ class BookServiceTest {
     void filter_nonEmptySeriesIds_passedThroughUnmodified() {
         List<Long> seriesIds = List.of(5L, 6L);
         Pageable pageable = PageRequest.of(0, 10);
-        when(bookRepository.filter(any(), any(), any(), any(), eq(seriesIds), any(), any(), any(), any(), any()))
+        when(bookRepository.filter(any(), any(), any(), any(), eq(seriesIds), any(), any(), any(), any(), any(), any()))
                 .thenReturn(Page.empty());
 
-        bookService.filter(null, null, null, null, seriesIds, null, null, null, null, pageable);
+        bookService.filter(null, null, null, null, seriesIds, null, null, null, null, null, pageable);
 
         verify(bookRepository).filter(
                 isNull(), isNull(), isNull(), isNull(),
                 eq(seriesIds),
-                isNull(), isNull(), isNull(), isNull(),
+                isNull(), isNull(), isNull(), isNull(), isNull(),
                 eq(pageable));
     }
 

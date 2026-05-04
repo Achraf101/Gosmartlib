@@ -1,7 +1,14 @@
 import { Injectable } from '@angular/core';
 import { ApiService } from './api';
 import { Observable } from 'rxjs';
-import { BookCard, BookDetail, BookFilter, BookLookupDTO, BookResult, CreateBook } from '../models/book';
+import {
+  BookCard,
+  BookDetail,
+  BookFilter,
+  BookLookupDTO,
+  BookResult,
+  CreateBook,
+} from '../models/book';
 import { Page } from '../models/page';
 import { HttpParams } from '@angular/common/http';
 
@@ -39,9 +46,7 @@ export class BookService {
   }
 
   lookupByIsbn(isbn: string): Observable<BookLookupDTO> {
-    return this.apiService.get<BookLookupDTO>(
-      `${this.endpoint}/isbn/${encodeURIComponent(isbn)}`
-    );
+    return this.apiService.get<BookLookupDTO>(`${this.endpoint}/isbn/${encodeURIComponent(isbn)}`);
   }
 
   // get all bookResults
@@ -115,6 +120,10 @@ export class BookService {
     if (filters.pages?.[0] != null) params = params.set('pagesMin', filters.pages[0].toString());
 
     if (filters.pages?.[1] != null) params = params.set('pagesMax', filters.pages[1].toString());
+
+    if (filters.didactic) {
+      params = params.set('didactic', filters.didactic.toString());
+    }
 
     return this.apiService.get<Page<BookResult>>(`${this.endpoint}/filter`, params);
   }

@@ -58,6 +58,7 @@ export interface BookDetail extends BookBase {
   rating_count: number;
   school?: number;
   added: string;
+  didactic: boolean;
 }
 
 export interface CreateBook {
@@ -81,7 +82,7 @@ export interface CreateBook {
   pages?: number;
   font_size?: string;
   school?: boolean;
-  didactic_material: boolean;
+  didactic: boolean;
 }
 
 export interface BookLookupDTO {
@@ -99,6 +100,7 @@ export interface BookLookupDTO {
 
 export interface BookFilter {
   type?: number[];
+  didactic?: boolean;
   genre?: number[];
   theme?: Theme[];
   fiction?: boolean;

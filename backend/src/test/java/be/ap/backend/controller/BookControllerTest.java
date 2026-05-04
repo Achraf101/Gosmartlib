@@ -139,7 +139,6 @@ public class BookControllerTest {
         Author author = new Author();
         author.setId(1L);
         author.setName("J.K. Rowling");
-
         List<BookCardDTO> relatedBooks = List.of(
                 new BookCardDTO(2L, "Title 1", "cover", author),
                 new BookCardDTO(3L, "Title 2", "cover", author));
@@ -190,16 +189,17 @@ public class BookControllerTest {
     @Test
     void givenPagesMinGreaterThanMax_whenFilter_thenThrow400() {
         assertThrows(ResponseStatusException.class,
-                () -> controller.filter(null, null, null, null, null, 500, 100, null, 0, null, 5));
+                () -> controller.filter(null, null, null, null, null, 500, 100, null, null, null, 0, 5));
     }
 
     @Test
     void givenPagesMinEqualToMax_whenFilter_thenProceedNormally() {
         Page<Book> mockPage = new PageImpl<>(List.of(new Book()));
-        when(service.filter(any(), any(), any(), any(), any(), eq(200), eq(200), any(), any(), any(Pageable.class)))
+        when(service.filter(any(), any(), any(), any(), any(), eq(200), eq(200), any(), any(), any(),
+                any(Pageable.class)))
                 .thenReturn(mockPage);
 
-        Page<Book> result = controller.filter(null, null, null, null, null, 200, 200, null, 0, null, 5);
+        Page<Book> result = controller.filter(null, null, null, null, null, 200, 200, null, null, null, 0, 5);
 
         assertEquals(1, result.getTotalElements());
     }
@@ -208,15 +208,15 @@ public class BookControllerTest {
     void givenNoParams_whenFilter_thenReturnAllBooks() {
         Page<Book> mockPage = new PageImpl<>(List.of(new Book(), new Book(), new Book()));
         when(service.filter(isNull(), isNull(), isNull(), isNull(), isNull(),
-                isNull(), isNull(), isNull(), isNull(), any(Pageable.class)))
+                isNull(), isNull(), isNull(), isNull(), isNull(), any(Pageable.class)))
                 .thenReturn(mockPage);
 
         Page<Book> result = controller.filter(null, null, null, null, null,
-                null, null, null, 0, null, 5);
+                null, null, null, null, null, 0, 5);
 
         assertEquals(3, result.getTotalElements());
         verify(service, times(1)).filter(isNull(), isNull(), isNull(), isNull(), isNull(),
-                isNull(), isNull(), isNull(), isNull(), any(Pageable.class));
+                isNull(), isNull(), isNull(), isNull(), isNull(), any(Pageable.class));
     }
 
     @Test
@@ -226,16 +226,17 @@ public class BookControllerTest {
         book.setFiction(true);
 
         Page<Book> mockPage = new PageImpl<>(List.of(book));
-        when(service.filter(any(), any(), eq(true), any(), any(), any(), any(), any(), any(), any(Pageable.class)))
+        when(service.filter(any(), any(), eq(true), any(), any(), any(), any(), any(), any(), any(),
+                any(Pageable.class)))
                 .thenReturn(mockPage);
 
         Page<Book> result = controller.filter(null, null, true, null, null,
-                null, null, null, 0, null, 5);
+                null, null, null, null, null, 0, 5);
 
         assertEquals(1, result.getTotalElements());
         assertTrue(result.getContent().get(0).getFiction());
         verify(service, times(1)).filter(any(), any(), eq(true), any(), any(),
-                any(), any(), any(), any(), any(Pageable.class));
+                any(), any(), any(), any(), any(), any(Pageable.class));
     }
 
     @Test
@@ -244,17 +245,17 @@ public class BookControllerTest {
         book.setTitle("Harry Potter en de vuurbeker");
 
         Page<Book> mockPage = new PageImpl<>(List.of(book));
-        when(service.filter(eq(List.of(1L)), any(), any(), any(), any(), any(), any(), any(), any(),
+        when(service.filter(eq(List.of(1L)), any(), any(), any(), any(), any(), any(), any(), any(), any(),
                 any(Pageable.class)))
                 .thenReturn(mockPage);
 
         Page<Book> result = controller.filter(List.of(1L), null, null, null, null,
-                null, null, null, 0, null, 5);
+                null, null, null, null, null, 0, 5);
 
         assertEquals(1, result.getTotalElements());
         assertEquals("Harry Potter en de vuurbeker", result.getContent().get(0).getTitle());
         verify(service, times(1)).filter(eq(List.of(1L)), any(), any(), any(), any(),
-                any(), any(), any(), any(), any(Pageable.class));
+                any(), any(), any(), any(), any(), any(Pageable.class));
     }
 
     @Test
@@ -263,17 +264,17 @@ public class BookControllerTest {
         book.setTitle("Kruistocht in Spijkerbroek");
 
         Page<Book> mockPage = new PageImpl<>(List.of(book));
-        when(service.filter(any(), any(), any(), eq(List.of(2L)), any(), any(), any(), any(), any(),
+        when(service.filter(any(), any(), any(), eq(List.of(2L)), any(), any(), any(), any(), any(), any(),
                 any(Pageable.class)))
                 .thenReturn(mockPage);
 
         Page<Book> result = controller.filter(null, null, null, List.of(2L), null,
-                null, null, null, 0, null, 5);
+                null, null, null, null, null, 0, 5);
 
         assertEquals(1, result.getTotalElements());
         assertEquals("Kruistocht in Spijkerbroek", result.getContent().get(0).getTitle());
         verify(service, times(1)).filter(any(), any(), any(), eq(List.of(2L)), any(),
-                any(), any(), any(), any(), any(Pageable.class));
+                any(), any(), any(), any(), any(), any(Pageable.class));
     }
 
     @Test
@@ -282,17 +283,17 @@ public class BookControllerTest {
         book.setTitle("Harry Potter en de Steen der Wijzen");
 
         Page<Book> mockPage = new PageImpl<>(List.of(book));
-        when(service.filter(any(), any(), any(), any(), eq(List.of(1L)), any(), any(), any(), any(),
+        when(service.filter(any(), any(), any(), any(), eq(List.of(1L)), any(), any(), any(), any(), any(),
                 any(Pageable.class)))
                 .thenReturn(mockPage);
 
         Page<Book> result = controller.filter(null, null, null, null, List.of(1L),
-                null, null, null, 0, null, 5);
+                null, null, null, null, null, 0, 5);
 
         assertEquals(1, result.getTotalElements());
         assertEquals("Harry Potter en de Steen der Wijzen", result.getContent().get(0).getTitle());
         verify(service, times(1)).filter(any(), any(), any(), any(), eq(List.of(1L)),
-                any(), any(), any(), any(), any(Pageable.class));
+                any(), any(), any(), any(), any(), any(Pageable.class));
     }
 
     @Test
@@ -301,17 +302,17 @@ public class BookControllerTest {
         book.setTitle("De Alchemist");
 
         Page<Book> mockPage = new PageImpl<>(List.of(book));
-        when(service.filter(any(), any(), any(), any(), any(), any(), any(), any(), eq(List.of(5L)),
+        when(service.filter(any(), any(), any(), any(), any(), any(), any(), any(), eq(List.of(5L)), any(),
                 any(Pageable.class)))
                 .thenReturn(mockPage);
 
         Page<Book> result = controller.filter(null, null, null, null, null,
-                null, null, null, 0, List.of(5L), 5);
+                null, null, null, List.of(5L), null, 0, 5);
 
         assertEquals(1, result.getTotalElements());
         assertEquals("De Alchemist", result.getContent().get(0).getTitle());
         verify(service, times(1)).filter(any(), any(), any(), any(), any(),
-                any(), any(), any(), eq(List.of(5L)), any(Pageable.class));
+                any(), any(), any(), eq(List.of(5L)), any(), any(Pageable.class));
     }
 
     @Test
@@ -320,16 +321,18 @@ public class BookControllerTest {
         book.setTitle("De brief voor de koning");
 
         Page<Book> mockPage = new PageImpl<>(List.of(book));
-        when(service.filter(any(), any(), any(), any(), any(), eq(100), eq(500), any(), any(), any(Pageable.class)))
+        when(service.filter(any(), any(), any(), any(), any(), eq(100), eq(500), any(), any(),
+                any(),
+                any(Pageable.class)))
                 .thenReturn(mockPage);
 
         Page<Book> result = controller.filter(null, null, null, null, null,
-                100, 500, null, 0, null, 5);
+                100, 500, null, null, null, 0, 5);
 
         assertNotNull(result);
         assertEquals(1, result.getTotalElements());
         verify(service, times(1)).filter(any(), any(), any(), any(), any(),
-                eq(100), eq(500), any(), any(), any(Pageable.class));
+                eq(100), eq(500), any(), any(), any(), any(Pageable.class));
     }
 
     @Test
@@ -340,14 +343,15 @@ public class BookControllerTest {
         Page<Book> mockPage = new PageImpl<>(List.of(book));
         List<Clib> clibs = List.of(Clib.A);
 
-        when(service.filter(any(), any(), any(), any(), any(), any(), any(), eq(clibs), any(), any(Pageable.class)))
+        when(service.filter(any(), any(), any(), any(), any(), any(), any(), eq(clibs), any(), any(),
+                any(Pageable.class)))
                 .thenReturn(mockPage);
 
         Page<Book> result = controller.filter(null, null, null, null, null,
-                null, null, clibs, 0, null, 5);
+                null, null, clibs, null, null, 0, 5);
 
         assertEquals(1, result.getTotalElements());
         verify(service, times(1)).filter(any(), any(), any(), any(), any(),
-                any(), any(), eq(clibs), any(), any(Pageable.class));
+                any(), any(), eq(clibs), any(), any(), any(Pageable.class));
     }
 }

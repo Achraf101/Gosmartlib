@@ -8,5 +8,4 @@ import lombok.Data;
 public class CoverDTO {
     public Long bookId;
     public String cover;
-
 }
