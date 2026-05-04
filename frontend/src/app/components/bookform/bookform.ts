@@ -45,6 +45,9 @@ import { SeriesService } from '../../services/series';
 import { CharCounterComponent } from '../char-counter/char-counter';
 import { NavBarComponent } from '../nav-bar/nav-bar';
 import { BulkUpload } from '../bulk-upload/bulk-upload';
+import { Theme } from '../../models/theme';
+import { ThemeService } from '../../services/theme';
+import { JsonPipe } from '@angular/common';
 import { BookCardComponent } from '../misc/book-card/book-card';
 
 @Component({
@@ -71,6 +74,7 @@ import { BookCardComponent } from '../misc/book-card/book-card';
     ToastModule,
     MessageModule,
     BulkUpload,
+    JsonPipe,
     BookCardComponent,
   ],
   templateUrl: './bookform.html',
@@ -91,7 +95,8 @@ export class BookformComponent implements OnInit {
     didactic_material: new FormControl<boolean>(false, Validators.required),
     publisher: new FormControl<number | null>(null),
     fiction: new FormControl<boolean>(true, Validators.required),
-    genres: new FormControl<number[]>([], [maxEntries(5), Validators.required]),
+    genres: new FormControl<number[] | null>([], [maxEntries(5), Validators.required]),
+    themes: new FormControl<number[] | null>([], [maxEntries(5)]),
     description: new FormControl<string | null>(null, [
       Validators.maxLength(500),
       Validators.required,
@@ -102,6 +107,11 @@ export class BookformComponent implements OnInit {
     font_size: new FormControl<string | null>(null),
     school: new FormControl<boolean>(false, Validators.required),
   });
+  get invalidControls() {
+    return Object.entries(this.bookForm.controls)
+      .filter(([, c]) => c.invalid)
+      .map(([k]) => k);
+  }
 
   authorForm = new FormGroup({
     name: new FormControl<string>('', Validators.required),
@@ -119,6 +129,7 @@ export class BookformComponent implements OnInit {
   });
 
   genres: Genre[] | undefined;
+  themes: Theme[] | undefined;
   languages: Language[] | undefined;
   publishers: Publisher[] | undefined;
   authors: Author[] | undefined;
@@ -155,12 +166,14 @@ export class BookformComponent implements OnInit {
     private bookTypeService: BookTypeService,
     private upLoadService: UpLoadService,
     private seriesService: SeriesService,
+    private themeService: ThemeService,
     private router: Router,
     private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit() {
     this.genreService.getAll().subscribe((g) => (this.genres = g));
+    this.themeService.getAll().subscribe((t) => (this.themes = t));
     this.publisherService.getAll().subscribe((p) => (this.publishers = p));
     this.authorService.getAll().subscribe((a) => (this.authors = a));
     this.languageService.getAll().subscribe((l) => (this.languages = l));
@@ -318,7 +331,12 @@ export class BookformComponent implements OnInit {
   }
 
   resetForm(): void {
-    this.bookForm.reset({ didactic_material: false, fiction: true, school: false, contributors: [] });
+    this.bookForm.reset({
+      didactic_material: false,
+      fiction: true,
+      school: false,
+      contributors: [],
+    });
     this.lookupMethod = 'auto';
     this.isbnLookupValue = '';
     this.lookupCoverUrl = null;

@@ -22,6 +22,8 @@ import { SearchBar } from '../misc/search-bar/search-bar';
 import { BookResult as BookResultComponent } from '../misc/book-result/book-result';
 import { RouterLink } from '@angular/router';
 import { DelayedLoader } from '../../utils/delayed-loader';
+import { Theme } from '../../models/theme';
+import { ThemeService } from '../../services/theme';
 import { BookCover } from '../misc/book-cover/book-cover';
 
 @Component({
@@ -42,6 +44,7 @@ import { BookCover } from '../misc/book-cover/book-cover';
     MultiSelectModule,
     SearchBar,
     RouterLink,
+    BookResultComponent,
     BookCover,
   ],
   templateUrl: './catalogue.html',
@@ -57,8 +60,10 @@ export class CatalogueComponent implements OnInit {
   activeFilters: BookFilter | null = null;
 
   genres: Genre[] = [];
+  themes: Theme[] = [];
   languages: Language[] = [];
   sidebarGenres: number[] = [];
+  sidebarThemes: number[] = [];
   sidebarLanguage: number | null = null;
   sidebarPagesMin: number | null = null;
   sidebarPagesMax: number | null = null;
@@ -78,10 +83,14 @@ export class CatalogueComponent implements OnInit {
     private apiService: ApiService,
     private route: ActivatedRoute,
     private router: Router,
+    private themeService: ThemeService,
   ) {}
 
   ngOnInit(): void {
     this.apiService.get<Genre[]>('genre').subscribe((g) => (this.genres = g));
+    this.themeService.getAll().subscribe({
+      next: (data) => (this.themes = data),
+    });
     this.apiService.get<Language[]>('language').subscribe((l) => (this.languages = l));
 
     this.route.queryParams.subscribe((params) => {
@@ -93,12 +102,14 @@ export class CatalogueComponent implements OnInit {
       this.ranking = params['ranking'] ? Number(params['ranking']) : null;
 
       this.sidebarGenres = params['genres'] ? params['genres'].split(',').map(Number) : [];
+      this.sidebarThemes = params['themes'] ? params['themes'].split(',').map(Number) : [];
       this.sidebarLanguage = params['language'] ? Number(params['language']) : null;
       this.sidebarPagesMin = params['pagesMin'] ? Number(params['pagesMin']) : null;
       this.sidebarPagesMax = params['pagesMax'] ? Number(params['pagesMax']) : null;
 
       const hasFilters =
         params['genres'] ||
+        params['themes'] ||
         params['language'] ||
         params['fiction'] !== undefined ||
         params['authorIds'] ||
@@ -110,6 +121,7 @@ export class CatalogueComponent implements OnInit {
       if (hasFilters) {
         this.activeFilters = {
           genre: params['genres'] ? params['genres'].split(',').map(Number) : undefined,
+          theme: params['themes'] ? params['themes'].split(',').map(Number) : undefined,
           language: params['language'] ? Number(params['language']) : undefined,
           fiction: params['fiction'] !== undefined ? params['fiction'] === 'true' : undefined,
           author: params['authorIds'] ? params['authorIds'].split(',').map(Number) : undefined,
@@ -138,6 +150,11 @@ export class CatalogueComponent implements OnInit {
     } else {
       delete params['genres'];
     }
+    if (this.sidebarThemes.length > 0) {
+      params['themes'] = this.sidebarThemes.join(',');
+    } else {
+      delete params['themes'];
+    }
     if (this.sidebarLanguage) {
       params['language'] = this.sidebarLanguage;
     } else {
@@ -159,11 +176,13 @@ export class CatalogueComponent implements OnInit {
 
   clearSidebarFilters(): void {
     this.sidebarGenres = [];
+    this.sidebarThemes = [];
     this.sidebarLanguage = null;
     this.sidebarPagesMin = null;
     this.sidebarPagesMax = null;
     const params: any = { ...this.route.snapshot.queryParams };
     delete params['genres'];
+    delete params['themes'];
     delete params['language'];
     delete params['pagesMin'];
     delete params['pagesMax'];

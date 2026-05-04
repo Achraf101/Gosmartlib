@@ -184,6 +184,12 @@
             <td>{{ genresString }}</td>
           </tr>
         }
+        @if (themesString) {
+          <tr>
+            <td>Thema</td>
+            <td>{{ themesString }}</td>
+          </tr>
+        }
         @if (book.author != null) {
           <tr>
             <td>Auteur</td>

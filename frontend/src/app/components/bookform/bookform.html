@@ -65,7 +65,7 @@
           <p-stepper [value]="1" [linear]="true">
             <form [formGroup]="bookForm">
               <p-step-item [value]="1">
-                <p-step>Basisinfo:</p-step>
+                <p-step>Basisinfo</p-step>
                 <p-step-panel>
                   <ng-template #content let-activateCallback="activateCallback">
                     <div class="inputrow">
@@ -90,32 +90,32 @@
                       </div>
                       <div class="inputitem field-author">
                         <p-iftalabel>
-                        <p-select
-                          fluid
-                          [options]="authors"
-                          [filter]="true"
-                          filterBy="name"
-                          optionLabel="name"
-                          optionValue="id"
-                          formControlName="author"
-                          [showClear]="true"
-                          id="author"
-                        >
-                          <ng-template #footer>
-                            <div class="p-3">
-                              <p-button
-                                label="Nieuwe auteur"
-                                fluid
-                                severity="secondary"
-                                text
-                                size="small"
-                                icon="pi pi-plus"
-                                (click)="authorFormVisible = true"
-                              />
-                            </div>
-                          </ng-template>
-                        </p-select>
-                        <label for="author">Auteur*</label>
+                          <p-select
+                            fluid
+                            [options]="authors"
+                            [filter]="true"
+                            filterBy="name"
+                            optionLabel="name"
+                            optionValue="id"
+                            formControlName="author"
+                            [showClear]="true"
+                            id="author"
+                          >
+                            <ng-template #footer>
+                              <div class="p-3">
+                                <p-button
+                                  label="Nieuwe auteur"
+                                  fluid
+                                  severity="secondary"
+                                  text
+                                  size="small"
+                                  icon="pi pi-plus"
+                                  (click)="authorFormVisible = true"
+                                />
+                              </div>
+                            </ng-template>
+                          </p-select>
+                          <label for="author">Auteur*</label>
                         </p-iftalabel>
                         @if (bookForm.controls.author.invalid && bookForm.controls.author.touched) {
                           <small class="p-error">
@@ -192,7 +192,7 @@
               </p-step-item>
 
               <p-step-item [value]="2">
-                <p-step>Extra info:</p-step>
+                <p-step>Extra info</p-step>
                 <p-step-panel>
                   <ng-template #content let-activateCallback="activateCallback">
                     <div class="inputitem">
@@ -238,11 +238,24 @@
                           optionLabel="name"
                           optionValue="id"
                           showToggleAll="false"
-                          [showClear]="true"
                           id="genres"
                         />
                         <label for="genres">Genre(s)*</label>
                       </p-iftalabel>
+                      <p-ifta-label>
+                        <p-multiselect
+                          fluid
+                          display="chip"
+                          [options]="themes"
+                          formControlName="themes"
+                          [selectionLimit]="5"
+                          optionLabel="name"
+                          optionValue="id"
+                          showToggleAll="false"
+                          class="select"
+                        />
+                        <Label for="themes">Thema('s)</Label>
+                      </p-ifta-label>
                     </div>
                     <div class="inputitem">
                       <p-iftalabel>
@@ -329,32 +342,32 @@
                     <div class="inputrow">
                       <div class="inputitem field-series">
                         <p-iftalabel>
-                        <p-select
-                          fluid
-                          [options]="series"
-                          [filter]="true"
-                          filterBy="name"
-                          optionLabel="name"
-                          optionValue="id"
-                          formControlName="series"
-                          [showClear]="true"
-                          id="series"
-                        >
-                          <ng-template #footer>
-                            <div class="p-3">
-                              <p-button
-                                label="Nieuwe serie"
-                                fluid
-                                severity="secondary"
-                                text
-                                size="small"
-                                icon="pi pi-plus"
-                                (click)="seriesFormVisible = true"
-                              />
-                            </div>
-                          </ng-template>
-                        </p-select>
-                        <label for="series">Serie (optioneel)</label>
+                          <p-select
+                            fluid
+                            [options]="series"
+                            [filter]="true"
+                            filterBy="name"
+                            optionLabel="name"
+                            optionValue="id"
+                            formControlName="series"
+                            [showClear]="true"
+                            id="series"
+                          >
+                            <ng-template #footer>
+                              <div class="p-3">
+                                <p-button
+                                  label="Nieuwe serie"
+                                  fluid
+                                  severity="secondary"
+                                  text
+                                  size="small"
+                                  icon="pi pi-plus"
+                                  (click)="seriesFormVisible = true"
+                                />
+                              </div>
+                            </ng-template>
+                          </p-select>
+                          <label for="series">Serie (optioneel)</label>
                         </p-iftalabel>
                       </div>
 
@@ -446,14 +459,15 @@
               </p-step-item>
 
               <p-step-item [value]="3">
-                <p-step>Boekomslag:</p-step>
+                <p-step>Boekomslag</p-step>
                 <p-step-panel>
                   <ng-template #content let-activateCallback="activateCallback">
                     @if (lookupCoverUrl) {
                       <div class="cover-preview">
                         <img [src]="lookupCoverUrl" alt="Automatisch opgehaalde boekomslag" />
                         <p class="cover-preview-note">
-                          Deze boekomslag is automatisch opgehaald. Je kan een eigen boekomslag uploaden om hem te vervangen.
+                          Deze boekomslag is automatisch opgehaald. Je kan een eigen boekomslag
+                          uploaden om hem te vervangen.
                         </p>
                       </div>
                     }

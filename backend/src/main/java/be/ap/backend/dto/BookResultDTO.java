@@ -20,23 +20,23 @@ public class BookResultDTO {
     private String author_name;
     private BookType book_type;
     private Long series_id;
-    private String series_name; 
-    private Integer series_number; 
+    private String series_name;
+    private Integer series_number;
     private Language language;
     private Year published;
     private String description;
     private Set<GenreDTO> genres = new HashSet<>();
+    private Set<ThemeDTO> themes = new HashSet<>();
     private boolean fiction;
     private Clib clib;
     private int pages;
     private int rating;
     private int rating_count;
 
-    
-    public BookResultDTO(Long id, String title, String cover, String author_name, BookType book_type, 
-                         Long series_id, String series_name, Integer series_number, Language language, 
-                         Year published, String description, boolean fiction, Clib clib, 
-                         int pages, int rating, int rating_count) {
+    public BookResultDTO(Long id, String title, String cover, String author_name, BookType book_type,
+            Long series_id, String series_name, Integer series_number, Language language,
+            Year published, String description, boolean fiction, Clib clib,
+            int pages, int rating, int rating_count) {
         this.id = id;
         this.title = title;
         this.cover = cover;
