@@ -12,12 +12,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import be.ap.backend.dto.GenreProjection;
+import be.ap.backend.dto.ThemeDTO;
+import be.ap.backend.dto.ThemeProjectionDTO;
 import be.ap.backend.dto.BookResultDTO;
 import be.ap.backend.dto.CreateBookDTO;
 import be.ap.backend.dto.GenreDTO;
 import be.ap.backend.entity.Author;
 import be.ap.backend.entity.Publisher;
 import be.ap.backend.entity.Series;
+import be.ap.backend.entity.Theme;
 import be.ap.backend.entity.Book;
 import be.ap.backend.entity.BookContributor;
 import be.ap.backend.entity.BookType;
@@ -66,6 +69,13 @@ public class BookService {
             book.setGenres(genres);
         }
 
+        if (dto.getThemes() != null) {
+            Set<Theme> themes = dto.getThemes().stream()
+                    .map(id -> entityManager.find(Theme.class, id))
+                    .collect(Collectors.toSet());
+            book.setThemes(themes);
+        }
+
         if (dto.getContributors() != null) {
             Set<BookContributor> contributors = dto.getContributors().stream()
                     .map(id -> entityManager.find(BookContributor.class, id))
@@ -104,6 +114,7 @@ public class BookService {
             Integer pagesMin,
             Integer pagesMax,
             List<Clib> clibs,
+            List<Long> themes,
             Pageable pageable) {
 
         if (seriesIds != null && seriesIds.isEmpty()) {
@@ -119,6 +130,7 @@ public class BookService {
                 pagesMin,
                 pagesMax,
                 clibs,
+                themes,
                 pageable);
     }
 
@@ -142,6 +154,16 @@ public class BookService {
         }
 
         page.getContent().forEach(dto -> dto.setGenres(genreMap.getOrDefault(dto.getId(), Set.of())));
+
+        List<ThemeProjectionDTO> themes = bookRepository.findThemesForBooks(bookIds);
+
+        Map<Long, Set<ThemeDTO>> themeMap = new HashMap<>();
+        for (ThemeProjectionDTO row : themes) {
+            themeMap.computeIfAbsent(row.getBookId(), k -> new HashSet<>())
+                    .add(new ThemeDTO(row.getThemeId(), row.getThemeName()));
+        }
+
+        page.getContent().forEach(dto -> dto.setThemes(themeMap.getOrDefault(dto.getId(), Set.of())));
 
         return page;
     }
