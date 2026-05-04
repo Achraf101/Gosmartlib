@@ -2,6 +2,7 @@ package be.ap.backend.service;
 
 import be.ap.backend.entity.Challenge;
 import be.ap.backend.entity.Loan;
+import be.ap.backend.entity.LoanStatus;
 import be.ap.backend.entity.UserChallenge;
 import be.ap.backend.repository.ChallengeRepository;
 import be.ap.backend.repository.LoanRepository;
@@ -26,6 +27,9 @@ public class GamificationService {
     public int getTotalBooks(Long userId) {
         List<Loan> loans = loanRepository.findByUserId(userId);
         return loans.stream()
+                .filter(loan -> loan.getStatus() == LoanStatus.ACCEPTED
+                        || loan.getStatus() == LoanStatus.RECEIVED
+                        || loan.getStatus() == LoanStatus.RETURNED)
                 .mapToInt(loan -> loan.getLoanBooks().size())
                 .sum();
     }
@@ -73,6 +77,7 @@ public class GamificationService {
             uc.setChallenge(challenge);
             uc.setMonth(month);
             uc.setCompleted(false);
+            uc.setAssignedAt(LocalDate.now()); // ← datum van toewijzing opslaan
             userChallengeRepository.save(uc);
         }
     }
@@ -87,8 +92,13 @@ public class GamificationService {
                 continue;
 
             Challenge c = uc.getChallenge();
+            LocalDate assignedAt = uc.getAssignedAt();
 
             boolean completed = loans.stream()
+                    .filter(loan -> loan.getStatus() == LoanStatus.ACCEPTED
+                            || loan.getStatus() == LoanStatus.RECEIVED
+                            || loan.getStatus() == LoanStatus.RETURNED)
+                    .filter(loan -> assignedAt == null || !loan.getStart().isBefore(assignedAt))
                     .flatMap(loan -> loan.getLoanBooks().stream())
                     .anyMatch(lb -> {
                         return switch (c.getConditionType()) {
