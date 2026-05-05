@@ -1,26 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../services/api';
-
-interface ChallengeDTO {
-  id: number;
-  description: string;
-  conditionType: string;
-  conditionValue: string;
-  completed: boolean;
-}
-
-interface GamificationDTO {
-  totalBooks: number;
-  streakLevel: string;
-  challenges: ChallengeDTO[];
-}
-
-interface Badge {
-  label: string;
-  icon: string;
-  required: number;
-}
+import { GamificationDTO, Badge } from '../../models/gamification';
 
 @Component({
   selector: 'app-gamification',
