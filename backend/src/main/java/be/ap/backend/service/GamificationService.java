@@ -7,6 +7,7 @@ import be.ap.backend.entity.UserChallenge;
 import be.ap.backend.repository.ChallengeRepository;
 import be.ap.backend.repository.LoanRepository;
 import be.ap.backend.repository.UserChallengeRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +19,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class GamificationService {
 
     private final LoanRepository loanRepository;
