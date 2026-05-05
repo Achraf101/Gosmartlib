@@ -51,7 +51,7 @@ public class DataSeeder implements CommandLineRunner {
     private final SectionRepository sectionRepository;
     private final ChallengeRepository challengeRepository;
     private final SectionBookRepository sectionBookRepository;
-        private final UserRepository userRepository;
+    private final UserRepository userRepository;
     private final CampusRepository campusRepository;
     private final SchoolRepository schoolRepository;
     private final PasswordEncoder passwordEncoder;
@@ -59,7 +59,9 @@ public class DataSeeder implements CommandLineRunner {
     public DataSeeder(HelloRepository helloRepository, LanguageRepository languageRepository,
             BookTypeRepository bookTypeRepository, GenreRepository genreRepository,
             BookRepository bookRepository, AuthorRepository authorRepository,
-            SectionRepository sectionRepository, SectionBookRepository sectionBookRepository, UserRepository userRepository, CampusRepository campusRepository, SchoolRepository schoolRepository, PasswordEncoder passwordEncoder, ChallengeRepository challengeRepository) {
+            SectionRepository sectionRepository, SectionBookRepository sectionBookRepository,
+            UserRepository userRepository, CampusRepository campusRepository, SchoolRepository schoolRepository,
+            PasswordEncoder passwordEncoder, ChallengeRepository challengeRepository) {
         this.helloRepository = helloRepository;
         this.languageRepository = languageRepository;
         this.bookTypeRepository = bookTypeRepository;
@@ -69,7 +71,7 @@ public class DataSeeder implements CommandLineRunner {
         this.sectionRepository = sectionRepository;
         this.sectionBookRepository = sectionBookRepository;
         this.challengeRepository = challengeRepository;
-                this.userRepository = userRepository;
+        this.userRepository = userRepository;
         this.campusRepository = campusRepository;
         this.schoolRepository = schoolRepository;
         this.passwordEncoder = passwordEncoder;
@@ -81,6 +83,7 @@ public class DataSeeder implements CommandLineRunner {
             return;
 
         seedChallenges();
+        makeLibraryManager();
 
         if (bookRepository.count() > 0) {
             if (sectionRepository.count() == 0) {
@@ -98,7 +101,6 @@ public class DataSeeder implements CommandLineRunner {
         BookType boek = seedBookTypes();
         seedGenres();
         seedBooks(boek);
-        makeLibraryManager();
     }
 
     private void seedLanguages() {
@@ -324,7 +326,7 @@ public class DataSeeder implements CommandLineRunner {
         sectionBookRepository.save(sb);
     }
 
-    private void makeLibraryManager(){
+    private void makeLibraryManager() {
         if (userRepository.findByUsername("beheerder").isEmpty()) {
             Campus campus = campusRepository.findById(1L).orElse(null);
             School school = schoolRepository.findById(1L).orElse(null);
