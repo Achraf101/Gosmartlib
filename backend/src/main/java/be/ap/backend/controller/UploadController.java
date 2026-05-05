@@ -4,6 +4,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import be.ap.backend.dto.CoverDTO;
+import be.ap.backend.dto.MaterialDTO;
+import be.ap.backend.entity.Material;
 import be.ap.backend.service.UploadService;
 import lombok.RequiredArgsConstructor;
 
@@ -30,4 +32,11 @@ public class UploadController {
         return ResponseEntity.ok(cover);
     }
 
+    @PostMapping("material")
+    public ResponseEntity<Material> uploadMaterial(@RequestParam("file") MultipartFile file,
+            @RequestParam("book_id") Long bookId) {
+        Material material = uploadService.saveMaterial(file, bookId);
+
+        return ResponseEntity.ok(material);
+    }
 }

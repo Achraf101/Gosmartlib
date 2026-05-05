@@ -12,6 +12,7 @@ import org.springframework.data.repository.query.Param;
 
 import be.ap.backend.dto.BookCardDTO;
 import be.ap.backend.dto.GenreProjection;
+import be.ap.backend.dto.ThemeProjectionDTO;
 import be.ap.backend.dto.BookResultDTO;
 import be.ap.backend.entity.Book;
 import be.ap.backend.entity.Clib;
@@ -20,11 +21,11 @@ import jakarta.transaction.Transactional;
 public interface BookRepository extends JpaRepository<Book, Long> {
 
     Page<Book> findAll(Pageable pageable);
+
     boolean existsByIsbn(String isbn);
 
     @Query("SELECT b.isbn FROM Book b WHERE b.isbn IS NOT NULL")
     Set<String> findAllIsbns();
-
 
     @Query("""
             SELECT DISTINCT new be.ap.backend.dto.BookCardDTO(
@@ -47,12 +48,14 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
     @Query("SELECT DISTINCT b FROM Book b " +
             "LEFT JOIN b.author a " +
+            "LEFT JOIN b.themes t " +
             "LEFT JOIN b.genres g " +
             "LEFT JOIN b.series s " +
             "WHERE LOWER(b.title) LIKE LOWER(CONCAT('%', :query, '%')) " +
             "OR LOWER(a.name) LIKE LOWER(CONCAT('%', :query, '%')) " +
             "OR LOWER(g.name) LIKE LOWER(CONCAT('%', :query, '%')) " +
             "OR LOWER(s.name) LIKE LOWER(CONCAT('%', :query, '%')) " +
+            "OR LOWER(t.name) LIKE LOWER(CONCAT('%', :query, '%')) " +
             "OR b.isbn LIKE CONCAT('%', :query, '%')")
     Page<Book> search(@Param("query") String query, Pageable pageable);
 
@@ -92,19 +95,30 @@ public interface BookRepository extends JpaRepository<Book, Long> {
             """)
     List<GenreProjection> findGenresForBooks(@Param("bookIds") List<Long> bookIds);
 
+    @Query("""
+            SELECT b.id as bookId, t.id as themeId, t.name as themeName
+            From Book b
+            Join b.themes t
+            WHERE b.id IN :bookIds
+            """)
+    List<ThemeProjectionDTO> findThemesForBooks(@Param("bookIds") List<Long> bookIds);
+
     @Query("SELECT DISTINCT b FROM Book b " +
             "LEFT JOIN b.author a " +
             "LEFT JOIN b.genres g " +
             "LEFT JOIN b.language l " +
             "LEFT JOIN b.series s " +
+            "LEFT JOIN b.themes t " +
             "WHERE (:genres IS NULL OR g.id IN :genres) " +
             "AND (:language IS NULL OR l.id = :language) " +
+            "AND (:didactic IS NULL OR b.didactic = :didactic) " +
             "AND (:fiction IS NULL OR b.fiction = :fiction) " +
             "AND (:authorIds IS NULL OR a.id IN :authorIds) " +
             "AND (COALESCE(:seriesIds, NULL) IS NULL OR s.id IN :seriesIds) " +
             "AND (:pagesMin IS NULL OR b.pages >= :pagesMin) " +
             "AND (:pagesMax IS NULL OR b.pages <= :pagesMax) " +
-            "AND (COALESCE(:clibs, NULL) IS NULL OR b.clib IN :clibs)")
+            "AND (COALESCE(:clibs, NULL) IS NULL OR b.clib IN :clibs) " +
+            "AND (:themes IS NULL OR t.id IN :themes) ")
     Page<Book> filter(
             @Param("genres") List<Long> genres,
             @Param("language") Long language,
@@ -114,6 +128,8 @@ public interface BookRepository extends JpaRepository<Book, Long> {
             @Param("pagesMin") Integer pagesMin,
             @Param("pagesMax") Integer pagesMax,
             @Param("clibs") List<Clib> clibs,
+            @Param("themes") List<Long> themes,
+            @Param("didactic") Boolean didactic,
             Pageable pageable);
 
     @Modifying

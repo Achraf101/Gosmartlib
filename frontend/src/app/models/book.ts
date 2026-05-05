@@ -4,6 +4,7 @@ import { Language } from './language';
 import { Publisher } from './publisher';
 import { Series } from './series';
 import { BookType } from './book-type';
+import { Theme } from './theme';
 
 export interface BookBase {
   id: number;
@@ -19,13 +20,14 @@ export interface BookCard extends BookBase {
 export interface BookResult extends BookBase {
   author_name: string;
   book_type: BookType;
-  series_id?: number;      
-  series_name?: string;    
-  series_number?: number;  
+  series_id?: number;
+  series_name?: string;
+  series_number?: number;
   language?: Language;
   published?: number;
   description?: string;
   genres: Genre[];
+  themes?: Theme[];
   fiction?: boolean;
   clib?: string;
   pages?: number;
@@ -36,12 +38,13 @@ export interface BookResult extends BookBase {
 export interface BookDetail extends BookBase {
   author_name: string;
   book_type: BookType;
-  isbn?: string;         
-  series_name?: string;  
-  series_number?: number; 
+  isbn?: string;
+  series_name?: string;
+  series_number?: number;
   contributors?: Author[];
   publisher?: Publisher;
   genres: Genre[];
+  themes?: Theme[];
   description?: string;
   fiction: boolean;
   published?: number;
@@ -50,11 +53,12 @@ export interface BookDetail extends BookBase {
   clib?: string;
   pages?: number;
   font_size?: string;
-  rating : number;
+  rating: number;
   rating_total: number;
   rating_count: number;
   school?: number;
   added: string;
+  didactic: boolean;
 }
 
 export interface CreateBook {
@@ -69,6 +73,7 @@ export interface CreateBook {
   contributors?: number[];
   publisher?: number;
   genres: number[];
+  themes?: Theme[];
   description?: string;
   fiction: boolean;
   published?: number;
@@ -77,7 +82,7 @@ export interface CreateBook {
   pages?: number;
   font_size?: string;
   school?: boolean;
-  didactic_material: boolean;
+  didactic: boolean;
 }
 
 export interface BookLookupDTO {
@@ -95,11 +100,13 @@ export interface BookLookupDTO {
 
 export interface BookFilter {
   type?: number[];
+  didactic?: boolean;
   genre?: number[];
+  theme?: Theme[];
   fiction?: boolean;
   language?: number;
   pages?: [number, number];
-  series?: number[];    
+  series?: number[];
   author?: number[];
   clibs?: string[];
   published?: [number, number];

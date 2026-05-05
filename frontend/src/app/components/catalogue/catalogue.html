@@ -28,7 +28,44 @@
           [showClear]="true"
           [showToggleAll]="false"
           selectedItemsLabel="{0} genres "
-          styleClass="w-full"
+        />
+      </div>
+
+      @if (auth.hasRole('LEERKRACHT')) {
+        <div class="sidebar-section">
+          <label for="">Didactisch materiaal</label>
+          <div>
+            <p-radio-button
+              name="didactic"
+              [value]="false"
+              [(ngModel)]="sidebarDidactic"
+              inputId="val1"
+            />
+            <label for="val2"> Nee</label>
+          </div>
+          <div>
+            <p-radio-button
+              name="didactic"
+              [value]="true"
+              [(ngModel)]="sidebarDidactic"
+              inputId="val2"
+            />
+            <label for="val2"> Ja</label>
+          </div>
+        </div>
+      }
+
+      <div class="sidebar-section">
+        <label>Thema</label>
+        <p-multiselect
+          [(ngModel)]="sidebarThemes"
+          [options]="themes"
+          optionLabel="name"
+          optionValue="id"
+          placeholder="Alle thema's"
+          [showClear]="true"
+          [showToggleAll]="false"
+          selectedItemsLabel="{0} themes"
         />
       </div>
 
@@ -83,68 +120,7 @@
       @if (!loading.isLoading && books.length > 0) {
         <div class="book-list">
           @for (book of books; track book.id) {
-            <div class="book-card" (click)="onBookClick(book)" [style.cursor]="'pointer'">
-              <div class="book-info">
-                @if (book.cover == '' || book.cover == null) {
-                  <img [src]="placeholder" [alt]="book.title" class="book-cover" />
-                } @else {
-                  <img src="static/cover/{{ book.cover }}" [alt]="book.title" class="book-cover" />
-                }
-                <div class="book-info-data">
-                  <h2 class="book-title">{{ book.title }}</h2>
-                  <div class="book-subtitle">
-                    <div class="book-main-info">
-                      @if (book.author) {
-                        <span>{{ book.author.name }}</span>
-                      }
-                      @if (book.published) {
-                        <span> · {{ book.published }}</span>
-                      }
-                    </div>
-                    @if (book.clib) {
-                      <div class="book-clib-info">
-                        <span>CLIB : {{ book.clib }}</span>
-                      </div>
-                    }
-                    @if (book.genres && book.genres.length != 0) {
-                      <div class="genre-container show-desktop">
-                        @for (genre of book.genres; track $index) {
-                          <div class="tag">
-                            <span>{{ genre.name }}</span>
-                          </div>
-                        }
-                      </div>
-                      <div class="genre-container show-mobile">
-                        <div class="tag">
-                          <span>{{ book.genres[0]?.name }}</span>
-                        </div>
-                        @if (book.genres.length - 1 > 0) {
-                          <span class="genre-more">+{{ book.genres.length - 1 }}</span>
-                        }
-                      </div>
-                    }
-                  </div>
-                  <p class="book-description">{{ book.description }}</p>
-                </div>
-              </div>
-              <div class="book-meta">
-                @if (book.fiction !== undefined && book.fiction !== null) {
-                  <p-tag
-                    [value]="book.fiction ? 'Fictie' : 'Non-fictie'"
-                    [severity]="book.fiction ? 'info' : 'success'"
-                  />
-                }
-                @if (book.pages) {
-                  <span>{{ book.pages }} p.</span>
-                }
-                @if (book.rating) {
-                  <span class="book-rating">
-                    <i class="pi pi-star-fill"></i> {{ book.rating }}/5
-                    <span class="rating-count">({{ book.rating_count }})</span>
-                  </span>
-                }
-              </div>
-            </div>
+            <b-result [book]="book" (onBookClick)="onBookClick(book)" />
             <p-divider class="show-mobile" />
           }
         </div>

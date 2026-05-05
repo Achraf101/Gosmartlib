@@ -54,6 +54,7 @@ services:
       COOKIE_SECURE: ${COOKIE_SECURE}
       CLIENT_ID: ${CLIENT_ID}
       CLIENT_SECRET: ${CLIENT_SECRET}
+      BOOKS_KEY: ${BOOKS_KEY}
     build:
       context: ./backend
       dockerfile: Dockerfile

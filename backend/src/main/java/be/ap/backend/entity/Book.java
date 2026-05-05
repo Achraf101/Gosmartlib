@@ -27,8 +27,8 @@ import lombok.ToString;
 
 @Data
 @NoArgsConstructor
-@EqualsAndHashCode(exclude = { "genres", "contributors" })
-@ToString(exclude = { "genres", "contributors" })
+@EqualsAndHashCode(exclude = { "genres", "contributors", "themes" })
+@ToString(exclude = { "genres", "contributors", "themes" })
 @Entity
 @Table(name = "book", indexes = {
         @Index(name = "index_books_isbn", columnList = "isbn", unique = true),
@@ -50,6 +50,10 @@ public class Book {
     @ManyToMany
     @JoinTable(name = "book_genre", joinColumns = @JoinColumn(name = "book_id"), inverseJoinColumns = @JoinColumn(name = "genre_id"))
     private Set<Genre> genres;
+
+    @ManyToMany
+    @JoinTable(name = "book_themes", joinColumns = @JoinColumn(name = "book_id"), inverseJoinColumns = @JoinColumn(name = "theme_id"))
+    private Set<Theme> themes;
 
     @Column(nullable = true, length = 13, name = "isbn")
     private String isbn;
@@ -104,6 +108,9 @@ public class Book {
     @ManyToOne
     @JoinColumn(name = "series_id")
     private Series series;
+
+    @Column(nullable = false, name = "didactic")
+    private Boolean didactic = false;
 
     @JsonProperty("series_name")
     public String getSeriesName() {

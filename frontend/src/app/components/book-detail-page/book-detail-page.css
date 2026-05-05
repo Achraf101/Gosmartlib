@@ -12,6 +12,10 @@ h2.show-desktop {
   display: none;
 }
 
+app-material {
+  margin-bottom: 1rem;
+}
+
 .show-mobile {
   display: inline-block;
 }
@@ -80,7 +84,7 @@ p-image {
   height: 300px;
 }
 
-tr>td:nth-child(1) img,
+tr > td:nth-child(1) img,
 #book-available {
   margin-left: 20px;
   margin-right: 20px;
@@ -210,11 +214,11 @@ table td {
 }
 
 .btns {
- display: flex;
+  display: flex;
   justify-content: flex-end;
   gap: 8px;
   width: 100%;
-  margin-top:1rem;
+  margin-top: 1rem;
 }
 
 .loanForm {
