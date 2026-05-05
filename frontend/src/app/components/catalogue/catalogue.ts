@@ -179,7 +179,6 @@ export class CatalogueComponent implements OnInit {
     }
     if (this.sidebarDidactic === true) {
       params['didactic'] = true;
-      alert('got to here ' + this.sidebarDidactic);
     } else {
       params['didactic'] = false;
     }
