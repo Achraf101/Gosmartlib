@@ -45,12 +45,14 @@ import be.ap.backend.entity.FontSize;
 import be.ap.backend.entity.Genre;
 import be.ap.backend.entity.Language;
 import be.ap.backend.entity.Publisher;
+import be.ap.backend.entity.Theme;
 import be.ap.backend.repository.AuthorRepository;
 import be.ap.backend.repository.BookRepository;
 import be.ap.backend.repository.BookTypeRepository;
 import be.ap.backend.repository.GenreRepository;
 import be.ap.backend.repository.LanguageRepository;
 import be.ap.backend.repository.PublisherRepository;
+import be.ap.backend.repository.ThemeRepository;
 import be.ap.backend.service.IsbnLookupService;
 import be.ap.backend.service.UploadService;
 
@@ -65,18 +67,17 @@ public class ExcelController {
     private final GenreRepository genreRepository;
     private final LanguageRepository languageRepository;
     private final UploadService uploadService;
+    private final ThemeRepository themeRepository;
     private final IsbnLookupService isbnLookupService;
 
-
     public ExcelController(AuthorRepository authorRepository,
-                           BookRepository bookRepository,
-                           PublisherRepository publisherRepository,
-                           BookTypeRepository bookTypeRepository,
-                           GenreRepository genreRepository,
-                           LanguageRepository languageRepository,
-                           UploadService uploadService,
-                           IsbnLookupService isbnLookupService)
-                         {
+            BookRepository bookRepository,
+            PublisherRepository publisherRepository,
+            BookTypeRepository bookTypeRepository,
+            GenreRepository genreRepository,
+            LanguageRepository languageRepository,
+            UploadService uploadService,
+            IsbnLookupService isbnLookupService, ThemeRepository themeRepository) {
         this.authorRepository = authorRepository;
         this.bookRepository = bookRepository;
         this.publisherRepository = publisherRepository;
@@ -84,6 +85,7 @@ public class ExcelController {
         this.genreRepository = genreRepository;
         this.languageRepository = languageRepository;
         this.uploadService = uploadService;
+        this.themeRepository = themeRepository;
         this.isbnLookupService = isbnLookupService;
     }
 
@@ -92,12 +94,12 @@ public class ExcelController {
         try {
             byte[] xlsx = buildTemplateXlsx();
             return ResponseEntity.ok()
-                .header("Content-Disposition", "attachment; filename=book-upload-template.xlsx")
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .body(xlsx);
+                    .header("Content-Disposition", "attachment; filename=book-upload-template.xlsx")
+                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .body(xlsx);
         } catch (IOException e) {
             throw new ResponseStatusException(
-                HttpStatus.INTERNAL_SERVER_ERROR, "Could not generate template", e);
+                    HttpStatus.INTERNAL_SERVER_ERROR, "Could not generate template", e);
         }
     }
 
@@ -106,44 +108,44 @@ public class ExcelController {
         String sheetXml = buildSheetXml();
 
         String workbookXml = """
-            <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-            <workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
-                    xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
-            <sheets>
-                <sheet name="Books" sheetId="1" r:id="rId1"/>
-            </sheets>
-            </workbook>
-            """;
+                <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+                <workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+                        xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+                <sheets>
+                    <sheet name="Books" sheetId="1" r:id="rId1"/>
+                </sheets>
+                </workbook>
+                """;
 
         String contentTypes = """
-            <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-            <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
-            <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
-            <Default Extension="xml" ContentType="application/xml"/>
-            <Override PartName="/xl/workbook.xml"
-                ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
-            <Override PartName="/xl/worksheets/sheet1.xml"
-                ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
-            </Types>
-            """;
+                <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+                <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+                <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+                <Default Extension="xml" ContentType="application/xml"/>
+                <Override PartName="/xl/workbook.xml"
+                    ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
+                <Override PartName="/xl/worksheets/sheet1.xml"
+                    ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
+                </Types>
+                """;
 
         String rootRels = """
-            <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-            <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-            <Relationship Id="rId1"
-                Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument"
-                Target="xl/workbook.xml"/>
-            </Relationships>
-            """;
+                <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+                <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+                <Relationship Id="rId1"
+                    Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument"
+                    Target="xl/workbook.xml"/>
+                </Relationships>
+                """;
 
         String workbookRels = """
-            <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-            <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-            <Relationship Id="rId1"
-                Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet"
-                Target="worksheets/sheet1.xml"/>
-            </Relationships>
-            """;
+                <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+                <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+                <Relationship Id="rId1"
+                    Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet"
+                    Target="worksheets/sheet1.xml"/>
+                </Relationships>
+                """;
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (ZipOutputStream zos = new ZipOutputStream(baos)) {
@@ -156,43 +158,197 @@ public class ExcelController {
         return baos.toByteArray();
     }
 
+    private String buildSheetXml(String authorList, String publisherList,
+            String bookTypeList, String genreList,
+            String languageList, String themeList) {
+
+        return """
+                <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+                <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+                <sheetViews>
+                    <sheetView workbookViewId="0" tabSelected="1">
+                    <pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/>
+                    </sheetView>
+                </sheetViews>
+                <sheetData>
+                    <row r="1">
+                    <c r="A1" t="inlineStr"><is><t>ISBN (optioneel)</t></is></c>
+                    <c r="B1" t="inlineStr"><is><t>Titel *</t></is></c>
+                    <c r="C1" t="inlineStr"><is><t>Auteur * (kies uit lijst)</t></is></c>
+                    <c r="D1" t="inlineStr"><is><t>Beschrijving * (max 500 tekens)</t></is></c>
+                    <c r="E1" t="inlineStr"><is><t>Didactisch materiaal (JA/NEE)</t></is></c>
+                    <c r="F1" t="inlineStr"><is><t>Uitgever (optioneel, kies uit lijst)</t></is></c>
+                    <c r="G1" t="inlineStr"><is><t>CLIB (optioneel, A/B/C/D)</t></is></c>
+                    <c r="H1" t="inlineStr"><is><t>Fictie (JA/NEE)</t></is></c>
+                    <c r="I1" t="inlineStr"><is><t>Boektype * (kies uit lijst)</t></is></c>
+                    <c r="J1" t="inlineStr"><is><t>Genre 1 * (kies uit lijst)</t></is></c>
+                    <c r="K1" t="inlineStr"><is><t>Genre 2 (optioneel)</t></is></c>
+                    <c r="L1" t="inlineStr"><is><t>Genre 3 (optioneel)</t></is></c>
+                    <c r="M1" t="inlineStr"><is><t>Genre 4 (optioneel)</t></is></c>
+                    <c r="N1" t="inlineStr"><is><t>Genre 5 (optioneel)</t></is></c>
+                    <c r="O1" t="inlineStr"><is><t>Jaar van uitgave (optioneel)</t></is></c>
+                    <c r="P1" t="inlineStr"><is><t>Taal * (kies uit lijst)</t></is></c>
+                    <c r="Q1" t="inlineStr"><is><t>Aantal pagina's *</t></is></c>
+                    <c r="R1" t="inlineStr"><is><t>Thema 1 (optioneel)</t></is></c>
+                    <c r="S1" t="inlineStr"><is><t>Thema 2 (optioneel)</t></is></c>
+                    <c r="T1" t="inlineStr"><is><t>Thema 3 (optioneel)</t></is></c>
+                    <c r="U1" t="inlineStr"><is><t>Thema 4 (optioneel)</t></is></c>
+                    <c r="V1" t="inlineStr"><is><t>Thema 5 (optioneel)</t></is></c>
+                    <c r="W1" t="inlineStr"><is><t>Lettergrootte (optioneel: groot/medium/klein)</t></is></c>
+                    <c r="X1" t="inlineStr"><is><t>Enkel zichtbaar voor deze school (JA/NEE)</t></is></c>
+                    <c r="Y1" t="inlineStr"><is><t>Cover (optioneel, URL)</t></is></c>
+                    </row>
+                </sheetData>
+                <dataValidations count="14">
+                    <dataValidation type="list" allowBlank="1" showDropDown="0"
+                        showErrorMessage="1" errorTitle="Ongeldige auteur"
+                        error="Kies een auteur uit de lijst."
+                        sqref="C2:C501">
+                    <formula1>%s</formula1>
+                    </dataValidation>
+                    <dataValidation type="list" allowBlank="1" showDropDown="0"
+                        showErrorMessage="1" errorTitle="Ongeldige uitgever"
+                        error="Kies een uitgever uit de lijst."
+                        sqref="F2:F501">
+                    <formula1>%s</formula1>
+                    </dataValidation>
+                    <dataValidation type="list" allowBlank="0" showDropDown="0"
+                        showErrorMessage="1" errorTitle="Ongeldig CLIB niveau"
+                        error="Kies A, B, C of D."
+                        sqref="G2:G501">
+                    <formula1>"A,B,C,D"</formula1>
+                    </dataValidation>
+                    <dataValidation type="list" allowBlank="0" showDropDown="0"
+                        showErrorMessage="1" errorTitle="Ongeldig boektype"
+                        error="Kies een boektype uit de lijst."
+                        sqref="I2:I501">
+                    <formula1>%s</formula1>
+                    </dataValidation>
+                    <dataValidation type="list" allowBlank="0" showDropDown="0"
+                        showErrorMessage="1" errorTitle="Ongeldig genre"
+                        error="Kies een genre uit de lijst."
+                        sqref="J2:J501">
+                    <formula1>%s</formula1>
+                    </dataValidation>
+                    <dataValidation type="list" allowBlank="1" showDropDown="0"
+                        showErrorMessage="1" errorTitle="Ongeldig genre"
+                        error="Kies een genre uit de lijst."
+                        sqref="K2:N501">
+                    <formula1>%s</formula1>
+                    </dataValidation>
+                    <dataValidation type="list" allowBlank="0" showDropDown="0"
+                        showErrorMessage="1" errorTitle="Ongeldige taal"
+                        error="Kies een taal uit de lijst."
+                        sqref="P2:P501">
+                    <formula1>%s</formula1>
+                    </dataValidation>
+                    <dataValidation type="list" allowBlank="1" showDropDown="0"
+                        showErrorMessage="1" errorTitle="Ongeldig thema"
+                        error="Kies een thema uit de lijst."
+                        sqref="R2:V501">
+                    <formula1>%s</formula1>
+                    </dataValidation>
+                    <dataValidation type="list" allowBlank="1" showDropDown="0"
+                        showErrorMessage="1" errorTitle="Ongeldige lettergrootte"
+                        error="Kies groot, medium of klein."
+                        sqref="R2:R501">
+                    <formula1>"groot,medium,klein"</formula1>
+                    </dataValidation>
+                    <dataValidation type="list" allowBlank="0" showDropDown="0"
+                        showErrorMessage="1" errorTitle="Ongeldig"
+                        error="Vul JA of NEE in."
+                        sqref="E2:E501">
+                    <formula1>"JA,NEE"</formula1>
+                    </dataValidation>
+                    <dataValidation type="list" allowBlank="0" showDropDown="0"
+                        showErrorMessage="1" errorTitle="Ongeldig"
+                        error="Vul JA of NEE in."
+                        sqref="H2:H501">
+                    <formula1>"JA,NEE"</formula1>
+                    </dataValidation>
+                    <dataValidation type="list" allowBlank="0" showDropDown="0"
+                        showErrorMessage="1" errorTitle="Ongeldig"
+                        error="Vul JA of NEE in."
+                        sqref="S2:S501">
+                    <formula1>"JA,NEE"</formula1>
+                    </dataValidation>
+                    <dataValidation type="decimal" allowBlank="1" showDropDown="0"
+                        operator="greaterThanOrEqual" showErrorMessage="1"
+                        errorTitle="Ongeldig jaar"
+                        error="Vul een geldig jaar in (bv. 2000)."
+                        sqref="O2:O501">
+                    <formula1>1000</formula1>
+                    </dataValidation>
+                    <dataValidation type="textLength" allowBlank="0" showDropDown="0"
+                        operator="lessThanOrEqual" showErrorMessage="1"
+                        errorTitle="Beschrijving te lang"
+                        error="Beschrijving mag maximaal 500 tekens bevatten."
+                        sqref="D2:D501">
+                    <formula1>500</formula1>
+                    </dataValidation>
+                </dataValidations>
+                </worksheet>
+                """.formatted(
+                authorList,
+                publisherList,
+                bookTypeList,
+                genreList,
+                genreList,
+                languageList, themeList);
+    }
+
+    private String toQuotedCsv(List<String> values) {
+        String joined = values.stream()
+                .map(this::escapeXml)
+                .collect(Collectors.joining(","));
+        return "\"" + joined + "\"";
+    }
+
     private String buildSheetXml() {
         return """
-            <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-            <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
-            <sheetViews>
-                <sheetView workbookViewId="0" tabSelected="1">
-                <pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/>
-                </sheetView>
-            </sheetViews>
-            <sheetData>
-                <row r="1">
-                <c r="A1" t="inlineStr"><is><t>ISBN (optioneel)</t></is></c>
-                <c r="B1" t="inlineStr"><is><t>Titel *</t></is></c>
-                <c r="C1" t="inlineStr"><is><t>Auteur *</t></is></c>
-                <c r="D1" t="inlineStr"><is><t>Beschrijving * (max 500 tekens)</t></is></c>
-                <c r="E1" t="inlineStr"><is><t>Didactisch materiaal (JA/NEE)</t></is></c>
-                <c r="F1" t="inlineStr"><is><t>Uitgever (optioneel)</t></is></c>
-                <c r="G1" t="inlineStr"><is><t>CLIB (optioneel, A/B/C/D)</t></is></c>
-                <c r="H1" t="inlineStr"><is><t>Fictie (JA/NEE)</t></is></c>
-                <c r="I1" t="inlineStr"><is><t>Boektype *</t></is></c>
-                <c r="J1" t="inlineStr"><is><t>Genres * (gescheiden door spaties)</t></is></c>
-                <c r="K1" t="inlineStr"><is><t>Jaar van uitgave (optioneel)</t></is></c>
-                <c r="L1" t="inlineStr"><is><t>Taal *</t></is></c>
-                <c r="M1" t="inlineStr"><is><t>Aantal pagina's *</t></is></c>
-                <c r="N1" t="inlineStr"><is><t>Lettergrootte (optioneel: groot/medium/klein)</t></is></c>
-                <c r="O1" t="inlineStr"><is><t>Enkel zichtbaar voor deze school (JA/NEE)</t></is></c>
-                <c r="P1" t="inlineStr"><is><t>Cover (optioneel, URL)</t></is></c>
-                </row>
-            </sheetData>
-            </worksheet>
-            """;
+                <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+                <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+                <sheetViews>
+                    <sheetView workbookViewId="0" tabSelected="1">
+                    <pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/>
+                    </sheetView>
+                </sheetViews>
+                <sheetData>
+                    <row r="1">
+                    <c r="A1" t="inlineStr"><is><t>ISBN (optioneel)</t></is></c>
+                    <c r="B1" t="inlineStr"><is><t>Titel *</t></is></c>
+                    <c r="C1" t="inlineStr"><is><t>Auteur *</t></is></c>
+                    <c r="D1" t="inlineStr"><is><t>Beschrijving * (max 500 tekens)</t></is></c>
+                    <c r="E1" t="inlineStr"><is><t>Didactisch materiaal (JA/NEE)</t></is></c>
+                    <c r="F1" t="inlineStr"><is><t>Uitgever (optioneel)</t></is></c>
+                    <c r="G1" t="inlineStr"><is><t>CLIB (optioneel, A/B/C/D)</t></is></c>
+                    <c r="H1" t="inlineStr"><is><t>Fictie (JA/NEE)</t></is></c>
+                    <c r="I1" t="inlineStr"><is><t>Boektype *</t></is></c>
+                    <c r="J1" t="inlineStr"><is><t>Genres * (gescheiden door spaties)</t></is></c>
+                    <c r="K1" t="inlineStr"><is><t>Jaar van uitgave (optioneel)</t></is></c>
+                    <c r="L1" t="inlineStr"><is><t>Taal *</t></is></c>
+                    <c r="M1" t="inlineStr"><is><t>Aantal pagina's *</t></is></c>
+                    <c r="N1" t="inlineStr"><is><t>Lettergrootte (optioneel: groot/medium/klein)</t></is></c>
+                    <c r="O1" t="inlineStr"><is><t>Enkel zichtbaar voor deze school (JA/NEE)</t></is></c>
+                    <c r="P1" t="inlineStr"><is><t>Cover (optioneel, URL)</t></is></c>
+                    </row>
+                </sheetData>
+                </worksheet>
+                """;
     }
 
     private void writeZipEntry(ZipOutputStream zos, String name, String content) throws IOException {
         zos.putNextEntry(new ZipEntry(name));
         zos.write(content.getBytes(StandardCharsets.UTF_8));
         zos.closeEntry();
+    }
+
+    private String escapeXml(String value) {
+        return value.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&apos;");
     }
 
     @PostMapping("bulk-preview")
@@ -204,17 +360,19 @@ public class ExcelController {
 
             if (sheet == null) {
                 throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Ongeldig bestand: geen 'Books' tabblad gevonden. Gebruik de template.");
+                        HttpStatus.BAD_REQUEST,
+                        "Ongeldig bestand: geen 'Books' tabblad gevonden. Gebruik de template.");
             }
 
             Set<String> seen = new HashSet<>();
             for (int i = 1; i <= sheet.getLastRowNum(); i++) {
                 Row row = sheet.getRow(i);
-                if (row == null) continue;
+                if (row == null)
+                    continue;
 
                 String isbn = getCellIsbn(row, 0);
-                if (isbn.isBlank() || !seen.add(isbn)) continue;
+                if (isbn.isBlank() || !seen.add(isbn))
+                    continue;
 
                 int rowNum = i + 1;
                 Optional<BookLookupDTO> lookup = isbnLookupService.lookup(isbn);
@@ -227,7 +385,7 @@ public class ExcelController {
             }
         } catch (IOException e) {
             throw new ResponseStatusException(
-                HttpStatus.INTERNAL_SERVER_ERROR, "Kon bestand niet lezen", e);
+                    HttpStatus.INTERNAL_SERVER_ERROR, "Kon bestand niet lezen", e);
         }
 
         return ResponseEntity.ok(result);
@@ -236,18 +394,20 @@ public class ExcelController {
     @PostMapping("bulk-upload")
     public ResponseEntity<BulkUploadDTO> bulkUpload(@RequestParam("file") MultipartFile file) {
         Map<String, Author> authorMap = authorRepository.findAll().stream()
-            .collect(Collectors.toMap(a -> a.getName().toLowerCase(), a -> a, (a, b) -> a));
+                .collect(Collectors.toMap(a -> a.getName().toLowerCase(), a -> a, (a, b) -> a));
         Map<String, Publisher> publisherMap = publisherRepository.findAll().stream()
-            .collect(Collectors.toMap(p -> p.getName().toLowerCase(), p -> p, (a, b) -> a));
+                .collect(Collectors.toMap(p -> p.getName().toLowerCase(), p -> p, (a, b) -> a));
         Map<String, BookType> bookTypeMap = bookTypeRepository.findAll().stream()
-            .collect(Collectors.toMap(b -> b.getName().toLowerCase(), b -> b, (a, b) -> a));
+                .collect(Collectors.toMap(b -> b.getName().toLowerCase(), b -> b, (a, b) -> a));
         Map<String, Genre> genreMap = genreRepository.findAll().stream()
-            .collect(Collectors.toMap(g -> g.getName().toLowerCase(), g -> g, (a, b) -> a));
+                .collect(Collectors.toMap(g -> g.getName().toLowerCase(), g -> g, (a, b) -> a));
         Map<String, Language> languageMap = languageRepository.findAll().stream()
-            .collect(Collectors.toMap(l -> l.getName().toLowerCase(), l -> l, (a, b) -> a));
+                .collect(Collectors.toMap(l -> l.getName().toLowerCase(), l -> l, (a, b) -> a));
         Map<String, Language> languageByCode = languageRepository.findAll().stream()
-            .filter(l -> l.getCode() != null)
-            .collect(Collectors.toMap(l -> l.getCode().toLowerCase(), l -> l, (a, b) -> a));
+                .filter(l -> l.getCode() != null)
+                .collect(Collectors.toMap(l -> l.getCode().toLowerCase(), l -> l, (a, b) -> a));
+        Map<String, Theme> themeMap = themeRepository.findAll().stream()
+                .collect(Collectors.toMap(t -> t.getName().toLowerCase(), t -> t, (a, b) -> a));
 
         Set<String> existingIsbns = bookRepository.findAllIsbns();
         Set<String> seenIsbns = new HashSet<>();
@@ -259,50 +419,60 @@ public class ExcelController {
 
             if (sheet == null) {
                 throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Ongeldig bestand: geen 'Books' tabblad gevonden. Gebruik de template.");
+                        HttpStatus.BAD_REQUEST,
+                        "Ongeldig bestand: geen 'Books' tabblad gevonden. Gebruik de template.");
             }
 
             for (int i = 1; i <= sheet.getLastRowNum(); i++) {
                 Row row = sheet.getRow(i);
-                if (row == null) continue;
+                if (row == null)
+                    continue;
 
-                String isbn          = getCellIsbn(row, 0);
-                String titel         = getCellString(row, 1);
-                String auteurNaam    = getCellString(row, 2);
-                String beschrijving  = getCellString(row, 3);
-                String didactisch    = getCellString(row, 4);
-                String uitgeverNaam  = getCellString(row, 5);
-                String clib          = getCellString(row, 6);
-                String fictie        = getCellString(row, 7);
-                String boektypeNaam  = getCellString(row, 8);
-                String genresRaw     = getCellString(row, 9);
-                String jaarStr       = getCellString(row, 10);
-                String taalNaam      = getCellString(row, 11);
-                String paginasStr    = getCellString(row, 12);
-                String lettergrootte = getCellString(row, 13);
-                String enkelSchool   = getCellString(row, 14);
-                String cover         = getCellString(row, 15);
+                String isbn = getCellIsbn(row, 0);
+                String titel = getCellString(row, 1);
+                String auteurNaam = getCellString(row, 2);
+                String beschrijving = getCellString(row, 3);
+                String didactisch = getCellString(row, 4);
+                String uitgeverNaam = getCellString(row, 5);
+                String clib = getCellString(row, 6);
+                String fictie = getCellString(row, 7);
+                String boektypeNaam = getCellString(row, 8);
+                String genresRaw = getCellString(row, 9);
+                String jaarStr = getCellString(row, 10);
+                String taalNaam = getCellString(row, 11);
+                String paginasStr = getCellString(row, 12);
+                String themesRaw = getCellString(row, 13);
+                String lettergrootte = getCellString(row, 14);
+                String enkelSchool = getCellString(row, 15);
+                String cover = getCellString(row, 16);
 
                 int rowNum = i + 1;
 
                 BookLookupDTO lookup = null;
                 if (!isbn.isBlank()) {
                     lookup = lookupCache.computeIfAbsent(isbn,
-                        key -> isbnLookupService.lookup(key).orElse(null));
+                            key -> isbnLookupService.lookup(key).orElse(null));
                 }
 
                 if (lookup != null) {
-                    if (titel.isBlank() && lookup.getTitle() != null) titel = lookup.getTitle();
-                    if (auteurNaam.isBlank() && lookup.getAuthorName() != null) auteurNaam = lookup.getAuthorName();
-                    if (beschrijving.isBlank() && lookup.getDescription() != null) beschrijving = lookup.getDescription();
-                    if (uitgeverNaam.isBlank() && lookup.getPublisherName() != null) uitgeverNaam = lookup.getPublisherName();
-                    if (jaarStr.isBlank() && lookup.getPublishedYear() != null) jaarStr = String.valueOf(lookup.getPublishedYear());
-                    if (paginasStr.isBlank() && lookup.getPages() != null) paginasStr = String.valueOf(lookup.getPages());
-                    if (cover.isBlank() && lookup.getCoverUrl() != null) cover = lookup.getCoverUrl();
+                    if (titel.isBlank() && lookup.getTitle() != null)
+                        titel = lookup.getTitle();
+                    if (auteurNaam.isBlank() && lookup.getAuthorName() != null)
+                        auteurNaam = lookup.getAuthorName();
+                    if (beschrijving.isBlank() && lookup.getDescription() != null)
+                        beschrijving = lookup.getDescription();
+                    if (uitgeverNaam.isBlank() && lookup.getPublisherName() != null)
+                        uitgeverNaam = lookup.getPublisherName();
+                    if (jaarStr.isBlank() && lookup.getPublishedYear() != null)
+                        jaarStr = String.valueOf(lookup.getPublishedYear());
+                    if (paginasStr.isBlank() && lookup.getPages() != null)
+                        paginasStr = String.valueOf(lookup.getPages());
+                    if (cover.isBlank() && lookup.getCoverUrl() != null)
+                        cover = lookup.getCoverUrl();
                     if (taalNaam.isBlank() && lookup.getLanguageCode() != null) {
                         Language byCode = languageByCode.get(lookup.getLanguageCode().toLowerCase());
-                        if (byCode != null) taalNaam = byCode.getName();
+                        if (byCode != null)
+                            taalNaam = byCode.getName();
                     }
                 }
 
@@ -351,7 +521,8 @@ public class ExcelController {
                     continue;
                 }
 
-                if (!didactisch.isBlank() && !didactisch.equalsIgnoreCase("JA") && !didactisch.equalsIgnoreCase("NEE")) {
+                if (!didactisch.isBlank() && !didactisch.equalsIgnoreCase("JA")
+                        && !didactisch.equalsIgnoreCase("NEE")) {
                     result.addError(rowNum, "Didactisch materiaal moet JA of NEE zijn");
                     continue;
                 }
@@ -375,7 +546,8 @@ public class ExcelController {
 
                 Set<String> genreNames = new LinkedHashSet<>();
                 for (String token : genresRaw.split("\\s+")) {
-                    if (!token.isBlank()) genreNames.add(token.toLowerCase());
+                    if (!token.isBlank())
+                        genreNames.add(token.toLowerCase());
                 }
 
                 List<Genre> genres = new ArrayList<>();
@@ -389,7 +561,28 @@ public class ExcelController {
                     }
                     genres.add(genre);
                 }
-                if (genreError) continue;
+                if (genreError)
+                    continue;
+
+                Set<String> themeNames = new LinkedHashSet<>();
+                for (String token : themesRaw.split("\\s+")) {
+                    if (!token.isBlank())
+                        themeNames.add(token.toLowerCase());
+                }
+
+                List<Theme> themes = new ArrayList<>();
+                boolean themeError = false;
+                for (String name : themeNames) {
+                    Theme theme = themeMap.get(name);
+                    if (theme == null) {
+                        result.addError(rowNum, "Onbekend thema: " + name);
+                        themeError = true;
+                        break;
+                    }
+                    themes.add(theme);
+                }
+                if (themeError)
+                    continue;
 
                 Publisher uitgever = null;
                 if (!uitgeverNaam.isBlank()) {
@@ -400,13 +593,13 @@ public class ExcelController {
                     }
                 }
 
-                if (!clib.isBlank() && !List.of("A","B","C","D").contains(clib.toUpperCase())) {
+                if (!clib.isBlank() && !List.of("A", "B", "C", "D").contains(clib.toUpperCase())) {
                     result.addError(rowNum, "Ongeldig CLIB niveau: " + clib + " (A, B, C of D)");
                     continue;
                 }
 
                 if (!lettergrootte.isBlank() &&
-                    !List.of("groot","medium","klein").contains(lettergrootte.toLowerCase())) {
+                        !List.of("groot", "medium", "klein").contains(lettergrootte.toLowerCase())) {
                     result.addError(rowNum, "Ongeldige lettergrootte: " + lettergrootte);
                     continue;
                 }
@@ -435,7 +628,8 @@ public class ExcelController {
                     }
                 }
 
-                if (!enkelSchool.isBlank() && !enkelSchool.equalsIgnoreCase("JA") && !enkelSchool.equalsIgnoreCase("NEE")) {
+                if (!enkelSchool.isBlank() && !enkelSchool.equalsIgnoreCase("JA")
+                        && !enkelSchool.equalsIgnoreCase("NEE")) {
                     result.addError(rowNum, "Enkel zichtbaar voor deze school moet JA of NEE zijn");
                     continue;
                 }
@@ -447,14 +641,17 @@ public class ExcelController {
                 book.setFiction(parseBoolean(fictie, true));
                 book.setBookType(boektype);
                 book.setGenres(new HashSet<>(genres));
+                book.setThemes(new HashSet<>(themes));
                 book.setLanguage(taal);
-                if(jaarVanUitgave != null)
+                if (jaarVanUitgave != null)
                     book.setPublished(Year.of(jaarVanUitgave));
-                if(aantalPaginas != null)
+                if (aantalPaginas != null)
                     book.setPages(aantalPaginas);
 
-                if (!isbn.isBlank())        book.setIsbn(isbn);
-                if (uitgever != null)       book.setPublisher(uitgever);
+                if (!isbn.isBlank())
+                    book.setIsbn(isbn);
+                if (uitgever != null)
+                    book.setPublisher(uitgever);
 
                 if (clib != null && !clib.isBlank()) {
                     try {
@@ -487,47 +684,51 @@ public class ExcelController {
 
         } catch (IOException e) {
             throw new ResponseStatusException(
-                HttpStatus.INTERNAL_SERVER_ERROR, "Kon bestand niet lezen", e);
+                    HttpStatus.INTERNAL_SERVER_ERROR, "Kon bestand niet lezen", e);
         }
 
         return ResponseEntity.ok(result);
     }
 
     private boolean parseBoolean(String value, boolean defaultValue) {
-        if (value.isBlank()) return defaultValue;
+        if (value.isBlank())
+            return defaultValue;
         return value.equalsIgnoreCase("JA");
     }
 
     private String getCellString(Row row, int cellIndex) {
         Cell cell = row.getCell(cellIndex, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
-        if (cell == null) return "";
+        if (cell == null)
+            return "";
 
         return switch (cell.getCellType()) {
-            case STRING  -> cell.getStringCellValue().trim();
+            case STRING -> cell.getStringCellValue().trim();
             case NUMERIC -> {
-                if (DateUtil.isCellDateFormatted(cell)) yield "";
+                if (DateUtil.isCellDateFormatted(cell))
+                    yield "";
                 yield new DataFormatter().formatCellValue(cell).trim();
             }
             case BOOLEAN -> String.valueOf(cell.getBooleanCellValue());
             case FORMULA -> new DataFormatter().formatCellValue(cell).trim();
-            default      -> "";
+            default -> "";
         };
     }
 
     private String getCellIsbn(Row row, int cellIndex) {
-    Cell cell = row.getCell(cellIndex, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
-    if (cell == null) return "";
+        Cell cell = row.getCell(cellIndex, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
+        if (cell == null)
+            return "";
 
-    String raw = switch (cell.getCellType()) {
-        case STRING  -> cell.getStringCellValue().trim();
-        case NUMERIC -> {
-            long val = (long) cell.getNumericCellValue();
-            yield String.valueOf(val);
-        }
-        case FORMULA -> new DataFormatter().formatCellValue(cell).trim();
-        default      -> "";
-    };
+        String raw = switch (cell.getCellType()) {
+            case STRING -> cell.getStringCellValue().trim();
+            case NUMERIC -> {
+                long val = (long) cell.getNumericCellValue();
+                yield String.valueOf(val);
+            }
+            case FORMULA -> new DataFormatter().formatCellValue(cell).trim();
+            default -> "";
+        };
 
-    return raw;
-}
+        return raw;
+    }
 }

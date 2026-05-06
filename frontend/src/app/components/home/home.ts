@@ -4,11 +4,12 @@ import { Router, RouterModule } from '@angular/router';
 import { NavBarComponent } from '../nav-bar/nav-bar';
 import { BookSectionComponent } from '../book-section/book-section';
 import { SearchBar } from '../misc/search-bar/search-bar';
+import { Gamification } from '../gamification/gamification';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterModule, NavBarComponent, BookSectionComponent, SearchBar],
+  imports: [CommonModule, RouterModule, NavBarComponent, BookSectionComponent, SearchBar, Gamification],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
