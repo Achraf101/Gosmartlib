@@ -140,8 +140,10 @@
                 />
               </div>
             } @else {
-              <p-button (onClick)="setStatus(loan.id)">Ophalen</p-button>
-              <p-button (onClick)="setStatus2(loan.id)">Terugbrengen</p-button>
+              <div class="btns">
+                <p-button (onClick)="setStatus(loan.id)">Ophalen</p-button>
+                <p-button (onClick)="setStatus2(loan.id)">Terugbrengen</p-button>
+              </div>
             }
           </td>
         </tr>

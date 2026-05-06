@@ -92,7 +92,8 @@
 
 .dropdowns {
   display: flex;
-  gap: 1rem;
+  flex-direction: column;
+  gap: 1.25rem;
 }
 
 :host ::ng-deep .bookform p-iftalabel {
@@ -166,8 +167,7 @@ p-dialog .flex-column p-iftalabel {
 }
 
 @media (max-width: 600px) {
-  .inputrow,
-  .dropdowns {
+  .inputrow {
     flex-direction: column;
     gap: 1rem;
   }
