@@ -31,20 +31,22 @@
   }
   @if (isMonthlySection && isVisible(campusSettings, 'HOME', 'MONTHLY_BOOK')) {
     <div class="monthly-header">
-      <p-select
-        [(ngModel)]="selectedGrade"
-        [options]="grades"
-        optionLabel="label"
-        optionValue="value"
-        (onChange)="onGradeChange()"
-        styleClass="grade-select"
-      />
-      <p-button
-        label="Wijzig boek"
-        icon="pi pi-pencil"
-        severity="secondary"
-        (onClick)="changeBookOfMonth()"
-      />
+      @if (authService.hasRole('BIBLIOTHEEKBEHEERDER')) {
+        <p-select
+          [(ngModel)]="selectedGrade"
+          [options]="grades"
+          optionLabel="label"
+          optionValue="value"
+          (onChange)="onGradeChange()"
+          styleClass="grade-select"
+        />
+        <p-button
+          label="Wijzig boek"
+          icon="pi pi-pencil"
+          severity="secondary"
+          (onClick)="changeBookOfMonth()"
+        />
+      }
     </div>
 
     @if (!loading.isLoading && monthlyBook) {

@@ -16,6 +16,7 @@ import { DelayedLoader } from '../../utils/delayed-loader';
 import { CampusSettings } from '../../models/campus-settings';
 import { CampusSettingsService } from '../../services/campus-settings';
 import { isVisible } from '../../models/campus-settings';
+import { AuthService } from '../../services/auth';
 
 @Component({
   selector: 'app-book-section',
@@ -56,6 +57,7 @@ export class BookSectionComponent implements OnInit {
     private messageService: MessageService,
     private router: Router,
     private campusSettingsService: CampusSettingsService,
+    public authService: AuthService,
   ) {}
 
   ngOnInit(): void {
