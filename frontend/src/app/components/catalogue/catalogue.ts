@@ -72,6 +72,9 @@ export class CatalogueComponent implements OnInit {
   sidebarPagesMin: number | null = null;
   sidebarPagesMax: number | null = null;
 
+  viewMode: 'list' | 'grid' = 'list';
+  rowsPerPageOptions = [5, 10, 20];
+
   selectMode = false;
   sectionId: number | null = null;
   grade: number | null = null;
@@ -283,6 +286,25 @@ export class CatalogueComponent implements OnInit {
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: { pagina: 1, q: null },
+      queryParamsHandling: 'merge',
+    });
+    this.loadBooks();
+  }
+
+  setViewMode(mode: 'list' | 'grid'): void {
+    if (this.viewMode === mode) return;
+    this.viewMode = mode;
+    if (mode === 'grid') {
+      this.rowsPerPageOptions = [3, 6, 9];
+      this.rows = 3;
+    } else {
+      this.rowsPerPageOptions = [5, 10, 20];
+      this.rows = 5;
+    }
+    this.currentPage = 0;
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { pagina: 1 },
       queryParamsHandling: 'merge',
     });
     this.loadBooks();
