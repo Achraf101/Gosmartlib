@@ -19,6 +19,7 @@ import { LoanCartService } from '../../services/loan-cart';
 import { BookCardComponent } from '../misc/book-card/book-card';
 import { Campus } from '../../models/campus';
 import { CampusService } from '../../services/campus';
+import { AuthService } from '../../services/auth';
 import { CampusBookService } from '../../services/campusbook';
 import { CampusBook } from '../../models/CampusBook';
 import { TableModule } from 'primeng/table';
@@ -49,6 +50,7 @@ export class LoanCartComponent {
     private readonly messageService: MessageService,
     private readonly campusService: CampusService,
     private readonly campusBookService: CampusBookService,
+    private readonly authService: AuthService,
   ) {}
 
   readonly cartService = inject(LoanCartService);
@@ -58,10 +60,15 @@ export class LoanCartComponent {
   items = this.cartService.items();
   maxAmounts: Map<number, number> = new Map();
 
-  // TODO: vervang met werkelijke ingelogde gebruiker zodra auth klaar is
-  private readonly userId = 1;
   campus?: Campus;
-  private readonly campusId = 1;
+
+  private get userId(): number {
+    return this.authService.currentUser?.userId ?? 0;
+  }
+
+  private get campusId(): number {
+    return this.authService.currentUser?.campusId ?? 0;
+  }
 
   ngOnInit(): void {
     this.campusService.getById(this.campusId).subscribe({
