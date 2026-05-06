@@ -11,7 +11,7 @@
     <div class="card">
       <span class="step-label">Stap 2</span>
       <h3>Upload gevulde template</h3>
-      <p>alleen excel (.xlsx) files worden geaccepteerd.</p>
+      <p>Alleen excel (.xlsx) bestanden worden geaccepteerd.</p>
 
       <div
         class="drop-zone"
@@ -112,7 +112,10 @@
           </tbody>
         </table>
       } @else {
-        <p class="hint">Geen ISBN's gevonden in dit bestand. U kan toch importeren — verplichte velden moeten dan in de template staan.</p>
+        <p class="hint">
+          Geen ISBN's gevonden in dit bestand. U kan toch importeren — verplichte velden moeten dan
+          in de template staan.
+        </p>
       }
 
       @if (uploadError) {

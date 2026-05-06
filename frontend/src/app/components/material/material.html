@@ -11,17 +11,17 @@
 
   <div class="details">
     <div class="row">
-      <span>Uploaded</span>
+      <span>Geüpload</span>
       <span>{{ formatDate(material.uploaded) }}</span>
     </div>
     <div class="row">
-      <span>Size</span>
+      <span>Grootte</span>
       <span>{{ formatSize(material.size) }}</span>
     </div>
   </div>
   <div class="row btn">
     <a href="/static/file/{{ material.file_id }}/{{ material.file_name }}" download>
-      <p-button icon="pi pi-download" label="Download" severity="info" [outlined]="true" />
+      <p-button icon="pi pi-download" label="Downloaden" severity="info" [outlined]="true" />
     </a>
   </div>
 </div>
