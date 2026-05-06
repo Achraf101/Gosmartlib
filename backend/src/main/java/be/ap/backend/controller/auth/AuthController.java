@@ -13,11 +13,16 @@ public class AuthController {
 
     @GetMapping("me")
     public ResponseEntity<?> me(HttpSession session) {
-
         final String username = (String) session.getAttribute("username");
         final String role = (String) session.getAttribute("role");
         final Object campus = session.getAttribute("campus");
-        return ResponseEntity.ok(Map.of("username", username, "role", role, "campusId", campus != null ? campus : 0));
+        final Object userIdRaw = session.getAttribute("userId");
+        final Long userId = (userIdRaw != null) ? Long.valueOf(userIdRaw.toString()) : null;
+        return ResponseEntity.ok(Map.of(
+                "username", username,
+                "role", role,
+                "campusId", campus != null ? campus : 0,
+                "userId", userId != null ? userId : 0));
     }
 
     @GetMapping("me/id")

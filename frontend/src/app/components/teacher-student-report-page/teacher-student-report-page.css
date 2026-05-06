@@ -1,0 +1,80 @@
+.student-report {
+  padding: 2rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.student-report h1 {
+  margin: 1rem 0 1.5rem;
+}
+
+.counts-grid,
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+.count-card .count {
+  font-size: 2rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.books-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.book-card .cover {
+  width: 100%;
+  max-height: 180px;
+  object-fit: contain;
+  margin-bottom: 0.5rem;
+}
+
+.book-card h3 {
+  margin: 0.25rem 0;
+  font-size: 1rem;
+}
+
+.book-card .author {
+  color: #666;
+  font-size: 0.9rem;
+  margin: 0 0 0.5rem;
+}
+
+.book-card .dates {
+  font-size: 0.85rem;
+  margin: 0 0 0.5rem;
+}
+
+.reviews-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.5rem;
+}
+
+.review-card .rating {
+  font-weight: 600;
+}
+
+.review-card .added {
+  font-size: 0.8rem;
+  color: #666;
+  margin-top: 0.5rem;
+}
+
+.title-skel,
+.block-skel {
+  display: block;
+  margin-bottom: 1rem;
+}

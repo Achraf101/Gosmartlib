@@ -35,7 +35,10 @@ public class LoanController {
     }
 
     @PostMapping
-    public LoanDTO createLoan(@RequestBody LoanDTO dto) {
+    public LoanDTO createLoan(@RequestBody LoanDTO dto, HttpSession session) {
+        Object raw = session.getAttribute("userId");
+        Long userId = (raw != null) ? Long.valueOf(raw.toString()) : null;
+        dto.setUserId(userId);
         return loanService.createLoan(dto);
     }
 

@@ -14,6 +14,9 @@ import { FavoritePage } from './components/favorite-page/favorite-page';
 import { AcceptDeclineReservationsPageComponent } from './components/accept-decline-reservations-page/accept-decline-reservations-page';
 import { UserLoansPageComponent } from './components/user-loans-page/user-loans-page';
 import { DashboardLibraryManager } from './components/dashboard-library-manager/dashboard-library-manager';
+import { TeacherClassesPageComponent } from './components/teacher-classes-page/teacher-classes-page';
+import { TeacherClassDetailPageComponent } from './components/teacher-class-detail-page/teacher-class-detail-page';
+import { TeacherStudentReportPageComponent } from './components/teacher-student-report-page/teacher-student-report-page';
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: '', redirectTo: 'startpagina', pathMatch: 'full' },
@@ -33,10 +36,25 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   { path: 'lijst/:token/delen', component: FavoritePage, canActivate: [authGuard] },
-  { path: 'uitleningen', component: UserLoansPageComponent, canActivate: [authGuard] },{ 
-    path: 'dashboard/bibliotheek-beheerder', 
+  { path: 'uitleningen', component: UserLoansPageComponent, canActivate: [authGuard] },{
+    path: 'dashboard/bibliotheek-beheerder',
     component: DashboardLibraryManager,
     canActivate: [authGuard(["BIBLIOTHEEKBEHEERDER"])]
+  },
+  {
+    path: 'leerkracht/klassen',
+    component: TeacherClassesPageComponent,
+    canActivate: [authGuard(['LEERKRACHT'])],
+  },
+  {
+    path: 'leerkracht/klassen/:id',
+    component: TeacherClassDetailPageComponent,
+    canActivate: [authGuard(['LEERKRACHT'])],
+  },
+  {
+    path: 'leerkracht/leerlingen/:id',
+    component: TeacherStudentReportPageComponent,
+    canActivate: [authGuard(['LEERKRACHT'])],
   }
   // {
   //   path: 'boek',
