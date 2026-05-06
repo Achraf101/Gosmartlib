@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -22,13 +23,16 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class IsbnLookupService {
+    @Value("${app.google-books.api-key}")
+    private String apiKey;
 
     private final ObjectMapper objectMapper;
 
     public Optional<BookLookupDTO> lookup(String isbn) {
         try {
             String cleanIsbn = isbn.replaceAll("[^0-9Xx]", "");
-            URL url = new URI("https://www.googleapis.com/books/v1/volumes?q=isbn:" + cleanIsbn).toURL();
+            URL url = new URI("https://www.googleapis.com/books/v1/volumes?key=" + apiKey + "&q=isbn:" + cleanIsbn)
+                    .toURL();
 
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
@@ -75,7 +79,8 @@ public class IsbnLookupService {
             if (publishedDate != null && publishedDate.length() >= 4) {
                 try {
                     dto.setPublishedYear(Integer.parseInt(publishedDate.substring(0, 4)));
-                } catch (NumberFormatException ignored) {}
+                } catch (NumberFormatException ignored) {
+                }
             }
 
             int pageCount = volumeInfo.path("pageCount").asInt(0);
@@ -90,7 +95,8 @@ public class IsbnLookupService {
                     List<String> contributors = new ArrayList<>();
                     for (int i = 1; i < authors.size(); i++) {
                         String name = authors.get(i).asText(null);
-                        if (name != null) contributors.add(name);
+                        if (name != null)
+                            contributors.add(name);
                     }
                     dto.setContributors(contributors);
                 }

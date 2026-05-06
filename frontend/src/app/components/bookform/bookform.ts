@@ -312,10 +312,10 @@ export class BookformComponent implements OnInit {
         };
         this.isLookingUp = false;
       },
-      error: () => {
-        this.showError('ISBN niet gevonden. Probeer het opnieuw of vul het boek manueel in.');
-        this.isLookingUp = false;
-      },
+      // error: () => {
+      //   this.showError('ISBN niet gevonden. Probeer het opnieuw of vul het boek manueel in.');
+      //   this.isLookingUp = false;
+      // },
     });
   }
 
