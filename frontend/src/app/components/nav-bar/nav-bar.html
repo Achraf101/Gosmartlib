@@ -38,4 +38,7 @@
       >Dashboard</a
     >
   }
+  @if (authService.hasRole('LEERKRACHT')) {
+    <a routerLink="/leerkracht/klassen" routerLinkActive="active" class="nav-link">Mijn klassen</a>
+  }
 </nav>
