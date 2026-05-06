@@ -52,6 +52,9 @@ public class Loan {
     @Column(name = "closed", nullable = false)
     private Boolean closed = false;
 
+    @Column(name = "returned_at")
+    private LocalDate returnedAt;
+
     @OneToMany(mappedBy = "loan", cascade = CascadeType.ALL)
     private Set<LoanBook> loanBooks = new HashSet<>();
 }

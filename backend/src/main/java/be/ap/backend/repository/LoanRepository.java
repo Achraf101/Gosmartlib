@@ -52,4 +52,27 @@ public interface LoanRepository extends JpaRepository<Loan, Long> {
     "GROUP BY g.name " +
     "ORDER BY COUNT(DISTINCT l) DESC")
     List<Object[]> findTopGenres(@Param("statuses") List<LoanStatus> statuses, @Param("from") LocalDate from, @Param("to") LocalDate to, @Param("campusId") Long campusId);
+
+    @Query("SELECT COUNT(DISTINCT l) FROM Loan l " +
+    "WHERE l.user.id = :userId " +
+    "AND l.status IN :statuses " +
+    "AND l.start >= :from AND l.start <= :to")
+    int countByUserIdAndStartBetween(@Param("userId") Long userId, @Param("statuses") List<LoanStatus> statuses, @Param("from") LocalDate from, @Param("to") LocalDate to);
+
+    @Query("SELECT DISTINCT l FROM Loan l LEFT JOIN FETCH l.loanBooks lb LEFT JOIN FETCH lb.book WHERE l.user.id = :userId AND l.status IN :statuses ORDER BY l.start DESC")
+    List<Loan> findByUserIdWithBooks(@Param("userId") Long userId, @Param("statuses") List<LoanStatus> statuses);
+
+    @Query("SELECT DISTINCT l FROM Loan l LEFT JOIN FETCH l.loanBooks lb LEFT JOIN FETCH lb.book WHERE l.user.id = :userId AND l.status = :status ORDER BY l.end ASC")
+    List<Loan> findReturnedByUserId(@Param("userId") Long userId, @Param("status") LoanStatus status);
+
+    @Query("SELECT g.name, COUNT(DISTINCT l) FROM Loan l " +
+    "JOIN l.loanBooks lb " +
+    "JOIN lb.book b " +
+    "JOIN b.genres g " +
+    "WHERE l.user.id = :userId " +
+    "AND l.status IN :statuses " +
+    "AND l.start >= :from AND l.start <= :to " +
+    "GROUP BY g.name " +
+    "ORDER BY COUNT(DISTINCT l) DESC")
+    List<Object[]> findTopGenresByUserId(@Param("userId") Long userId, @Param("statuses") List<LoanStatus> statuses, @Param("from") LocalDate from, @Param("to") LocalDate to);
 }
