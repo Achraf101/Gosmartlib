@@ -52,7 +52,6 @@
 
 .book-card {
   flex: 0 0 auto;
-  width: 160px;
   display: flex;
   flex-direction: column;
   cursor: pointer;
