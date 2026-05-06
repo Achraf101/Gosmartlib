@@ -201,7 +201,7 @@
   [modal]="true"
   [closable]="true"
   header="{{ selectedBook?.title }}"
-  [style]="{ width: '400px' }"
+  [style]="{ width: 'min(90vw, 400px)' }"
 >
   <div class="dialog-content">
     @if (selectedBook?.cover) {

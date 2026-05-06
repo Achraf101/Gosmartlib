@@ -82,7 +82,7 @@
   max-width: 50vw;
 }
 
-@media (width < 700px) {
+@media (max-width: 700px) {
   .loans-table td {
     justify-content: center;
     display: flex;

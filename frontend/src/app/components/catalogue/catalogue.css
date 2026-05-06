@@ -204,8 +204,7 @@ h1 {
   background: var(--p-neutral-50);
   border: 1px solid var(--p-neutral-100);
   transition: box-shadow 0.15s;
-  max-width: 200px;
-  justify-self: center;
+  width: 100%;
 }
 
 .grid-card:hover {
@@ -410,6 +409,10 @@ h1 {
 }
 
 @media (max-width: 799px) {
+  .catalogue-container {
+    padding: 2rem 1rem;
+  }
+
   .catalogue-layout {
     flex-direction: column;
   }
@@ -423,5 +426,18 @@ h1 {
   .book-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .book-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .book-grid {
+    grid-template-columns: 1fr;
   }
 }

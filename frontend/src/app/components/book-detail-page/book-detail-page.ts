@@ -25,7 +25,6 @@ import { LoanService } from '../../services/loan';
 import { CreateLoanBookDTO } from '../../models/loanBook';
 import { DatePipe } from '@angular/common';
 import { LoanCartService } from '../../services/loan-cart';
-import { CarouselModule } from 'primeng/carousel';
 import { ProgressSpinner } from 'primeng/progressspinner';
 import { DelayedLoader } from '../../utils/delayed-loader';
 import { BookList } from '../../models/book-list';
@@ -62,7 +61,6 @@ import { AuthService } from '../../services/auth';
     InputNumber,
     DatePipe,
     BookCardComponent,
-    CarouselModule,
     ProgressSpinner,
     Button,
     Message,

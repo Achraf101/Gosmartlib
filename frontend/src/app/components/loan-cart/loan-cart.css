@@ -1,8 +1,7 @@
 
 :host ::ng-deep .p-dialog {
   @media (max-width: 768px) {
-    width: 70vw !important;
-    max-width: 95vw !important;
+    width: min(95vw, 560px) !important;
     overflow: visible;
   }
 }

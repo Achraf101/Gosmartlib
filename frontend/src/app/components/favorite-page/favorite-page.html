@@ -36,7 +36,7 @@
 @if (bookmarked.length > 0) {
   <h1>Jouw favorieten</h1>
   <div class="book-card-list">
-    <p-carousel [value]="bookmarked" [numVisible]="4" [numScroll]="2">
+    <p-carousel [value]="bookmarked" [numVisible]="4" [numScroll]="2" [responsiveOptions]="carouselResponsiveOptions">
       <ng-template pTemplate="item" let-book>
         <div class="book-card">
           <b-card [bookCard]="book"></b-card>
@@ -96,7 +96,7 @@
     </div>
     <div class="book-card-list">
       @if ((listItems.get(list.id) ?? []).length > 0) {
-        <p-carousel [value]="listItems.get(list.id) ?? []" [numVisible]="4" [numScroll]="2">
+        <p-carousel [value]="listItems.get(list.id) ?? []" [numVisible]="4" [numScroll]="2" [responsiveOptions]="carouselResponsiveOptions">
           <ng-template pTemplate="item" let-book>
             <div class="book-card">
               <b-card [bookCard]="book"></b-card>

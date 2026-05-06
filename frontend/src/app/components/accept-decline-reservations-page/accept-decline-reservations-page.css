@@ -1,5 +1,6 @@
 .borrow-approval {
   padding: 2rem;
+  overflow-x: auto;
 }
 
 .card-header {
@@ -84,7 +85,23 @@ td:last-child {
 
 .actionBtns{
   display: flex;
-  gap: 1rem;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .borrow-approval {
+    padding: 1rem;
+  }
+
+  .actionBtns {
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .info-dialog-content {
+    max-width: 100%;
+  }
 }
 
 .btns {

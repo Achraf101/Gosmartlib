@@ -284,13 +284,9 @@
     @if (relatedBooks?.length != 0) {
       <div id="related-books" class="box">
         <h2>Meer van dit:</h2>
-        <div id="related-books-book">
-          @if (relatedBooks) {
-            <p-carousel [value]="relatedBooks" [numVisible]="4" [numScroll]="2">
-              <ng-template pTemplate="item" let-bookCard>
-                <b-card [bookCard]="bookCard"></b-card>
-              </ng-template>
-            </p-carousel>
+        <div class="related-scroll">
+          @for (bookCard of relatedBooks ?? []; track bookCard.id) {
+            <b-card [bookCard]="bookCard"></b-card>
           }
         </div>
       </div>

@@ -13,10 +13,16 @@ import { GamificationService } from '../../services/gamification.service';
   styleUrl: './nav-bar.css',
 })
 export class NavBarComponent implements OnInit {
+  menuOpen = false;
+
   constructor(public authService: AuthService, public gamificationService: GamificationService) {}
 
   ngOnInit(): void {
     this.gamificationService.load();
+  }
+
+  toggleMenu(): void {
+    this.menuOpen = !this.menuOpen;
   }
 
   logout(): void {
