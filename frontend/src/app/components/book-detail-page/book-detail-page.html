@@ -114,6 +114,16 @@
             severity="primary"
             (onClick)="cartDialogVisible = true"
           />
+          @if (book.preview_link) {
+            <a [href]="book.preview_link" target="_blank" rel="noopener noreferrer">
+              <p-button
+                class="btn"
+                label="Bekijk preview"
+                severity="secondary"
+                icon="pi pi-eye"
+              />
+            </a>
+          }
         </div>
       </div>
     </div>

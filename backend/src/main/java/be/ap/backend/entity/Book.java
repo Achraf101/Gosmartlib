@@ -112,6 +112,9 @@ public class Book {
     @Column(nullable = false, name = "didactic")
     private Boolean didactic = false;
 
+    @Column(nullable = true, length = 500, name = "preview_link")
+    private String previewLink;
+
     @JsonProperty("series_name")
     public String getSeriesName() {
         return series != null ? series.getName() : null;

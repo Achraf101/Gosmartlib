@@ -59,6 +59,7 @@ export interface BookDetail extends BookBase {
   school?: number;
   added: string;
   didactic: boolean;
+  preview_link?: string;
 }
 
 export interface CreateBook {

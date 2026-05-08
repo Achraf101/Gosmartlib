@@ -29,4 +29,5 @@ public class CreateBookDTO {
     private FontSize fontSize;
     private long schoolId;
     private Boolean didactic;
+    private String previewLink;
 }

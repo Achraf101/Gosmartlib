@@ -111,6 +111,9 @@ public class BookService {
             }
         }
 
+        if (dto.getPreviewLink() != null)
+            book.setPreviewLink(dto.getPreviewLink());
+
         return bookRepository.save(book);
     }
 

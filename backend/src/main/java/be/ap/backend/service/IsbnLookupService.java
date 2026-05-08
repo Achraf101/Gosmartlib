@@ -109,6 +109,12 @@ public class IsbnLookupService {
             }
             dto.setCoverUrl(thumbnail);
 
+            JsonNode accessInfo = root.path("items").get(0).path("accessInfo");
+            String viewability = textOrNull(accessInfo, "viewability");
+            if (viewability != null && !viewability.equals("NO_PAGES")) {
+                dto.setPreviewLink(textOrNull(accessInfo, "webReaderLink"));
+            }
+
             return Optional.of(dto);
 
         } catch (IOException | URISyntaxException e) {

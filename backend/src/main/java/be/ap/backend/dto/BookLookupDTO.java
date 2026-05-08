@@ -15,4 +15,5 @@ public class BookLookupDTO {
     private List<String> contributors;
     private String isbn;
     private String coverUrl;
+    private String previewLink;
 }
