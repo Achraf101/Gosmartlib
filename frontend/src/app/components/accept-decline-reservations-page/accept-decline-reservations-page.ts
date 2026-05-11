@@ -19,11 +19,15 @@ import { Message } from 'primeng/message';
 })
 export class AcceptDeclineReservationsPageComponent implements OnInit {
   loans: LoanDTO[] = [];
+  groupedLoans: (LoanDTO | LoanDTO[])[] = [];
+  expandedGroups: Set<string> = new Set();
   loading = false;
   selectedLoan: LoanDTO | null = null;
+  selectedGroupLoans: LoanDTO[] = [];
   noteDialogVisible = false;
   note = '';
   infoDialogVisible = false;
+  groupInfoDialogVisible = false;
 
   constructor(
     private loanService: LoanService,
@@ -39,6 +43,7 @@ export class AcceptDeclineReservationsPageComponent implements OnInit {
     this.loanService.getRequested().subscribe({
       next: (data) => {
         this.loans = data;
+        this.groupLoans(data);
         this.loading = false;
       },
       error: () => {
@@ -50,6 +55,37 @@ export class AcceptDeclineReservationsPageComponent implements OnInit {
         this.loading = false;
       },
     });
+  }
+
+  groupLoans(loans: LoanDTO[]): void {
+    const groups = new Map<string, LoanDTO[]>();
+    const result: (LoanDTO | LoanDTO[])[] = [];
+
+    for (const loan of loans) {
+      if (loan.groupId) {
+        if (!groups.has(loan.groupId)) {
+          groups.set(loan.groupId, []);
+          result.push(groups.get(loan.groupId)!);
+        }
+        groups.get(loan.groupId)!.push(loan);
+      } else {
+        result.push(loan);
+      }
+    }
+
+    this.groupedLoans = result;
+  }
+
+  isGroup(item: LoanDTO | LoanDTO[]): boolean {
+    return Array.isArray(item);
+  }
+
+  asGroup(item: LoanDTO | LoanDTO[]): LoanDTO[] {
+    return item as LoanDTO[];
+  }
+
+  asLoan(item: LoanDTO | LoanDTO[]): LoanDTO {
+    return item as LoanDTO;
   }
 
   openNoteDialog(loan: LoanDTO): void {
@@ -84,52 +120,123 @@ export class AcceptDeclineReservationsPageComponent implements OnInit {
   }
 
   acceptLoan(loan: LoanDTO) {
-    if (!loan) return;
-    this.loanService.changeStatus(loan.id, LoanStatus.ACCEPTED).subscribe({
-      next: () => {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Succes',
-          detail: 'Uitlening geaccepteerd!',
-          life: 3000,
-        });
-        this.loading = false;
-        this.loadPending();
-      },
-      error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fout',
-          detail: 'Accepteren van deze uitlening is mislukt, probeer opnieuw.',
-          life: 3000,
-        });
-        this.loading = false;
-      },
-    });
+  if (!loan) return;
+  this.loanService.changeStatus(loan.id, LoanStatus.ACCEPTED).subscribe({
+    next: () => {
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Succes',
+        detail: 'Uitlening geaccepteerd!',
+        life: 3000,
+      });
+      this.selectedGroupLoans = this.selectedGroupLoans.filter(l => l.id !== loan.id);
+      if (this.selectedGroupLoans.length === 0) {
+        this.groupInfoDialogVisible = false;
+      }
+      this.loadPending();
+    },
+    error: () => {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Fout',
+        detail: 'Accepteren van deze uitlening is mislukt, probeer opnieuw.',
+        life: 3000,
+      });
+    },
+  });
+}
+
+declineLoan(loan: LoanDTO) {
+  if (!loan) return;
+  this.loanService.changeStatus(loan.id, LoanStatus.DECLINED).subscribe({
+    next: () => {
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Succes',
+        detail: 'Uitlening geweigerd!',
+        life: 3000,
+      });
+      this.selectedGroupLoans = this.selectedGroupLoans.filter(l => l.id !== loan.id);
+      if (this.selectedGroupLoans.length === 0) {
+        this.groupInfoDialogVisible = false;
+      }
+      this.loadPending();
+    },
+    error: () => {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Fout',
+        detail: 'Weigeren van deze uitlening is mislukt, probeer opnieuw.',
+        life: 3000,
+      });
+    },
+  });
+}
+
+  acceptGroup(group: LoanDTO[]): void {
+    let completed = 0;
+    for (const loan of group) {
+      this.loanService.changeStatus(loan.id, LoanStatus.ACCEPTED).subscribe({
+        next: () => {
+          completed++;
+          if (completed === group.length) {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Succes',
+              detail: 'Alle uitleningen geaccepteerd!',
+              life: 3000,
+            });
+            this.groupInfoDialogVisible = false;
+            this.loadPending();
+          }
+        },
+        error: () => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Fout',
+            detail: 'Accepteren mislukt, probeer opnieuw.',
+            life: 3000,
+          });
+        },
+      });
+    }
   }
 
-  declineLoan(loan: LoanDTO) {
-    if (!loan) return;
-    this.loanService.changeStatus(loan.id, LoanStatus.DECLINED).subscribe({
-      next: () => {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Succes',
-          detail: 'Uitlening geweigerd!',
-          life: 3000,
-        });
-        this.loadPending();
-        this.loading = false;
-      },
-      error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fout',
-          detail: 'Weigeren van deze uitlening is mislukt, probeer opnieuw.',
-          life: 3000,
-        });
-        this.loading = false;
-      },
-    });
+  declineGroup(group: LoanDTO[]): void {
+    let completed = 0;
+    for (const loan of group) {
+      this.loanService.changeStatus(loan.id, LoanStatus.DECLINED).subscribe({
+        next: () => {
+          completed++;
+          if (completed === group.length) {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Succes',
+              detail: 'Alle uitleningen geweigerd!',
+              life: 3000,
+            });
+            this.groupInfoDialogVisible = false;
+            this.loadPending();
+          }
+        },
+        error: () => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Fout',
+            detail: 'Weigeren mislukt, probeer opnieuw.',
+            life: 3000,
+          });
+        },
+      });
+    }
   }
+
+  openGroupDialog(group: LoanDTO[]): void {
+    this.selectedGroupLoans = group;
+    this.groupInfoDialogVisible = true;
+  }
+
+  getTotalBooks(group: LoanDTO[]): number {
+  return group.reduce((sum, loan) => sum + (loan.books[0]?.requestedAmount ?? 0), 0);
+}
 }
