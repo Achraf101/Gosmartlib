@@ -66,7 +66,7 @@ public class LoanControllerTest {
     @Test
     void createLoan_success() throws Exception {
         LoanDTO dto = new LoanDTO();
-        when(loanService.createLoan(any())).thenReturn(dto);
+        when(loanService.createLoan(any())).thenReturn(List.of(dto));
 
         mockMvc.perform(post("/loan")
                 .contentType(MediaType.APPLICATION_JSON)
