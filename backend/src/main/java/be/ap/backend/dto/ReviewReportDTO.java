@@ -20,4 +20,7 @@ public class ReviewReportDTO {
 
     private Long bookId;
     private String bookTitle;
+
+    private String reviewUsername;
+    private String reporterUsername;
 }

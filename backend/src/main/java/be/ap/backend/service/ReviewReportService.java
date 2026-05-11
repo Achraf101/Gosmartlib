@@ -6,6 +6,7 @@ import be.ap.backend.entity.Review;
 import be.ap.backend.enums.ReviewReportStatus;
 import be.ap.backend.repository.ReviewReportRepository;
 import be.ap.backend.repository.ReviewRepository;
+import be.ap.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +20,7 @@ public class ReviewReportService {
     private final ReviewReportRepository reviewReportRepository;
     private final ReviewRepository reviewRepository;
     private final ReviewService reviewService;
+    private final UserRepository userRepository;
 
     public ReviewReport reportReview(Long reviewId, Long userId, String note) {
         Review review = reviewRepository.findById(reviewId)
@@ -73,7 +75,12 @@ public class ReviewReportService {
             dto.setReviewUserId(review.getUserId());
             dto.setBookId(review.getBook().getId());
             dto.setBookTitle(review.getBook().getTitle());
+            userRepository.findById(review.getUserId()).ifPresent(u ->
+                dto.setReviewUsername(u.getUsername() != null ? u.getUsername() : u.getSsName()));
         });
+
+        userRepository.findById(report.getReporterUserId()).ifPresent(u ->
+            dto.setReporterUsername(u.getUsername() != null ? u.getUsername() : u.getSsName()));
 
         return dto;
     }

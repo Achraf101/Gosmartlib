@@ -46,6 +46,11 @@
   color: #374151;
 }
 
+.review-author {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
 .action-btns {
   display: flex;
   gap: 0.5rem;

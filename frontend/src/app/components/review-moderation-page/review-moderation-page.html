@@ -19,7 +19,8 @@
       <ng-template pTemplate="header">
         <tr>
           <th>Boek</th>
-          <th>Recensie</th>
+          <th>Recensie (door)</th>
+          <th>Melder</th>
           <th>Gerapporteerd op</th>
           <th>Acties</th>
         </tr>
@@ -42,7 +43,9 @@
               }
             </div>
             <span class="content-preview">{{ report.review_content | slice: 0 : 80 }}{{ report.review_content?.length > 80 ? '…' : '' }}</span>
+            <span class="review-author">door {{ report.review_username }}</span>
           </td>
+          <td>{{ report.reporter_username }}</td>
           <td>{{ report.created_at | date: 'dd/MM/yyyy HH:mm' }}</td>
           <td>
             <div class="action-btns">
@@ -61,7 +64,7 @@
 
       <ng-template pTemplate="emptymessage">
         <tr>
-          <td colspan="4" class="empty-state">
+          <td colspan="5" class="empty-state">
             <i class="pi pi-check-circle"></i>
             <span>Geen openstaande rapportages.</span>
           </td>
@@ -92,7 +95,7 @@
         }
       </div>
       <p class="detail-review-content">{{ selectedReport.review_content || 'Geen inhoud.' }}</p>
-      <p class="detail-meta">Geplaatst op {{ selectedReport.review_added | date: 'dd/MM/yyyy' }}</p>
+      <p class="detail-meta">Door <strong>{{ selectedReport.review_username }}</strong> op {{ selectedReport.review_added | date: 'dd/MM/yyyy' }}</p>
     </section>
 
     <section>
@@ -109,7 +112,7 @@
     </section>
     }
 
-    <p class="detail-meta">Gerapporteerd op {{ selectedReport.created_at | date: 'dd/MM/yyyy HH:mm' }}</p>
+    <p class="detail-meta">Gerapporteerd door <strong>{{ selectedReport.reporter_username }}</strong> op {{ selectedReport.created_at | date: 'dd/MM/yyyy HH:mm' }}</p>
   </div>
 
   <div class="dialog-actions">

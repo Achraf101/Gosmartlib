@@ -11,4 +11,6 @@ export interface ReviewReport {
   review_user_id: number;
   book_id: number;
   book_title: string;
+  review_username: string;
+  reporter_username: string;
 }
