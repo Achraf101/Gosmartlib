@@ -15,9 +15,9 @@ export class LoanService {
     return this.apiService.get<LoanDTO[]>(`${this.endpoint}/requested`);
   }
 
-  createLoan(loan: Omit<CreateLoanDTO, 'id'>): Observable<CreateLoanDTO> {
-    return this.apiService.post<CreateLoanDTO>(this.endpoint, loan);
-  }
+ createLoan(loan: Omit<CreateLoanDTO, 'id'>): Observable<LoanDTO[]> {
+  return this.apiService.post<LoanDTO[]>(this.endpoint, loan);
+}
 
   updateNote(id: number, note: string): Observable<LoanDTO> {
     return this.apiService.put<LoanDTO>(`${this.endpoint}/${id}/note`, { note });
@@ -60,4 +60,6 @@ export class LoanService {
   getTopGenres(): Observable<{ title: string; count: number }[]> {
     return this.apiService.get<{ title: string; count: number }[]>(`${this.endpoint}/top-genres`);
   }
+
+  
 }
