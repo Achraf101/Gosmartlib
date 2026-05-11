@@ -3,7 +3,15 @@
   @if (selectMode) {
     <div class="select-mode-banner">
       <i class="pi pi-info-circle"></i>
-      Kies een boek als boek van de maand voor graad {{ grade }}
+      @if (grade) {
+        Kies een boek als boek van de maand voor graad {{ grade }}
+      }
+      @if (ranking) {
+        Kies een boek als uitgelichte boeken
+      }
+      @if (listId) {
+        kies een boek om toe te voegen aan de lijst
+      }
     </div>
   }
 
@@ -230,6 +238,9 @@
           icon="pi pi-check"
           (onClick)="setAsSpotlight()"
         />
+      }
+      @if (listId) {
+        <p-button label="Toevoegen aan lijst" icon="pi pi-plus" (onClick)="addBookToList()" />
       }
     }
   </ng-template>

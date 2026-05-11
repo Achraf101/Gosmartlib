@@ -311,4 +311,13 @@ export class FavoritePage implements OnInit {
       },
     });
   }
+
+  AddToList(list: BookList) {
+    this.router.navigate(['/catalogus'], {
+      queryParams: {
+        selectMode: true,
+        listId: list.id,
+      },
+    });
+  }
 }

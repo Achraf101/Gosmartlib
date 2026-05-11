@@ -27,6 +27,7 @@ import { ThemeService } from '../../services/theme';
 import { BookCover } from '../misc/book-cover/book-cover';
 import { AuthService } from '../../services/auth';
 import { RadioButton } from 'primeng/radiobutton';
+import { BookListService } from '../../services/book-list';
 
 @Component({
   selector: 'app-catalogue',
@@ -80,6 +81,7 @@ export class CatalogueComponent implements OnInit {
   grade: number | null = null;
   selectedBook: BookResult | null = null;
   ranking: number | null = null;
+  listId: number | null = null;
   showDialog = false;
 
   readonly placeholder = '/assets/no-cover.svg';
@@ -92,6 +94,7 @@ export class CatalogueComponent implements OnInit {
     private router: Router,
     private themeService: ThemeService,
     public auth: AuthService,
+    public bookListService: BookListService,
   ) {}
 
   ngOnInit(): void {
@@ -108,6 +111,7 @@ export class CatalogueComponent implements OnInit {
       this.sectionId = params['sectionId'] ? Number(params['sectionId']) : null;
       this.grade = params['grade'] ? Number(params['grade']) : null;
       this.ranking = params['ranking'] ? Number(params['ranking']) : null;
+      this.listId = params['listId'] ? Number(params['listId']): null;
 
       this.sidebarGenres = params['genres'] ? params['genres'].split(',').map(Number) : [];
       this.sidebarThemes = params['themes'] ? params['themes'].split(',').map(Number) : [];
@@ -333,5 +337,17 @@ export class CatalogueComponent implements OnInit {
       author_name: book.author_name,
       cover: book.cover,
     };
+  }
+
+  addBookToList() {
+    if (!this.selectedBook || !this.listId) return;
+
+    this.bookListService.addBook(this.listId, this.selectedBook.id).subscribe({
+      next: () => {
+        this.showDialog = false;
+        this.router.navigate(['/boekenlijst', this.listId]);
+      },
+      error: (err) => console.error('Failed to add book to list', err),
+    });
   }
 }
