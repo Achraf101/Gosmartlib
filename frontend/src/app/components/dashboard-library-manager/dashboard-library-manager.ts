@@ -125,11 +125,14 @@ export class DashboardLibraryManager implements OnInit {
   }
 
   loadPendingCount(): void {
-    this.loanService.getRequested().subscribe({
-      next: (loans) => (this.pendingLoanCount = loans.length),
-      error: () => (this.pendingLoanCount = 0),
-    });
-  }
+  this.loanService.getRequested().subscribe({
+    next: (loans) => {
+      const uniqueGroups = new Set(loans.map(l => l.groupId ?? l.id));
+      this.pendingLoanCount = uniqueGroups.size;
+    },
+    error: () => (this.pendingLoanCount = 0),
+  });
+}
 
   loadSectionAndBooks(): void {
     this.monthlyBooksLoading = true;
