@@ -6,9 +6,11 @@ export interface CreateLoanBookDTO {
 }
 
 export interface LoanBookDTO {
+  id: number;
   bookId: number;
   bookTitle: string;
   requestedAmount: number;
   receivedAmount: number;
   returnedAmount: number;
+  status: 'PENDING' | 'ACCEPTED' | 'DECLINED';
 }

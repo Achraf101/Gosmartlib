@@ -19,7 +19,6 @@ import be.ap.backend.dto.UpdateStatusDTO;
 import be.ap.backend.service.LoanService;
 import jakarta.servlet.http.HttpSession;
 
-
 @RestController
 @RequestMapping("loan")
 public class LoanController {
@@ -35,7 +34,7 @@ public class LoanController {
     }
 
     @PostMapping
-    public LoanDTO createLoan(@RequestBody LoanDTO dto, HttpSession session) {
+    public List<LoanDTO> createLoan(@RequestBody LoanDTO dto, HttpSession session) {
         Object raw = session.getAttribute("userId");
         Long userId = (raw != null) ? Long.valueOf(raw.toString()) : null;
         dto.setUserId(userId);
@@ -70,7 +69,7 @@ public class LoanController {
         Long campusId = Long.valueOf(session.getAttribute("campus").toString());
         return ResponseEntity.ok(loanService.getOverdueLoansLength(campusId));
     }
-    
+
     @GetMapping("/overdue")
     public ResponseEntity<List<LoanDTO>> getOverdueLoans(HttpSession session) {
         Long campusId = Long.valueOf(session.getAttribute("campus").toString());
@@ -100,4 +99,5 @@ public class LoanController {
         Long campusId = Long.valueOf(session.getAttribute("campus").toString());
         return ResponseEntity.ok(loanService.getTopGenresThisMonth(campusId));
     }
+
 }

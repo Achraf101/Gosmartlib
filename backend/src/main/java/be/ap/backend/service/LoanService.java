@@ -1,6 +1,7 @@
 package be.ap.backend.service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -47,7 +48,7 @@ public class LoanService {
     }
 
     @Transactional
-    public LoanDTO createLoan(LoanDTO dto) {
+    public List<LoanDTO> createLoan(LoanDTO dto) {
         if (dto.getUserId() == null) {
             throw new IllegalArgumentException("userId is verplicht");
         }
@@ -64,15 +65,6 @@ public class LoanService {
             throw new IllegalArgumentException("minstens 1 boek is verplicht");
         }
 
-        for (LoanBookDTO lbDTO : dto.getBooks()) {
-            if (lbDTO.getBookId() == null) {
-                throw new IllegalArgumentException("bookId is verplicht voor elk boek");
-            }
-            if (lbDTO.getRequestedAmount() == null || lbDTO.getRequestedAmount() <= 0) {
-                throw new IllegalArgumentException("aangevraagde hoeveelheid moet groter zijn dan 0 voor elk boek");
-            }
-        }
-
         User user = entityManager.find(User.class, dto.getUserId());
         if (user == null) {
             throw new EntityNotFoundException("Gebruiker niet gevonden met id: " + dto.getUserId());
@@ -81,62 +73,64 @@ public class LoanService {
         if (campus == null) {
             throw new EntityNotFoundException("Campus niet gevonden met id: " + dto.getCampusId());
         }
-        if (dto.getBooks().length > campus.getBorrowLimit()) {
-            throw new IllegalArgumentException(
-                    "Aantal boeken is groter dan de uitleen limiet van je campus " + campus.getBorrowLimit());
+
+        String groupId = dto.getBooks().length > 1 ? java.util.UUID.randomUUID().toString() : null;
+
+        List<LoanDTO> result = new ArrayList<>();
+
+        for (LoanBookDTO lbDTO : dto.getBooks()) {
+            if (lbDTO.getBookId() == null) {
+                throw new IllegalArgumentException("bookId is verplicht voor elk boek");
+            }
+            if (lbDTO.getRequestedAmount() == null || lbDTO.getRequestedAmount() <= 0) {
+                throw new IllegalArgumentException("aangevraagde hoeveelheid moet groter zijn dan 0");
+            }
+
+            Book book = entityManager.find(Book.class, lbDTO.getBookId());
+            if (book == null) {
+                throw new EntityNotFoundException("Boek niet gevonden met id: " + lbDTO.getBookId());
+            }
+
+            CampusBook campusBook = campusBookRepository
+                    .findByCampusIdAndBookId(dto.getCampusId(), lbDTO.getBookId())
+                    .orElseThrow(() -> new EntityNotFoundException(
+                            "Boek niet gevonden in campus: " + lbDTO.getBookId()));
+
+            if (lbDTO.getRequestedAmount() > campusBook.getCurrentAmount()) {
+                throw new IllegalArgumentException(
+                        "Gevraagde hoeveelheid voor boek " + lbDTO.getBookId() +
+                                " is niet meer beschikbaar, aantal beschikbaar: " + campusBook.getCurrentAmount());
+            }
+
+            campusBookService.updateCurrentAmount(campusBook, lbDTO.getRequestedAmount());
+
+            Loan loan = new Loan();
+            loan.setUser(user);
+            loan.setCampus(campus);
+            loan.setExtended(dto.getExtended());
+            loan.setStart(dto.getStart());
+            loan.setEnd(dto.getEnd());
+            loan.setNote(dto.getNote());
+            loan.setStatus(dto.getStatus());
+            loan.setClosed(dto.getClosed());
+            loan.setGroupId(groupId);
+
+            Loan savedLoan = loanRepository.save(loan);
+
+            LoanBook lb = new LoanBook();
+            lb.setLoan(savedLoan);
+            lb.setBook(book);
+            lb.setRequestedAmount(lbDTO.getRequestedAmount());
+            lb.setReceivedAmount(0);
+            lb.setReturnedAmount(0);
+
+            loanBookRepository.save(lb);
+            savedLoan.setLoanBooks(new HashSet<>(List.of(lb)));
+
+            result.add(toDTO(savedLoan));
         }
-        LocalDate expectedEnd = dto.getStart().plusDays(campus.getBorrowPeriod());
-        if (!dto.getEnd().equals(expectedEnd)) {
-            throw new IllegalArgumentException(
-                    "Einddatum moet exact " + campus.getBorrowPeriod() + " dagen na begindatum zijn");
-        }
 
-        Loan loan = new Loan();
-        loan.setUser(user);
-        loan.setCampus(campus);
-        loan.setExtended(dto.getExtended());
-        loan.setStart(dto.getStart());
-        loan.setEnd(dto.getEnd());
-        loan.setNote(dto.getNote());
-        loan.setStatus(dto.getStatus());
-        loan.setClosed(dto.getClosed());
-
-        Loan savedLoan = loanRepository.save(loan);
-
-        List<LoanBook> loanBooks = Arrays.stream(dto.getBooks())
-                .map(lbDTO -> {
-                    Book book = entityManager.find(Book.class, lbDTO.getBookId());
-                    if (book == null) {
-                        throw new EntityNotFoundException("Boek niet gevonden met id: " + lbDTO.getBookId());
-                    }
-
-                    CampusBook campusBook = campusBookRepository
-                            .findByCampusIdAndBookId(dto.getCampusId(), lbDTO.getBookId())
-                            .orElseThrow(() -> new EntityNotFoundException(
-                                    "Boek niet gevonden in campus: " + lbDTO.getBookId()));
-
-                    if (lbDTO.getRequestedAmount() > campusBook.getCurrentAmount()) {
-                        throw new IllegalArgumentException(
-                                "Gevraagde hoeveel voor boek " + lbDTO.getBookId() +
-                                        " is niet meer beschikbaar, aantal beschikbaar: "
-                                        + campusBook.getCurrentAmount());
-                    }
-
-                    campusBookService.updateCurrentAmount(campusBook, lbDTO.getRequestedAmount());
-
-                    LoanBook lb = new LoanBook();
-                    lb.setLoan(savedLoan);
-                    lb.setBook(entityManager.find(Book.class, lbDTO.getBookId()));
-                    lb.setRequestedAmount(lbDTO.getRequestedAmount());
-                    lb.setReceivedAmount(0);
-                    lb.setReturnedAmount(0);
-                    return lb;
-                })
-                .collect(Collectors.toList());
-
-        loanBookRepository.saveAll(loanBooks);
-        savedLoan.setLoanBooks(new HashSet<>(loanBooks));
-        return toDTO(savedLoan);
+        return result;
     }
 
     public List<LoanDTO> getRequested() {
@@ -198,6 +192,7 @@ public class LoanService {
         dto.setClosed(loan.getClosed());
         dto.setCreated(loan.getCreated());
         dto.setUsername(loan.getUser().getUsername());
+        dto.setGroupId(loan.getGroupId());
 
         LoanBookDTO[] books = loan.getLoanBooks().stream()
                 .map(lb -> {
@@ -217,7 +212,7 @@ public class LoanService {
         return dto;
     }
 
-    public int getOverdueLoansLength(Long campusId){
+    public int getOverdueLoansLength(Long campusId) {
         List<LoanStatus> activeStatuses = List.of(LoanStatus.RECEIVED, LoanStatus.ACCEPTED);
         return loanRepository.countOverdueLoans(activeStatuses, LocalDate.now(), campusId);
     }
@@ -225,7 +220,7 @@ public class LoanService {
     public List<LoanDTO> getOverdueLoans(Long campusId) {
         List<LoanStatus> activeStatuses = List.of(LoanStatus.RECEIVED, LoanStatus.ACCEPTED);
         return loanRepository.findOverdueLoans(activeStatuses, LocalDate.now(), campusId)
-            .stream().map(this::toDTO).toList();
+                .stream().map(this::toDTO).toList();
     }
 
     public List<TopBookDTO> getTopBooksThisMonth(Long campusId) {
@@ -234,25 +229,24 @@ public class LoanService {
         List<LoanStatus> statuses = List.of(LoanStatus.RECEIVED, LoanStatus.RETURNED, LoanStatus.ACCEPTED);
 
         return loanRepository.findByDateRangeWithBooks(from, to, statuses, campusId).stream()
-            .flatMap(l -> l.getLoanBooks().stream())
-            .collect(Collectors.groupingBy(
-                lb -> lb.getBook().getTitle(),
-                Collectors.summingInt(lb -> 1)
-            ))
-            .entrySet().stream()
-            .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
-            .limit(5)
-            .map(e -> new TopBookDTO(e.getKey(), e.getValue()))
-            .toList();
+                .flatMap(l -> l.getLoanBooks().stream())
+                .collect(Collectors.groupingBy(
+                        lb -> lb.getBook().getTitle(),
+                        Collectors.summingInt(lb -> 1)))
+                .entrySet().stream()
+                .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
+                .limit(5)
+                .map(e -> new TopBookDTO(e.getKey(), e.getValue()))
+                .toList();
     }
 
     public List<LoanDTO> getDueSoonLoans(Long campusId) {
         List<LoanStatus> activeStatuses = List.of(LoanStatus.RECEIVED, LoanStatus.ACCEPTED);
         return loanRepository.findDueSoonLoans(activeStatuses, LocalDate.now(), LocalDate.now().plusDays(7), campusId)
-            .stream().map(this::toDTO).toList();
+                .stream().map(this::toDTO).toList();
     }
 
-    public int getDueSoonLoansLength(Long campusId){
+    public int getDueSoonLoansLength(Long campusId) {
         List<LoanStatus> activeStatuses = List.of(LoanStatus.RECEIVED, LoanStatus.ACCEPTED);
         return loanRepository.countDueSoonLoans(activeStatuses, LocalDate.now(), LocalDate.now().plusDays(7), campusId);
     }
@@ -263,8 +257,9 @@ public class LoanService {
         List<LoanStatus> statuses = List.of(LoanStatus.RECEIVED, LoanStatus.RETURNED, LoanStatus.ACCEPTED);
 
         return loanRepository.findTopGenres(statuses, from, to, campusId).stream()
-            .limit(5)
-            .map(row -> new TopBookDTO((String) row[0], ((Long) row[1]).intValue()))
-            .toList();
+                .limit(5)
+                .map(row -> new TopBookDTO((String) row[0], ((Long) row[1]).intValue()))
+                .toList();
     }
+
 }

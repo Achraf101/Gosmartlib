@@ -57,4 +57,7 @@ public class Loan {
 
     @OneToMany(mappedBy = "loan", cascade = CascadeType.ALL)
     private Set<LoanBook> loanBooks = new HashSet<>();
+
+    @Column(name = "group_id")
+    private String groupId;
 }
