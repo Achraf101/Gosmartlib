@@ -232,6 +232,10 @@ export class DashboardLibraryManager implements OnInit {
     this.router.navigate(['/uitleenaanvragen']);
   }
 
+  goToReviewModeration(): void {
+    this.router.navigate(['/reviews/moderatie']);
+  }
+
   goToCatalogus(): void {
     this.router.navigate(['/catalogus']);
   }

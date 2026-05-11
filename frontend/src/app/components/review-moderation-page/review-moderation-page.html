@@ -1,0 +1,132 @@
+<app-nav-bar />
+
+<div class="moderation-page">
+  <p-card>
+    <ng-template pTemplate="header">
+      <div class="card-header">
+        <h2>Recensie moderatie</h2>
+        <span class="subtitle">Openstaande rapportages</span>
+      </div>
+    </ng-template>
+
+    <p-table
+      [value]="reports"
+      [loading]="loading"
+      [paginator]="true"
+      [rows]="10"
+      [rowsPerPageOptions]="[10, 25, 50]"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Boek</th>
+          <th>Recensie</th>
+          <th>Gerapporteerd op</th>
+          <th>Acties</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-report>
+        <tr>
+          <td>
+            <a [routerLink]="['/boek', report.book_id]" class="book-link">
+              {{ report.book_title }}
+            </a>
+          </td>
+          <td class="review-preview">
+            <div class="stars-small">
+              @for (s of getStars(report.review_rating); track $index) {
+                <i class="pi pi-star-fill"></i>
+              }
+              @for (s of getEmptyStars(report.review_rating); track $index) {
+                <i class="pi pi-star"></i>
+              }
+            </div>
+            <span class="content-preview">{{ report.review_content | slice: 0 : 80 }}{{ report.review_content?.length > 80 ? '…' : '' }}</span>
+          </td>
+          <td>{{ report.created_at | date: 'dd/MM/yyyy HH:mm' }}</td>
+          <td>
+            <div class="action-btns">
+              <p-button
+                icon="pi pi-info-circle"
+                label="Details"
+                severity="info"
+                size="small"
+                [outlined]="true"
+                (onClick)="openDetail(report)"
+              />
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="4" class="empty-state">
+            <i class="pi pi-check-circle"></i>
+            <span>Geen openstaande rapportages.</span>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+</div>
+
+<p-dialog
+  header="Rapportage details"
+  [(visible)]="detailDialogVisible"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '34rem' }"
+>
+  @if (selectedReport) {
+  <div class="detail-content">
+    <section>
+      <h3>Recensie</h3>
+      <div class="detail-stars">
+        @for (s of getStars(selectedReport.review_rating); track $index) {
+          <i class="pi pi-star-fill"></i>
+        }
+        @for (s of getEmptyStars(selectedReport.review_rating); track $index) {
+          <i class="pi pi-star"></i>
+        }
+      </div>
+      <p class="detail-review-content">{{ selectedReport.review_content || 'Geen inhoud.' }}</p>
+      <p class="detail-meta">Geplaatst op {{ selectedReport.review_added | date: 'dd/MM/yyyy' }}</p>
+    </section>
+
+    <section>
+      <h3>Boek</h3>
+      <a [routerLink]="['/boek', selectedReport.book_id]" class="book-link">
+        {{ selectedReport.book_title }}
+      </a>
+    </section>
+
+    @if (selectedReport.note) {
+    <section>
+      <h3>Notitie van melder</h3>
+      <p class="reporter-note">{{ selectedReport.note }}</p>
+    </section>
+    }
+
+    <p class="detail-meta">Gerapporteerd op {{ selectedReport.created_at | date: 'dd/MM/yyyy HH:mm' }}</p>
+  </div>
+
+  <div class="dialog-actions">
+    <p-button label="Sluiten" severity="secondary" (onClick)="detailDialogVisible = false" />
+    <p-button
+      label="Rapportage weigeren"
+      severity="secondary"
+      [outlined]="true"
+      icon="pi pi-times"
+      (onClick)="rejectReport(selectedReport)"
+    />
+    <p-button
+      label="Recensie verwijderen"
+      severity="danger"
+      icon="pi pi-trash"
+      (onClick)="deleteReview(selectedReport)"
+    />
+  </div>
+  }
+</p-dialog>

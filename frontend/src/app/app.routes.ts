@@ -17,6 +17,7 @@ import { DashboardLibraryManager } from './components/dashboard-library-manager/
 import { TeacherClassesPageComponent } from './components/teacher-classes-page/teacher-classes-page';
 import { TeacherClassDetailPageComponent } from './components/teacher-class-detail-page/teacher-class-detail-page';
 import { TeacherStudentReportPageComponent } from './components/teacher-student-report-page/teacher-student-report-page';
+import { ReviewModerationPageComponent } from './components/review-moderation-page/review-moderation-page';
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: '', redirectTo: 'startpagina', pathMatch: 'full' },
@@ -40,6 +41,11 @@ export const routes: Routes = [
     path: 'dashboard/bibliotheek-beheerder',
     component: DashboardLibraryManager,
     canActivate: [authGuard(["BIBLIOTHEEKBEHEERDER"])]
+  },
+  {
+    path: 'reviews/moderatie',
+    component: ReviewModerationPageComponent,
+    canActivate: [authGuard(['BIBLIOTHEEKBEHEERDER'])],
   },
   {
     path: 'leerkracht/klassen',
