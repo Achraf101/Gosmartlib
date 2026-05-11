@@ -27,6 +27,6 @@ public class BookList {
     @Column(name = "share_token", unique = true, nullable = true)
     private String shareToken;
 
-    @Column(name = "created_at")
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 }

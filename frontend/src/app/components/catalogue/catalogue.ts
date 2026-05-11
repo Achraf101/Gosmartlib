@@ -28,6 +28,7 @@ import { BookCover } from '../misc/book-cover/book-cover';
 import { AuthService } from '../../services/auth';
 import { RadioButton } from 'primeng/radiobutton';
 import { BookListService } from '../../services/book-list';
+import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-catalogue',
@@ -95,6 +96,7 @@ export class CatalogueComponent implements OnInit {
     private themeService: ThemeService,
     public auth: AuthService,
     public bookListService: BookListService,
+    public messageService: MessageService,
   ) {}
 
   ngOnInit(): void {
@@ -111,7 +113,7 @@ export class CatalogueComponent implements OnInit {
       this.sectionId = params['sectionId'] ? Number(params['sectionId']) : null;
       this.grade = params['grade'] ? Number(params['grade']) : null;
       this.ranking = params['ranking'] ? Number(params['ranking']) : null;
-      this.listId = params['listId'] ? Number(params['listId']): null;
+      this.listId = params['listId'] ? Number(params['listId']) : null;
 
       this.sidebarGenres = params['genres'] ? params['genres'].split(',').map(Number) : [];
       this.sidebarThemes = params['themes'] ? params['themes'].split(',').map(Number) : [];
@@ -342,12 +344,26 @@ export class CatalogueComponent implements OnInit {
   addBookToList() {
     if (!this.selectedBook || !this.listId) return;
 
-    this.bookListService.addBook(this.listId, this.selectedBook.id).subscribe({
+    this.bookListService.addBook(Number(this.listId), this.selectedBook.id).subscribe({
       next: () => {
         this.showDialog = false;
         this.router.navigate(['/boekenlijst', this.listId]);
       },
-      error: (err) => console.error('Failed to add book to list', err),
+      error: (err) => {
+        if (err.status === 500 || err.status === 409) {
+          this.messageService.add({
+            severity: 'warn',
+            summary: 'Al in lijst',
+            detail: `"${this.selectedBook!.title}" staat al in deze lijst.`,
+          });
+        } else {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Fout',
+            detail: 'Er is een fout opgetreden.',
+          });
+        }
+      },
     });
   }
 }
