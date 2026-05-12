@@ -106,37 +106,30 @@ public class UploadService {
      * @param bookId
      * @return
      */
-    public Material saveMaterial(MultipartFile file, Long bookId) {
-        // find book
-        Book book = bookRepository.findById(bookId).orElse(null);
+    public Material saveMaterial(MultipartFile file, Long bookId, String note) {
+    Book book = bookRepository.findById(bookId).orElse(null);
+    if (book == null) return null;
 
-        // if a current cover delete file
-        if (book == null) {
-            return null;
-        }
+    String fileId = generateId();
+    Material material = new Material();
+    material.setBook(book);
+    material.setFileName(file.getOriginalFilename());
+    material.setFileId(fileId);
+    material.setSize(file.getSize());
+    material.setComment(note); // ← dit toevoegen
 
-        String fileId = generateId();
-        Material material = new Material();
-        material.setBook(book);
-        material.setFileName(file.getOriginalFilename());
-        material.setFileId(fileId);
-        material.setSize(file.getSize());
+    Material m = materialRepository.save(material);
 
-        // write to database
-        Material m = materialRepository.save(material);
-
-        // save file to disk as 61d1dd8d8c95a5219...
-        Path coverPath = Paths.get(uploadDir, "file", fileId);
-        try {
-            file.transferTo(coverPath);
-        } catch (IllegalStateException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return m;
+    Path coverPath = Paths.get(uploadDir, "file", fileId);
+    try {
+        Files.createDirectories(coverPath.getParent());
+        file.transferTo(coverPath);
+    } catch (IllegalStateException | IOException e) {
+        e.printStackTrace();
     }
+
+    return m;
+}
 
     SecureRandom random = new SecureRandom();
 

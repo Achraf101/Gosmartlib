@@ -680,4 +680,59 @@ public class LoanServiceTest {
 
         assertThat(result.size()).isLessThanOrEqualTo(5);
     }
+
+    @Test
+    void createLoan_multipleBooks_sameGroupId() {
+        LoanBookDTO book1 = new LoanBookDTO();
+        book1.setBookId(1L);
+        book1.setRequestedAmount(1);
+
+        Book book2entity = new Book();
+        book2entity.setId(2L);
+        book2entity.setTitle("Tweede boek");
+
+        CampusBook campusBook2 = new CampusBook();
+        campusBook2.setId(2L);
+        campusBook2.setCampus(campus);
+        campusBook2.setBook(book2entity);
+        campusBook2.setAmount(3);
+        campusBook2.setCurrentAmount(3);
+
+        LoanBookDTO book2 = new LoanBookDTO();
+        book2.setBookId(2L);
+        book2.setRequestedAmount(1);
+
+        LoanDTO dto = validLoanDTO();
+        dto.setBooks(new LoanBookDTO[] { book1, book2 });
+
+        when(entityManager.find(User.class, 1L)).thenReturn(user);
+        when(entityManager.find(Campus.class, 1L)).thenReturn(campus);
+        when(entityManager.find(Book.class, 1L)).thenReturn(book);
+        when(entityManager.find(Book.class, 2L)).thenReturn(book2entity);
+        when(campusBookRepository.findByCampusIdAndBookId(1L, 1L)).thenReturn(Optional.of(campusBook));
+        when(campusBookRepository.findByCampusIdAndBookId(1L, 2L)).thenReturn(Optional.of(campusBook2));
+        when(loanRepository.save(any())).thenReturn(loan);
+        when(loanBookRepository.save(any())).thenReturn(new LoanBook());
+
+        List<LoanDTO> result = loanService.createLoan(dto);
+
+        assertThat(result).hasSize(2);
+    }
+
+    @Test
+    void createLoan_singleBook_groupIdIsNull() {
+        LoanDTO dto = validLoanDTO();
+
+        when(entityManager.find(User.class, 1L)).thenReturn(user);
+        when(entityManager.find(Campus.class, 1L)).thenReturn(campus);
+        when(entityManager.find(Book.class, 1L)).thenReturn(book);
+        when(campusBookRepository.findByCampusIdAndBookId(1L, 1L)).thenReturn(Optional.of(campusBook));
+        when(loanRepository.save(any())).thenReturn(loan);
+        when(loanBookRepository.save(any())).thenReturn(new LoanBook());
+
+        List<LoanDTO> result = loanService.createLoan(dto);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getGroupId()).isNull();
+    }
 }

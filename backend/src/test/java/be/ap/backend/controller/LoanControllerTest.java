@@ -275,4 +275,18 @@ public class LoanControllerTest {
                 .sessionAttr("campus", "1"))
                 .andExpect(status().isOk());
     }
+
+    @Test
+    void createLoan_multipleBooks_returnsMultipleLoans() throws Exception {
+        LoanDTO dto1 = new LoanDTO();
+        LoanDTO dto2 = new LoanDTO();
+        when(loanService.createLoan(any())).thenReturn(List.of(dto1, dto2));
+
+        LoanDTO request = new LoanDTO();
+        mockMvc.perform(post("/loan")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2));
+    }
 }
