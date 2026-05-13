@@ -193,6 +193,9 @@
       <table>
         <caption>
           <h2>Details</h2>
+          @if (authService.hasRole('BIBLIOTHEEKBEHEERDER')) {
+            <p-button label="Bewerken" icon="pi pi-pencil" (onClick)="editBook()" />
+          }
         </caption>
         @if (book.title != null) {
           <tr>

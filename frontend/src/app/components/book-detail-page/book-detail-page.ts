@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { BookCard, BookDetail } from '../../models/book';
 import { ImageModule } from 'primeng/image';
 import { RatingModule } from 'primeng/rating';
@@ -111,6 +111,8 @@ export class BookDetailPage implements OnInit {
     private readonly materialService: MaterialService,
     private readonly uploadService: UploadService,
     public auth: AuthService,
+    private router: Router,
+    public authService: AuthService,
   ) {}
 
   ngOnInit(): void {
@@ -396,5 +398,9 @@ export class BookDetailPage implements OnInit {
     if (this.ratingValue >= position) return 100;
     if (this.ratingValue <= position - 1) return 0;
     return (this.ratingValue - (position - 1)) * 100;
+  }
+
+  editBook() {
+    this.router.navigate(['/boek', this.bookId, 'bewerken']);
   }
 }
