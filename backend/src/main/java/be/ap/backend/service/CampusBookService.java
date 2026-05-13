@@ -37,7 +37,12 @@ public class CampusBookService {
             throw new ArgumentsInvalidException("Aantal moet minimaal 1 zijn.");
         }
         if (campusBookRepository.existsByCampusIdAndBookId(dto.getCampusId(), dto.getBookId())) {
-            throw new BookAlreadyInCampusException("Dit boek is al toegevoegd aan deze campus.");
+            CampusBook existing = campusBookRepository
+                    .findByCampusIdAndBookId(dto.getCampusId(), dto.getBookId())
+                    .orElseThrow();
+            existing.setAmount(existing.getAmount() + dto.getAmount());
+            existing.setCurrentAmount(existing.getCurrentAmount() + dto.getAmount());
+            return campusBookRepository.save(existing);
         }
 
         CampusBook newCampusBook = new CampusBook();
@@ -45,7 +50,7 @@ public class CampusBookService {
         newCampusBook.setCampus(entityManager.find(Campus.class, dto.getCampusId()));
         newCampusBook.setBook(entityManager.find(Book.class, dto.getBookId()));
         newCampusBook.setAmount(dto.getAmount());
-        newCampusBook.setCurrentAmount(dto.getCurrentAmount());
+        newCampusBook.setCurrentAmount(dto.getAmount());
 
         if (dto.getLocation() != null)
             newCampusBook.setLocation(dto.getLocation());
