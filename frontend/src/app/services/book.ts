@@ -127,4 +127,8 @@ export class BookService {
 
     return this.apiService.get<Page<BookResult>>(`${this.endpoint}/filter`, params);
   }
+
+  updateBook(id: number, data: Partial<CreateBook>): Observable<BookDetail> {
+    return this.apiService.put<BookDetail>(`${this.endpoint}/${id}`, data);
+  }
 }
