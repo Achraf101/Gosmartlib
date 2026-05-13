@@ -34,8 +34,9 @@ public class UploadController {
 
     @PostMapping("material")
     public ResponseEntity<Material> uploadMaterial(@RequestParam("file") MultipartFile file,
-            @RequestParam("book_id") Long bookId) {
-        Material material = uploadService.saveMaterial(file, bookId);
+            @RequestParam("book_id") Long bookId,
+            @RequestParam(value = "note", required = false) String note) {
+        Material material = uploadService.saveMaterial(file, bookId, note);
 
         return ResponseEntity.ok(material);
     }

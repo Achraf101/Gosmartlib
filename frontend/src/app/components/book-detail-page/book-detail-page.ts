@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { BookCard, BookDetail } from '../../models/book';
 import { ImageModule } from 'primeng/image';
 import { RatingModule } from 'primeng/rating';
@@ -41,9 +41,10 @@ import { BookService } from '../../services/book';
 import { Material } from '../../models/material';
 import { MaterialService } from '../../services/material';
 import { UploadService } from '../../services/upload';
-import { FileSelectEvent, FileUploadModule } from 'primeng/fileupload';
+import { FileSelectEvent, FileUpload, FileUploadModule } from 'primeng/fileupload';
 import { MaterialComponent } from '../material/material';
 import { AuthService } from '../../services/auth';
+import { Textarea } from 'primeng/textarea';
 
 @Component({
   selector: 'app-book-detail-page',
@@ -67,11 +68,14 @@ import { AuthService } from '../../services/auth';
     ReviewSectionComponent,
     FileUploadModule,
     MaterialComponent,
+    Textarea,
   ],
   templateUrl: './book-detail-page.html',
   styleUrl: './book-detail-page.css',
 })
 export class BookDetailPage implements OnInit {
+  @ViewChild('fileuploader') fileUploader!: FileUpload;
+
   book?: BookDetail;
   bookId!: number;
   error = '';
@@ -85,6 +89,9 @@ export class BookDetailPage implements OnInit {
   themesString = '';
   loanFormVisible = false;
   cartDialogVisible = false;
+  uploadDialogVisible = false;
+  pendingFile?: File;
+  uploadNote = '';
   today = new Date();
   endDate = new Date();
   loading = new DelayedLoader();
@@ -205,6 +212,7 @@ export class BookDetailPage implements OnInit {
     });
     this.lists = this.lists.filter((l) => l.id !== listId);
   }
+
   loanForm = new FormGroup({
     start: new FormControl<Date | null>(null, Validators.required),
     end: new FormControl<Date | null>(null, Validators.required),
@@ -262,7 +270,6 @@ export class BookDetailPage implements OnInit {
           detail: 'Ontleenverzoek succesvol verzonden!',
           life: 3000,
         });
-
         this.loanForm.reset();
         this.loanFormVisible = false;
       },
@@ -276,10 +283,12 @@ export class BookDetailPage implements OnInit {
       },
     });
   }
+
   cancelLoan(): void {
     this.loanFormVisible = false;
     this.loanForm.reset();
   }
+
   addToCart(): void {
     if (this.cartForm.invalid || !this.book) return;
 
@@ -348,8 +357,6 @@ export class BookDetailPage implements OnInit {
     if (this.materialFetched === true) {
       return;
     }
-
-    // fetch the materials
     this.materialService.getAll(this.bookId).subscribe({
       next: (materials) => {
         this.materials = materials;
@@ -358,15 +365,29 @@ export class BookDetailPage implements OnInit {
     });
   }
 
-  uploadMaterial($event: FileSelectEvent, fileUploader: any): void {
-    if (!this.bookId) return;
+  onFileSelect($event: FileSelectEvent): void {
+    this.pendingFile = $event.files[0];
+    this.uploadNote = '';
+    this.uploadDialogVisible = true;
+  }
+
+  confirmUpload(): void {
+    if (!this.bookId || !this.pendingFile) return;
+
     const formData = new FormData();
-    formData.append('file', $event.files[0]);
+    formData.append('file', this.pendingFile);
     formData.append('book_id', this.bookId.toString());
+    if (this.uploadNote) {
+      formData.append('note', this.uploadNote);
+    }
 
     this.uploadService.addMaterial(formData).subscribe({
       next: () => {
-        fileUploader.clear();
+        this.fileUploader.clear();
+        this.uploadDialogVisible = false;
+        this.pendingFile = undefined;
+        this.materialFetched = false;
+        this.getMaterial();
       },
       error: () =>
         this.messageService.add({
@@ -376,6 +397,12 @@ export class BookDetailPage implements OnInit {
           life: 3200,
         }),
     });
+  }
+
+  cancelUpload(): void {
+    this.fileUploader.clear();
+    this.pendingFile = undefined;
+    this.uploadDialogVisible = false;
   }
 
   private formatDate(d: Date): string {
@@ -394,6 +421,7 @@ export class BookDetailPage implements OnInit {
     this.loanForm.controls.requestedAmount.updateValueAndValidity();
     this.cartForm.controls.requestedAmount.updateValueAndValidity();
   }
+
   getStarFill(position: number): number {
     if (this.ratingValue >= position) return 100;
     if (this.ratingValue <= position - 1) return 0;

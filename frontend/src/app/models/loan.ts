@@ -22,7 +22,7 @@ export interface CreateLoanDTO {
 
 export interface LoanDTO {
   id: number;
-  username: String;
+  username: string;
   campusId: number;
   extended: number;
   start: string;
@@ -30,6 +30,7 @@ export interface LoanDTO {
   note: string;
   status: LoanStatus;
   closed: boolean;
-  created: String;
+  created: string;
   books: LoanBookDTO[];
+  groupId?: string;
 }
