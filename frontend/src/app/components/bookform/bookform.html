@@ -1,9 +1,11 @@
 <app-nav-bar></app-nav-bar>
 <p-toast position="bottom-right"></p-toast>
-<nav class="upload-nav">
-  <button [class.active]="uploadMode === 'manual'" (click)="setMode('manual')">Manueel</button>
-  <button [class.active]="uploadMode === 'bulk'" (click)="setMode('bulk')">Bulk</button>
-</nav>
+@if (!bookToEdit) {
+  <nav class="upload-nav">
+    <button [class.active]="uploadMode === 'manual'" (click)="setMode('manual')">Manueel</button>
+    <button [class.active]="uploadMode === 'bulk'" (click)="setMode('bulk')">Bulk</button>
+  </nav>
+}
 <div class="container">
   @if (uploadMode === 'manual') {
     @if (lookupMethod === 'auto') {
@@ -462,12 +464,16 @@
                 <p-step>Boekomslag</p-step>
                 <p-step-panel>
                   <ng-template #content let-activateCallback="activateCallback">
-                    @if (lookupCoverUrl) {
+                    @if (bookToEdit?.cover || lookupCoverUrl) {
                       <div class="cover-preview">
-                        <img [src]="lookupCoverUrl" alt="Automatisch opgehaalde boekomslag" />
+                        <b-cover [bookCard]="bookToEdit!"></b-cover>
                         <p class="cover-preview-note">
-                          Deze boekomslag is automatisch opgehaald. Je kan een eigen boekomslag
-                          uploaden om hem te vervangen.
+                          @if (bookToEdit) {
+                            Huidige boekomslag. Upload een nieuwe om hem te vervangen.
+                          } @else {
+                            Deze boekomslag is automatisch opgehaald. Je kan een eigen boekomslag
+                            uploaden om hem te vervangen.
+                          }
                         </p>
                       </div>
                     }
@@ -480,15 +486,25 @@
                       maxFileSize="8000000"
                       (onSelect)="coverUpload($event, fileuploader)"
                       [customUpload]="true"
-                      [disabled]="coverDisabled"
+                      [disabled]="bookToEdit ? false : coverDisabled"
                     />
-                    <div class="btns btns-center">
-                      <p-button
-                        label="Volgende boek toevoegen"
-                        icon="pi pi-plus"
-                        (onClick)="resetForm()"
-                      />
-                    </div>
+                    @if (!bookToEdit) {
+                      <div class="btns btns-center">
+                        <p-button
+                          label="Volgende boek toevoegen"
+                          icon="pi pi-plus"
+                          (onClick)="resetForm()"
+                        />
+                      </div>
+                    } @else {
+                      <div class="btns btns-center">
+                        <p-button
+                          label="Naar boek pagina"
+                          icon="pi pi-arrow-right"
+                          (onClick)="goToBookPage()"
+                        />
+                      </div>
+                    }
                   </ng-template>
                 </p-step-panel>
               </p-step-item>
