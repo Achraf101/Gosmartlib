@@ -10,9 +10,9 @@ public enum ComponentType {
     TOP_GENRES,
     OVERDUE_LOANS,
     DUE_SOON,
-    CAMPUS_STATS,
+    LOCATION_STATS,
     ADD_BOOK,
     AUTHORS_PUBLISHERS,
-    CAMPUS_BOOKS,
+    LOCATION_BOOKS,
     REVIEWS
 }
