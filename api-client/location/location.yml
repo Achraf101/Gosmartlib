@@ -1,11 +1,11 @@
 info:
-  name: Create Campus Book
+  name: locatie
   type: http
-  seq: 1
+  seq: 2
 
 http:
-  method: POST
-  url: http://localhost:8080/api/campusbook
+  method: GET
+  url: http://localhost:8080/api/locatie
   auth: inherit
 
 settings:

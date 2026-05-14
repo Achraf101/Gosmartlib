@@ -1,11 +1,11 @@
 info:
-  name: Create school
+  name: Create Location Book
   type: http
   seq: 1
 
 http:
   method: POST
-  url: http://localhost:8080/api/campus
+  url: http://localhost:8080/api/locationbook
   auth: inherit
 
 settings:
