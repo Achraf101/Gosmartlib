@@ -1,8 +1,7 @@
-export interface CampusBook {
+export interface LocationBook {
   id: number;
-  campus_id: number;
+  location_id: number;
   book_id: number;
   amount: number;
   current_amount: number;
-  location: string;
 }
