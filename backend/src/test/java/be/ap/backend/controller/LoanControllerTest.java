@@ -225,7 +225,7 @@ public class LoanControllerTest {
         when(loanService.getOverdueLoans(eq(1L))).thenReturn(List.of());
 
         mockMvc.perform(get("/loan/overdue")
-                .sessionAttr("campus", "1"))
+                .sessionAttr("location", "1"))
                 .andExpect(status().isOk());
     }
 
@@ -234,7 +234,7 @@ public class LoanControllerTest {
         when(loanService.getOverdueLoansLength(eq(1L))).thenReturn(3);
 
         mockMvc.perform(get("/loan/overdue/length")
-                .sessionAttr("campus", "1"))
+                .sessionAttr("location", "1"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("3"));
     }
@@ -244,7 +244,7 @@ public class LoanControllerTest {
         when(loanService.getDueSoonLoans(eq(1L))).thenReturn(List.of());
 
         mockMvc.perform(get("/loan/due-soon")
-                .sessionAttr("campus", "1"))
+                .sessionAttr("location", "1"))
                 .andExpect(status().isOk());
     }
 
@@ -253,7 +253,7 @@ public class LoanControllerTest {
         when(loanService.getDueSoonLoansLength(eq(1L))).thenReturn(7);
 
         mockMvc.perform(get("/loan/due-soon/length")
-                .sessionAttr("campus", "1"))
+                .sessionAttr("location", "1"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("7"));
     }
@@ -263,7 +263,7 @@ public class LoanControllerTest {
         when(loanService.getTopBooksThisMonth(eq(1L))).thenReturn(List.of());
 
         mockMvc.perform(get("/loan/top-books")
-                .sessionAttr("campus", "1"))
+                .sessionAttr("location", "1"))
                 .andExpect(status().isOk());
     }
 
@@ -272,7 +272,7 @@ public class LoanControllerTest {
         when(loanService.getTopGenresThisMonth(eq(1L))).thenReturn(List.of());
 
         mockMvc.perform(get("/loan/top-genres")
-                .sessionAttr("campus", "1"))
+                .sessionAttr("location", "1"))
                 .andExpect(status().isOk());
     }
 }

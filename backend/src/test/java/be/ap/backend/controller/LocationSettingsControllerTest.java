@@ -12,8 +12,8 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import be.ap.backend.dto.CampusSettingsDTO;
-import be.ap.backend.service.CampusSettingsService;
+import be.ap.backend.dto.LocationSettingsDTO;
+import be.ap.backend.service.LocationSettingsService;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -21,45 +21,48 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import org.springframework.http.MediaType;
 
-@WebMvcTest(controllers = CampusSettingsController.class, excludeAutoConfiguration = SecurityAutoConfiguration.class)
-@ContextConfiguration(classes = CampusSettingsController.class)
-public class CampusSettingsControllerTest {
+@WebMvcTest(controllers = LocationSettingsController.class, excludeAutoConfiguration = SecurityAutoConfiguration.class)
+@ContextConfiguration(classes = LocationSettingsController.class)
+public class LocationSettingsControllerTest {
 
-    @Autowired private MockMvc mockMvc;
-    @Autowired private ObjectMapper objectMapper;
-    @MockitoBean private CampusSettingsService campusSettingsService;
+    @Autowired
+    private MockMvc mockMvc;
+    @Autowired
+    private ObjectMapper objectMapper;
+    @MockitoBean
+    private LocationSettingsService locationSettingsService;
 
     @Test
     void getSettings_returnsOk() throws Exception {
-        CampusSettingsDTO dto = new CampusSettingsDTO(1L, new HashSet<>());
-        when(campusSettingsService.getSettings(eq(1L))).thenReturn(dto);
+        LocationSettingsDTO dto = new LocationSettingsDTO(1L, new HashSet<>());
+        when(locationSettingsService.getSettings(eq(1L))).thenReturn(dto);
 
-        mockMvc.perform(get("/campus-settings")
-                .sessionAttr("campus", "1"))
+        mockMvc.perform(get("/location-settings")
+                .sessionAttr("location", "1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.campusId").value(1));
+                .andExpect(jsonPath("$.locationId").value(1));
     }
 
     @Test
     void updateSettings_returnsUpdatedDTO() throws Exception {
-        CampusSettingsDTO dto = new CampusSettingsDTO(1L, new HashSet<>());
-        when(campusSettingsService.updateSettings(eq(1L), any())).thenReturn(dto);
+        LocationSettingsDTO dto = new LocationSettingsDTO(1L, new HashSet<>());
+        when(locationSettingsService.updateSettings(eq(1L), any())).thenReturn(dto);
 
-        mockMvc.perform(put("/campus-settings")
-                .sessionAttr("campus", "1")
+        mockMvc.perform(put("/location-settings")
+                .sessionAttr("location", "1")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.campusId").value(1));
+                .andExpect(jsonPath("$.locationId").value(1));
     }
 
     @Test
     void getSettings_emptyHiddenComponents_returnsEmptyList() throws Exception {
-        CampusSettingsDTO dto = new CampusSettingsDTO(1L, new HashSet<>());
-        when(campusSettingsService.getSettings(eq(1L))).thenReturn(dto);
+        LocationSettingsDTO dto = new LocationSettingsDTO(1L, new HashSet<>());
+        when(locationSettingsService.getSettings(eq(1L))).thenReturn(dto);
 
-        mockMvc.perform(get("/campus-settings")
-                .sessionAttr("campus", "1"))
+        mockMvc.perform(get("/location-settings")
+                .sessionAttr("location", "1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.hiddenComponents").isArray());
     }

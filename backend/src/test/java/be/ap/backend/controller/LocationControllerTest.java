@@ -1,10 +1,11 @@
 package be.ap.backend.controller;
 
-import be.ap.backend.dto.CampusDTO;
-import be.ap.backend.service.CampusService;
+import be.ap.backend.dto.LocationDTO;
+import be.ap.backend.service.LocationService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
@@ -20,31 +21,32 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(CampusController.class)
-@ContextConfiguration(classes = CampusController.class)
-class CampusControllerTest {
+@WebMvcTest(LocationController.class)
+@ContextConfiguration(classes = LocationController.class)
+@AutoConfigureMockMvc(addFilters = false)
+class LocationControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @MockitoBean
-    private CampusService campusService;
+    private LocationService locationService;
 
     @Autowired
     private ObjectMapper objectMapper;
 
     @Test
-    void createCampus_shouldReturnCreatedCampus() throws Exception {
-        CampusDTO dto = new CampusDTO();
+    void createLocation_shouldReturnCreatedLocation() throws Exception {
+        LocationDTO dto = new LocationDTO();
         dto.setName("Stad Campus");
 
-        CampusDTO saved = new CampusDTO();
+        LocationDTO saved = new LocationDTO();
         saved.setId(1L);
         saved.setName("Stad Campus");
 
-        when(campusService.createCampus(any(CampusDTO.class))).thenReturn(saved);
+        when(locationService.createLocation(any(LocationDTO.class))).thenReturn(saved);
 
-        mockMvc.perform(post("/campus")
+        mockMvc.perform(post("/location")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isOk())
@@ -53,15 +55,15 @@ class CampusControllerTest {
     }
 
     @Test
-    void createCampus_shouldReturn200_withMinimalDto() throws Exception {
-        CampusDTO dto = new CampusDTO();
+    void createLocation_shouldReturn200_withMinimalDto() throws Exception {
+        LocationDTO dto = new LocationDTO();
 
-        CampusDTO saved = new CampusDTO();
+        LocationDTO saved = new LocationDTO();
         saved.setId(2L);
 
-        when(campusService.createCampus(any(CampusDTO.class))).thenReturn(saved);
+        when(locationService.createLocation(any(LocationDTO.class))).thenReturn(saved);
 
-        mockMvc.perform(post("/campus")
+        mockMvc.perform(post("/location")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isOk())
@@ -69,17 +71,17 @@ class CampusControllerTest {
     }
 
     @Test
-    void createCampus_shouldDelegateToService() throws Exception {
-        CampusDTO dto = new CampusDTO();
+    void createLocation_shouldDelegateToService() throws Exception {
+        LocationDTO dto = new LocationDTO();
         dto.setName("Noord Campus");
 
-        CampusDTO saved = new CampusDTO();
+        LocationDTO saved = new LocationDTO();
         saved.setId(3L);
         saved.setName("Noord Campus");
 
-        when(campusService.createCampus(any(CampusDTO.class))).thenReturn(saved);
+        when(locationService.createLocation(any(LocationDTO.class))).thenReturn(saved);
 
-        mockMvc.perform(post("/campus")
+        mockMvc.perform(post("/location")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isOk())
@@ -87,21 +89,21 @@ class CampusControllerTest {
     }
 
     @Test
-    void createCampus_shouldReturn400_whenBodyIsMissing() throws Exception {
-        mockMvc.perform(post("/campus")
+    void createLocation_shouldReturn400_whenBodyIsMissing() throws Exception {
+        mockMvc.perform(post("/location")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
-    void getAll_returnsListOfCampuses() throws Exception {
-        CampusDTO dto = new CampusDTO();
+    void getAll_returnsListOfLocations() throws Exception {
+        LocationDTO dto = new LocationDTO();
         dto.setId(1L);
         dto.setName("Stad Campus");
 
-        when(campusService.findAll()).thenReturn(List.of(dto));
+        when(locationService.findAll()).thenReturn(List.of(dto));
 
-        mockMvc.perform(get("/campus"))
+        mockMvc.perform(get("/location"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(1L))
                 .andExpect(jsonPath("$[0].name").value("Stad Campus"));
@@ -109,22 +111,22 @@ class CampusControllerTest {
 
     @Test
     void getAll_empty_returnsEmptyList() throws Exception {
-        when(campusService.findAll()).thenReturn(List.of());
+        when(locationService.findAll()).thenReturn(List.of());
 
-        mockMvc.perform(get("/campus"))
+        mockMvc.perform(get("/location"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isEmpty());
     }
 
     @Test
-    void getById_exists_returnsCampus() throws Exception {
-        CampusDTO dto = new CampusDTO();
+    void getById_exists_returnsLocation() throws Exception {
+        LocationDTO dto = new LocationDTO();
         dto.setId(1L);
         dto.setName("Stad Campus");
 
-        when(campusService.findById(1L)).thenReturn(dto);
+        when(locationService.findById(1L)).thenReturn(dto);
 
-        mockMvc.perform(get("/campus/1"))
+        mockMvc.perform(get("/location/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1L))
                 .andExpect(jsonPath("$.name").value("Stad Campus"));
@@ -132,9 +134,9 @@ class CampusControllerTest {
 
     @Test
     void getById_notFound_throws() throws Exception {
-        when(campusService.findById(99L)).thenThrow(new NoSuchElementException());
+        when(locationService.findById(99L)).thenThrow(new NoSuchElementException());
 
-        assertThatThrownBy(() -> mockMvc.perform(get("/campus/99")))
+        assertThatThrownBy(() -> mockMvc.perform(get("/location/99")))
                 .hasCauseInstanceOf(NoSuchElementException.class);
     }
 }
