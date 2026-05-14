@@ -9,28 +9,28 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import be.ap.backend.dto.CampusDTO;
-import be.ap.backend.service.CampusService;
+import be.ap.backend.dto.LocationDTO;
+import be.ap.backend.service.LocationService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("campus")
+@RequestMapping("location")
 @RequiredArgsConstructor
-public class CampusController {
-    private final CampusService campusService;
+public class LocationController {
+    private final LocationService locationService;
 
     @PostMapping
-    public CampusDTO createCampus(@RequestBody CampusDTO dto) {
-        return campusService.createCampus(dto);
+    public LocationDTO createLocation(@RequestBody LocationDTO dto) {
+        return locationService.createLocation(dto);
     }
 
     @GetMapping
-    public List<CampusDTO> getAll() {
-        return campusService.findAll();
+    public List<LocationDTO> getAll() {
+        return locationService.findAll();
     }
 
     @GetMapping("/{id}")
-    public CampusDTO getById(@PathVariable Long id) {
-        return campusService.findById(id);
+    public LocationDTO getById(@PathVariable Long id) {
+        return locationService.findById(id);
     }
 }
