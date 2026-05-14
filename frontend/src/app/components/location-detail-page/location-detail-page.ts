@@ -4,23 +4,23 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { RouterModule } from '@angular/router';
-import { Campus } from '../../models/campus';
-import { CampusService } from '../../services/campus';
+import { Location } from '../../models/location';
+import { LocationService } from '../../services/location';
 import { MessageService } from 'primeng/api';
 import { BookBase } from '../../models/book';
-import { CampusBook } from '../../models/CampusBook';
-import { CampusBookService } from '../../services/campusbook';
+import { LocationBook } from '../../models/locationBook';
+import { LocationBookService } from '../../services/locationbook';
 import { NavBarComponent } from '../nav-bar/nav-bar';
 import { BookService } from '../../services/book';
 import { ProgressSpinner } from 'primeng/progressspinner';
 import { DelayedLoader } from '../../utils/delayed-loader';
 
 import { PaginatorModule, PaginatorState } from 'primeng/paginator';
-import { CampusBookDetail } from '../../models/CampusBookDetail';
+import { LocationBookDetail } from '../../models/locationBookDetail';
 import { SearchBar } from '../misc/search-bar/search-bar';
 
 @Component({
-  selector: 'app-campus-detail-page',
+  selector: 'app-location-detail-page',
   imports: [
     Select,
     FormsModule,
@@ -33,15 +33,15 @@ import { SearchBar } from '../misc/search-bar/search-bar';
     PaginatorModule,
     SearchBar,
   ],
-  templateUrl: './campus-detail-page.html',
-  styleUrl: './campus-detail-page.css',
+  templateUrl: './location-detail-page.html',
+  styleUrl: './location-detail-page.css',
 })
-export class CampusDetailPageComponent implements OnInit {
-  campuses: Campus[] = [];
+export class LocationDetailPageComponent implements OnInit {
+  locations: Location[] = [];
   books: BookBase[] = [];
-  campusBooks: CampusBookDetail[] = [];
-  selectedCampusId: number | null = null;
-  selectedCampus: Campus | null = null;
+  locationBooks: LocationBookDetail[] = [];
+  selectedLocationId: number | null = null;
+  selectedLocation: Location | null = null;
   selectedBookId: number | null = null;
   searchQuery = '';
   currentPage: number = 0;
@@ -49,29 +49,28 @@ export class CampusDetailPageComponent implements OnInit {
   rows: number = 5;
   totalRecords: number = 0;
   amounts: { [bookId: number]: number } = {};
-  locations: { [bookId: number]: string } = {};
   readonly placeholder = '/assets/no-cover.svg';
-  campusBooksPage = 0;
-  campusBooksRows = 5;
-  campusTotalRecords = 0;
+  locationBooksPage = 0;
+  locationBooksRows = 5;
+  locationTotalRecords = 0;
 
   addedBooks: Set<number> = new Set();
 
   constructor(
-    private campusService: CampusService,
+    private locationService: LocationService,
     private messageService: MessageService,
     private bookService: BookService,
-    private campusBookService: CampusBookService,
+    private locationBookService: LocationBookService,
   ) {}
 
   ngOnInit(): void {
-    this.campusService.getAll().subscribe({
-      next: (campuses) => (this.campuses = campuses),
+    this.locationService.getAll().subscribe({
+      next: (locations) => (this.locations = locations),
       error: () =>
         this.messageService.add({
           severity: 'error',
           summary: 'Fout',
-          detail: 'Probleem met het laden van campussen.',
+          detail: 'Probleem met het laden van locaties.',
           life: 3000,
         }),
     });
@@ -79,20 +78,19 @@ export class CampusDetailPageComponent implements OnInit {
   }
 
   onSelect(event: any) {
-    this.campusService.getById(event.value).subscribe((data) => {
-      this.selectedCampus = data;
-      this.loadCampusBooks(data.id);
+    this.locationService.getById(event.value).subscribe((data) => {
+      this.selectedLocation = data;
+      this.loadLocationBooks(data.id);
     });
   }
 
   addBook(book: BookBase) {
     const amount = this.amounts[book.id];
-    const location = this.locations[book.id] ?? '';
-    if (!this.selectedCampus) {
+    if (!this.selectedLocation) {
       this.messageService.add({
         severity: 'warn',
-        summary: 'Geen campus',
-        detail: 'Selecteer eerst een campus.',
+        summary: 'Geen locatie',
+        detail: 'Selecteer eerst een locatie.',
         life: 3000,
       });
       return;
@@ -106,30 +104,29 @@ export class CampusDetailPageComponent implements OnInit {
       });
       return;
     }
-    const newCampusBook: Omit<CampusBook, 'id'> = {
-      campus_id: this.selectedCampus.id,
+    const newLocationBook: Omit<LocationBook, 'id'> = {
+      location_id: this.selectedLocation.id,
       book_id: book.id,
       amount: amount,
       current_amount: amount,
-      location: location,
     };
     this.addedBooks.add(book.id);
-    this.campusBookService.createCampusBook(newCampusBook).subscribe({
+    this.locationBookService.createLocationBook(newLocationBook).subscribe({
       next: () => {
         this.messageService.add({
           severity: 'success',
           summary: 'Succes',
-          detail: 'Boek is toegevoegd aan campus.',
+          detail: 'Boek is toegevoegd aan locatie.',
           life: 3000,
         });
-        this.loadCampusBooks();
+        this.loadLocationBooks();
       },
       error: () => {
         this.addedBooks.delete(book.id!);
         this.messageService.add({
           severity: 'error',
           summary: 'Fout',
-          detail: 'Probleem met toevoegen van boek aan campus.',
+          detail: 'Probleem met toevoegen van boek aan locatie.',
           life: 3000,
         });
       },
@@ -183,28 +180,30 @@ export class CampusDetailPageComponent implements OnInit {
       life: 3000,
     });
   }
-  loadCampusBooks(campusId?: number): void {
-    const id = campusId ?? this.selectedCampus!.id;
+  loadLocationBooks(locationId?: number): void {
+    const id = locationId ?? this.selectedLocation!.id;
 
     if (!id) return;
 
-    this.campusBookService.getByCampus(id, this.campusBooksPage, this.campusBooksRows).subscribe({
-      next: (page) => {
-        this.campusBooks = page.content;
-        this.campusTotalRecords = page.total_elements;
-      },
-      error: () =>
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fout',
-          detail: 'Probleem met het laden van de boeken in deze campus.',
-          life: 3000,
-        }),
-    });
+    this.locationBookService
+      .getByLocation(id, this.locationBooksPage, this.locationBooksRows)
+      .subscribe({
+        next: (page) => {
+          this.locationBooks = page.content;
+          this.locationTotalRecords = page.total_elements;
+        },
+        error: () =>
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Fout',
+            detail: 'Probleem met het laden van de boeken in deze locatie.',
+            life: 3000,
+          }),
+      });
   }
-  onCampusPageChange(event: PaginatorState): void {
-    this.campusBooksPage = event.page ?? 0;
-    this.campusBooksRows = event.rows ?? 5;
-    this.loadCampusBooks();
+  onLocationPageChange(event: PaginatorState): void {
+    this.locationBooksPage = event.page ?? 0;
+    this.locationBooksRows = event.rows ?? 5;
+    this.loadLocationBooks();
   }
 }

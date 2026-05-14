@@ -2,13 +2,13 @@
 <div class="page">
   <div class="card flex justify-center">
     <p-select
-      [options]="campuses"
+      [options]="locations"
       optionLabel="name"
       optionValue="id"
       [filter]="true"
       filterBy="name"
-      [(ngModel)]="selectedCampusId"
-      placeholder="Selecteer een campus"
+      [(ngModel)]="selectedLocationId"
+      placeholder="Selecteer een locatie"
       class="select"
       (onChange)="onSelect($event)"
     >
@@ -17,19 +17,18 @@
           <div>{{ selectedOption.name }}</div>
         </div>
       </ng-template>
-      <ng-template let-campus #item>
+      <ng-template let-location #item>
         <div class="flex items-center gap-2">
-          <div>{{ campus.name }}</div>
+          <div>{{ location.name }}</div>
         </div>
       </ng-template>
     </p-select>
   </div>
 
-  @if (selectedCampus) {
+  @if (selectedLocation) {
     <div class="info">
-      <h2>{{ selectedCampus.name }}</h2>
-      <p>Adres: {{ selectedCampus.adres }}</p>
-      <p>Uitleenlimiet: {{ selectedCampus.borrowLimit }}</p>
+      <h2>{{ selectedLocation.name }}</h2>
+      <p>Adres: {{ selectedLocation.adres }}</p>
     </div>
 
     <h3>Boek toevoegen:</h3>
@@ -76,13 +75,6 @@
                 </button>
               } @else {
                 <input
-                  type="text"
-                  [(ngModel)]="locations[book.id]"
-                  class="location-input"
-                  placeholder="Locatie"
-                  name="location"
-                />
-                <input
                   type="number"
                   min="1"
                   [(ngModel)]="amounts[book.id]"
@@ -108,45 +100,40 @@
       [rowsPerPageOptions]="[5, 10, 20]"
       (onPageChange)="onPageChange($event)"
     />
-    <div class="campus-books">
-      <h3>Boeken in deze campus:</h3>
-      @if (campusBooks.length > 0) {
+    <div class="location-books">
+      <h3>Boeken in deze locatie:</h3>
+      @if (locationBooks.length > 0) {
         <div class="book-list">
-          @for (campusBook of campusBooks; track campusBook.id) {
+          @for (locationBook of locationBooks; track locationBook.id) {
             <div class="book-card">
               <img
                 [src]="
-                  campusBook.book_cover ? '/static/cover/' + campusBook.book_cover : placeholder
+                  locationBook.book_cover ? '/static/cover/' + locationBook.book_cover : placeholder
                 "
-                [alt]="campusBook.book_title"
+                [alt]="locationBook.book_title"
                 class="book-cover"
               />
               <div class="book-info">
-                <span class="book-title">{{ campusBook.book_title }}</span>
-                @if (campusBook.author_name) {
-                  <span class="book-author">{{ campusBook.author_name }}</span>
-                }
-                @if (campusBook.location) {
-                  <span class="book-location"
-                    ><i class="pi pi-map-marker"></i> {{ campusBook.location }}</span
-                  >
+                <span class="book-title">{{ locationBook.book_title }}</span>
+                @if (locationBook.author_name) {
+                  <span class="book-author">{{ locationBook.author_name }}</span>
                 }
               </div>
               <div class="book-amounts">
-                <span>{{ campusBook.current_amount }}/{{ campusBook.amount }}</span>
+                <span>{{ locationBook.current_amount }}/{{ locationBook.amount }}</span>
               </div>
             </div>
           }
         </div>
       } @else {
-        <p>Geen boeken in deze campus.</p>
+        <p>Geen boeken in deze locatie.</p>
       }
       <p-paginator
-        [first]="campusBooksPage * campusBooksRows"
-        [rows]="campusBooksRows"
-        [totalRecords]="campusTotalRecords"
+        [first]="locationBooksPage * locationBooksRows"
+        [rows]="locationBooksRows"
+        [totalRecords]="locationTotalRecords"
         [rowsPerPageOptions]="[5, 10, 20]"
-        (onPageChange)="onCampusPageChange($event)"
+        (onPageChange)="onLocationPageChange($event)"
       />
     </div>
   }

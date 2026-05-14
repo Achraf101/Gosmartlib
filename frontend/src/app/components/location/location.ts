@@ -10,13 +10,13 @@ import { TooltipModule } from 'primeng/tooltip';
 import { CharCounterComponent } from '../char-counter/char-counter';
 import { SelectModule } from 'primeng/select';
 import { School } from '../../models/school';
-import { CampusService } from '../../services/campus';
-import { Campus } from '../../models/campus';
+import { LocationService } from '../../services/location';
+import { Location } from '../../models/location';
 import { SchoolService } from '../../services/school';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 
 @Component({
-  selector: 'app-campus',
+  selector: 'app-location',
   imports: [
     ReactiveFormsModule,
     InputTextModule,
@@ -29,13 +29,13 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
     SelectModule,
     RouterLink,
   ],
-  templateUrl: './campus.html',
-  styleUrl: './campus.css',
+  templateUrl: './location.html',
+  styleUrl: './location.css',
 })
-export class CampusComponent {
+export class LocationComponent {
   constructor(
     private route: ActivatedRoute,
-    private campusService: CampusService,
+    private locationService: LocationService,
     private schoolService: SchoolService,
     private messageService: MessageService,
   ) {
@@ -54,26 +54,6 @@ export class CampusComponent {
   form = new FormGroup({
     name: new FormControl('', [Validators.required, Validators.maxLength(255)]),
     adres: new FormControl('', [Validators.maxLength(500)]),
-    borrowLimit: new FormControl<number | null>(null, [
-      Validators.required,
-      Validators.min(1),
-      Validators.max(999),
-    ]),
-    borrowPeriod: new FormControl<number | null>(null, [
-      Validators.required,
-      Validators.min(1),
-      Validators.max(999),
-    ]),
-    extendPeriod: new FormControl<number | null>(null, [
-      Validators.required,
-      Validators.min(1),
-      Validators.max(999),
-    ]),
-    extendLimit: new FormControl<number | null>(null, [
-      Validators.required,
-      Validators.min(1),
-      Validators.max(10),
-    ]),
   });
 
   loading = false;
@@ -88,24 +68,18 @@ export class CampusComponent {
 
     const rawValue = this.form.value;
 
-    const campus: Omit<Campus, 'id'> = {
+    const location: Omit<Location, 'id'> = {
       name: rawValue.name?.trim() ?? '',
       adres: rawValue.adres?.trim() ?? '',
-      // Only convert if there is a value; otherwise, keep it as null or undefined
-      borrowLimit: Number(rawValue.borrowLimit),
-      borrowPeriod: Number(rawValue.borrowPeriod),
-      extendLimit: Number(rawValue.extendLimit),
-      extendPeriod: Number(rawValue.extendPeriod),
       schoolId: Number(this.schoolId),
     };
-    console.log('Sending to API:', campus);
 
-    this.campusService.createCampus(campus).subscribe({
+    this.locationService.createLocation(location).subscribe({
       next: () => {
         this.messageService.add({
           severity: 'success',
           summary: 'Succes',
-          detail: 'Campus succesvol opgeslagen!',
+          detail: 'Locatie succesvol opgeslagen!',
           life: 3000,
         });
 
@@ -115,7 +89,7 @@ export class CampusComponent {
         this.messageService.add({
           severity: 'error',
           summary: 'Fout',
-          detail: 'Fout bij opslaan van de campus.',
+          detail: 'Fout bij opslaan van de locatie.',
           life: 3000,
         });
 
