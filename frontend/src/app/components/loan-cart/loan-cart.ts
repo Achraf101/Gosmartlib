@@ -17,13 +17,15 @@ import { IftaLabel } from 'primeng/iftalabel';
 import { InputNumber } from 'primeng/inputnumber';
 import { LoanCartService } from '../../services/loan-cart';
 import { BookCardComponent } from '../misc/book-card/book-card';
-import { Campus } from '../../models/campus';
-import { CampusService } from '../../services/campus';
+import { Location } from '../../models/location';
+import { LocationService } from '../../services/location';
 import { AuthService } from '../../services/auth';
-import { CampusBookService } from '../../services/campusbook';
-import { CampusBook } from '../../models/CampusBook';
+import { LocationBookService } from '../../services/locationbook';
+import { LocationBook } from '../../models/locationBook';
 import { TableModule } from 'primeng/table';
 import { Message } from 'primeng/message';
+import { SchoolService } from '../../services/school';
+import { School } from '../../models/school';
 
 @Component({
   selector: 'app-loan-cart',
@@ -48,9 +50,10 @@ export class LoanCartComponent {
   constructor(
     private readonly loanService: LoanService,
     private readonly messageService: MessageService,
-    private readonly campusService: CampusService,
-    private readonly campusBookService: CampusBookService,
+    private readonly locationService: LocationService,
+    private readonly locationBookService: LocationBookService,
     private readonly authService: AuthService,
+    private readonly schoolService: SchoolService,
   ) {}
 
   readonly cartService = inject(LoanCartService);
@@ -60,29 +63,40 @@ export class LoanCartComponent {
   items = this.cartService.items();
   maxAmounts: Map<number, number> = new Map();
 
-  campus?: Campus;
+  location?: Location;
+  school?: School;
 
   private get userId(): number {
     return this.authService.currentUser?.userId ?? 0;
   }
 
-  private get campusId(): number {
-    return this.authService.currentUser?.campusId ?? 0;
+  private get locationId(): number {
+    console.log(this.authService.currentUser?.locationId);
+    return this.authService.currentUser?.locationId ?? 0;
+  }
+
+  private get schoolId(): number {
+    return this.authService.currentUser?.schoolId ?? 0;
   }
 
   ngOnInit(): void {
-    this.campusService.getById(this.campusId).subscribe({
-      next: (campus) => {
-        ((this.campus = campus), this.cartService.setBorrowLimit(campus.borrowLimit));
+    this.locationService.getById(this.locationId).subscribe({
+      next: (location) => {
+        this.location = location;
+      },
+    });
+    this.schoolService.getById(this.schoolId).subscribe({
+      next: (school) => {
+        ((this.school = school), this.cartService.setBorrowLimit(school.borrowLimit));
       },
     });
   }
 
   loadMaxAmounts(): void {
     for (const item of this.cartService.items()) {
-      this.campusBookService.getCampusBook(this.campusId, item.bookId).subscribe({
-        next: (campusBook: CampusBook) => {
-          this.maxAmounts.set(item.bookId, campusBook.current_amount);
+      this.locationBookService.getLocationBook(this.locationId, item.bookId).subscribe({
+        next: (locationBook: LocationBook) => {
+          this.maxAmounts.set(item.bookId, locationBook.current_amount);
         },
       });
     }
@@ -100,9 +114,7 @@ export class LoanCartComponent {
 
   onStartDateSelect(date: Date) {
     const end = new Date(date);
-    console.log('campus at select time:', this.campus);
-    end.setDate(end.getDate() + (this.campus?.borrowPeriod ?? 14));
-    console.log('end result:', end);
+    end.setDate(end.getDate() + (this.school?.borrowPeriod ?? 14));
     this.calculatedEnd = end;
   }
 
@@ -122,11 +134,11 @@ export class LoanCartComponent {
   submitLoan(): void {
     if (this.checkoutForm.invalid || this.cartService.isEmpty() || !this.calculatedEnd) return;
 
-    if (this.campus && this.cartService.items().length > this.campus.borrowLimit) {
+    if (this.school && this.cartService.items().length > this.school.borrowLimit) {
       this.messageService.add({
         severity: 'warn',
         summary: 'Limiet overschreden',
-        detail: `U mag maximaal ${this.campus.borrowLimit} verschillende boeken per ontlening aanvragen.`,
+        detail: `U mag maximaal ${this.school.borrowLimit} verschillende boeken per ontlening aanvragen.`,
         life: 4000,
       });
       return;
@@ -134,7 +146,7 @@ export class LoanCartComponent {
 
     const loan: CreateLoanDTO = {
       userId: this.userId,
-      campusId: this.campusId,
+      locationId: this.locationId,
       extended: 0,
       start: this.formatDate(this.checkoutForm.value.start!),
       end: this.formatDate(this.calculatedEnd ?? new Date()),
