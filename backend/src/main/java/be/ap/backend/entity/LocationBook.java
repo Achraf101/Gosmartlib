@@ -4,19 +4,19 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "campus_book")
+@Table(name = "location_book")
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class CampusBook {
+public class LocationBook {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "campus_id", nullable = false)
-    private Campus campus;
+    @JoinColumn(name = "location_id", nullable = false)
+    private Location location;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "book_id", nullable = false)
@@ -28,6 +28,6 @@ public class CampusBook {
     @Column(name = "current_amount", nullable = false)
     private Integer currentAmount;
 
-    @Column(name = "location", length = 255)
-    private String location;
+    @Column(name = "note", length = 255)
+    private String note;
 }

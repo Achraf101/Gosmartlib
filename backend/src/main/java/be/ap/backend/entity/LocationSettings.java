@@ -22,25 +22,25 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @Entity
-@Table(name = "campus_settings")
-public class CampusSettings implements Serializable {
+@Table(name = "location_settings")
+public class LocationSettings implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @Column(name = "campus_id")
-    private Long campusId;
+    @Column(name = "location_id")
+    private Long locationId;
 
     @MapsId
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "campus_id")
-    private Campus campus;
+    @JoinColumn(name = "location_id")
+    private Location location;
 
     @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "campus_hidden_components", joinColumns = @JoinColumn(name = "campus_id"))
+    @CollectionTable(name = "location_hidden_components", joinColumns = @JoinColumn(name = "location_id"))
     private Set<HiddenComponent> hiddenComponents = new HashSet<>();
 
     public boolean isVisible(ComponentScreen screen, ComponentType type) {
         return hiddenComponents.stream()
-            .noneMatch(c -> c.getScreen() == screen && c.getType() == type);
+                .noneMatch(c -> c.getScreen() == screen && c.getType() == type);
     }
 }

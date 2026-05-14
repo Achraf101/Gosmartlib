@@ -33,8 +33,8 @@ public class Classroom {
     private School school;
 
     @ManyToOne
-    @JoinColumn(name = "campus_id", nullable = true)
-    private Campus campus;
+    @JoinColumn(name = "location_id", nullable = true)
+    private Location location;
 
     @ManyToOne
     @JoinColumn(name = "teacher_id", nullable = false)
@@ -45,9 +45,6 @@ public class Classroom {
 
     @JsonIgnore
     @ManyToMany
-    @JoinTable(
-            name = "classroom_student",
-            joinColumns = @JoinColumn(name = "classroom_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id"))
+    @JoinTable(name = "classroom_student", joinColumns = @JoinColumn(name = "classroom_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
     private Set<User> students = new HashSet<>();
 }
