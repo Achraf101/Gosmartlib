@@ -10,7 +10,7 @@ services:
       - 443:443
     volumes:
       - certbot:/etc/letsencrypt
-      - certbot:/var/www/certbot
+      - certbot_www:/var/www/certbot
       - static:/var/www
 
   certbot:
@@ -18,8 +18,8 @@ services:
     container_name: certbot
     volumes:
       - certbot:/etc/letsencrypt
-      - certbot:/var/www/certbot
-    command: certonly --webroot -w /var/www/certbot --keep-until-expiring --email ${CERTBOT_EMAIL} -d gosmartlib.tech --agree-tos
+      - certbot_www:/var/www/certbot
+    command: certonly --webroot -w /var/www/certbot --keep-until-expiring --non-interactive --email ${CERTBOT_EMAIL} -d gosmartlib.tech --agree-tos
 
   db:
     image: mysql:9.6.0
@@ -62,6 +62,9 @@ services:
 volumes:
   certbot:
     name: certbot
+    external: true
+  certbot_www:
+    name: certbot_www
     external: true
   maven-repo:
     name: maven-repo
