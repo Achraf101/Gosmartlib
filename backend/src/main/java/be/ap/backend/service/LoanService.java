@@ -1,7 +1,7 @@
 package be.ap.backend.service;
 
 import java.time.LocalDate;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -48,7 +48,7 @@ public class LoanService {
     }
 
     @Transactional
-    public LoanDTO createLoan(LoanDTO dto) {
+    public List<LoanDTO> createLoan(LoanDTO dto) {
         if (dto.getUserId() == null) {
             throw new IllegalArgumentException("userId is verplicht");
         }
@@ -63,15 +63,6 @@ public class LoanService {
         }
         if (dto.getBooks() == null || dto.getBooks().length == 0) {
             throw new IllegalArgumentException("minstens 1 boek is verplicht");
-        }
-
-        for (LoanBookDTO lbDTO : dto.getBooks()) {
-            if (lbDTO.getBookId() == null) {
-                throw new IllegalArgumentException("bookId is verplicht voor elk boek");
-            }
-            if (lbDTO.getRequestedAmount() == null || lbDTO.getRequestedAmount() <= 0) {
-                throw new IllegalArgumentException("aangevraagde hoeveelheid moet groter zijn dan 0 voor elk boek");
-            }
         }
 
         User user = entityManager.find(User.class, dto.getUserId());
@@ -99,52 +90,61 @@ public class LoanService {
                     "Einddatum moet exact " + school.getBorrowPeriod() + " dagen na begindatum zijn");
         }
 
-        Loan loan = new Loan();
-        loan.setUser(user);
-        loan.setLocation(location);
-        loan.setExtended(dto.getExtended());
-        loan.setStart(dto.getStart());
-        loan.setEnd(dto.getEnd());
-        loan.setNote(dto.getNote());
-        loan.setStatus(dto.getStatus());
-        loan.setClosed(dto.getClosed());
+        String groupId = dto.getBooks().length > 1 ? java.util.UUID.randomUUID().toString() : null;
 
-        Loan savedLoan = loanRepository.save(loan);
+        List<LoanDTO> result = new ArrayList<>();
 
-        List<LoanBook> loanBooks = Arrays.stream(dto.getBooks())
-                .map(lbDTO -> {
-                    Book book = entityManager.find(Book.class, lbDTO.getBookId());
-                    if (book == null) {
-                        throw new EntityNotFoundException("Boek niet gevonden met id: " + lbDTO.getBookId());
-                    }
+        for (LoanBookDTO lbDTO : dto.getBooks()) {
+            if (lbDTO.getBookId() == null) {
+                throw new IllegalArgumentException("bookId is verplicht voor elk boek");
+            }
+            if (lbDTO.getRequestedAmount() == null || lbDTO.getRequestedAmount() <= 0) {
+                throw new IllegalArgumentException("aangevraagde hoeveelheid moet groter zijn dan 0");
+            }
+            Book book = entityManager.find(Book.class, lbDTO.getBookId());
+            if (book == null) {
+                throw new EntityNotFoundException("Boek niet gevonden met id: " + lbDTO.getBookId());
+            }
 
-                    LocationBook locationBook = locationBookRepository
-                            .findByLocationIdAndBookId(dto.getLocationId(), lbDTO.getBookId())
-                            .orElseThrow(() -> new EntityNotFoundException(
-                                    "Boek niet gevonden in locatie: " + lbDTO.getBookId()));
+            LocationBook locationBook = locationBookRepository
+                    .findByLocationIdAndBookId(dto.getLocationId(), lbDTO.getBookId())
+                    .orElseThrow(() -> new EntityNotFoundException(
+                            "Boek niet gevonden in locatie: " + lbDTO.getBookId()));
 
-                    if (lbDTO.getRequestedAmount() > locationBook.getCurrentAmount()) {
-                        throw new IllegalArgumentException(
-                                "Gevraagde hoeveel voor boek " + lbDTO.getBookId() +
-                                        " is niet meer beschikbaar, aantal beschikbaar: "
-                                        + locationBook.getCurrentAmount());
-                    }
+            if (lbDTO.getRequestedAmount() > locationBook.getCurrentAmount()) {
+                throw new IllegalArgumentException(
+                        "Gevraagde hoeveel voor boek " + lbDTO.getBookId() +
+                                " is niet meer beschikbaar, aantal beschikbaar: "
+                                + locationBook.getCurrentAmount());
+            }
 
-                    locationBookService.updateCurrentAmount(locationBook, lbDTO.getRequestedAmount());
+            locationBookService.updateCurrentAmount(locationBook, lbDTO.getRequestedAmount());
 
-                    LoanBook lb = new LoanBook();
-                    lb.setLoan(savedLoan);
-                    lb.setBook(entityManager.find(Book.class, lbDTO.getBookId()));
-                    lb.setRequestedAmount(lbDTO.getRequestedAmount());
-                    lb.setReceivedAmount(0);
-                    lb.setReturnedAmount(0);
-                    return lb;
-                })
-                .collect(Collectors.toList());
+            Loan loan = new Loan();
+            loan.setUser(user);
+            loan.setLocation(location);
+            loan.setExtended(dto.getExtended());
+            loan.setStart(dto.getStart());
+            loan.setEnd(dto.getEnd());
+            loan.setNote(dto.getNote());
+            loan.setStatus(dto.getStatus());
+            loan.setClosed(dto.getClosed());
+            loan.setGroupId(groupId);
 
-        loanBookRepository.saveAll(loanBooks);
-        savedLoan.setLoanBooks(new HashSet<>(loanBooks));
-        return toDTO(savedLoan);
+            Loan savedLoan = loanRepository.save(loan);
+
+            LoanBook lb = new LoanBook();
+            lb.setLoan(savedLoan);
+            lb.setBook(book);
+            lb.setRequestedAmount(lbDTO.getRequestedAmount());
+            lb.setReceivedAmount(0);
+            lb.setReturnedAmount(0);
+
+            loanBookRepository.save(lb);
+            savedLoan.setLoanBooks(new HashSet<>(List.of(lb)));
+            result.add(toDTO(savedLoan));
+        }
+        return result;
     }
 
     public List<LoanDTO> getRequested() {
@@ -172,7 +172,7 @@ public class LoanService {
                 LocationBook locationBook = locationBookRepository
                         .findByLocationIdAndBookId(loan.getLocation().getId(), lb.getBook().getId())
                         .orElseThrow(() -> new EntityNotFoundException(
-                                "Book niet gevonden in locatie: " + lb.getId()));
+                                "Book not found on location: " + lb.getId()));
                 locationBookService.updateCurrentAmount(locationBook, -lb.getRequestedAmount());
             });
         }
@@ -206,6 +206,7 @@ public class LoanService {
         dto.setClosed(loan.getClosed());
         dto.setCreated(loan.getCreated());
         dto.setUsername(loan.getUser().getUsername());
+        dto.setGroupId(loan.getGroupId());
 
         LoanBookDTO[] books = loan.getLoanBooks().stream()
                 .map(lb -> {
@@ -275,4 +276,5 @@ public class LoanService {
                 .map(row -> new TopBookDTO((String) row[0], ((Long) row[1]).intValue()))
                 .toList();
     }
+
 }

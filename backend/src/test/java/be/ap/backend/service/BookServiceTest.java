@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
@@ -14,6 +15,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import be.ap.backend.dto.*;
 import be.ap.backend.entity.*;
@@ -300,5 +302,180 @@ class BookServiceTest {
         assertEquals(2, saved.getGenres().size());
         assertNotNull(saved.getThemes());
         assertEquals(1, saved.getThemes().size());
+    }
+
+    @Test
+    void updateBook_titleOnly_updatesTitle() {
+        Book existingBook = new Book();
+        existingBook.setTitle("Original Title");
+        existingBook.setIsbn("1234567890");
+        existingBook.setPages(100);
+        existingBook.setFiction(true);
+        existingBook.setDidactic(false);
+
+        when(bookRepository.findById(1L)).thenReturn(Optional.of(existingBook));
+        when(bookRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        UpdateBookDTO dto = new UpdateBookDTO();
+        dto.setTitle("New Title");
+
+        Book result = bookService.updateBook(1L, dto);
+
+        assertEquals("New Title", result.getTitle());
+        assertEquals("1234567890", result.getIsbn());
+    }
+
+    @Test
+    void updateBook_allSimpleFields_updatesAll() {
+        Book existingBook = new Book();
+        existingBook.setTitle("Original Title");
+        existingBook.setIsbn("1234567890");
+        existingBook.setPages(100);
+        existingBook.setFiction(true);
+        existingBook.setDidactic(false);
+
+        when(bookRepository.findById(1L)).thenReturn(Optional.of(existingBook));
+        when(bookRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        UpdateBookDTO dto = new UpdateBookDTO();
+        dto.setTitle("Updated");
+        dto.setIsbn("9876543210");
+        dto.setDescription("New desc");
+        dto.setFiction(false);
+        dto.setDidactic(true);
+        dto.setPages(200);
+        dto.setCover("cover.jpg");
+        dto.setFontSize(FontSize.GROOT);
+        dto.setClib(Clib.A);
+        dto.setSeriesNumber(3);
+
+        Book result = bookService.updateBook(1L, dto);
+
+        assertEquals("Updated", result.getTitle());
+        assertEquals("9876543210", result.getIsbn());
+        assertEquals("New desc", result.getDescription());
+        assertFalse(result.getFiction());
+        assertTrue(result.getDidactic());
+        assertEquals(200, result.getPages());
+        assertEquals("cover.jpg", result.getCover());
+        assertEquals(FontSize.GROOT, result.getFontSize());
+        assertEquals(Clib.A, result.getClib());
+        assertEquals(3, result.getSeriesNumber());
+    }
+
+    @Test
+    void updateBook_nullFields_doesNotOverwrite() {
+        Book existingBook = new Book();
+        existingBook.setTitle("Original Title");
+        existingBook.setIsbn("1234567890");
+        existingBook.setPages(100);
+        existingBook.setFiction(true);
+        existingBook.setDidactic(false);
+
+        when(bookRepository.findById(1L)).thenReturn(Optional.of(existingBook));
+        when(bookRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        Book result = bookService.updateBook(1L, new UpdateBookDTO());
+
+        assertEquals("Original Title", result.getTitle());
+        assertEquals("1234567890", result.getIsbn());
+        assertEquals(100, result.getPages());
+    }
+
+    @Test
+    void updateBook_withAuthor_setsAuthor() {
+        Book existingBook = new Book();
+        existingBook.setTitle("Original Title");
+        existingBook.setIsbn("1234567890");
+        existingBook.setPages(100);
+        existingBook.setFiction(true);
+        existingBook.setDidactic(false);
+
+        Author author = new Author();
+        author.setName("Test Author");
+
+        when(bookRepository.findById(1L)).thenReturn(Optional.of(existingBook));
+        when(entityManager.find(Author.class, 5L)).thenReturn(author);
+        when(bookRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        UpdateBookDTO dto = new UpdateBookDTO();
+        dto.setAuthor(5L);
+
+        Book result = bookService.updateBook(1L, dto);
+
+        assertEquals(author, result.getAuthor());
+    }
+
+    @Test
+    void updateBook_withGenres_setsGenres() {
+        Book existingBook = new Book();
+        existingBook.setTitle("Original Title");
+        existingBook.setIsbn("1234567890");
+        existingBook.setPages(100);
+        existingBook.setFiction(true);
+        existingBook.setDidactic(false);
+
+        Genre g1 = new Genre(); g1.setId(1L);
+        Genre g2 = new Genre(); g2.setId(2L);
+
+        when(bookRepository.findById(1L)).thenReturn(Optional.of(existingBook));
+        when(entityManager.find(Genre.class, 1L)).thenReturn(g1);
+        when(entityManager.find(Genre.class, 2L)).thenReturn(g2);
+        when(bookRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        UpdateBookDTO dto = new UpdateBookDTO();
+        dto.setGenres(Set.of(1L, 2L));
+
+        Book result = bookService.updateBook(1L, dto);
+
+        assertEquals(2, result.getGenres().size());
+        assertTrue(result.getGenres().containsAll(Set.of(g1, g2)));
+    }
+
+    @Test
+    void updateBook_withThemes_setsThemes() {
+        Book existingBook = new Book();
+        existingBook.setTitle("Original Title");
+        existingBook.setIsbn("1234567890");
+        existingBook.setPages(100);
+        existingBook.setFiction(true);
+        existingBook.setDidactic(false);
+
+        Theme t1 = new Theme(); t1.setId(1L);
+
+        when(bookRepository.findById(1L)).thenReturn(Optional.of(existingBook));
+        when(entityManager.find(Theme.class, 1L)).thenReturn(t1);
+        when(bookRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        UpdateBookDTO dto = new UpdateBookDTO();
+        dto.setThemes(Set.of(1L));
+
+        Book result = bookService.updateBook(1L, dto);
+
+        assertEquals(1, result.getThemes().size());
+    }
+
+    @Test
+    void updateBook_bookNotFound_throwsNotFound() {
+        when(bookRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThrows(ResponseStatusException.class, () -> bookService.updateBook(99L, new UpdateBookDTO()));
+    }
+
+    @Test
+    void updateBook_saveIsCalledOnce() {
+        Book existingBook = new Book();
+        existingBook.setTitle("Original Title");
+        existingBook.setIsbn("1234567890");
+        existingBook.setPages(100);
+        existingBook.setFiction(true);
+        existingBook.setDidactic(false);
+
+        when(bookRepository.findById(1L)).thenReturn(Optional.of(existingBook));
+        when(bookRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        bookService.updateBook(1L, new UpdateBookDTO());
+
+        verify(bookRepository, times(1)).save(existingBook);
     }
 }

@@ -17,6 +17,8 @@ import { DashboardLibraryManager } from './components/dashboard-library-manager/
 import { TeacherClassesPageComponent } from './components/teacher-classes-page/teacher-classes-page';
 import { TeacherClassDetailPageComponent } from './components/teacher-class-detail-page/teacher-class-detail-page';
 import { TeacherStudentReportPageComponent } from './components/teacher-student-report-page/teacher-student-report-page';
+import { BookEdit } from './components/book-edit/book-edit';
+import { ReviewModerationPageComponent } from './components/review-moderation-page/review-moderation-page';
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: '', redirectTo: 'startpagina', pathMatch: 'full' },
@@ -43,6 +45,11 @@ export const routes: Routes = [
     canActivate: [authGuard(['BIBLIOTHEEKBEHEERDER'])],
   },
   {
+    path: 'reviews/moderatie',
+    component: ReviewModerationPageComponent,
+    canActivate: [authGuard(['BIBLIOTHEEKBEHEERDER'])],
+  },
+  {
     path: 'leerkracht/klassen',
     component: TeacherClassesPageComponent,
     canActivate: [authGuard(['LEERKRACHT'])],
@@ -57,6 +64,8 @@ export const routes: Routes = [
     component: TeacherStudentReportPageComponent,
     canActivate: [authGuard(['LEERKRACHT'])],
   },
+  { path: 'boek/:id/bewerken', component: BookEdit },
+
   // {
   //   path: 'boek',
   //   component: BookformComponent,

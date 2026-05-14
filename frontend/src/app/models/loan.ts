@@ -30,6 +30,7 @@ export interface LoanDTO {
   note: string;
   status: LoanStatus;
   closed: boolean;
-  created: String;
+  created: string;
   books: LoanBookDTO[];
+  groupId?: string;
 }

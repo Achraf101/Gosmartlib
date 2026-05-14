@@ -151,6 +151,13 @@ table td {
   font-size: small;
 }
 
+#book-detail caption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 150%;
+}
+
 #book-detail table tr {
   line-height: 40px;
   border-bottom: 1px solid var(--p-slate-100);
@@ -376,5 +383,9 @@ table td {
   :host ::ng-deep .related-scroll b-card .book-card {
     width: 100%;
     max-width: none;
+  }
+
+  #book-detail caption {
+    width: 250%;
   }
 }

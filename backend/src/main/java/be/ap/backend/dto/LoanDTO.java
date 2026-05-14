@@ -24,4 +24,6 @@ public class LoanDTO {
     private Boolean closed;
     private LoanBookDTO[] books;
     private LocalDateTime created;
+    @JsonProperty("groupId")
+    private String groupId;
 }

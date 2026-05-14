@@ -157,27 +157,27 @@ export class LoanCartComponent {
     };
 
     this.loanService.createLoan(loan).subscribe({
-      next: () => {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Succes',
-          detail: 'Ontleenverzoek succesvol verzonden!',
-          life: 3000,
-        });
-        this.cartService.clear();
-        this.checkoutForm.reset();
-        this.visible = false;
-      },
-      error: (err) => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fout',
-          detail: 'Er is iets misgegaan, probeer opnieuw.',
-          life: 3000,
-        });
-        console.error(err);
-      },
+  next: () => {
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Succes',
+      detail: `Ontleenverzoek succesvol verzonden!`,
+      life: 3000,
     });
+    this.cartService.clear();
+    this.checkoutForm.reset();
+    this.visible = false;
+  },
+  error: (err) => {
+    this.messageService.add({
+      severity: 'error',
+      summary: 'Fout',
+      detail: 'Er is iets misgegaan, probeer opnieuw.',
+      life: 3000,
+    });
+    console.error(err);
+  },
+});
   }
   private formatDate(d: Date): string {
     return d.toLocaleDateString('en-CA');

@@ -3,6 +3,7 @@ package be.ap.backend.controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -15,6 +16,7 @@ import be.ap.backend.dto.BookCardDTO;
 import be.ap.backend.dto.BookLookupDTO;
 import be.ap.backend.dto.BookResultDTO;
 import be.ap.backend.dto.CreateBookDTO;
+import be.ap.backend.dto.UpdateBookDTO;
 import be.ap.backend.entity.Book;
 import be.ap.backend.entity.Clib;
 import be.ap.backend.repository.BookRepository;
@@ -110,5 +112,10 @@ public class BookController {
 
         Pageable pageable = PageRequest.of(page, size);
         return bookService.getAllBookResults(pageable);
+    }
+
+    @PutMapping("/{id}")
+    public Book updateBook(@PathVariable Long id, @RequestBody UpdateBookDTO dto) {
+        return bookService.updateBook(id, dto);
     }
 }

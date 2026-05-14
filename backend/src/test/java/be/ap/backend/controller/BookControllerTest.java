@@ -11,26 +11,38 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 import java.util.List;
 import java.util.Optional;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.server.ResponseStatusException;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import be.ap.backend.dto.BookCardDTO;
 import be.ap.backend.dto.BookLookupDTO;
 import be.ap.backend.dto.BookResultDTO;
 import be.ap.backend.dto.CreateBookDTO;
+import be.ap.backend.dto.UpdateBookDTO;
 import be.ap.backend.entity.Author;
 import be.ap.backend.entity.Book;
 import be.ap.backend.entity.Clib;
@@ -40,6 +52,8 @@ import be.ap.backend.service.IsbnLookupService;
 
 @ExtendWith(MockitoExtension.class)
 public class BookControllerTest {
+
+    private MockMvc mockMvc;
 
     @Mock
     private BookService service;
@@ -52,6 +66,13 @@ public class BookControllerTest {
 
     @InjectMocks
     private BookController controller;
+
+    private ObjectMapper objectMapper = new ObjectMapper();
+
+    @BeforeEach
+    void setUp() {
+        mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
+    }
 
     @Test
     void givenBook_whenAddBook_thenReturnSavedBook() {
@@ -353,5 +374,54 @@ public class BookControllerTest {
         assertEquals(1, result.getTotalElements());
         verify(service, times(1)).filter(any(), any(), any(), any(), any(),
                 any(), any(), eq(clibs), any(), any(), any(Pageable.class));
+    }
+
+    @Test
+    void updateBook_validRequest_returns200() throws Exception {
+        Book updatedBook = new Book();
+        updatedBook.setTitle("Updated Title");
+
+        when(service.updateBook(eq(1L), any(UpdateBookDTO.class))).thenReturn(updatedBook);
+
+        UpdateBookDTO dto = new UpdateBookDTO();
+        dto.setTitle("Updated Title");
+
+        mockMvc.perform(put("/book/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title").value("Updated Title"));
+    }
+
+    @Test
+    void updateBook_bookNotFound_returns404() throws Exception {
+        when(service.updateBook(eq(99L), any(UpdateBookDTO.class)))
+                .thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        mockMvc.perform(put("/book/99")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(new UpdateBookDTO())))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void updateBook_emptyBody_returns200() throws Exception {
+        when(service.updateBook(eq(1L), any(UpdateBookDTO.class))).thenReturn(new Book());
+
+        mockMvc.perform(put("/book/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{}"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void updateBook_serviceCalledWithCorrectId() throws Exception {
+        when(service.updateBook(eq(1L), any(UpdateBookDTO.class))).thenReturn(new Book());
+
+        mockMvc.perform(put("/book/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{}"));
+
+        verify(service, times(1)).updateBook(eq(1L), any(UpdateBookDTO.class));
     }
 }

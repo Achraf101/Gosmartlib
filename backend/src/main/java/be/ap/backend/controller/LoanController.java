@@ -34,7 +34,7 @@ public class LoanController {
     }
 
     @PostMapping
-    public LoanDTO createLoan(@RequestBody LoanDTO dto, HttpSession session) {
+    public List<LoanDTO> createLoan(@RequestBody LoanDTO dto, HttpSession session) {
         Object raw = session.getAttribute("userId");
         Long userId = (raw != null) ? Long.valueOf(raw.toString()) : null;
         dto.setUserId(userId);
@@ -99,4 +99,5 @@ public class LoanController {
         Long locationId = Long.valueOf(session.getAttribute("location").toString());
         return ResponseEntity.ok(loanService.getTopGenresThisMonth(locationId));
     }
+
 }

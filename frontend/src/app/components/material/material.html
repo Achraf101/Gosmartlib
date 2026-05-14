@@ -6,6 +6,9 @@
     <div class="file-meta">
       <p class="filename">{{ material.file_name }}</p>
       <p class="ext">{{ getExtension(material.file_name).toUpperCase() }}</p>
+      @if (material.comment) {
+      <p class="comment">{{ material.comment }}</p>
+      }
     </div>
   </div>
 

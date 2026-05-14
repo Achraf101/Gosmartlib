@@ -35,4 +35,5 @@ public class LoanBook {
 
     @Column(name = "returned_amount", nullable = false)
     private Integer returnedAmount;
+
 }

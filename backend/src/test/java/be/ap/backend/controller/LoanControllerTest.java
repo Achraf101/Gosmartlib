@@ -66,7 +66,7 @@ public class LoanControllerTest {
     @Test
     void createLoan_success() throws Exception {
         LoanDTO dto = new LoanDTO();
-        when(loanService.createLoan(any())).thenReturn(dto);
+        when(loanService.createLoan(any())).thenReturn(List.of(dto));
 
         mockMvc.perform(post("/loan")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -274,5 +274,19 @@ public class LoanControllerTest {
         mockMvc.perform(get("/loan/top-genres")
                 .sessionAttr("location", "1"))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void createLoan_multipleBooks_returnsMultipleLoans() throws Exception {
+        LoanDTO dto1 = new LoanDTO();
+        LoanDTO dto2 = new LoanDTO();
+        when(loanService.createLoan(any())).thenReturn(List.of(dto1, dto2));
+
+        LoanDTO request = new LoanDTO();
+        mockMvc.perform(post("/loan")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2));
     }
 }
