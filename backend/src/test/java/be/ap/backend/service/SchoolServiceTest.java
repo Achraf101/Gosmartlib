@@ -40,10 +40,14 @@ public class SchoolServiceTest {
         dto.setAdres("Ellermanstraat 33");
         dto.setContact("info@ap.be");
         dto.setDescription("Een hogeschool in Antwerpen.");
+        dto.setSsSubdomain("ap");
+        dto.setBorrowLimit(5);
+        dto.setBorrowPeriod(14);
+        dto.setExtendLimit(2);
+        dto.setExtendPeriod(7);
         return dto;
     }
 
-    // Helper to build a School entity (for mock returns)
     private School buildSchoolEntity(Long id, String name) {
         School school = new School();
         school.setId(id);
@@ -51,7 +55,12 @@ public class SchoolServiceTest {
         school.setAdres("Ellermanstraat 33");
         school.setContact("info@ap.be");
         school.setDescription("Een hogeschool in Antwerpen.");
-        school.setCampuses(List.of());
+        school.setSsSubdomain("ap");
+        school.setBorrowLimit(5);
+        school.setBorrowPeriod(14);
+        school.setExtendLimit(2);
+        school.setExtendPeriod(7);
+        school.setLocations(List.of());
         return school;
     }
 

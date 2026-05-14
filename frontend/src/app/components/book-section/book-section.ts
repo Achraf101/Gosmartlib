@@ -13,9 +13,9 @@ import { FormsModule } from '@angular/forms';
 import { BookCardComponent } from '../misc/book-card/book-card';
 import { BookResult } from '../misc/book-result/book-result';
 import { DelayedLoader } from '../../utils/delayed-loader';
-import { CampusSettings } from '../../models/campus-settings';
-import { CampusSettingsService } from '../../services/campus-settings';
-import { isVisible } from '../../models/campus-settings';
+import { LocationSettings } from '../../models/location-settings';
+import { LocationSettingsService } from '../../services/location-settings';
+import { isVisible } from '../../models/location-settings';
 import { AuthService } from '../../services/auth';
 
 @Component({
@@ -43,7 +43,7 @@ export class BookSectionComponent implements OnInit {
   selectedGrade: number = 1;
   monthlyBook: BookDetail | null = null;
   loading = new DelayedLoader();
-  campusSettings: CampusSettings | null = null;
+  locationSettings: LocationSettings | null = null;
   isVisible = isVisible;
 
   grades = [
@@ -56,7 +56,7 @@ export class BookSectionComponent implements OnInit {
     private sectionService: SectionService,
     private messageService: MessageService,
     private router: Router,
-    private campusSettingsService: CampusSettingsService,
+    private locationSettingsService: LocationSettingsService,
     public authService: AuthService,
   ) {}
 
@@ -82,9 +82,9 @@ export class BookSectionComponent implements OnInit {
       },
     });
 
-    this.campusSettingsService.getSettings().subscribe({
+    this.locationSettingsService.getSettings().subscribe({
       next: (settings) => {
-        this.campusSettings = settings;
+        this.locationSettings = settings;
         if (
           this.visibleSections.length > 0 &&
           !this.visibleSections.includes(this.activeSection!)
@@ -92,7 +92,7 @@ export class BookSectionComponent implements OnInit {
           this.selectSection(this.visibleSections[0]);
         }
       },
-      error: () => (this.campusSettings = null),
+      error: () => (this.locationSettings = null),
     });
   }
 
@@ -103,9 +103,13 @@ export class BookSectionComponent implements OnInit {
   get visibleSections(): Section[] {
     return this.sections.filter((s) => {
       if (s.title === 'Boek van de maand')
-        return this.campusSettings ? isVisible(this.campusSettings, 'HOME', 'MONTHLY_BOOK') : true;
+        return this.locationSettings
+          ? isVisible(this.locationSettings, 'HOME', 'MONTHLY_BOOK')
+          : true;
       if (s.title === 'In de kijker')
-        return this.campusSettings ? isVisible(this.campusSettings, 'HOME', 'IN_SPOTLIGHT') : true;
+        return this.locationSettings
+          ? isVisible(this.locationSettings, 'HOME', 'IN_SPOTLIGHT')
+          : true;
       return true;
     });
   }

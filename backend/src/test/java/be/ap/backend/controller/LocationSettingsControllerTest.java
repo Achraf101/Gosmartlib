@@ -1,0 +1,69 @@
+package be.ap.backend.controller;
+
+import java.util.HashSet;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import be.ap.backend.dto.LocationSettingsDTO;
+import be.ap.backend.service.LocationSettingsService;
+
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import org.springframework.http.MediaType;
+
+@WebMvcTest(controllers = LocationSettingsController.class, excludeAutoConfiguration = SecurityAutoConfiguration.class)
+@ContextConfiguration(classes = LocationSettingsController.class)
+public class LocationSettingsControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+    @Autowired
+    private ObjectMapper objectMapper;
+    @MockitoBean
+    private LocationSettingsService locationSettingsService;
+
+    @Test
+    void getSettings_returnsOk() throws Exception {
+        LocationSettingsDTO dto = new LocationSettingsDTO(1L, new HashSet<>());
+        when(locationSettingsService.getSettings(eq(1L))).thenReturn(dto);
+
+        mockMvc.perform(get("/location-settings")
+                .sessionAttr("location", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.locationId").value(1));
+    }
+
+    @Test
+    void updateSettings_returnsUpdatedDTO() throws Exception {
+        LocationSettingsDTO dto = new LocationSettingsDTO(1L, new HashSet<>());
+        when(locationSettingsService.updateSettings(eq(1L), any())).thenReturn(dto);
+
+        mockMvc.perform(put("/location-settings")
+                .sessionAttr("location", "1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.locationId").value(1));
+    }
+
+    @Test
+    void getSettings_emptyHiddenComponents_returnsEmptyList() throws Exception {
+        LocationSettingsDTO dto = new LocationSettingsDTO(1L, new HashSet<>());
+        when(locationSettingsService.getSettings(eq(1L))).thenReturn(dto);
+
+        mockMvc.perform(get("/location-settings")
+                .sessionAttr("location", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.hiddenComponents").isArray());
+    }
+}
