@@ -138,17 +138,18 @@ public class CampusBookServiceTest {
     }
 
     @Test
-    void createCampusBook_alreadyExists_throwsBookAlreadyInCampusException() {
+    void createCampusBook_alreadyExists_doesNotThrowException() {
         CampusBookDTO dto = new CampusBookDTO();
         dto.setCampusId(1L);
         dto.setBookId(1L);
-        dto.setAmount(3);
+        dto.setAmount(2);
 
         when(campusBookRepository.existsByCampusIdAndBookId(1L, 1L)).thenReturn(true);
+        when(campusBookRepository.findByCampusIdAndBookId(1L, 1L)).thenReturn(Optional.of(campusBook));
+        when(campusBookRepository.save(campusBook)).thenReturn(campusBook);
 
-        assertThatThrownBy(() -> campusBookService.createCampusBook(dto))
-                .isInstanceOf(BookAlreadyInCampusException.class)
-                .hasMessage("Dit boek is al toegevoegd aan deze campus.");
+        org.junit.jupiter.api.Assertions.assertDoesNotThrow(
+                () -> campusBookService.createCampusBook(dto));
     }
 
     // ── findAll ───────────────────────────────────────────────────
@@ -246,5 +247,41 @@ public class CampusBookServiceTest {
         CampusBookDetailDTO result = campusBookService.updateCurrentAmount(campusBook, 3);
 
         assertThat(result.getCurrentAmount()).isEqualTo(0);
+    }
+
+    @Test
+    void createCampusBook_alreadyExists_increasesAmountAndCurrentAmount() {
+        CampusBookDTO dto = new CampusBookDTO();
+        dto.setCampusId(1L);
+        dto.setBookId(1L);
+        dto.setAmount(2);
+
+        when(campusBookRepository.existsByCampusIdAndBookId(1L, 1L)).thenReturn(true);
+        when(campusBookRepository.findByCampusIdAndBookId(1L, 1L)).thenReturn(Optional.of(campusBook));
+        when(campusBookRepository.save(campusBook)).thenReturn(campusBook);
+
+        campusBookService.createCampusBook(dto);
+
+        assertThat(campusBook.getAmount()).isEqualTo(5); // 3 + 2
+        assertThat(campusBook.getCurrentAmount()).isEqualTo(5); // 3 + 2
+        verify(campusBookRepository).save(campusBook);
+    }
+
+    @Test
+    void createCampusBook_alreadyExists_savesUpdatedCampusBook() {
+        CampusBookDTO dto = new CampusBookDTO();
+        dto.setCampusId(1L);
+        dto.setBookId(1L);
+        dto.setAmount(4);
+
+        when(campusBookRepository.existsByCampusIdAndBookId(1L, 1L)).thenReturn(true);
+        when(campusBookRepository.findByCampusIdAndBookId(1L, 1L)).thenReturn(Optional.of(campusBook));
+        when(campusBookRepository.save(campusBook)).thenReturn(campusBook);
+
+        CampusBook result = campusBookService.createCampusBook(dto);
+
+        assertThat(result).isNotNull();
+        assertThat(campusBook.getAmount()).isEqualTo(7); // 3 + 4
+        verify(campusBookRepository, times(1)).save(campusBook);
     }
 }
