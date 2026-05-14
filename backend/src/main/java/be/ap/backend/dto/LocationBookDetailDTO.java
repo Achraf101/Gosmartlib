@@ -12,5 +12,4 @@ public class LocationBookDetailDTO {
     private String bookCover;
     private Integer amount;
     private Integer currentAmount;
-    private String note;
 }

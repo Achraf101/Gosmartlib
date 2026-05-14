@@ -9,5 +9,4 @@ public class LocationBookDTO {
     private Long bookId;
     private Integer amount;
     private Integer currentAmount;
-    private String note;
 }

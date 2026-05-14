@@ -27,7 +27,4 @@ public class LocationBook {
 
     @Column(name = "current_amount", nullable = false)
     private Integer currentAmount;
-
-    @Column(name = "note", length = 255)
-    private String note;
 }

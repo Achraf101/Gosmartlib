@@ -64,7 +64,6 @@ public class LocationBookServiceTest {
         locationBook.setBook(book);
         locationBook.setAmount(3);
         locationBook.setCurrentAmount(3);
-        locationBook.setNote("Rek A");
     }
 
     // ── createLocationBook ──────────────────────────────────────────
@@ -76,7 +75,6 @@ public class LocationBookServiceTest {
         dto.setBookId(1L);
         dto.setAmount(3);
         dto.setCurrentAmount(3);
-        dto.setNote("Rek A");
 
         when(locationBookRepository.existsByLocationIdAndBookId(1L, 1L)).thenReturn(false);
         when(entityManager.find(Location.class, 1L)).thenReturn(location);

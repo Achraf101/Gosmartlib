@@ -50,9 +50,6 @@ public class LocationBookService {
         newLocationBook.setAmount(dto.getAmount());
         newLocationBook.setCurrentAmount(dto.getAmount());
 
-        if (dto.getNote() != null)
-            newLocationBook.setNote(dto.getNote());
-
         return locationBookRepository.save(newLocationBook);
     }
 
@@ -93,7 +90,6 @@ public class LocationBookService {
         dto.setBookCover(locationBook.getBook().getCover());
         dto.setAmount(locationBook.getAmount());
         dto.setCurrentAmount(locationBook.getCurrentAmount());
-        dto.setNote(locationBook.getNote());
         return dto;
     }
 
