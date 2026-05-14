@@ -14,7 +14,6 @@ import be.ap.backend.entity.Book;
 import be.ap.backend.entity.Location;
 import be.ap.backend.entity.LocationBook;
 import be.ap.backend.exception.ArgumentsInvalidException;
-import be.ap.backend.exception.BookAlreadyInLocationException;
 import be.ap.backend.exception.MissingArgumentsException;
 import be.ap.backend.repository.LocationBookRepository;
 import jakarta.persistence.EntityManager;
@@ -37,7 +36,11 @@ public class LocationBookService {
             throw new ArgumentsInvalidException("Aantal moet minimaal 1 zijn.");
         }
         if (locationBookRepository.existsByLocationIdAndBookId(dto.getLocationId(), dto.getBookId())) {
-            throw new BookAlreadyInLocationException("Dit boek is al toegevoegd aan deze locatie.");
+            LocationBook existing = locationBookRepository
+                    .findByLocationIdAndBookId(dto.getLocationId(), dto.getBookId())
+                    .orElseThrow();
+            existing.setAmount(existing.getAmount() + dto.getAmount());
+            existing.setCurrentAmount(existing.getCurrentAmount() + dto.getAmount());
         }
 
         LocationBook newLocationBook = new LocationBook();
@@ -45,7 +48,7 @@ public class LocationBookService {
         newLocationBook.setLocation(entityManager.find(Location.class, dto.getLocationId()));
         newLocationBook.setBook(entityManager.find(Book.class, dto.getBookId()));
         newLocationBook.setAmount(dto.getAmount());
-        newLocationBook.setCurrentAmount(dto.getCurrentAmount());
+        newLocationBook.setCurrentAmount(dto.getAmount());
 
         if (dto.getNote() != null)
             newLocationBook.setNote(dto.getNote());

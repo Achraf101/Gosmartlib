@@ -7,7 +7,6 @@ import be.ap.backend.entity.Book;
 import be.ap.backend.entity.Location;
 import be.ap.backend.entity.LocationBook;
 import be.ap.backend.exception.ArgumentsInvalidException;
-import be.ap.backend.exception.BookAlreadyInLocationException;
 import be.ap.backend.exception.MissingArgumentsException;
 import be.ap.backend.repository.LocationBookRepository;
 import jakarta.persistence.EntityManager;
@@ -142,13 +141,16 @@ public class LocationBookServiceTest {
         LocationBookDTO dto = new LocationBookDTO();
         dto.setLocationId(1L);
         dto.setBookId(1L);
-        dto.setAmount(3);
+        dto.setAmount(2);
 
         when(locationBookRepository.existsByLocationIdAndBookId(1L, 1L)).thenReturn(true);
 
-        assertThatThrownBy(() -> locationBookService.createLocationBook(dto))
-                .isInstanceOf(BookAlreadyInLocationException.class)
-                .hasMessage("Dit boek is al toegevoegd aan deze locatie.");
+        when(locationBookRepository.existsByLocationIdAndBookId(1L, 1L)).thenReturn(true);
+        when(locationBookRepository.findByLocationIdAndBookId(1L, 1L)).thenReturn(Optional.of(locationBook));
+        when(locationBookRepository.save(locationBook)).thenReturn(locationBook);
+
+        org.junit.jupiter.api.Assertions.assertDoesNotThrow(
+                () -> locationBookService.createLocationBook(dto));
     }
 
     // ── findAll ───────────────────────────────────────────────────
@@ -247,4 +249,41 @@ public class LocationBookServiceTest {
 
         assertThat(result.getCurrentAmount()).isEqualTo(0);
     }
+
+    @Test
+    void createLocationBook_alreadyExists_increasesAmountAndCurrentAmount() {
+        LocationBookDTO dto = new LocationBookDTO();
+        dto.setLocationId(1L);
+        dto.setBookId(1L);
+        dto.setAmount(2);
+
+        when(locationBookRepository.existsByLocationIdAndBookId(1L, 1L)).thenReturn(true);
+        when(locationBookRepository.findByLocationIdAndBookId(1L, 1L)).thenReturn(Optional.of(locationBook));
+        when(locationBookRepository.save(locationBook)).thenReturn(locationBook);
+
+        locationBookService.createLocationBook(dto);
+
+        assertThat(locationBook.getAmount()).isEqualTo(5); // 3 + 2
+        assertThat(locationBook.getCurrentAmount()).isEqualTo(5); // 3 + 2
+        verify(locationBookRepository).save(locationBook);
+    }
+
+    @Test
+    void createLocationBook_alreadyExists_savesUpdatedLocationBook() {
+        LocationBookDTO dto = new LocationBookDTO();
+        dto.setLocationId(1L);
+        dto.setBookId(1L);
+        dto.setAmount(4);
+
+        when(locationBookRepository.existsByLocationIdAndBookId(1L, 1L)).thenReturn(true);
+        when(locationBookRepository.findByLocationIdAndBookId(1L, 1L)).thenReturn(Optional.of(locationBook));
+        when(locationBookRepository.save(locationBook)).thenReturn(locationBook);
+
+        LocationBook result = locationBookService.createLocationBook(dto);
+
+        assertThat(result).isNotNull();
+        assertThat(locationBook.getAmount()).isEqualTo(7); // 3 + 4
+        verify(locationBookRepository, times(1)).save(locationBook);
+    }
+
 }
