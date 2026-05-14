@@ -14,13 +14,14 @@ import be.ap.backend.dto.LoanBookDTO;
 import be.ap.backend.dto.LoanDTO;
 import be.ap.backend.dto.TopBookDTO;
 import be.ap.backend.entity.Book;
-import be.ap.backend.entity.Campus;
-import be.ap.backend.entity.CampusBook;
+import be.ap.backend.entity.Location;
+import be.ap.backend.entity.LocationBook;
+import be.ap.backend.entity.School;
 import be.ap.backend.entity.Loan;
 import be.ap.backend.entity.LoanBook;
 import be.ap.backend.entity.LoanStatus;
 import be.ap.backend.entity.User;
-import be.ap.backend.repository.CampusBookRepository;
+import be.ap.backend.repository.LocationBookRepository;
 import be.ap.backend.repository.LoanBookRepository;
 import be.ap.backend.repository.LoanRepository;
 import jakarta.persistence.EntityManager;
@@ -32,18 +33,18 @@ public class LoanService {
     private LoanRepository loanRepository;
     private EntityManager entityManager;
     private LoanBookRepository loanBookRepository;
-    private CampusBookRepository campusBookRepository;
-    private CampusBookService campusBookService;
+    private LocationBookRepository locationBookRepository;
+    private LocationBookService locationBookService;
 
     @Autowired
     public LoanService(LoanRepository loanRepository, EntityManager entityManager,
-            LoanBookRepository loanBookRepository, CampusBookRepository campusBookRepository,
-            CampusBookService campusBookService) {
+            LoanBookRepository loanBookRepository, LocationBookRepository locationBookRepository,
+            LocationBookService locationBookService) {
         this.loanRepository = loanRepository;
         this.entityManager = entityManager;
         this.loanBookRepository = loanBookRepository;
-        this.campusBookRepository = campusBookRepository;
-        this.campusBookService = campusBookService;
+        this.locationBookRepository = locationBookRepository;
+        this.locationBookService = locationBookService;
     }
 
     @Transactional
@@ -77,23 +78,30 @@ public class LoanService {
         if (user == null) {
             throw new EntityNotFoundException("Gebruiker niet gevonden met id: " + dto.getUserId());
         }
-        Campus campus = entityManager.find(Campus.class, dto.getCampusId());
-        if (campus == null) {
-            throw new EntityNotFoundException("Campus niet gevonden met id: " + dto.getCampusId());
+        Location location = entityManager.find(Location.class, dto.getLocationId());
+        if (location == null) {
+            throw new EntityNotFoundException("Locatie niet gevonden met id: " + dto.getLocationId());
         }
-        if (dto.getBooks().length > campus.getBorrowLimit()) {
+        School school = location.getSchool();
+        if (school == null) {
+            throw new EntityNotFoundException("Geen school gekoppeld aan locatie: " + dto.getLocationId());
+        }
+        if (user.getSchool() == null || !user.getSchool().getId().equals(school.getId())) {
+            throw new IllegalArgumentException("Gebruiker behoort niet tot de school van deze locatie");
+        }
+        if (dto.getBooks().length > school.getBorrowLimit()) {
             throw new IllegalArgumentException(
-                    "Aantal boeken is groter dan de uitleen limiet van je campus " + campus.getBorrowLimit());
+                    "Aantal boeken is groter dan de uitleen limiet van je location " + school.getBorrowLimit());
         }
-        LocalDate expectedEnd = dto.getStart().plusDays(campus.getBorrowPeriod());
+        LocalDate expectedEnd = dto.getStart().plusDays(school.getBorrowPeriod());
         if (!dto.getEnd().equals(expectedEnd)) {
             throw new IllegalArgumentException(
-                    "Einddatum moet exact " + campus.getBorrowPeriod() + " dagen na begindatum zijn");
+                    "Einddatum moet exact " + school.getBorrowPeriod() + " dagen na begindatum zijn");
         }
 
         Loan loan = new Loan();
         loan.setUser(user);
-        loan.setCampus(campus);
+        loan.setLocation(location);
         loan.setExtended(dto.getExtended());
         loan.setStart(dto.getStart());
         loan.setEnd(dto.getEnd());
@@ -110,19 +118,19 @@ public class LoanService {
                         throw new EntityNotFoundException("Boek niet gevonden met id: " + lbDTO.getBookId());
                     }
 
-                    CampusBook campusBook = campusBookRepository
-                            .findByCampusIdAndBookId(dto.getCampusId(), lbDTO.getBookId())
+                    LocationBook locationBook = locationBookRepository
+                            .findByLocationIdAndBookId(dto.getLocationId(), lbDTO.getBookId())
                             .orElseThrow(() -> new EntityNotFoundException(
-                                    "Boek niet gevonden in campus: " + lbDTO.getBookId()));
+                                    "Boek niet gevonden in locatie: " + lbDTO.getBookId()));
 
-                    if (lbDTO.getRequestedAmount() > campusBook.getCurrentAmount()) {
+                    if (lbDTO.getRequestedAmount() > locationBook.getCurrentAmount()) {
                         throw new IllegalArgumentException(
                                 "Gevraagde hoeveel voor boek " + lbDTO.getBookId() +
                                         " is niet meer beschikbaar, aantal beschikbaar: "
-                                        + campusBook.getCurrentAmount());
+                                        + locationBook.getCurrentAmount());
                     }
 
-                    campusBookService.updateCurrentAmount(campusBook, lbDTO.getRequestedAmount());
+                    locationBookService.updateCurrentAmount(locationBook, lbDTO.getRequestedAmount());
 
                     LoanBook lb = new LoanBook();
                     lb.setLoan(savedLoan);
@@ -161,11 +169,11 @@ public class LoanService {
         loan.setStatus(status);
         if (status == LoanStatus.DECLINED) {
             loan.getLoanBooks().forEach(lb -> {
-                CampusBook campusBook = campusBookRepository
-                        .findByCampusIdAndBookId(loan.getCampus().getId(), lb.getBook().getId())
+                LocationBook locationBook = locationBookRepository
+                        .findByLocationIdAndBookId(loan.getLocation().getId(), lb.getBook().getId())
                         .orElseThrow(() -> new EntityNotFoundException(
-                                "Book not found on campus: " + lb.getId()));
-                campusBookService.updateCurrentAmount(campusBook, -lb.getRequestedAmount());
+                                "Book niet gevonden in locatie: " + lb.getId()));
+                locationBookService.updateCurrentAmount(locationBook, -lb.getRequestedAmount());
             });
         }
         return toDTO(loanRepository.save(loan));
@@ -189,7 +197,7 @@ public class LoanService {
         LoanDTO dto = new LoanDTO();
         dto.setId(loan.getId());
         dto.setUserId(loan.getUser().getId());
-        dto.setCampusId(loan.getCampus().getId());
+        dto.setLocationId(loan.getLocation().getId());
         dto.setExtended(loan.getExtended());
         dto.setStart(loan.getStart());
         dto.setEnd(loan.getEnd());
@@ -217,54 +225,54 @@ public class LoanService {
         return dto;
     }
 
-    public int getOverdueLoansLength(Long campusId){
+    public int getOverdueLoansLength(Long locationId) {
         List<LoanStatus> activeStatuses = List.of(LoanStatus.RECEIVED, LoanStatus.ACCEPTED);
-        return loanRepository.countOverdueLoans(activeStatuses, LocalDate.now(), campusId);
+        return loanRepository.countOverdueLoans(activeStatuses, LocalDate.now(), locationId);
     }
 
-    public List<LoanDTO> getOverdueLoans(Long campusId) {
+    public List<LoanDTO> getOverdueLoans(Long locationId) {
         List<LoanStatus> activeStatuses = List.of(LoanStatus.RECEIVED, LoanStatus.ACCEPTED);
-        return loanRepository.findOverdueLoans(activeStatuses, LocalDate.now(), campusId)
-            .stream().map(this::toDTO).toList();
+        return loanRepository.findOverdueLoans(activeStatuses, LocalDate.now(), locationId)
+                .stream().map(this::toDTO).toList();
     }
 
-    public List<TopBookDTO> getTopBooksThisMonth(Long campusId) {
+    public List<TopBookDTO> getTopBooksThisMonth(Long locationId) {
         LocalDate from = LocalDate.now().withDayOfMonth(1);
         LocalDate to = LocalDate.now();
         List<LoanStatus> statuses = List.of(LoanStatus.RECEIVED, LoanStatus.RETURNED, LoanStatus.ACCEPTED);
 
-        return loanRepository.findByDateRangeWithBooks(from, to, statuses, campusId).stream()
-            .flatMap(l -> l.getLoanBooks().stream())
-            .collect(Collectors.groupingBy(
-                lb -> lb.getBook().getTitle(),
-                Collectors.summingInt(lb -> 1)
-            ))
-            .entrySet().stream()
-            .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
-            .limit(5)
-            .map(e -> new TopBookDTO(e.getKey(), e.getValue()))
-            .toList();
+        return loanRepository.findByDateRangeWithBooks(from, to, statuses, locationId).stream()
+                .flatMap(l -> l.getLoanBooks().stream())
+                .collect(Collectors.groupingBy(
+                        lb -> lb.getBook().getTitle(),
+                        Collectors.summingInt(lb -> 1)))
+                .entrySet().stream()
+                .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
+                .limit(5)
+                .map(e -> new TopBookDTO(e.getKey(), e.getValue()))
+                .toList();
     }
 
-    public List<LoanDTO> getDueSoonLoans(Long campusId) {
+    public List<LoanDTO> getDueSoonLoans(Long locationId) {
         List<LoanStatus> activeStatuses = List.of(LoanStatus.RECEIVED, LoanStatus.ACCEPTED);
-        return loanRepository.findDueSoonLoans(activeStatuses, LocalDate.now(), LocalDate.now().plusDays(7), campusId)
-            .stream().map(this::toDTO).toList();
+        return loanRepository.findDueSoonLoans(activeStatuses, LocalDate.now(), LocalDate.now().plusDays(7), locationId)
+                .stream().map(this::toDTO).toList();
     }
 
-    public int getDueSoonLoansLength(Long campusId){
+    public int getDueSoonLoansLength(Long locationId) {
         List<LoanStatus> activeStatuses = List.of(LoanStatus.RECEIVED, LoanStatus.ACCEPTED);
-        return loanRepository.countDueSoonLoans(activeStatuses, LocalDate.now(), LocalDate.now().plusDays(7), campusId);
+        return loanRepository.countDueSoonLoans(activeStatuses, LocalDate.now(), LocalDate.now().plusDays(7),
+                locationId);
     }
 
-    public List<TopBookDTO> getTopGenresThisMonth(Long campusId) {
+    public List<TopBookDTO> getTopGenresThisMonth(Long locationId) {
         LocalDate from = LocalDate.now().withDayOfMonth(1);
         LocalDate to = LocalDate.now();
         List<LoanStatus> statuses = List.of(LoanStatus.RECEIVED, LoanStatus.RETURNED, LoanStatus.ACCEPTED);
 
-        return loanRepository.findTopGenres(statuses, from, to, campusId).stream()
-            .limit(5)
-            .map(row -> new TopBookDTO((String) row[0], ((Long) row[1]).intValue()))
-            .toList();
+        return loanRepository.findTopGenres(statuses, from, to, locationId).stream()
+                .limit(5)
+                .map(row -> new TopBookDTO((String) row[0], ((Long) row[1]).intValue()))
+                .toList();
     }
 }

@@ -5,7 +5,7 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
-import be.ap.backend.dto.CampusDTO;
+import be.ap.backend.dto.LocationDTO;
 import be.ap.backend.dto.SchoolDTO;
 import be.ap.backend.entity.School;
 import be.ap.backend.exception.ArgumentsInvalidException;
@@ -31,6 +31,17 @@ public class SchoolService {
         if (dto.getSsSubdomain() == null) {
             throw new MissingArgumentsException("Smartschool url is verplicht!");
         }
+        if (dto.getBorrowLimit() <= 0 || dto.getBorrowPeriod() <= 0 || dto.getExtendLimit() <= 0
+                || dto.getExtendPeriod() <= 0) {
+            throw new ArgumentsInvalidException("Getallen moeten minimaal 1 zijn!");
+        }
+        if (dto.getBorrowLimit() > 999 || dto.getBorrowPeriod() > 999 || dto.getExtendPeriod() > 999) {
+            throw new ArgumentsInvalidException(
+                    "Uitleenlimiet, uitleenperiode en verlengperiode mogen niet groter zijn dan 999!");
+        }
+        if (dto.getExtendLimit() > 10) {
+            throw new ArgumentsInvalidException("Maximaal aantal verlengingen mag niet meer zijn dan 10!");
+        }
 
         School saved = new School();
         saved.setName(dto.getName());
@@ -38,6 +49,10 @@ public class SchoolService {
         saved.setContact(dto.getContact());
         saved.setDescription(dto.getDescription());
         saved.setSsSubdomain(dto.getSsSubdomain());
+        saved.setBorrowLimit(dto.getBorrowLimit());
+        saved.setBorrowPeriod(dto.getBorrowPeriod());
+        saved.setExtendLimit(dto.getExtendLimit());
+        saved.setExtendPeriod(dto.getExtendPeriod());
 
         return toDTO(schoolRepository.save(saved));
     }
@@ -62,20 +77,23 @@ public class SchoolService {
         dto.setContact(school.getContact());
         dto.setDescription(school.getDescription());
         dto.setSsSubdomain(school.getSsSubdomain());
+        dto.setBorrowLimit(school.getBorrowLimit());
+        dto.setBorrowPeriod(school.getBorrowPeriod());
+        dto.setExtendLimit(school.getExtendLimit());
+        dto.setExtendPeriod(school.getExtendPeriod());
 
-        List<CampusDTO> campusDTOs = school.getCampuses().stream()
-                .map(campus -> {
-                    CampusDTO c = new CampusDTO();
-                    c.setId(campus.getId());
-                    c.setName(campus.getName());
-                    c.setAdres(campus.getAdres());
-                    c.setBorrowLimit(campus.getBorrowLimit());
+        List<LocationDTO> locationDTOs = school.getLocations().stream()
+                .map(location -> {
+                    LocationDTO c = new LocationDTO();
+                    c.setId(location.getId());
+                    c.setName(location.getName());
+                    c.setAdres(location.getAdres());
                     c.setSchoolId(school.getId());
                     return c;
                 })
                 .collect(java.util.stream.Collectors.toList());
 
-        dto.setCampuses(campusDTOs);
+        dto.setLocations(locationDTOs);
         return dto;
     }
 }
