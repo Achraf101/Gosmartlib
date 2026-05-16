@@ -14,7 +14,6 @@ import be.ap.backend.entity.Challenge;
 import be.ap.backend.entity.Location;
 import be.ap.backend.entity.Classroom;
 import be.ap.backend.entity.Genre;
-import be.ap.backend.entity.Hello;
 import be.ap.backend.entity.Language;
 import be.ap.backend.entity.School;
 import be.ap.backend.entity.Section;
@@ -29,7 +28,6 @@ import be.ap.backend.repository.ChallengeRepository;
 import be.ap.backend.repository.LocationRepository;
 import be.ap.backend.repository.ClassroomRepository;
 import be.ap.backend.repository.GenreRepository;
-import be.ap.backend.repository.HelloRepository;
 import be.ap.backend.repository.LanguageRepository;
 import be.ap.backend.repository.SchoolRepository;
 import be.ap.backend.repository.SectionBookRepository;
@@ -50,7 +48,6 @@ public class DataSeeder implements CommandLineRunner {
     private String adminPassword;
 
     private final GenreRepository genreRepository;
-    private final HelloRepository helloRepository;
     private final LanguageRepository languageRepository;
     private final BookTypeRepository bookTypeRepository;
     private final BookRepository bookRepository;
@@ -65,14 +62,13 @@ public class DataSeeder implements CommandLineRunner {
     private final PasswordEncoder passwordEncoder;
     private final ClassroomRepository classroomRepository;
 
-    public DataSeeder(HelloRepository helloRepository, LanguageRepository languageRepository,
+    public DataSeeder(LanguageRepository languageRepository,
             BookTypeRepository bookTypeRepository, GenreRepository genreRepository,
             BookRepository bookRepository, AuthorRepository authorRepository,
             SectionRepository sectionRepository, SectionBookRepository sectionBookRepository,
             ThemeRepository themeRepository, UserRepository userRepository, LocationRepository locationRepository,
             SchoolRepository schoolRepository, PasswordEncoder passwordEncoder,
             ChallengeRepository challengeRepository, ClassroomRepository classroomRepository) {
-        this.helloRepository = helloRepository;
         this.languageRepository = languageRepository;
         this.bookTypeRepository = bookTypeRepository;
         this.genreRepository = genreRepository;
@@ -110,7 +106,6 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     private void seedDatabase() {
-        helloRepository.save(new Hello("Database en API werken."));
         seedLanguages();
         BookType boek = seedBookTypes();
         seedGenres();

@@ -41,6 +41,7 @@ public class LocationBookService {
                     .orElseThrow();
             existing.setAmount(existing.getAmount() + dto.getAmount());
             existing.setCurrentAmount(existing.getCurrentAmount() + dto.getAmount());
+            return locationBookRepository.save(existing);
         }
 
         LocationBook newLocationBook = new LocationBook();
