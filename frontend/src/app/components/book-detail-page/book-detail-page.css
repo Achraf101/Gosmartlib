@@ -54,13 +54,9 @@ app-material {
   align-items: start;
 }
 
-#book-info-image > p-image {
-  grid-row: span 2;
+#book-info-image > .img {
   width: 130px;
   height: 195px;
-  overflow: hidden;
-  display: block;
-  flex-shrink: 0;
 }
 
 :host ::ng-deep #book-info-image p-image img {

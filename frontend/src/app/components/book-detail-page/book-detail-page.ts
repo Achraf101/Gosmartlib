@@ -45,6 +45,7 @@ import { FileSelectEvent, FileUpload, FileUploadModule } from 'primeng/fileuploa
 import { MaterialComponent } from '../material/material';
 import { AuthService } from '../../services/auth';
 import { Textarea } from 'primeng/textarea';
+import { BookCover } from "../misc/book-cover/book-cover";
 
 @Component({
   selector: 'app-book-detail-page',
@@ -69,7 +70,8 @@ import { Textarea } from 'primeng/textarea';
     FileUploadModule,
     MaterialComponent,
     Textarea,
-  ],
+    BookCover
+],
   templateUrl: './book-detail-page.html',
   styleUrl: './book-detail-page.css',
 })
