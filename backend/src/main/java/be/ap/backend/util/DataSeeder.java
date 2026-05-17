@@ -11,10 +11,9 @@ import be.ap.backend.entity.Author;
 import be.ap.backend.entity.Book;
 import be.ap.backend.entity.BookType;
 import be.ap.backend.entity.Challenge;
-import be.ap.backend.entity.Campus;
+import be.ap.backend.entity.Location;
 import be.ap.backend.entity.Classroom;
 import be.ap.backend.entity.Genre;
-import be.ap.backend.entity.Hello;
 import be.ap.backend.entity.Language;
 import be.ap.backend.entity.School;
 import be.ap.backend.entity.Section;
@@ -26,10 +25,9 @@ import be.ap.backend.repository.AuthorRepository;
 import be.ap.backend.repository.BookRepository;
 import be.ap.backend.repository.BookTypeRepository;
 import be.ap.backend.repository.ChallengeRepository;
-import be.ap.backend.repository.CampusRepository;
+import be.ap.backend.repository.LocationRepository;
 import be.ap.backend.repository.ClassroomRepository;
 import be.ap.backend.repository.GenreRepository;
-import be.ap.backend.repository.HelloRepository;
 import be.ap.backend.repository.LanguageRepository;
 import be.ap.backend.repository.SchoolRepository;
 import be.ap.backend.repository.SectionBookRepository;
@@ -46,8 +44,10 @@ public class DataSeeder implements CommandLineRunner {
     @Value("${app.seeding.enabled:true}")
     private boolean seedingEnabled;
 
+    @Value("${ADMIN_PASSWORD:admin}")
+    private String adminPassword;
+
     private final GenreRepository genreRepository;
-    private final HelloRepository helloRepository;
     private final LanguageRepository languageRepository;
     private final BookTypeRepository bookTypeRepository;
     private final BookRepository bookRepository;
@@ -57,19 +57,18 @@ public class DataSeeder implements CommandLineRunner {
     private final SectionBookRepository sectionBookRepository;
     private final ThemeRepository themeRepository;
     private final UserRepository userRepository;
-    private final CampusRepository campusRepository;
+    private final LocationRepository locationRepository;
     private final SchoolRepository schoolRepository;
     private final PasswordEncoder passwordEncoder;
     private final ClassroomRepository classroomRepository;
 
-    public DataSeeder(HelloRepository helloRepository, LanguageRepository languageRepository,
+    public DataSeeder(LanguageRepository languageRepository,
             BookTypeRepository bookTypeRepository, GenreRepository genreRepository,
             BookRepository bookRepository, AuthorRepository authorRepository,
             SectionRepository sectionRepository, SectionBookRepository sectionBookRepository,
-            ThemeRepository themeRepository, UserRepository userRepository, CampusRepository campusRepository,
+            ThemeRepository themeRepository, UserRepository userRepository, LocationRepository locationRepository,
             SchoolRepository schoolRepository, PasswordEncoder passwordEncoder,
             ChallengeRepository challengeRepository, ClassroomRepository classroomRepository) {
-        this.helloRepository = helloRepository;
         this.languageRepository = languageRepository;
         this.bookTypeRepository = bookTypeRepository;
         this.genreRepository = genreRepository;
@@ -80,7 +79,7 @@ public class DataSeeder implements CommandLineRunner {
         this.challengeRepository = challengeRepository;
         this.themeRepository = themeRepository;
         this.userRepository = userRepository;
-        this.campusRepository = campusRepository;
+        this.locationRepository = locationRepository;
         this.schoolRepository = schoolRepository;
         this.passwordEncoder = passwordEncoder;
         this.classroomRepository = classroomRepository;
@@ -91,6 +90,7 @@ public class DataSeeder implements CommandLineRunner {
         if (!seedingEnabled)
             return;
 
+        seedSchoolsAndLocations();
         seedChallenges();
         seedTestUsers();
         seedClassrooms();
@@ -106,7 +106,6 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     private void seedDatabase() {
-        helloRepository.save(new Hello("Database en API werken."));
         seedLanguages();
         BookType boek = seedBookTypes();
         seedGenres();
@@ -363,25 +362,26 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     private void seedTestUsers() {
-        Campus campus = campusRepository.findById(1L).orElse(null);
-        School school = schoolRepository.findById(1L).orElse(null);
+        Location location = locationRepository.findById(1L)
+                .orElseThrow(() -> new IllegalStateException("Location 1 missing"));
+        School school = schoolRepository.findById(1L).orElseThrow(() -> new IllegalStateException("School 1 missing"));
 
-        seedUser("beheerder", "test1234", UserRole.BIBLIOTHEEKBEHEERDER, campus, school);
-        seedUser("admin", "admin", UserRole.ADMIN, campus, school);
-        seedUser("leerkracht1", "leerkracht1", UserRole.LEERKRACHT, campus, school);
-        seedUser("leerling1", "leerling1", UserRole.STUDENT, campus, school);
-        seedUser("leerling2", "leerling2", UserRole.STUDENT, campus, school);
-        seedUser("leerling3", "leerling3", UserRole.STUDENT, campus, school);
+        seedUser("beheerder", "test1234", UserRole.BIBLIOTHEEKBEHEERDER, location, school);
+        seedUser("admin", "admin", UserRole.ADMIN, location, school);
+        seedUser("leerkracht1", "leerkracht1", UserRole.LEERKRACHT, location, school);
+        seedUser("leerling1", "leerling1", UserRole.STUDENT, location, school);
+        seedUser("leerling2", "leerling2", UserRole.STUDENT, location, school);
+        seedUser("leerling3", "leerling3", UserRole.STUDENT, location, school);
     }
 
-    private void seedUser(String username, String password, UserRole role, Campus campus, School school) {
-        if (userRepository.findByUsername(username).isPresent())
-            return;
-        User user = new User();
+    private void seedUser(String username, String password, UserRole role, Location location, School school) {
+        User user = userRepository.findByUsername(username).orElse(new User());
+        if (user.getPassword() == null) {
+            user.setPassword(passwordEncoder.encode(password));
+        }
         user.setUsername(username);
-        user.setPassword(passwordEncoder.encode(password));
         user.setRole(role);
-        user.setCampus(campus);
+        user.setLocation(location);
         user.setSchool(school);
         userRepository.save(user);
     }
@@ -394,7 +394,7 @@ public class DataSeeder implements CommandLineRunner {
         User s1 = userRepository.findByUsername("leerling1").orElse(null);
         User s2 = userRepository.findByUsername("leerling2").orElse(null);
         User s3 = userRepository.findByUsername("leerling3").orElse(null);
-        Campus campus = campusRepository.findById(1L).orElse(null);
+        Location location = locationRepository.findById(1L).orElse(null);
         School school = schoolRepository.findById(1L).orElse(null);
 
         if (teacher == null)
@@ -403,7 +403,7 @@ public class DataSeeder implements CommandLineRunner {
         Classroom klas = new Classroom();
         klas.setName("3A");
         klas.setTeacher(teacher);
-        klas.setCampus(campus);
+        klas.setLocation(location);
         klas.setSchool(school);
         if (s1 != null)
             klas.getStudents().add(s1);
@@ -414,4 +414,15 @@ public class DataSeeder implements CommandLineRunner {
         classroomRepository.save(klas);
     }
 
+    private void seedSchoolsAndLocations() {
+        if (schoolRepository.count() > 0)
+            return;
+        School school = schoolRepository.save(
+                new School("AP Hogeschool", "", "", "", 10, 14, 14, 3, "aphogeschool"));
+        Location location = new Location();
+        location.setSchool(school);
+        location.setName("Blok A");
+        location.setAdres("");
+        locationRepository.save(location);
+    }
 }

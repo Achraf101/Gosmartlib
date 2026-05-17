@@ -63,7 +63,7 @@ public class SecurityConfig {
                             HttpSession session = req.getSession(true);
 
                             session.setAttribute("userId", user.get("userId"));
-                            session.setAttribute("campus", user.get("campus"));
+                            session.setAttribute("location", user.get("location"));
                             session.setAttribute("role", user.get("role"));
                             session.setAttribute("username", user.get("username"));
 
@@ -112,12 +112,12 @@ public class SecurityConfig {
     private Map<String, String> getUserDetails(Authentication auth) {
         User u = (User) auth.getPrincipal();
 
-        String campus = u.getCampus() != null ? u.getCampus().getId().toString() : "";
+        String location = u.getLocation() != null ? u.getLocation().getId().toString() : "";
 
         System.out.println(u.getUsername());
         Map<String, String> usr = Map.of(
                 "userId", u.getId().toString(),
-                "campus", campus,
+                "location", location,
                 "role", u.getRole().name(),
                 "username", u.getUsername() // not smartschool name
         );

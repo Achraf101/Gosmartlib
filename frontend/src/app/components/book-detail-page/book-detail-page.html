@@ -337,7 +337,7 @@
                 formControlName="requestedAmount"
                 [showButtons]="true"
                 [min]="0"
-                [max]="campusBook?.current_amount ?? 100"
+                [max]="locationBook?.current_amount ?? 100"
                 [useGrouping]="false"
               />
               <label for="requestedAmount">Aantal</label>
@@ -372,7 +372,7 @@
             formControlName="requestedAmount"
             inputId="cartAmount"
             [min]="0"
-            [max]="campusBook?.current_amount ?? 100"
+            [max]="locationBook?.current_amount ?? 100"
             [showButtons]="true"
             [useGrouping]="false"
           />

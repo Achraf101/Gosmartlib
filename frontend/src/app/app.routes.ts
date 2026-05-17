@@ -4,10 +4,10 @@ import { SchoolAddComponent } from './components/school-add/school-add';
 import { BookformComponent } from './components/bookform/bookform';
 import { BookDetailPage } from './components/book-detail-page/book-detail-page';
 import { CatalogueComponent } from './components/catalogue/catalogue';
-import { CampusComponent } from './components/campus/campus';
+import { LocationComponent } from './components/location/location';
 import { LoginComponent } from './components/login/login';
 import { authGuard } from './guards/auth.guard';
-import { CampusDetailPageComponent } from './components/campus-detail-page/campus-detail-page';
+import { LocationDetailPageComponent } from './components/location-detail-page/location-detail-page';
 import { FilterPage } from './components/filter-page/filter-page';
 import { SchoolComponent } from './components/school/school';
 import { FavoritePage } from './components/favorite-page/favorite-page';
@@ -25,12 +25,12 @@ export const routes: Routes = [
   { path: '', component: HomeComponent, canActivate: [authGuard] },
   { path: 'school', component: SchoolComponent, canActivate: [authGuard(['ADMIN', 'LEERKRACHT'])] },
   { path: 'school/toevoegen', component: SchoolAddComponent, canActivate: [authGuard] },
-  { path: 'campus/toevoegen/:schoolId', component: CampusComponent, canActivate: [authGuard] },
+  { path: 'locatie/toevoegen/:schoolId', component: LocationComponent, canActivate: [authGuard] },
   { path: 'boek/toevoegen', component: BookformComponent, canActivate: [authGuard] },
   { path: 'catalogus/filter', component: FilterPage, canActivate: [authGuard] },
   { path: 'catalogus', component: CatalogueComponent, canActivate: [authGuard] },
   { path: 'boek/:id', component: BookDetailPage, canActivate: [authGuard] },
-  { path: 'campus', component: CampusDetailPageComponent, canActivate: [authGuard] },
+  { path: 'locatie', component: LocationDetailPageComponent, canActivate: [authGuard] },
   { path: 'favorieten', component: FavoritePage, canActivate: [authGuard] },
   {
     path: 'uitleenaanvragen',

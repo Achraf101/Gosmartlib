@@ -5,6 +5,7 @@ import be.ap.backend.service.SchoolService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
@@ -22,6 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(SchoolController.class)
 @ContextConfiguration(classes = SchoolController.class)
+@AutoConfigureMockMvc(addFilters = false)
 public class SchoolControllerTest {
 
     @Autowired
@@ -37,7 +39,7 @@ public class SchoolControllerTest {
         SchoolDTO dto = new SchoolDTO();
         dto.setId(id);
         dto.setName(name);
-        dto.setCampuses(List.of());
+        dto.setLocations(List.of());
         return dto;
     }
 

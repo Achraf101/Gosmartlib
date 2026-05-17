@@ -31,10 +31,6 @@ import { BookList } from '../../models/book-list';
 import { BookListService } from '../../services/book-list';
 import { Button } from 'primeng/button';
 import { CartBook } from '../../models/cartBook';
-import { Campus } from '../../models/campus';
-import { CampusService } from '../../services/campus';
-import { CampusBook } from '../../models/CampusBook';
-import { CampusBookService } from '../../services/campusbook';
 import { Message } from 'primeng/message';
 import { ReviewSectionComponent } from '../misc/review-section/review-section';
 import { BookService } from '../../services/book';
@@ -44,8 +40,14 @@ import { UploadService } from '../../services/upload';
 import { FileSelectEvent, FileUpload, FileUploadModule } from 'primeng/fileupload';
 import { MaterialComponent } from '../material/material';
 import { AuthService } from '../../services/auth';
+import { LocationBook } from '../../models/locationBook';
+import { LocationService } from '../../services/location';
+import { LocationBookService } from '../../services/locationbook';
+import { Location } from '../../models/location';
+import { SchoolService } from '../../services/school';
+import { School } from '../../models/school';
 import { Textarea } from 'primeng/textarea';
-import { BookCover } from "../misc/book-cover/book-cover";
+import { BookCover } from '../misc/book-cover/book-cover';
 
 @Component({
   selector: 'app-book-detail-page',
@@ -69,7 +71,6 @@ import { BookCover } from "../misc/book-cover/book-cover";
     ReviewSectionComponent,
     FileUploadModule,
     MaterialComponent,
-    Textarea,
     BookCover
 ],
   templateUrl: './book-detail-page.html',
@@ -99,11 +100,13 @@ export class BookDetailPage implements OnInit {
   loading = new DelayedLoader();
   lists: BookList[] = [];
   showDropdown = false;
-  campus?: Campus;
-  campusBook?: CampusBook;
+  school?: School;
+  location?: Location;
+  locationBook?: LocationBook;
 
   userId = 1;
-  campusId = 1;
+  locationId = 1;
+  schoolId = 1;
 
   readonly placeholder = '/assets/no-cover.svg';
 
@@ -115,10 +118,11 @@ export class BookDetailPage implements OnInit {
     private readonly bookListService: BookListService,
     private readonly loanService: LoanService,
     private readonly loanCartService: LoanCartService,
-    private readonly campusService: CampusService,
-    private readonly campusBookService: CampusBookService,
+    private readonly locationService: LocationService,
+    private readonly locationBookService: LocationBookService,
     private readonly materialService: MaterialService,
     private readonly uploadService: UploadService,
+    private readonly schoolService: SchoolService,
     public auth: AuthService,
     private router: Router,
     public authService: AuthService,
@@ -132,7 +136,7 @@ export class BookDetailPage implements OnInit {
       this.bookListService.getListsWithoutBook(this.bookId).subscribe((lists) => {
         this.lists = lists;
       });
-      this.loadCampusData();
+      this.loadLocationData();
     });
   }
 
@@ -237,7 +241,7 @@ export class BookDetailPage implements OnInit {
 
   onStartDateSelect(date: Date) {
     const end = new Date(date);
-    end.setDate(end.getDate() + (this.campus?.borrowPeriod ?? 14));
+    end.setDate(end.getDate() + (this.school?.borrowPeriod ?? 14));
     this.loanForm.controls.end.setValue(end);
   }
 
@@ -254,7 +258,7 @@ export class BookDetailPage implements OnInit {
 
     const loan: CreateLoanDTO = {
       userId: this.userId,
-      campusId: this.campusId,
+      locationId: this.locationId,
       extended: 0,
       start: this.formatDate(rawValue.start ?? new Date()),
       end: this.formatDate(rawValue.end ?? new Date()),
@@ -334,24 +338,30 @@ export class BookDetailPage implements OnInit {
     this.cartForm.reset();
   }
 
-  private loadCampusData(): void {
-    this.campusService.getById(this.campusId).subscribe({
-      next: (campus) => {
-        this.campus = campus;
+  private loadLocationData(): void {
+    this.locationService.getById(this.locationId).subscribe({
+      next: (location) => {
+        this.location = location;
       },
     });
-    this.campusBookService.getCampusBook(this.campusId, this.bookId).subscribe({
-      next: (campusBook) => {
-        this.campusBook = campusBook;
-        this.setAmountValidators(campusBook.current_amount);
+    this.locationBookService.getLocationBook(this.locationId, this.bookId).subscribe({
+      next: (locationBook) => {
+        this.locationBook = locationBook;
+        this.setAmountValidators(locationBook.current_amount);
       },
       error: () =>
         this.messageService.add({
           severity: 'info',
           summary: '',
-          detail: 'Uw campus heeft dit boek niet of het is niet meer beschikbaar.',
+          detail: 'Uw locatie heeft dit boek niet of het is niet meer beschikbaar.',
           life: 3000,
         }),
+    });
+  }
+
+  private loadSchoolData(): void {
+    this.schoolService.getById(this.schoolId).subscribe({
+      next: (school) => (this.school = school),
     });
   }
 

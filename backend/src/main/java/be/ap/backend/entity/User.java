@@ -35,8 +35,8 @@ public class User implements UserDetails, Serializable {
     private School school;
 
     @ManyToOne
-    @JoinColumn(name = "campus_id", nullable = true)
-    private Campus campus;
+    @JoinColumn(name = "location_id", nullable = true)
+    private Location location;
 
     @Column(name = "ss_name", length = 255)
     private String ssName;
