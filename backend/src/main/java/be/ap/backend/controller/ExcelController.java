@@ -37,6 +37,7 @@ import org.springframework.web.server.ResponseStatusException;
 import be.ap.backend.dto.BookLookupDTO;
 import be.ap.backend.dto.BulkPreviewDTO;
 import be.ap.backend.dto.BulkUploadDTO;
+import be.ap.backend.dto.IncompleteBookDTO;
 import be.ap.backend.entity.Author;
 import be.ap.backend.entity.Book;
 import be.ap.backend.entity.BookType;
@@ -77,7 +78,8 @@ public class ExcelController {
             GenreRepository genreRepository,
             LanguageRepository languageRepository,
             UploadService uploadService,
-            IsbnLookupService isbnLookupService, ThemeRepository themeRepository) {
+            IsbnLookupService isbnLookupService,
+            ThemeRepository themeRepository) {
         this.authorRepository = authorRepository;
         this.bookRepository = bookRepository;
         this.publisherRepository = publisherRepository;
@@ -155,154 +157,7 @@ public class ExcelController {
             writeZipEntry(zos, "xl/_rels/workbook.xml.rels", workbookRels);
             writeZipEntry(zos, "xl/worksheets/sheet1.xml", sheetXml);
         }
-        return baos.toByteArray();
-    }
-
-    private String buildSheetXml(String authorList, String publisherList,
-            String bookTypeList, String genreList,
-            String languageList, String themeList) {
-
-        return """
-                <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-                <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
-                <sheetViews>
-                    <sheetView workbookViewId="0" tabSelected="1">
-                    <pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/>
-                    </sheetView>
-                </sheetViews>
-                <sheetData>
-                    <row r="1">
-                    <c r="A1" t="inlineStr"><is><t>ISBN (optioneel)</t></is></c>
-                    <c r="B1" t="inlineStr"><is><t>Titel *</t></is></c>
-                    <c r="C1" t="inlineStr"><is><t>Auteur * (kies uit lijst)</t></is></c>
-                    <c r="D1" t="inlineStr"><is><t>Beschrijving * (max 500 tekens)</t></is></c>
-                    <c r="E1" t="inlineStr"><is><t>Didactisch materiaal (JA/NEE)</t></is></c>
-                    <c r="F1" t="inlineStr"><is><t>Uitgever (optioneel, kies uit lijst)</t></is></c>
-                    <c r="G1" t="inlineStr"><is><t>CLIB (optioneel, A/B/C/D)</t></is></c>
-                    <c r="H1" t="inlineStr"><is><t>Fictie (JA/NEE)</t></is></c>
-                    <c r="I1" t="inlineStr"><is><t>Boektype * (kies uit lijst)</t></is></c>
-                    <c r="J1" t="inlineStr"><is><t>Genre 1 * (kies uit lijst)</t></is></c>
-                    <c r="K1" t="inlineStr"><is><t>Genre 2 (optioneel)</t></is></c>
-                    <c r="L1" t="inlineStr"><is><t>Genre 3 (optioneel)</t></is></c>
-                    <c r="M1" t="inlineStr"><is><t>Genre 4 (optioneel)</t></is></c>
-                    <c r="N1" t="inlineStr"><is><t>Genre 5 (optioneel)</t></is></c>
-                    <c r="O1" t="inlineStr"><is><t>Jaar van uitgave (optioneel)</t></is></c>
-                    <c r="P1" t="inlineStr"><is><t>Taal * (kies uit lijst)</t></is></c>
-                    <c r="Q1" t="inlineStr"><is><t>Aantal pagina's *</t></is></c>
-                    <c r="R1" t="inlineStr"><is><t>Thema 1 (optioneel)</t></is></c>
-                    <c r="S1" t="inlineStr"><is><t>Thema 2 (optioneel)</t></is></c>
-                    <c r="T1" t="inlineStr"><is><t>Thema 3 (optioneel)</t></is></c>
-                    <c r="U1" t="inlineStr"><is><t>Thema 4 (optioneel)</t></is></c>
-                    <c r="V1" t="inlineStr"><is><t>Thema 5 (optioneel)</t></is></c>
-                    <c r="W1" t="inlineStr"><is><t>Lettergrootte (optioneel: groot/medium/klein)</t></is></c>
-                    <c r="X1" t="inlineStr"><is><t>Enkel zichtbaar voor deze school (JA/NEE)</t></is></c>
-                    <c r="Y1" t="inlineStr"><is><t>Cover (optioneel, URL)</t></is></c>
-                    </row>
-                </sheetData>
-                <dataValidations count="14">
-                    <dataValidation type="list" allowBlank="1" showDropDown="0"
-                        showErrorMessage="1" errorTitle="Ongeldige auteur"
-                        error="Kies een auteur uit de lijst."
-                        sqref="C2:C501">
-                    <formula1>%s</formula1>
-                    </dataValidation>
-                    <dataValidation type="list" allowBlank="1" showDropDown="0"
-                        showErrorMessage="1" errorTitle="Ongeldige uitgever"
-                        error="Kies een uitgever uit de lijst."
-                        sqref="F2:F501">
-                    <formula1>%s</formula1>
-                    </dataValidation>
-                    <dataValidation type="list" allowBlank="0" showDropDown="0"
-                        showErrorMessage="1" errorTitle="Ongeldig CLIB niveau"
-                        error="Kies A, B, C of D."
-                        sqref="G2:G501">
-                    <formula1>"A,B,C,D"</formula1>
-                    </dataValidation>
-                    <dataValidation type="list" allowBlank="0" showDropDown="0"
-                        showErrorMessage="1" errorTitle="Ongeldig boektype"
-                        error="Kies een boektype uit de lijst."
-                        sqref="I2:I501">
-                    <formula1>%s</formula1>
-                    </dataValidation>
-                    <dataValidation type="list" allowBlank="0" showDropDown="0"
-                        showErrorMessage="1" errorTitle="Ongeldig genre"
-                        error="Kies een genre uit de lijst."
-                        sqref="J2:J501">
-                    <formula1>%s</formula1>
-                    </dataValidation>
-                    <dataValidation type="list" allowBlank="1" showDropDown="0"
-                        showErrorMessage="1" errorTitle="Ongeldig genre"
-                        error="Kies een genre uit de lijst."
-                        sqref="K2:N501">
-                    <formula1>%s</formula1>
-                    </dataValidation>
-                    <dataValidation type="list" allowBlank="0" showDropDown="0"
-                        showErrorMessage="1" errorTitle="Ongeldige taal"
-                        error="Kies een taal uit de lijst."
-                        sqref="P2:P501">
-                    <formula1>%s</formula1>
-                    </dataValidation>
-                    <dataValidation type="list" allowBlank="1" showDropDown="0"
-                        showErrorMessage="1" errorTitle="Ongeldig thema"
-                        error="Kies een thema uit de lijst."
-                        sqref="R2:V501">
-                    <formula1>%s</formula1>
-                    </dataValidation>
-                    <dataValidation type="list" allowBlank="1" showDropDown="0"
-                        showErrorMessage="1" errorTitle="Ongeldige lettergrootte"
-                        error="Kies groot, medium of klein."
-                        sqref="R2:R501">
-                    <formula1>"groot,medium,klein"</formula1>
-                    </dataValidation>
-                    <dataValidation type="list" allowBlank="0" showDropDown="0"
-                        showErrorMessage="1" errorTitle="Ongeldig"
-                        error="Vul JA of NEE in."
-                        sqref="E2:E501">
-                    <formula1>"JA,NEE"</formula1>
-                    </dataValidation>
-                    <dataValidation type="list" allowBlank="0" showDropDown="0"
-                        showErrorMessage="1" errorTitle="Ongeldig"
-                        error="Vul JA of NEE in."
-                        sqref="H2:H501">
-                    <formula1>"JA,NEE"</formula1>
-                    </dataValidation>
-                    <dataValidation type="list" allowBlank="0" showDropDown="0"
-                        showErrorMessage="1" errorTitle="Ongeldig"
-                        error="Vul JA of NEE in."
-                        sqref="S2:S501">
-                    <formula1>"JA,NEE"</formula1>
-                    </dataValidation>
-                    <dataValidation type="decimal" allowBlank="1" showDropDown="0"
-                        operator="greaterThanOrEqual" showErrorMessage="1"
-                        errorTitle="Ongeldig jaar"
-                        error="Vul een geldig jaar in (bv. 2000)."
-                        sqref="O2:O501">
-                    <formula1>1000</formula1>
-                    </dataValidation>
-                    <dataValidation type="textLength" allowBlank="0" showDropDown="0"
-                        operator="lessThanOrEqual" showErrorMessage="1"
-                        errorTitle="Beschrijving te lang"
-                        error="Beschrijving mag maximaal 500 tekens bevatten."
-                        sqref="D2:D501">
-                    <formula1>500</formula1>
-                    </dataValidation>
-                </dataValidations>
-                </worksheet>
-                """.formatted(
-                authorList,
-                publisherList,
-                bookTypeList,
-                genreList,
-                genreList,
-                languageList, themeList);
-    }
-
-    private String toQuotedCsv(List<String> values) {
-        String joined = values.stream()
-                .map(this::escapeXml)
-                .collect(Collectors.joining(","));
-        return "\"" + joined + "\"";
-    }
+        return baos.toByteArray();    }
 
     private String buildSheetXml() {
         return """
@@ -318,7 +173,7 @@ public class ExcelController {
                     <c r="A1" t="inlineStr"><is><t>ISBN (optioneel)</t></is></c>
                     <c r="B1" t="inlineStr"><is><t>Titel *</t></is></c>
                     <c r="C1" t="inlineStr"><is><t>Auteur *</t></is></c>
-                    <c r="D1" t="inlineStr"><is><t>Beschrijving * (max 500 tekens)</t></is></c>
+                    <c r="D1" t="inlineStr"><is><t>Beschrijving * (max 1000 tekens)</t></is></c>
                     <c r="E1" t="inlineStr"><is><t>Didactisch materiaal (JA/NEE)</t></is></c>
                     <c r="F1" t="inlineStr"><is><t>Uitgever (optioneel)</t></is></c>
                     <c r="G1" t="inlineStr"><is><t>CLIB (optioneel, A/B/C/D)</t></is></c>
@@ -328,9 +183,10 @@ public class ExcelController {
                     <c r="K1" t="inlineStr"><is><t>Jaar van uitgave (optioneel)</t></is></c>
                     <c r="L1" t="inlineStr"><is><t>Taal *</t></is></c>
                     <c r="M1" t="inlineStr"><is><t>Aantal pagina's *</t></is></c>
-                    <c r="N1" t="inlineStr"><is><t>Lettergrootte (optioneel: groot/medium/klein)</t></is></c>
-                    <c r="O1" t="inlineStr"><is><t>Enkel zichtbaar voor deze school (JA/NEE)</t></is></c>
-                    <c r="P1" t="inlineStr"><is><t>Cover (optioneel, URL)</t></is></c>
+                    <c r="N1" t="inlineStr"><is><t>Thema's (optioneel, gescheiden door spaties)</t></is></c>
+                    <c r="O1" t="inlineStr"><is><t>Lettergrootte (optioneel: groot/medium/klein)</t></is></c>
+                    <c r="P1" t="inlineStr"><is><t>Enkel zichtbaar voor deze school (JA/NEE)</t></is></c>
+                    <c r="Q1" t="inlineStr"><is><t>Cover (optioneel, URL)</t></is></c>
                     </row>
                 </sheetData>
                 </worksheet>
@@ -341,14 +197,6 @@ public class ExcelController {
         zos.putNextEntry(new ZipEntry(name));
         zos.write(content.getBytes(StandardCharsets.UTF_8));
         zos.closeEntry();
-    }
-
-    private String escapeXml(String value) {
-        return value.replace("&", "&amp;")
-                .replace("<", "&lt;")
-                .replace(">", "&gt;")
-                .replace("\"", "&quot;")
-                .replace("'", "&apos;");
     }
 
     @PostMapping("bulk-preview")
@@ -428,81 +276,26 @@ public class ExcelController {
                 if (row == null)
                     continue;
 
-                String isbn = getCellIsbn(row, 0);
-                String titel = getCellString(row, 1);
-                String auteurNaam = getCellString(row, 2);
-                String beschrijving = getCellString(row, 3);
-                String didactisch = getCellString(row, 4);
-                String uitgeverNaam = getCellString(row, 5);
-                String clib = getCellString(row, 6);
-                String fictie = getCellString(row, 7);
-                String boektypeNaam = getCellString(row, 8);
-                String genresRaw = getCellString(row, 9);
-                String jaarStr = getCellString(row, 10);
-                String taalNaam = getCellString(row, 11);
-                String paginasStr = getCellString(row, 12);
-                String themesRaw = getCellString(row, 13);
-                String lettergrootte = getCellString(row, 14);
-                String enkelSchool = getCellString(row, 15);
-                String cover = getCellString(row, 16);
+                String isbn         = getCellIsbn(row, 0);
+                String title        = getCellString(row, 1);
+                String authorName   = getCellString(row, 2);
+                String description  = getCellString(row, 3);
+                String didactic     = getCellString(row, 4);
+                String publisherName= getCellString(row, 5);
+                String clib         = getCellString(row, 6);
+                String fiction      = getCellString(row, 7);
+                String bookTypeName = getCellString(row, 8);
+                String genresRaw    = getCellString(row, 9);
+                String yearStr      = getCellString(row, 10);
+                String languageName = getCellString(row, 11);
+                String pageStr      = getCellString(row, 12);
+                String themesRaw    = getCellString(row, 13);
+                String fontSize     = getCellString(row, 14);
+                String schoolOnly   = getCellString(row, 15);
+                String cover        = getCellString(row, 16);
 
                 int rowNum = i + 1;
 
-                BookLookupDTO lookup = null;
-                if (!isbn.isBlank()) {
-                    lookup = lookupCache.computeIfAbsent(isbn,
-                            key -> isbnLookupService.lookup(key).orElse(null));
-                }
-
-                if (lookup != null) {
-                    if (titel.isBlank() && lookup.getTitle() != null)
-                        titel = lookup.getTitle();
-                    if (auteurNaam.isBlank() && lookup.getAuthorName() != null)
-                        auteurNaam = lookup.getAuthorName();
-                    if (beschrijving.isBlank() && lookup.getDescription() != null)
-                        beschrijving = lookup.getDescription();
-                    if (uitgeverNaam.isBlank() && lookup.getPublisherName() != null)
-                        uitgeverNaam = lookup.getPublisherName();
-                    if (jaarStr.isBlank() && lookup.getPublishedYear() != null)
-                        jaarStr = String.valueOf(lookup.getPublishedYear());
-                    if (paginasStr.isBlank() && lookup.getPages() != null)
-                        paginasStr = String.valueOf(lookup.getPages());
-                    if (cover.isBlank() && lookup.getCoverUrl() != null)
-                        cover = lookup.getCoverUrl();
-                    if (taalNaam.isBlank() && lookup.getLanguageCode() != null) {
-                        Language byCode = languageByCode.get(lookup.getLanguageCode().toLowerCase());
-                        if (byCode != null)
-                            taalNaam = byCode.getName();
-                    }
-                }
-
-                if (titel.isBlank()) {
-                    result.addError(rowNum, "Titel is verplicht");
-                    continue;
-                }
-                if (auteurNaam.isBlank()) {
-                    result.addError(rowNum, "Auteur is verplicht");
-                    continue;
-                }
-                if (beschrijving.isBlank()) {
-                    result.addError(rowNum, "Beschrijving is verplicht");
-                    continue;
-                }
-                if (beschrijving.length() > 500) {
-                    beschrijving = beschrijving.substring(0, 500);
-                }
-                if (boektypeNaam.isBlank()) {
-                    result.addError(rowNum, "Boektype is verplicht");
-                    continue;
-                }
-                if (genresRaw.isBlank()) {
-                    result.addError(rowNum, "Minstens 1 genre is verplicht");
-                    continue;
-                }
-                if (taalNaam.isBlank()) {
-                    result.addError(rowNum, "Taal is verplicht");
-                    continue;
-                }
                 if (!isbn.isBlank()) {
                     if (existingIsbns.contains(isbn)) {
                         result.addSkipped(rowNum, "ISBN bestaat al in de database: " + isbn);
@@ -515,61 +308,227 @@ public class ExcelController {
                     seenIsbns.add(isbn);
                 }
 
-                Author auteur = authorMap.get(auteurNaam.toLowerCase());
-                if (auteur == null) {
-                    result.addError(rowNum, "Onbekende auteur: " + auteurNaam);
+                if (!isbn.isBlank() && !title.isBlank() && !authorName.isBlank()) {
+                    BookLookupDTO lookup = lookupCache.computeIfAbsent(isbn,
+                            key -> isbnLookupService.lookup(key).orElse(null));
+
+                    if (lookup != null) {
+                        boolean titleMatch  = lookup.getTitle() != null &&
+                                lookup.getTitle().equalsIgnoreCase(title.trim());
+                        boolean authorMatch = lookup.getAuthorName() != null &&
+                                lookup.getAuthorName().equalsIgnoreCase(authorName.trim());
+
+                        if (titleMatch && authorMatch) {
+                            Author author = authorMap.get(authorName.toLowerCase());
+                            if (author == null) {
+                                Author newAuthor = new Author();
+                                newAuthor.setName(lookup.getAuthorName());
+                                author = authorRepository.save(newAuthor);
+                                authorMap.put(author.getName().toLowerCase(), author);
+                            }
+
+                            Book book = new Book();
+                            book.setIsbn(isbn);
+                            book.setTitle(lookup.getTitle());
+                            book.setAuthor(author);
+                            book.setFiction(parseBoolean(fiction, true));
+
+                            if (lookup.getDescription() != null)
+                                book.setDescription(lookup.getDescription().length() > 1000
+                                    ? lookup.getDescription().substring(0, 1000)
+                                    : lookup.getDescription());
+                            if (lookup.getPublishedYear() != null)
+                                book.setPublished(Year.of(lookup.getPublishedYear()));
+                            if (lookup.getPages() != null)
+                                book.setPages(lookup.getPages());
+                            if (lookup.getCoverUrl() != null) {
+                                String saved = uploadService.saveCoverFromUrl(lookup.getCoverUrl());
+                                if (saved != null) book.setCover(saved);
+                            }
+                            if (lookup.getPublisherName() != null) {
+                                Publisher p = publisherMap.get(lookup.getPublisherName().toLowerCase());
+                                if (p != null) book.setPublisher(p);
+                            }
+                            if (!bookTypeName.isBlank()) {
+                                BookType bt = bookTypeMap.get(bookTypeName.toLowerCase());
+                                if (bt != null) book.setBookType(bt);
+                            }
+                            if (lookup.getLanguageCode() != null) {
+                                Language lang = languageByCode.get(lookup.getLanguageCode().toLowerCase());
+                                if (lang != null) book.setLanguage(lang);
+                            }
+
+                            List<String> missingFields = new ArrayList<>();
+                            if (book.getBookType() == null)                           missingFields.add("boektype");
+                            if (book.getGenres() == null || book.getGenres().isEmpty()) missingFields.add("genres");
+                            if (book.getLanguage() == null)                           missingFields.add("taal");
+                            if (book.getDescription() == null || book.getDescription().isBlank()) missingFields.add("beschrijving");
+
+                            if (!missingFields.isEmpty()) {
+                                result.addIncomplete(new IncompleteBookDTO(
+                                    rowNum,
+                                    isbn,
+                                    lookup.getTitle(),
+                                    lookup.getAuthorName(),
+                                    lookup.getDescription(),
+                                    lookup.getPublisherName(),
+                                    lookup.getPublishedYear(),
+                                    lookup.getPages(),
+                                    lookup.getCoverUrl(),
+                                    lookup.getLanguageCode(),
+                                    missingFields
+                                ));
+                                continue;
+                            }
+
+                            bookRepository.save(book);
+                            result.incrementAdded();
+                            continue;
+                        } else {
+                            result.addSkipped(rowNum, "ISBN gevonden maar titel/auteur komt niet overeen: " + isbn);
+                            continue;
+                        }
+                    }
+                    else {
+                        result.addSkipped(rowNum, "ISBN niet gevonden in externe database: " + isbn);
+                        continue;
+                    }
+                }
+
+                if (!isbn.isBlank()) {
+                    BookLookupDTO lookup = lookupCache.computeIfAbsent(isbn,
+                            key -> isbnLookupService.lookup(key).orElse(null));
+
+                    if (lookup != null) {
+                        if (title.isBlank() && lookup.getTitle() != null)
+                            title = lookup.getTitle();
+                        if (authorName.isBlank() && lookup.getAuthorName() != null)
+                            authorName = lookup.getAuthorName();
+                        if (description.isBlank() && lookup.getDescription() != null)
+                            description = lookup.getDescription();
+                        if (publisherName.isBlank() && lookup.getPublisherName() != null)
+                            publisherName = lookup.getPublisherName();
+                        if (yearStr.isBlank() && lookup.getPublishedYear() != null)
+                            yearStr = String.valueOf(lookup.getPublishedYear());
+                        if (pageStr.isBlank() && lookup.getPages() != null)
+                            pageStr = String.valueOf(lookup.getPages());
+                        if (cover.isBlank() && lookup.getCoverUrl() != null)
+                            cover = lookup.getCoverUrl();
+                        if (languageName.isBlank() && lookup.getLanguageCode() != null) {
+                            Language byCode = languageByCode.get(lookup.getLanguageCode().toLowerCase());
+                            if (byCode != null)
+                                languageName = byCode.getName();
+                        }
+
+                        List<String> missingFields = new ArrayList<>();
+        
+                        if (bookTypeName.isBlank()) missingFields.add("boektype");
+                        if (genresRaw.isBlank()) missingFields.add("genres");
+                        if (languageName.isBlank() && lookup.getLanguageCode() != null) missingFields.add("taal");
+                        if (description.isBlank()) missingFields.add("beschrijving");
+                        
+                        if (!missingFields.isEmpty() && !title.isBlank() && !authorName.isBlank()) {
+                            result.addIncomplete(new IncompleteBookDTO(
+                                rowNum,
+                                isbn,
+                                title,
+                                authorName,
+                                description.isBlank() ? null : description,
+                                publisherName.isBlank() ? null : publisherName,
+                                lookup.getPublishedYear(),
+                                lookup.getPages(),
+                                lookup.getCoverUrl(),
+                                lookup.getLanguageCode(),
+                                missingFields
+                            ));
+                            continue;
+                        }
+                    }
+                }
+
+                if (title.isBlank()) {
+                    result.addError(rowNum, "Titel is verplicht");
+                    continue;
+                }
+                if (authorName.isBlank()) {
+                    result.addError(rowNum, "Auteur is verplicht");
+                    continue;
+                }
+                if (description.isBlank()) {
+                    result.addError(rowNum, "Beschrijving is verplicht");
+                    continue;
+                }
+                if (description.length() > 1000) {
+                    description = description.substring(0, 1000);
+                }
+                if (bookTypeName.isBlank()) {
+                    result.addError(rowNum, "Boektype is verplicht");
+                    continue;
+                }
+                if (genresRaw.isBlank()) {
+                    result.addError(rowNum, "Minstens 1 genre is verplicht");
+                    continue;
+                }
+                if (languageName.isBlank()) {
+                    result.addError(rowNum, "Taal is verplicht");
                     continue;
                 }
 
-                if (!didactisch.isBlank() && !didactisch.equalsIgnoreCase("JA")
-                        && !didactisch.equalsIgnoreCase("NEE")) {
+                Author author = authorMap.get(authorName.toLowerCase());
+                if (author == null) {
+                    result.addError(rowNum, "Onbekende auteur: " + authorName);
+                    continue;
+                }
+
+                if (!didactic.isBlank() && !didactic.equalsIgnoreCase("JA")
+                        && !didactic.equalsIgnoreCase("NEE")) {
                     result.addError(rowNum, "Didactisch materiaal moet JA of NEE zijn");
                     continue;
                 }
-
-                if (!fictie.isBlank() && !fictie.equalsIgnoreCase("JA") && !fictie.equalsIgnoreCase("NEE")) {
+                if (!fiction.isBlank() && !fiction.equalsIgnoreCase("JA")
+                        && !fiction.equalsIgnoreCase("NEE")) {
                     result.addError(rowNum, "Fictie moet JA of NEE zijn");
                     continue;
                 }
-
-                BookType boektype = bookTypeMap.get(boektypeNaam.toLowerCase());
-                if (boektype == null) {
-                    result.addError(rowNum, "Onbekend boektype: " + boektypeNaam);
+                if (!schoolOnly.isBlank() && !schoolOnly.equalsIgnoreCase("JA")
+                        && !schoolOnly.equalsIgnoreCase("NEE")) {
+                    result.addError(rowNum, "Enkel zichtbaar voor deze school moet JA of NEE zijn");
                     continue;
                 }
 
-                Language taal = languageMap.get(taalNaam.toLowerCase());
-                if (taal == null) {
-                    result.addError(rowNum, "Onbekende taal: " + taalNaam);
+                BookType bookType = bookTypeMap.get(bookTypeName.toLowerCase());
+                if (bookType == null) {
+                    result.addError(rowNum, "Onbekend boektype: " + bookTypeName);
+                    continue;
+                }
+
+                Language language = languageMap.get(languageName.toLowerCase());
+                if (language == null) {
+                    result.addError(rowNum, "Onbekende taal: " + languageName);
                     continue;
                 }
 
                 Set<String> genreNames = new LinkedHashSet<>();
                 for (String token : genresRaw.split("\\s+")) {
-                    if (!token.isBlank())
-                        genreNames.add(token.toLowerCase());
+                    if (!token.isBlank()) genreNames.add(token.toLowerCase());
                 }
-
                 List<Genre> genres = new ArrayList<>();
                 boolean genreError = false;
-                for (String naam : genreNames) {
-                    Genre genre = genreMap.get(naam);
+                for (String name : genreNames) {
+                    Genre genre = genreMap.get(name);
                     if (genre == null) {
-                        result.addError(rowNum, "Onbekend genre: " + naam);
+                        result.addError(rowNum, "Onbekend genre: " + name);
                         genreError = true;
                         break;
                     }
                     genres.add(genre);
                 }
-                if (genreError)
-                    continue;
+                if (genreError) continue;
 
                 Set<String> themeNames = new LinkedHashSet<>();
                 for (String token : themesRaw.split("\\s+")) {
-                    if (!token.isBlank())
-                        themeNames.add(token.toLowerCase());
+                    if (!token.isBlank()) themeNames.add(token.toLowerCase());
                 }
-
                 List<Theme> themes = new ArrayList<>();
                 boolean themeError = false;
                 for (String name : themeNames) {
@@ -581,14 +540,13 @@ public class ExcelController {
                     }
                     themes.add(theme);
                 }
-                if (themeError)
-                    continue;
+                if (themeError) continue;
 
-                Publisher uitgever = null;
-                if (!uitgeverNaam.isBlank()) {
-                    uitgever = publisherMap.get(uitgeverNaam.toLowerCase());
-                    if (uitgever == null) {
-                        result.addError(rowNum, "Onbekende uitgever: " + uitgeverNaam);
+                Publisher publisher = null;
+                if (!publisherName.isBlank()) {
+                    publisher = publisherMap.get(publisherName.toLowerCase());
+                    if (publisher == null) {
+                        result.addError(rowNum, "Onbekende uitgever: " + publisherName);
                         continue;
                     }
                 }
@@ -597,63 +555,51 @@ public class ExcelController {
                     result.addError(rowNum, "Ongeldig CLIB niveau: " + clib + " (A, B, C of D)");
                     continue;
                 }
-
-                if (!lettergrootte.isBlank() &&
-                        !List.of("groot", "medium", "klein").contains(lettergrootte.toLowerCase())) {
-                    result.addError(rowNum, "Ongeldige lettergrootte: " + lettergrootte);
+                if (!fontSize.isBlank() &&
+                        !List.of("groot", "medium", "klein").contains(fontSize.toLowerCase())) {
+                    result.addError(rowNum, "Ongeldige lettergrootte: " + fontSize);
                     continue;
                 }
 
-                Integer jaarVanUitgave = null;
-                if (!jaarStr.isBlank()) {
+                Integer year = null;
+                if (!yearStr.isBlank()) {
                     try {
-                        jaarVanUitgave = Integer.parseInt(jaarStr.replace(".0", "").trim());
+                        year = Integer.parseInt(yearStr.replace(".0", "").trim());
                     } catch (NumberFormatException e) {
-                        result.addError(rowNum, "Ongeldig jaar: " + jaarStr);
+                        result.addError(rowNum, "Ongeldig jaar: " + yearStr);
                         continue;
                     }
                 }
 
-                Integer aantalPaginas = null;
-                if (!paginasStr.isBlank()) {
+                Integer pages = null;
+                if (!pageStr.isBlank()) {
                     try {
-                        aantalPaginas = Integer.parseInt(paginasStr.replace(".0", "").trim());
-                        if (aantalPaginas < 1) {
+                        pages = Integer.parseInt(pageStr.replace(".0", "").trim());
+                        if (pages < 1) {
                             result.addError(rowNum, "Aantal pagina's moet minimaal 1 zijn");
                             continue;
                         }
                     } catch (NumberFormatException e) {
-                        result.addError(rowNum, "Ongeldig aantal pagina's: " + paginasStr);
+                        result.addError(rowNum, "Ongeldig aantal pagina's: " + pageStr);
                         continue;
                     }
                 }
 
-                if (!enkelSchool.isBlank() && !enkelSchool.equalsIgnoreCase("JA")
-                        && !enkelSchool.equalsIgnoreCase("NEE")) {
-                    result.addError(rowNum, "Enkel zichtbaar voor deze school moet JA of NEE zijn");
-                    continue;
-                }
-
                 Book book = new Book();
-                book.setTitle(titel);
-                book.setAuthor(auteur);
-                book.setDescription(beschrijving);
-                book.setFiction(parseBoolean(fictie, true));
-                book.setBookType(boektype);
+                book.setTitle(title);
+                book.setAuthor(author);
+                book.setDescription(description);
+                book.setFiction(parseBoolean(fiction, true));
+                book.setBookType(bookType);
                 book.setGenres(new HashSet<>(genres));
                 book.setThemes(new HashSet<>(themes));
-                book.setLanguage(taal);
-                if (jaarVanUitgave != null)
-                    book.setPublished(Year.of(jaarVanUitgave));
-                if (aantalPaginas != null)
-                    book.setPages(aantalPaginas);
+                book.setLanguage(language);
+                if (year != null)   book.setPublished(Year.of(year));
+                if (pages != null)  book.setPages(pages);
+                if (!isbn.isBlank()) book.setIsbn(isbn);
+                if (publisher != null) book.setPublisher(publisher);
 
-                if (!isbn.isBlank())
-                    book.setIsbn(isbn);
-                if (uitgever != null)
-                    book.setPublisher(uitgever);
-
-                if (clib != null && !clib.isBlank()) {
+                if (!clib.isBlank()) {
                     try {
                         book.setClib(Clib.valueOf(clib.trim().toUpperCase()));
                     } catch (IllegalArgumentException e) {
@@ -661,23 +607,23 @@ public class ExcelController {
                         continue;
                     }
                 }
-
-                if (lettergrootte != null && !lettergrootte.isBlank()) {
+                if (!fontSize.isBlank()) {
                     try {
-                        book.setFontSize(FontSize.valueOf(lettergrootte.trim().toUpperCase()));
+                        book.setFontSize(FontSize.valueOf(fontSize.trim().toUpperCase()));
                     } catch (IllegalArgumentException e) {
-                        result.addError(rowNum, "Ongeldige lettergrootte: " + lettergrootte);
+                        result.addError(rowNum, "Ongeldige lettergrootte: " + fontSize);
                         continue;
                     }
                 }
                 if (!cover.isBlank()) {
-                    String savedFilename = uploadService.saveCoverFromUrl(cover);
-                    if (savedFilename != null) {
-                        book.setCover(savedFilename);
+                    String saved = uploadService.saveCoverFromUrl(cover);
+                    if (saved != null) {
+                        book.setCover(saved);
                     } else {
                         System.out.println("Row " + rowNum + ": cover URL kon niet worden gedownload: " + cover);
                     }
                 }
+
                 bookRepository.save(book);
                 result.incrementAdded();
             }
@@ -691,44 +637,35 @@ public class ExcelController {
     }
 
     private boolean parseBoolean(String value, boolean defaultValue) {
-        if (value.isBlank())
-            return defaultValue;
+        if (value.isBlank()) return defaultValue;
         return value.equalsIgnoreCase("JA");
     }
 
     private String getCellString(Row row, int cellIndex) {
         Cell cell = row.getCell(cellIndex, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
-        if (cell == null)
-            return "";
+        if (cell == null) return "";
 
         return switch (cell.getCellType()) {
-            case STRING -> cell.getStringCellValue().trim();
+            case STRING  -> cell.getStringCellValue().trim();
             case NUMERIC -> {
-                if (DateUtil.isCellDateFormatted(cell))
-                    yield "";
+                if (DateUtil.isCellDateFormatted(cell)) yield "";
                 yield new DataFormatter().formatCellValue(cell).trim();
             }
             case BOOLEAN -> String.valueOf(cell.getBooleanCellValue());
             case FORMULA -> new DataFormatter().formatCellValue(cell).trim();
-            default -> "";
+            default      -> "";
         };
     }
 
     private String getCellIsbn(Row row, int cellIndex) {
         Cell cell = row.getCell(cellIndex, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
-        if (cell == null)
-            return "";
+        if (cell == null) return "";
 
-        String raw = switch (cell.getCellType()) {
-            case STRING -> cell.getStringCellValue().trim();
-            case NUMERIC -> {
-                long val = (long) cell.getNumericCellValue();
-                yield String.valueOf(val);
-            }
+        return switch (cell.getCellType()) {
+            case STRING  -> cell.getStringCellValue().trim();
+            case NUMERIC -> String.valueOf((long) cell.getNumericCellValue());
             case FORMULA -> new DataFormatter().formatCellValue(cell).trim();
-            default -> "";
+            default      -> "";
         };
-
-        return raw;
     }
 }
