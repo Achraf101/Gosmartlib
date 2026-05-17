@@ -192,6 +192,120 @@
         }
       }
 
+      @if (result.incomplete.length > 0) {
+        <div class="incomplete-section">
+          <h4>
+            <span class="badge incomplete">{{ result.incomplete.length }}</span>
+            Onvolledig — vul de ontbrekende velden in
+          </h4>
+
+          @for (book of result.incomplete; track $index) {
+            <p-card class="incomplete-card">
+              <ng-template pTemplate="header">
+                <div class="incomplete-header">
+                  <p-tag severity="info" [value]="'Rij ' + book.row"></p-tag>
+                  <div class="book-info">
+                    <h3>{{ book.title }}</h3>
+                    <p class="book-author">{{ book.author_name }}</p>
+                  </div>
+                </div>
+              </ng-template>
+
+              <div class="incomplete-fields">
+                @if (book.missing_fields.includes('boektype')) {
+                  <div class="field">
+                    <label for="booktype-{{ book.isbn }}">Boektype *</label>
+                    <input
+                      pInputText
+                      id="booktype-{{ book.isbn }}"
+                      [(ngModel)]="completions[book.isbn].bookTypeName"
+                      placeholder="Voer boektype in"
+                      class="w-full"
+                    />
+                  </div>
+                }
+
+                @if (book.missing_fields.includes('genres')) {
+                  <div class="field">
+                    <label for="genres-{{ book.isbn }}">Genres * (spatie-gescheiden)</label>
+                    <input
+                      pInputText
+                      id="genres-{{ book.isbn }}"
+                      [(ngModel)]="completions[book.isbn].genresRaw"
+                      placeholder="bv. fantasy avontuur"
+                      class="w-full"
+                    />
+                  </div>
+                }
+
+                @if (book.missing_fields.includes('taal')) {
+                  <div class="field">
+                    <label for="language-{{ book.isbn }}">Taal *</label>
+                    <input
+                      pInputText
+                      id="language-{{ book.isbn }}"
+                      [(ngModel)]="completions[book.isbn].languageName"
+                      placeholder="bv. Nederlands"
+                      class="w-full"
+                    />
+                  </div>
+                }
+
+                @if (book.missing_fields.includes('beschrijving')) {
+                  <div class="field">
+                    <label for="description-{{ book.isbn }}"
+                      >Beschrijving * (max 1000 tekens)</label
+                    >
+                    <textarea
+                      pInputTextarea
+                      id="description-{{ book.isbn }}"
+                      [(ngModel)]="completions[book.isbn].description"
+                      placeholder="Voer beschrijving in"
+                      [maxlength]="1000"
+                      [rows]="4"
+                      class="w-full"
+                    ></textarea>
+                    <small class="text-muted">
+                      {{ completions[book.isbn].description?.length || 0 }} / 1000 tekens
+                    </small>
+                  </div>
+                }
+
+                @if (book.missing_fields.includes('fictie')) {
+                  <div class="field">
+                    <label for="fiction-{{ book.isbn }}">Fictie *</label>
+                    <p-select
+                      id="fiction-{{ book.isbn }}"
+                      [(ngModel)]="completions[book.isbn].fiction"
+                      [options]="[
+                        { label: 'Ja', value: 'JA' },
+                        { label: 'Nee', value: 'NEE' },
+                      ]"
+                      optionLabel="label"
+                      optionValue="value"
+                      placeholder="Selecteer"
+                      class="w-full"
+                    ></p-select>
+                  </div>
+                }
+              </div>
+
+              <ng-template pTemplate="footer">
+                <div class="card-footer">
+                  <p-button
+                    label="Opslaan"
+                    icon="pi pi-check"
+                    (onClick)="submitCompletion(book)"
+                    [loading]="false"
+                    severity="success"
+                  ></p-button>
+                </div>
+              </ng-template>
+            </p-card>
+          }
+        </div>
+      }
+
       <p-button (click)="reset()">Nieuw bestand uploaden</p-button>
     </div>
   }
