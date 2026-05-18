@@ -351,4 +351,53 @@ public class LoanControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isEmpty());
     }
+
+    // ── PUT /loan/{id}/extend ─────────────────────────────────────
+
+    @Test
+    void extendLoan_success_returnsOk() throws Exception {
+        LoanDTO result = new LoanDTO();
+        when(loanService.extendLoan(1L)).thenReturn(result);
+
+        mockMvc.perform(put("/loan/1/extend")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{}"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void extendLoan_notFound_returns404() throws Exception {
+        when(loanService.extendLoan(99L))
+                .thenThrow(new EntityNotFoundException("Lening niet gevonden met id: 99"));
+
+        mockMvc.perform(put("/loan/99/extend")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{}"))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("Lening niet gevonden met id: 99"));
+    }
+
+    @Test
+    void extendLoan_maxExtensionsReached_returns400() throws Exception {
+        when(loanService.extendLoan(1L))
+                .thenThrow(new IllegalArgumentException("Maximum aantal verlengingen bereikt."));
+
+        mockMvc.perform(put("/loan/1/extend")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Maximum aantal verlengingen bereikt."));
+    }
+
+    @Test
+    void extendLoan_wrongStatus_returns400() throws Exception {
+        when(loanService.extendLoan(1L))
+                .thenThrow(new IllegalArgumentException("Lening kan niet verlengd worden met status: REQUESTED"));
+
+        mockMvc.perform(put("/loan/1/extend")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Lening kan niet verlengd worden met status: REQUESTED"));
+    }
 }

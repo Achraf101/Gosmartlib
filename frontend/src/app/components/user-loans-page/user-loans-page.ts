@@ -42,6 +42,9 @@ export class UserLoansPageComponent implements OnInit {
   noteDialogVisible = false;
   selectedLoan: any = null;
 
+  extendDialogVisible = false;
+  loanToExtend: LoanDTO | null = null;
+
   constructor(
     private loanService: LoanService,
     private messageService: MessageService,
@@ -64,9 +67,13 @@ export class UserLoansPageComponent implements OnInit {
   }
 
   get activeLoans(): LoanDTO[] {
-    return this.loans.filter(
-      (l) => l.status === LoanStatus.RECEIVED || l.status === LoanStatus.RETURNED,
-    );
+    return this.loans
+      .filter((l) => l.status === LoanStatus.RECEIVED || l.status === LoanStatus.RETURNED)
+      .sort((a, b) => {
+        if (a.status === LoanStatus.RECEIVED && b.status !== LoanStatus.RECEIVED) return -1;
+        if (a.status !== LoanStatus.RECEIVED && b.status === LoanStatus.RECEIVED) return 1;
+        return 0;
+      });
   }
 
   get loanRequests(): LoanDTO[] {
@@ -76,6 +83,13 @@ export class UserLoansPageComponent implements OnInit {
         l.status === LoanStatus.ACCEPTED ||
         l.status === LoanStatus.DECLINED,
     );
+  }
+
+  get extendedEndDate(): Date | null {
+    if (!this.loanToExtend) return null;
+    const date = new Date(this.loanToExtend.end);
+    date.setDate(date.getDate() + 14);
+    return date;
   }
 
   isOverdue(endDate: string | Date): boolean {
@@ -124,6 +138,18 @@ export class UserLoansPageComponent implements OnInit {
     return loan.books?.reduce((sum, b) => sum + (b.requestedAmount ?? 0), 0) ?? 0;
   }
 
+  openExtendDialog(loan: LoanDTO): void {
+    this.loanToExtend = loan;
+    this.extendDialogVisible = true;
+  }
+
+  confirmExtend(): void {
+    if (!this.loanToExtend) return;
+    this.extendDialogVisible = false;
+    this.extendLoan(this.loanToExtend.id);
+    this.loanToExtend = null;
+  }
+
   deleteLoan(loanId: number) {
     this.loanService.delete(loanId).subscribe({
       next: () => {
@@ -135,7 +161,6 @@ export class UserLoansPageComponent implements OnInit {
         });
         this.getRecords();
       },
-
       error: () =>
         this.messageService.add({
           severity: 'error',
@@ -155,6 +180,7 @@ export class UserLoansPageComponent implements OnInit {
           detail: 'Test geslaagd',
           life: 3000,
         });
+        this.getRecords();
       },
       error: () => {
         this.messageService.add({
@@ -164,6 +190,28 @@ export class UserLoansPageComponent implements OnInit {
           life: 3000,
         });
         this.loading = false;
+      },
+    });
+  }
+
+  extendLoan(loanId: number) {
+    this.loanService.extend(loanId).subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Succes',
+          detail: 'Uitlening succesvol verlengd!',
+          life: 3000,
+        });
+        this.getRecords();
+      },
+      error: (err) => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Fout',
+          detail: err.error ?? 'Verlengen mislukt, probeer opnieuw.',
+          life: 3000,
+        });
       },
     });
   }

@@ -18,6 +18,7 @@ import be.ap.backend.dto.UpdateNoteDTO;
 import be.ap.backend.dto.UpdateStatusDTO;
 import be.ap.backend.entity.LoanStatus;
 import be.ap.backend.service.LoanService;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpSession;
 
 @RestController
@@ -57,6 +58,17 @@ public class LoanController {
         Object raw = session.getAttribute("userId");
         Long userId = (raw != null) ? Long.valueOf(raw.toString()) : null;
         return ResponseEntity.ok(loanService.getByUserId(userId));
+    }
+
+    @PutMapping("/{id}/extend")
+    public ResponseEntity<?> extendLoan(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(loanService.extendLoan(id));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @DeleteMapping("/{id}")

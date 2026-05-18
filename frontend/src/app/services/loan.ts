@@ -64,4 +64,7 @@ export class LoanService {
   getByState(loanState: LoanStatus): Observable<LoanDTO[]> {
     return this.apiService.get<LoanDTO[]>(`${this.endpoint}/state/${loanState}`);
   }
+  extend(id: number): Observable<LoanDTO> {
+    return this.apiService.put<LoanDTO>(`${this.endpoint}/${id}/extend`, {});
+  }
 }
