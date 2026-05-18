@@ -67,14 +67,14 @@ export class UserLoansPageComponent implements OnInit {
   }
 
   get activeLoans(): LoanDTO[] {
-  return this.loans
-    .filter((l) => l.status === LoanStatus.RECEIVED || l.status === LoanStatus.RETURNED)
-    .sort((a, b) => {
-      if (a.status === LoanStatus.RECEIVED && b.status !== LoanStatus.RECEIVED) return -1;
-      if (a.status !== LoanStatus.RECEIVED && b.status === LoanStatus.RECEIVED) return 1;
-      return 0;
-    });
-}
+    return this.loans
+      .filter((l) => l.status === LoanStatus.RECEIVED || l.status === LoanStatus.RETURNED)
+      .sort((a, b) => {
+        if (a.status === LoanStatus.RECEIVED && b.status !== LoanStatus.RECEIVED) return -1;
+        if (a.status !== LoanStatus.RECEIVED && b.status === LoanStatus.RECEIVED) return 1;
+        return 0;
+      });
+  }
 
   get loanRequests(): LoanDTO[] {
     return this.loans.filter(
@@ -124,7 +124,7 @@ export class UserLoansPageComponent implements OnInit {
       case LoanStatus.RECEIVED:
         return 'Actief';
       case LoanStatus.ACCEPTED:
-        return 'Geaccepteerd';
+        return 'Op te halen';
       case LoanStatus.REQUESTED:
         return 'In behandeling';
       case LoanStatus.DECLINED:
@@ -168,29 +168,6 @@ export class UserLoansPageComponent implements OnInit {
           detail: 'Uitleenverzoek niet succesvol verwijderd',
           life: 3000,
         }),
-    });
-  }
-
-  setStatus(loanId: number) {
-    this.loanService.changeStatus(loanId, LoanStatus.RECEIVED).subscribe({
-      next: () => {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Succes',
-          detail: 'Test geslaagd',
-          life: 3000,
-        });
-        this.getRecords();
-      },
-      error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fout',
-          detail: 'Test gefaald',
-          life: 3000,
-        });
-        this.loading = false;
-      },
     });
   }
 

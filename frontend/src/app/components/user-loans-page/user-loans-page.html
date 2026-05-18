@@ -21,10 +21,10 @@
       </ng-template>
       <ng-template pTemplate="body" let-loan class="p-datatable-tbody">
         <tr>
-          <td class="books-cell">
+          <td>
             <ul class="book-list">
               @for (book of loan.books; track book.bookId) {
-                <li class="book-item">
+                <li>
                   <div class="book-info">
                     <div class="cover">
                       <b-cover [bookCard]="book"></b-cover>
@@ -142,11 +142,6 @@
                   [text]="true"
                   (onClick)="deleteLoan(loan.id)"
                 />
-              </div>
-            } @else {
-              <div class="btns">
-                <p-button (onClick)="setStatus(loan.id)">Ophalen</p-button>
-                <p-button (onClick)="setStatus2(loan.id)">Terugbrengen</p-button>
               </div>
             }
           </td>

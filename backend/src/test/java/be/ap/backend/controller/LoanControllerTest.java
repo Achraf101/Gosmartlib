@@ -16,10 +16,10 @@ import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -64,7 +64,35 @@ public class LoanControllerTest {
     // ── POST /loan ────────────────────────────────────────────────
 
     @Test
-    void createLoan_success() throws Exception {
+    void createLoan_withSessionUserId_setsUserIdOnDto() throws Exception {
+        LoanDTO dto = new LoanDTO();
+        when(loanService.createLoan(any())).thenReturn(List.of(dto));
+
+        mockMvc.perform(post("/loan")
+                .sessionAttr("userId", 1L)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isOk());
+
+        verify(loanService).createLoan(argThat(d -> Long.valueOf(1L).equals(d.getUserId())));
+    }
+
+    @Test
+    void createLoan_withStringSessionUserId_setsUserIdOnDto() throws Exception {
+        LoanDTO dto = new LoanDTO();
+        when(loanService.createLoan(any())).thenReturn(List.of(dto));
+
+        mockMvc.perform(post("/loan")
+                .sessionAttr("userId", "2")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isOk());
+
+        verify(loanService).createLoan(argThat(d -> Long.valueOf(2L).equals(d.getUserId())));
+    }
+
+    @Test
+    void createLoan_noSessionUserId_passesNullUserIdToService() throws Exception {
         LoanDTO dto = new LoanDTO();
         when(loanService.createLoan(any())).thenReturn(List.of(dto));
 
@@ -72,6 +100,8 @@ public class LoanControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isOk());
+
+        verify(loanService).createLoan(argThat(d -> d.getUserId() == null));
     }
 
     @Test
@@ -102,6 +132,20 @@ public class LoanControllerTest {
                 .hasMessageContaining("Gebruiker niet gevonden");
     }
 
+    @Test
+    void createLoan_multipleBooks_returnsMultipleLoans() throws Exception {
+        LoanDTO dto1 = new LoanDTO();
+        LoanDTO dto2 = new LoanDTO();
+        when(loanService.createLoan(any())).thenReturn(List.of(dto1, dto2));
+
+        LoanDTO request = new LoanDTO();
+        mockMvc.perform(post("/loan")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2));
+    }
+
     // ── PUT /loan/{id}/note ───────────────────────────────────────
 
     @Test
@@ -129,6 +173,7 @@ public class LoanControllerTest {
                 .isInstanceOf(EntityNotFoundException.class)
                 .hasMessageContaining("Loan niet gevonden met id: 99");
     }
+
     // ── PUT /loan/{id}/status ─────────────────────────────────────
 
     @Test
@@ -174,8 +219,6 @@ public class LoanControllerTest {
 
     @Test
     void getByUserId_withStringSessionUserId_returnsLoans() throws Exception {
-        // HttpSession attributes may be stored as String depending on the session
-        // provider.
         LoanDTO dto = new LoanDTO();
         MockHttpSession session = new MockHttpSession();
         session.setAttribute("userId", "2");
@@ -220,6 +263,8 @@ public class LoanControllerTest {
                 .hasMessageContaining("Uitlening niet gevonden");
     }
 
+    // ── GET /loan/overdue ─────────────────────────────────────────
+
     @Test
     void getOverdueLoans_returnsOk() throws Exception {
         when(loanService.getOverdueLoans(eq(1L))).thenReturn(List.of());
@@ -238,6 +283,8 @@ public class LoanControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string("3"));
     }
+
+    // ── GET /loan/due-soon ────────────────────────────────────────
 
     @Test
     void getDueSoonLoans_returnsOk() throws Exception {
@@ -258,6 +305,8 @@ public class LoanControllerTest {
                 .andExpect(content().string("7"));
     }
 
+    // ── GET /loan/top-books ───────────────────────────────────────
+
     @Test
     void getTopBooksThisMonth_returnsOk() throws Exception {
         when(loanService.getTopBooksThisMonth(eq(1L))).thenReturn(List.of());
@@ -266,6 +315,8 @@ public class LoanControllerTest {
                 .sessionAttr("location", "1"))
                 .andExpect(status().isOk());
     }
+
+    // ── GET /loan/top-genres ──────────────────────────────────────
 
     @Test
     void getTopGenresThisMonth_returnsOk() throws Exception {
@@ -276,18 +327,29 @@ public class LoanControllerTest {
                 .andExpect(status().isOk());
     }
 
-    @Test
-    void createLoan_multipleBooks_returnsMultipleLoans() throws Exception {
-        LoanDTO dto1 = new LoanDTO();
-        LoanDTO dto2 = new LoanDTO();
-        when(loanService.createLoan(any())).thenReturn(List.of(dto1, dto2));
+    // ── GET /loan/state/{state} ───────────────────────────────────
 
-        LoanDTO request = new LoanDTO();
-        mockMvc.perform(post("/loan")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+    @Test
+    void getByStateAndLocation_returnsLoans() throws Exception {
+        LoanDTO dto = new LoanDTO();
+        when(loanService.getByStateAndLocation(eq(LoanStatus.ACCEPTED), eq(1L)))
+                .thenReturn(List.of(dto));
+
+        mockMvc.perform(get("/loan/state/ACCEPTED")
+                .sessionAttr("location", "1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(2));
+                .andExpect(jsonPath("$.length()").value(1));
+    }
+
+    @Test
+    void getByStateAndLocation_empty_returnsEmptyList() throws Exception {
+        when(loanService.getByStateAndLocation(eq(LoanStatus.ACCEPTED), eq(1L)))
+                .thenReturn(List.of());
+
+        mockMvc.perform(get("/loan/state/ACCEPTED")
+                .sessionAttr("location", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isEmpty());
     }
 
     // ── PUT /loan/{id}/extend ─────────────────────────────────────

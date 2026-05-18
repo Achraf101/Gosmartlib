@@ -19,6 +19,7 @@ import { TeacherClassDetailPageComponent } from './components/teacher-class-deta
 import { TeacherStudentReportPageComponent } from './components/teacher-student-report-page/teacher-student-report-page';
 import { BookEdit } from './components/book-edit/book-edit';
 import { ReviewModerationPageComponent } from './components/review-moderation-page/review-moderation-page';
+import { PickUpPageComponent } from './components/pick-up-page/pick-up-page';
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: '', redirectTo: 'startpagina', pathMatch: 'full' },
@@ -65,6 +66,7 @@ export const routes: Routes = [
     canActivate: [authGuard(['LEERKRACHT'])],
   },
   { path: 'boek/:id/bewerken', component: BookEdit },
+  { path: 'ophalen', component: PickUpPageComponent },
 
   // {
   //   path: 'boek',

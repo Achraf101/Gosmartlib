@@ -83,4 +83,7 @@ public interface LoanRepository extends JpaRepository<Loan, Long> {
             "ORDER BY COUNT(DISTINCT l) DESC")
     List<Object[]> findTopGenresByUserId(@Param("userId") Long userId, @Param("statuses") List<LoanStatus> statuses,
             @Param("from") LocalDate from, @Param("to") LocalDate to);
+
+    @Query("SELECT DISTINCT l FROM Loan l LEFT JOIN FETCH l.loanBooks lb LEFT JOIN FETCH lb.book WHERE l.status = :state ORDER BY l.created ASC")
+    List<Loan> findByStateAndLocation(@Param("state") LoanStatus state, @Param("locationId") Long locationId);
 }
