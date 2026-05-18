@@ -193,6 +193,12 @@ public class LoanService {
         loanRepository.deleteById(id);
     }
 
+    public List<LoanDTO> getByStateAndLocation(LoanStatus state, Long locationId) {
+        return loanRepository.findByStateAndLocation(state, locationId).stream()
+                .map(this::toDTO)
+                .toList();
+    }
+
     private LoanDTO toDTO(Loan loan) {
         LoanDTO dto = new LoanDTO();
         dto.setId(loan.getId());

@@ -16,6 +16,7 @@ import be.ap.backend.dto.LoanDTO;
 import be.ap.backend.dto.TopBookDTO;
 import be.ap.backend.dto.UpdateNoteDTO;
 import be.ap.backend.dto.UpdateStatusDTO;
+import be.ap.backend.entity.LoanStatus;
 import be.ap.backend.service.LoanService;
 import jakarta.servlet.http.HttpSession;
 
@@ -98,6 +99,12 @@ public class LoanController {
     public ResponseEntity<List<TopBookDTO>> getTopGenresThisMonth(HttpSession session) {
         Long locationId = Long.valueOf(session.getAttribute("location").toString());
         return ResponseEntity.ok(loanService.getTopGenresThisMonth(locationId));
+    }
+
+    @GetMapping("/state/{state}")
+    public ResponseEntity<List<LoanDTO>> getByStateAndLocation(@PathVariable LoanStatus state, HttpSession session) {
+        Long locationId = Long.valueOf(session.getAttribute("location").toString());
+        return ResponseEntity.ok(loanService.getByStateAndLocation(state, locationId));
     }
 
 }
