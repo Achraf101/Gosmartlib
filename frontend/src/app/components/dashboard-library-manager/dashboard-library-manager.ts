@@ -247,6 +247,10 @@ export class DashboardLibraryManager implements OnInit {
     this.router.navigate(['/ophalen']);
   }
 
+  goToReturn(): void {
+    this.router.navigate(['/terugbrengen']);
+  }
+
   addAuthor(): void {
     if (this.authorForm.valid) {
       this.authorService.addAuthor(this.authorForm.value as Author).subscribe({
