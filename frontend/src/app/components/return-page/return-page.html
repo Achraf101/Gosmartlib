@@ -1,0 +1,90 @@
+<app-nav-bar></app-nav-bar>
+<div class="loans-page">
+  <h1>Terug te brengen</h1>
+
+  <form class="search-bar" (submit)="$event.preventDefault()">
+    <input
+      type="text"
+      class="search-input"
+      placeholder="Zoek op naam"
+      [(ngModel)]="query"
+      name="search"
+    />
+    @if (query) {
+      <button type="button" class="search-btn" (click)="onDelete()">
+        <i class="pi pi-times"></i>
+      </button>
+    }
+    <button type="submit" class="search-btn">
+      <i class="pi pi-search"></i>
+    </button>
+  </form>
+
+  @if (loading) {
+    @for (i of [1, 2, 3]; track i) {
+      <p-skeleton height="3rem" />
+    }
+  } @else if (loans.length > 0) {
+    <p-table
+      [value]="filteredLoans"
+      class="loans-table"
+      showGridlines
+      stripedRows
+      [paginator]="true"
+      [rows]="5"
+    >
+      <ng-template pTemplate="header">
+        <tr class="show-desktop">
+          <th><p>Naam</p></th>
+          <th><p>Boeken</p></th>
+          <th><p>Startdatum</p></th>
+          <th><p>Datum binnen te brengen</p></th>
+          <th><p>Status</p></th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-loan>
+        <tr>
+          <td>
+            <span>{{ loan.username }}</span>
+          </td>
+          <td>
+            <ul class="book-list">
+              @for (book of loan.books; track book.bookId) {
+                <li>
+                  <div class="book-info">
+                    <div class="cover">
+                      <b-cover [bookCard]="book"></b-cover>
+                    </div>
+                    <span class="book-title">{{ book.bookTitle }}</span>
+                    @if (book.author) {
+                      <span class="book-author">{{ book.author.name }}</span>
+                    }
+                  </div>
+                </li>
+              }
+            </ul>
+          </td>
+          <td>
+            <span>{{ loan.start | date: 'dd/MM/yyyy' }}</span>
+          </td>
+          <td>
+            <span
+              [class.overdue]="isOverdue(loan.end) && loan.status !== 'RETURNED'"
+              [pTooltip]="
+                isOverdue(loan.end) && loan.status !== 'RETURNED'
+                  ? 'Terugbrengdatum is gepasseerd'
+                  : ''
+              "
+              >{{ loan.end | date: 'dd/MM/yyyy' }}</span
+            >
+          </td>
+          <td>
+            <p-button (onClick)="setState(loan.id)">Teruggebracht</p-button>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  } @else {
+    <div class="empty-state"><p>Er zijn geen boeken die teruggebracht moeten worden.</p></div>
+  }
+</div>

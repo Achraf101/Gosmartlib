@@ -171,29 +171,6 @@ export class UserLoansPageComponent implements OnInit {
     });
   }
 
-  setStatus2(loanId: number) {
-    this.loanService.changeStatus(loanId, LoanStatus.RETURNED).subscribe({
-      next: () => {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Succes',
-          detail: 'Test geslaagd',
-          life: 3000,
-        });
-        this.getRecords();
-      },
-      error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fout',
-          detail: 'Test gefaald',
-          life: 3000,
-        });
-        this.loading = false;
-      },
-    });
-  }
-
   extendLoan(loanId: number) {
     this.loanService.extend(loanId).subscribe({
       next: () => {
