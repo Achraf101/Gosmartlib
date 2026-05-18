@@ -756,4 +756,110 @@ public class LoanServiceTest {
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getGroupId()).isNull();
     }
+
+    // ── extendLoan ────────────────────────────────────────────────
+
+    @Test
+    void extendLoan_success() {
+        school.setExtendLimit(3);
+        school.setExtendPeriod(7);
+        location.setSchool(school);
+        loan.setStatus(LoanStatus.RECEIVED);
+        loan.setExtended((byte) 0);
+        loan.setEnd(LocalDate.now().plusDays(15));
+        loan.setLoanBooks(new HashSet<>());
+
+        when(loanRepository.findById(1L)).thenReturn(Optional.of(loan));
+        when(loanRepository.save(loan)).thenReturn(loan);
+
+        LoanDTO result = loanService.extendLoan(1L);
+
+        assertThat(loan.getExtended()).isEqualTo((byte) 1);
+        assertThat(loan.getEnd()).isEqualTo(LocalDate.now().plusDays(22));
+        assertThat(result).isNotNull();
+        verify(loanRepository).save(loan);
+    }
+
+    @Test
+    void extendLoan_withAcceptedStatus_success() {
+        school.setExtendLimit(3);
+        school.setExtendPeriod(7);
+        location.setSchool(school);
+        loan.setStatus(LoanStatus.ACCEPTED);
+        loan.setExtended((byte) 0);
+        loan.setEnd(LocalDate.now().plusDays(15));
+        loan.setLoanBooks(new HashSet<>());
+
+        when(loanRepository.findById(1L)).thenReturn(Optional.of(loan));
+        when(loanRepository.save(loan)).thenReturn(loan);
+
+        LoanDTO result = loanService.extendLoan(1L);
+
+        assertThat(result).isNotNull();
+        verify(loanRepository).save(loan);
+    }
+
+    @Test
+    void extendLoan_notFound_throwsEntityNotFoundException() {
+        when(loanRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> loanService.extendLoan(99L))
+                .isInstanceOf(EntityNotFoundException.class)
+                .hasMessageContaining("Lening niet gevonden met id: 99");
+    }
+
+    @Test
+    void extendLoan_wrongStatus_throwsIllegalArgument() {
+        loan.setStatus(LoanStatus.REQUESTED);
+
+        when(loanRepository.findById(1L)).thenReturn(Optional.of(loan));
+
+        assertThatThrownBy(() -> loanService.extendLoan(1L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Lening kan niet verlengd worden met status");
+    }
+
+    @Test
+    void extendLoan_returnedStatus_throwsIllegalArgument() {
+        loan.setStatus(LoanStatus.RETURNED);
+
+        when(loanRepository.findById(1L)).thenReturn(Optional.of(loan));
+
+        assertThatThrownBy(() -> loanService.extendLoan(1L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Lening kan niet verlengd worden met status");
+    }
+
+    @Test
+    void extendLoan_maxExtensionsReached_throwsIllegalArgument() {
+        school.setExtendLimit(2);
+        school.setExtendPeriod(7);
+        location.setSchool(school);
+        loan.setStatus(LoanStatus.RECEIVED);
+        loan.setExtended((byte) 2);
+
+        when(loanRepository.findById(1L)).thenReturn(Optional.of(loan));
+
+        assertThatThrownBy(() -> loanService.extendLoan(1L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Maximum aantal verlengingen bereikt");
+    }
+
+    @Test
+    void extendLoan_incrementsExtendedCount() {
+        school.setExtendLimit(3);
+        school.setExtendPeriod(7);
+        location.setSchool(school);
+        loan.setStatus(LoanStatus.RECEIVED);
+        loan.setExtended((byte) 1);
+        loan.setEnd(LocalDate.now().plusDays(15));
+        loan.setLoanBooks(new HashSet<>());
+
+        when(loanRepository.findById(1L)).thenReturn(Optional.of(loan));
+        when(loanRepository.save(loan)).thenReturn(loan);
+
+        loanService.extendLoan(1L);
+
+        assertThat(loan.getExtended()).isEqualTo((byte) 2);
+    }
 }

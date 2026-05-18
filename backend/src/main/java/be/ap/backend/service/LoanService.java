@@ -277,4 +277,24 @@ public class LoanService {
                 .toList();
     }
 
+    public LoanDTO extendLoan(Long id) {
+        Loan loan = loanRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Lening niet gevonden met id: " + id));
+
+        if (loan.getStatus() != LoanStatus.RECEIVED && loan.getStatus() != LoanStatus.ACCEPTED) {
+            throw new IllegalArgumentException("Lening kan niet verlengd worden met status: " + loan.getStatus());
+        }
+
+        School school = loan.getLocation().getSchool();
+
+        if (loan.getExtended() >= school.getExtendLimit()) {
+            throw new IllegalArgumentException("Maximum aantal verlengingen bereikt.");
+        }
+
+        loan.setEnd(loan.getEnd().plusDays(school.getExtendPeriod()));
+        loan.setExtended((byte) (loan.getExtended() + 1));
+
+        return toDTO(loanRepository.save(loan));
+    }
+
 }
