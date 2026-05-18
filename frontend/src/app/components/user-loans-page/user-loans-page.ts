@@ -110,7 +110,7 @@ export class UserLoansPageComponent implements OnInit {
       case LoanStatus.RECEIVED:
         return 'Actief';
       case LoanStatus.ACCEPTED:
-        return 'Geaccepteerd';
+        return 'Op te halen';
       case LoanStatus.REQUESTED:
         return 'In behandeling';
       case LoanStatus.DECLINED:
@@ -146,27 +146,6 @@ export class UserLoansPageComponent implements OnInit {
     });
   }
 
-  setStatus(loanId: number) {
-    this.loanService.changeStatus(loanId, LoanStatus.RECEIVED).subscribe({
-      next: () => {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Succes',
-          detail: 'Test geslaagd',
-          life: 3000,
-        });
-      },
-      error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fout',
-          detail: 'Test gefaald',
-          life: 3000,
-        });
-        this.loading = false;
-      },
-    });
-  }
   setStatus2(loanId: number) {
     this.loanService.changeStatus(loanId, LoanStatus.RETURNED).subscribe({
       next: () => {
