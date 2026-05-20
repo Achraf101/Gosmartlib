@@ -19,8 +19,8 @@ export class AuthorService {
     return this.apiService.get<Author>(this.endpoint);
   }
 
-  getByName(query: string): Observable<Author> {
-    return this.apiService.get<Author>(`${this.endpoint}/search/${query}`);
+  getByName(query: string): Observable<Author[]> {
+    return this.apiService.get<Author[]>(`${this.endpoint}/search/${query}`);
   }
 
   addAuthor(author: Omit<Author, 'id'>): Observable<Author> {

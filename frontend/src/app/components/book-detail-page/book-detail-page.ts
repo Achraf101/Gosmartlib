@@ -46,6 +46,8 @@ import { LocationBookService } from '../../services/locationbook';
 import { Location } from '../../models/location';
 import { SchoolService } from '../../services/school';
 import { School } from '../../models/school';
+import { Textarea } from 'primeng/textarea';
+import { BookCover } from '../misc/book-cover/book-cover';
 
 @Component({
   selector: 'app-book-detail-page',
@@ -69,7 +71,8 @@ import { School } from '../../models/school';
     ReviewSectionComponent,
     FileUploadModule,
     MaterialComponent,
-  ],
+    BookCover
+],
   templateUrl: './book-detail-page.html',
   styleUrl: './book-detail-page.css',
 })
