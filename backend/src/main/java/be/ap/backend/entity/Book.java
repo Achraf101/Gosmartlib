@@ -1,6 +1,8 @@
 package be.ap.backend.entity;
 
 import java.time.Year;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -111,6 +113,10 @@ public class Book {
 
     @Column(nullable = false, name = "didactic")
     private Boolean didactic = false;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "book")
+    private List<CampusBook> campusBooks = new ArrayList<>();
 
     @JsonProperty("series_name")
     public String getSeriesName() {

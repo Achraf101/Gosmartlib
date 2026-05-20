@@ -80,7 +80,7 @@ public class OAuthController {
         TokenRequest request = new TokenRequest(
                 tokenEndpoint,
                 new ClientSecretBasic(
-                        new ClientID(this.clientId), // todo read from variable
+                        new ClientID(this.clientId),
                         new Secret(this.clientSecret)),
                 new AuthorizationCodeGrant(
                         authCode,
@@ -148,14 +148,15 @@ public class OAuthController {
         }
 
         School school = schoolRepository.findBySsSubdomain(originplatform).orElse(null);
-        Campus campus = campusRepository.findBySchool(school).getFirst();
+        List<Campus> campus = campusRepository.findBySchool(school); // set all campus array
+        List<Long> campusIds = campus.stream().map(Campus::getId).collect(Collectors.toList());
 
         if (campus.equals(null))
             return ResponseEntity.status(500).body("Geen campus gevonden");
 
         user.setSsName(userInfo.fullName);
         user.setSchool(school);
-        user.setCampus(campus);
+        user.setCampus(campus.getFirst());
         user.setSsRefresh(tokens.getRefreshToken().getValue());
         user.setSsAccess(tokens.getAccessToken().getValue());
         user.setSsId(userInfo.userId);
@@ -180,7 +181,7 @@ public class OAuthController {
 
         session.setAttribute("userId", user.getId());
         session.setAttribute("role", user.getRole().name());
-        session.setAttribute("campus", campus.getId());
+        session.setAttribute("campus", campusIds);
         session.setAttribute("school", school.getId());
         session.setAttribute("username", user.getSsName());
 
