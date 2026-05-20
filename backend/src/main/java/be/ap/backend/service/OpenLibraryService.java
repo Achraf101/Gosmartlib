@@ -22,23 +22,8 @@ public class OpenLibraryService {
 
     public Optional<String> getIaIdentifier(String isbn) {
         try {
-            URL url = new URI("https://openlibrary.org/search.json?isbn=" + isbn + "&fields=ia&limit=1")
-                    .toURL();
-
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
-            connection.setConnectTimeout(5000);
-            connection.setReadTimeout(10000);
-            connection.setRequestProperty("User-Agent", "GoSmartLib/1.0");
-
-            if (connection.getResponseCode() != 200) {
-                return Optional.empty();
-            }
-
-            String body;
-            try (InputStream is = connection.getInputStream()) {
-                body = new String(is.readAllBytes(), StandardCharsets.UTF_8);
-            }
+            String body = fetchResponse(isbn);
+            if (body == null) return Optional.empty();
 
             JsonNode root = objectMapper.readTree(body);
             JsonNode docs = root.path("docs");
@@ -55,6 +40,25 @@ public class OpenLibraryService {
 
         } catch (Exception e) {
             return Optional.empty();
+        }
+    }
+
+    protected String fetchResponse(String isbn) throws Exception {
+        URL url = new URI("https://openlibrary.org/search.json?isbn=" + isbn + "&fields=ia&limit=1")
+                .toURL();
+
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("GET");
+        connection.setConnectTimeout(5000);
+        connection.setReadTimeout(10000);
+        connection.setRequestProperty("User-Agent", "GoSmartLib/1.0");
+
+        if (connection.getResponseCode() != 200) {
+            return null;
+        }
+
+        try (InputStream is = connection.getInputStream()) {
+            return new String(is.readAllBytes(), StandardCharsets.UTF_8);
         }
     }
 }
