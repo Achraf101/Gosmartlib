@@ -418,7 +418,9 @@ public class DataSeeder implements CommandLineRunner {
         if (schoolRepository.count() > 0)
             return;
         School school = schoolRepository.save(
-                new School("AP Hogeschool", "", "", "", 10, 14, 14, 3, "aphogeschool"));
+                new School("AP Hogeschool", "", "", "", 10, 14, 14, 3, "aphogeschool",
+                        "ec58f0fb-6bd3-48d3-a165-6b73a324d5ad",
+                        "755b033b7096ad2abe34142df0b67fe974d0e555ab6c0d6c9475e417c2a8"));
         Location location = new Location();
         location.setSchool(school);
         location.setName("Blok A");

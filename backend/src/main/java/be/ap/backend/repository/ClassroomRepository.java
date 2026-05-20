@@ -24,4 +24,6 @@ public interface ClassroomRepository extends JpaRepository<Classroom, Long> {
     boolean teacherHasStudent(@Param("teacherId") Long teacherId, @Param("studentId") Long studentId);
 
     List<Classroom> findByStudentsContaining(User student);
+
+    Optional<Classroom> findBySsId(String ssId);
 }

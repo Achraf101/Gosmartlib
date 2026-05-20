@@ -3,6 +3,7 @@ package be.ap.backend.service;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -12,6 +13,7 @@ import be.ap.backend.dto.StudentPreviewDTO;
 import be.ap.backend.entity.Classroom;
 import be.ap.backend.entity.Loan;
 import be.ap.backend.entity.User;
+import be.ap.backend.entity.UserRole;
 import be.ap.backend.repository.ClassroomRepository;
 import be.ap.backend.repository.LoanRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -21,10 +23,13 @@ public class ClassroomService {
 
     private final ClassroomRepository classroomRepository;
     private final LoanRepository loanRepository;
+    private final SmartschoolLookupService lookupService;
 
-    public ClassroomService(ClassroomRepository classroomRepository, LoanRepository loanRepository) {
+    public ClassroomService(ClassroomRepository classroomRepository, LoanRepository loanRepository,
+            SmartschoolLookupService lookupService) {
         this.classroomRepository = classroomRepository;
         this.loanRepository = loanRepository;
+        this.lookupService = lookupService;
     }
 
     public List<ClassroomDTO> getClassroomsForTeacher(Long teacherId) {
@@ -57,14 +62,14 @@ public class ClassroomService {
                 .filter(d -> d != null)
                 .max(Comparator.naturalOrder());
 
-        String displayName = student.getSsName() != null && !student.getSsName().isBlank()
-                ? student.getSsName()
-                : student.getUsername();
+        Map<String, Object> user = lookupService.getUser(student.getSchool(), student.getOneRosterId(), "student");
+
+        String name = (String) user.get("fullname");
 
         return new StudentPreviewDTO(
                 student.getId(),
                 student.getUsername(),
-                displayName,
+                name,
                 last.orElse(null));
     }
 }
