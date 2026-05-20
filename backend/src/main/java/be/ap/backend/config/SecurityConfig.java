@@ -1,9 +1,9 @@
 package be.ap.backend.config;
 
-import be.ap.backend.entity.Campus;
+import be.ap.backend.entity.Location;
 import be.ap.backend.entity.School;
 import be.ap.backend.entity.User;
-import be.ap.backend.repository.CampusRepository;
+import be.ap.backend.repository.LocationRepository;
 import be.ap.backend.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -36,7 +36,7 @@ public class SecurityConfig {
     private int strength;
 
     private final UserService userService;
-    private final CampusRepository campusRepository;
+    private final LocationRepository locationRepository;
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
@@ -67,14 +67,15 @@ public class SecurityConfig {
                             HttpSession session = req.getSession(true);
 
                             session.setAttribute("userId", user.get("userId"));
+                            session.setAttribute("location", user.get("location"));
                             session.setAttribute("school", user.get("school"));
-                            session.setAttribute("campus", user.get("campus"));
                             session.setAttribute("role", user.get("role"));
                             session.setAttribute("username", user.get("username"));
 
                             res.setStatus(HttpServletResponse.SC_OK);
                             res.setContentType("application/json");
                             res.getWriter().write("{\"message\":\"Login successful\"}");
+
                         })
                         .failureHandler((req, res, exception) -> {
                             res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -117,24 +118,23 @@ public class SecurityConfig {
     private Map<String, String> getUserDetails(Authentication auth) {
         User u = (User) auth.getPrincipal();
 
-        School school = u.getSchool();
-        List<Campus> campus = campusRepository.findBySchool(school);
-        List<Long> campusIds = campus.stream().map(Campus::getId)
+        School s = u.getSchool();
+
+        String school = s != null ? u.getSchool().getId().toString() : "";
+        List<Long> location = locationRepository.findBySchool(s).stream()
+                .map(Location::getId)
                 .collect(Collectors.toList());
-        System.out.println(campus.toString());
 
-        String schoolString = u.getSchool() != null ? u.getSchool().getId().toString() : "";
-
-        System.out.println(u.getUsername());
         Map<String, String> usr = Map.of(
                 "userId", u.getId().toString(),
-                "campus", campusIds.toString(),
-                "school",
-                schoolString,
+                "location", location.toString(),
+                "school", school,
                 "role", u.getRole().name(),
                 "username", u.getUsername() // not smartschool name
+
         );
 
         return usr;
     }
+
 }

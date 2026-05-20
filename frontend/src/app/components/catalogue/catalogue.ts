@@ -27,7 +27,9 @@ import { ThemeService } from '../../services/theme';
 import { BookCover } from '../misc/book-cover/book-cover';
 import { AuthService } from '../../services/auth';
 import { RadioButton } from 'primeng/radiobutton';
-import { Campus } from '../../models/campus';
+import { Location } from '../../models/location';
+import { BookListService } from '../../services/book-list';
+import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-catalogue',
@@ -62,14 +64,14 @@ export class CatalogueComponent implements OnInit {
   currentPage = 0;
   searchQuery = '';
   activeFilters: BookFilter | null = null;
-  hideCampus = false;
+  hideLocation = false; // TODO check if necessary
 
   genres: Genre[] = [];
   themes: Theme[] = [];
   languages: Language[] = [];
-  campus: Campus[] = [];
-  oneCampus: boolean = false;
-  sidebarCampus?: number;
+  location: Location[] = [];
+  oneLocation: boolean = false;
+  sidebarLocation?: number;
   sidebarGenres: number[] = [];
   sidebarThemes: number[] = [];
   sidebarDidactic: boolean = false;
@@ -77,11 +79,15 @@ export class CatalogueComponent implements OnInit {
   sidebarPagesMin: number | null = null;
   sidebarPagesMax: number | null = null;
 
+  viewMode: 'list' | 'grid' = 'list';
+  rowsPerPageOptions = [5, 10, 20];
+
   selectMode = false;
   sectionId: number | null = null;
   grade: number | null = null;
   selectedBook: BookResult | null = null;
   ranking: number | null = null;
+  listId: number | null = null;
   showDialog = false;
 
   readonly placeholder = '/assets/no-cover.svg';
@@ -94,6 +100,8 @@ export class CatalogueComponent implements OnInit {
     private router: Router,
     private themeService: ThemeService,
     public auth: AuthService,
+    public bookListService: BookListService,
+    public messageService: MessageService,
   ) {}
 
   ngOnInit(): void {
@@ -103,12 +111,12 @@ export class CatalogueComponent implements OnInit {
     });
     this.apiService.get<Language[]>('language').subscribe((l) => (this.languages = l));
 
-    if (this.auth.currentUser?.campus !== undefined) {
-      if (this.auth.currentUser?.campus.length > 1) {
-        this.campus = this.auth.currentUser.campus;
+    if (this.auth.currentUser?.location !== undefined) {
+      if (this.auth.currentUser?.location.length > 1) {
+        this.location = this.auth.currentUser.location;
       } else {
-        this.oneCampus = true;
-        this.sidebarCampus = this.auth.currentUser.campus[0].id;
+        this.oneLocation = true;
+        this.sidebarLocation = this.auth.currentUser.location[0].id;
       }
     }
 
@@ -119,8 +127,9 @@ export class CatalogueComponent implements OnInit {
       this.sectionId = params['sectionId'] ? Number(params['sectionId']) : null;
       this.grade = params['grade'] ? Number(params['grade']) : null;
       this.ranking = params['ranking'] ? Number(params['ranking']) : null;
+      this.listId = params['listId'] ? Number(params['listId']) : null;
 
-      this.sidebarCampus = params['campus'] ? Number(params['campus']) : undefined;
+      this.sidebarLocation = params['location'] ? Number(params['location']) : undefined;
       this.sidebarGenres = params['genres'] ? params['genres'].split(',').map(Number) : [];
       this.sidebarThemes = params['themes'] ? params['themes'].split(',').map(Number) : [];
       this.sidebarLanguage = params['language'] ? Number(params['language']) : null;
@@ -137,7 +146,7 @@ export class CatalogueComponent implements OnInit {
         params['pagesMin'] ||
         params['pagesMax'] ||
         params['didactic'] ||
-        params['campus'] ||
+        params['location'] ||
         params['clibs'];
 
       if (hasFilters) {
@@ -150,7 +159,7 @@ export class CatalogueComponent implements OnInit {
           series: params['seriesIds'] ? params['seriesIds'].split(',').map(Number) : undefined,
           clibs: params['clibs'] ? params['clibs'].split(',') : undefined,
           didactic: params['didactic'] !== undefined ? params['didactic'] === 'true' : undefined,
-          campus: params['campus'] !== undefined ? params['campus'] : undefined,
+          location: params['location'] !== undefined ? params['location'] : undefined,
           pages:
             params['pagesMin'] || params['pagesMax']
               ? [
@@ -199,10 +208,10 @@ export class CatalogueComponent implements OnInit {
     } else {
       delete params['didactic'];
     }
-    if (this.sidebarCampus !== undefined && !this.oneCampus) {
-      params['campus'] = this.sidebarCampus;
+    if (this.sidebarLocation !== undefined && !this.oneLocation) {
+      params['location'] = this.sidebarLocation;
     } else {
-      delete params['campus'];
+      delete params['location'];
     }
     params['pagina'] = 1;
     this.router.navigate([], { relativeTo: this.route, queryParams: params });
@@ -212,9 +221,9 @@ export class CatalogueComponent implements OnInit {
     this.sidebarGenres = [];
     this.sidebarThemes = [];
     this.sidebarDidactic = false;
-    if (this.oneCampus !== true) {
-      // do not remove campus filter when only one is present
-      this.sidebarCampus = undefined;
+    if (this.oneLocation !== true) {
+      // do not remove location filter when only one is present
+      this.sidebarLocation = undefined;
     }
     this.sidebarLanguage = null;
     this.sidebarPagesMin = null;
@@ -226,7 +235,7 @@ export class CatalogueComponent implements OnInit {
     delete params['pagesMin'];
     delete params['pagesMax'];
     delete params['didactic'];
-    delete params['campus'];
+    delete params['location'];
     params['pagina'] = 1;
     this.router.navigate([], { relativeTo: this.route, queryParams: params });
   }
@@ -315,6 +324,25 @@ export class CatalogueComponent implements OnInit {
     this.loadBooks();
   }
 
+  setViewMode(mode: 'list' | 'grid'): void {
+    if (this.viewMode === mode) return;
+    this.viewMode = mode;
+    if (mode === 'grid') {
+      this.rowsPerPageOptions = [3, 6, 9];
+      this.rows = 3;
+    } else {
+      this.rowsPerPageOptions = [5, 10, 20];
+      this.rows = 5;
+    }
+    this.currentPage = 0;
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { pagina: 1 },
+      queryParamsHandling: 'merge',
+    });
+    this.loadBooks();
+  }
+
   onPageChange(event: PaginatorState): void {
     this.currentPage = event.page ?? 0;
     this.rows = event.rows ?? 5;
@@ -338,5 +366,31 @@ export class CatalogueComponent implements OnInit {
       author_name: book.author_name,
       cover: book.cover,
     };
+  }
+
+  addBookToList() {
+    if (!this.selectedBook || !this.listId) return;
+
+    this.bookListService.addBook(Number(this.listId), this.selectedBook.id).subscribe({
+      next: () => {
+        this.showDialog = false;
+        this.router.navigate(['/boekenlijst', this.listId]);
+      },
+      error: (err) => {
+        if (err.status === 500 || err.status === 409) {
+          this.messageService.add({
+            severity: 'warn',
+            summary: 'Al in lijst',
+            detail: `"${this.selectedBook!.title}" staat al in deze lijst.`,
+          });
+        } else {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Fout',
+            detail: 'Er is een fout opgetreden.',
+          });
+        }
+      },
+    });
   }
 }

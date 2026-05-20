@@ -56,6 +56,10 @@ export class BookService {
     return this.apiService.get<BookLookupDTO>(`${this.endpoint}/isbn/${encodeURIComponent(isbn)}`);
   }
 
+  getIaPreview(id: number): Observable<{ ia_id: string }> {
+    return this.apiService.get<{ ia_id: string }>(`${this.endpoint}/${id}/ia-preview`);
+  }
+
   // get all bookResults
   getAllBookResults(page: number = 0, size: number = 5): Observable<Page<BookResult>> {
     const params = new HttpParams().set('page', page.toString()).set('size', size.toString());
@@ -134,5 +138,9 @@ export class BookService {
 
     if (filters.campus) params = params.set('campus', filters.campus);
     return this.apiService.get<Page<BookResult>>(`${this.endpoint}/filter`, params);
+  }
+
+  updateBook(id: number, data: Partial<CreateBook>): Observable<BookDetail> {
+    return this.apiService.put<BookDetail>(`${this.endpoint}/${id}`, data);
   }
 }

@@ -59,6 +59,14 @@
   font-size: 0.8rem;
   margin-bottom: 0.5rem;
 }
+
 .row span:first-child {
   color: #64748b;
+}
+
+.comment {
+  font-size: 0.8rem;
+  color: var(--text-color-secondary);
+  font-style: italic;
+  margin-top: 0.2rem;
 }

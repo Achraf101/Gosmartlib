@@ -1,7 +1,10 @@
-import { Campus } from './campus';
+import { Location } from './location';
 
 export interface AuthUser {
+  userId: number;
   username: string;
   role: string;
-  campus: Campus[];
+  location: Location[];
+  locationId: number;
+  schoolId: number;
 }

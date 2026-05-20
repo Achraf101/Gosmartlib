@@ -30,12 +30,12 @@ import { NavBarComponent } from '../nav-bar/nav-bar';
 import { LoanDTO } from '../../models/loan';
 import { DatePipe } from '@angular/common';
 import { Divider } from 'primeng/divider';
-import { CampusBookService } from '../../services/campusbook';
+import { LocationBookService } from '../../services/locationbook';
 import { ProgressBarModule } from 'primeng/progressbar';
-import { CampusSettings } from '../../models/campus-settings';
-import { CampusSettingsService } from '../../services/campus-settings';
+import { LocationSettings } from '../../models/location-settings';
+import { LocationSettingsService } from '../../services/location-settings';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
-import { isVisible } from '../../models/campus-settings';
+import { isVisible } from '../../models/location-settings';
 
 @Component({
   selector: 'app-library-manager-dashboard',
@@ -95,8 +95,8 @@ export class DashboardLibraryManager implements OnInit {
 
   topBooks: { title: string; count: number }[] = [];
   topGenres: { title: string; count: number }[] = [];
-  campusStats: { total_books: number; available_books: number } | null = null;
-  campusSettings: CampusSettings | null = null;
+  locationStats: { total_books: number; available_books: number } | null = null;
+  locationSettings: LocationSettings | null = null;
 
   spotlightBooks: { [ranking: number]: BookDetail | null } = { 1: null, 2: null, 3: null, 4: null };
   spotlightSectionId: number | null = null;
@@ -108,8 +108,8 @@ export class DashboardLibraryManager implements OnInit {
     private loanService: LoanService,
     private sectionService: SectionService,
     private messageService: MessageService,
-    private campusBookService: CampusBookService,
-    private campusSettingsService: CampusSettingsService,
+    private locationBookService: LocationBookService,
+    private locationSettingsService: LocationSettingsService,
   ) {}
 
   ngOnInit(): void {
@@ -118,15 +118,18 @@ export class DashboardLibraryManager implements OnInit {
     this.loadSpotlightBooks();
     this.loadOverdueLoans();
     this.loadTopBooks();
-    this.loadCampusStats();
-    this.loadCampusSettings();
+    this.loadLocationStats();
+    this.loadLocationSettings();
     this.loadDueSoonLoans();
     this.loadTopGenres();
   }
 
   loadPendingCount(): void {
     this.loanService.getRequested().subscribe({
-      next: (loans) => (this.pendingLoanCount = loans.length),
+      next: (loans) => {
+        const uniqueGroups = new Set(loans.map((l) => l.groupId ?? l.id));
+        this.pendingLoanCount = uniqueGroups.size;
+      },
       error: () => (this.pendingLoanCount = 0),
     });
   }
@@ -224,16 +227,28 @@ export class DashboardLibraryManager implements OnInit {
     this.router.navigate(['/boek/toevoegen']);
   }
 
-  goToCampus(): void {
-    this.router.navigate(['/campus']);
+  goToLocation(): void {
+    this.router.navigate(['/locatie']);
   }
 
   goToLoanRequests(): void {
     this.router.navigate(['/uitleenaanvragen']);
   }
 
+  goToReviewModeration(): void {
+    this.router.navigate(['/reviews/moderatie']);
+  }
+
   goToCatalogus(): void {
     this.router.navigate(['/catalogus']);
+  }
+
+  goToPickUp(): void {
+    this.router.navigate(['/ophalen']);
+  }
+
+  goToReturn(): void {
+    this.router.navigate(['/terugbrengen']);
   }
 
   addAuthor(): void {
@@ -298,39 +313,39 @@ export class DashboardLibraryManager implements OnInit {
     });
   }
 
-  loadCampusStats(): void {
-    this.campusBookService.getCampusStats().subscribe({
-      next: (stats) => (this.campusStats = stats),
-      error: () => (this.campusStats = null),
+  loadLocationStats(): void {
+    this.locationBookService.getLocationStats().subscribe({
+      next: (stats) => (this.locationStats = stats),
+      error: () => (this.locationStats = null),
     });
   }
 
-  loadCampusSettings(): void {
-    this.campusSettingsService.getSettings().subscribe({
-      next: (settings) => (this.campusSettings = settings),
-      error: () => (this.campusSettings = null),
+  loadLocationSettings(): void {
+    this.locationSettingsService.getSettings().subscribe({
+      next: (settings) => (this.locationSettings = settings),
+      error: () => (this.locationSettings = null),
     });
   }
 
   toggleComponent(screen: string, type: string, visible: boolean): void {
-    if (!this.campusSettings) return;
+    if (!this.locationSettings) return;
 
-    if (!this.campusSettings.hiddenComponents) {
-      this.campusSettings.hiddenComponents = [];
+    if (!this.locationSettings.hiddenComponents) {
+      this.locationSettings.hiddenComponents = [];
     }
 
     if (visible) {
-      this.campusSettings.hiddenComponents = this.campusSettings.hiddenComponents.filter(
+      this.locationSettings.hiddenComponents = this.locationSettings.hiddenComponents.filter(
         (c) => !(c.screen === screen && c.type === type),
       );
     } else {
-      this.campusSettings.hiddenComponents = [
-        ...this.campusSettings.hiddenComponents,
+      this.locationSettings.hiddenComponents = [
+        ...this.locationSettings.hiddenComponents,
         { screen, type },
       ];
     }
 
-    this.campusSettingsService.updateSettings(this.campusSettings).subscribe({
+    this.locationSettingsService.updateSettings(this.locationSettings).subscribe({
       next: () => {
         this.messageService.add({
           severity: 'success',
@@ -364,4 +379,8 @@ export class DashboardLibraryManager implements OnInit {
       error: () => (this.topGenres = []),
     });
   }
+
+  goToSchoolSettings(): void {
+  this.router.navigate(['/school/instellingen']);
+}
 }

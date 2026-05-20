@@ -1,5 +1,6 @@
 .borrow-approval {
   padding: 2rem;
+  overflow-x: auto;
 }
 
 .card-header {
@@ -37,6 +38,7 @@ td:last-child {
 
 .info-dialog-content {
   max-width: 80vw;
+
   section {
     margin-bottom: 1.25rem;
 
@@ -62,9 +64,17 @@ td:last-child {
     font-size: 0.9rem;
     border-bottom: 1px solid #f3f4f6;
 
-    .book-index { color: #9ca3af; }
-    .book-title { flex: 1; }
-    .book-amount { color: #6b7280; }
+    .book-index {
+      color: #9ca3af;
+    }
+
+    .book-title {
+      flex: 1;
+    }
+
+    .book-amount {
+      color: #6b7280;
+    }
   }
 }
 
@@ -75,16 +85,105 @@ td:last-child {
 }
 
 .note {
- word-wrap: break-word;
+  word-wrap: break-word;
   overflow-wrap: break-word;
   word-break: break-word;
   white-space: pre-wrap;
   max-width: 100%;
 }
 
-.actionBtns{
+.actionBtns {
   display: flex;
-  gap: 1rem;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.group-badge {
+  display: inline-block;
+  margin-left: 8px;
+  font-size: 0.75rem;
+  background-color: #e0f0ff;
+  color: #0066cc;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 500;
+}
+
+tr[style*="border-left"] {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.group-row {
+  background-color: #f0f7ff;
+  border-left: 4px solid #3b82f6;
+}
+
+.group-badge {
+  display: inline-block;
+  margin-left: 8px;
+  font-size: 0.75rem;
+  background-color: #dbeafe;
+  color: #1d4ed8;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 500;
+}
+
+.group-dialog-content {
+  min-width: 400px;
+}
+
+.group-loan-item {
+  padding: 12px 0;
+}
+
+.group-loan-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.group-loan-title {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.group-loan-amount {
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.group-loan-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.group-loan-note {
+  margin-top: 8px;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.group-divider {
+  border: none;
+  border-top: 1px solid #e5e7eb;
+  margin: 4px 0;
+}
+
+@media (max-width: 768px) {
+  .borrow-approval {
+    padding: 1rem;
+  }
+
+  .actionBtns {
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .info-dialog-content {
+    max-width: 100%;
+  }
 }
 
 .btns {
@@ -101,4 +200,3 @@ textarea[pTextarea] {
   width: 100%;
   box-sizing: border-box;
 }
-

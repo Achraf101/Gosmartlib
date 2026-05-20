@@ -47,6 +47,12 @@ export class FavoritePage implements OnInit {
   searchToken = '';
   savedLists: SharedListResponse[] = [];
 
+  carouselResponsiveOptions = [
+    { breakpoint: '1024px', numVisible: 3, numScroll: 2 },
+    { breakpoint: '768px', numVisible: 2, numScroll: 1 },
+    { breakpoint: '480px', numVisible: 1, numScroll: 1 },
+  ];
+
   private userId = 1;
 
   constructor(
@@ -302,6 +308,15 @@ export class FavoritePage implements OnInit {
     this.bookListService.removeShareToken(list.id).subscribe({
       next: (updated) => {
         list.share_token = updated.share_token;
+      },
+    });
+  }
+
+  AddToList(list: BookList) {
+    this.router.navigate(['/catalogus'], {
+      queryParams: {
+        selectMode: true,
+        listId: list.id,
       },
     });
   }

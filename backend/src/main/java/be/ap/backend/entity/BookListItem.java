@@ -5,12 +5,15 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import lombok.Data;
 
 @Data
 @Entity
-@Table(name="book_list_item")
+@Table(name="book_list_item",
+    indexes = @Index(columnList = "book_list_id, book_id", unique = true)
+)
 public class BookListItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

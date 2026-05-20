@@ -1,0 +1,29 @@
+.teacher-classes {
+  padding: 2rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.teacher-classes h1 {
+  margin-bottom: 1.5rem;
+}
+
+.classes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.class-card {
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.class-card:hover {
+  transform: translateY(-2px);
+}
+
+.class-skeleton {
+  display: block;
+  margin-bottom: 0.75rem;
+}

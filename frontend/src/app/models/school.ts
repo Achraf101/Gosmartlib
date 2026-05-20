@@ -1,4 +1,4 @@
-import { Campus } from './campus';
+import { Location } from './location';
 
 export interface School {
   id: number;
@@ -7,5 +7,9 @@ export interface School {
   contact?: string;
   description?: string;
   subdomain: string;
-  campuses?: Campus[];
+  borrowLimit: number;
+  borrowPeriod: number;
+  extendPeriod: number;
+  extendLimit: number;
+  locations?: Location[];
 }

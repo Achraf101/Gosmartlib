@@ -48,16 +48,6 @@ public class ReviewService {
         return toDTO(saved);
     }
 
-    private void updateBookRating(Long bookId) {
-        Double avg = reviewRepository.findAverageRatingByBookId(bookId);
-        Long count = reviewRepository.findReviewCountByBookId(bookId);
-
-        Book book = bookRepository.findById(bookId).orElseThrow();
-        book.setRating(avg != null ? Math.round(avg * 10.0) / 10.0 : 0);
-        book.setRatingCount(count != null ? count.intValue() : 0);
-        bookRepository.save(book);
-    }
-
     public void deleteReview(Long reviewId, Long userId) {
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new IllegalArgumentException("Recensie niet gevonden."));
@@ -66,6 +56,24 @@ public class ReviewService {
         }
         reviewRepository.deleteById(reviewId);
         updateBookRating(review.getBook().getId());
+    }
+
+    public void forceDeleteReview(Long reviewId) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new IllegalArgumentException("Recensie niet gevonden."));
+        Long bookId = review.getBook().getId();
+        reviewRepository.deleteById(reviewId);
+        updateBookRating(bookId);
+    }
+
+    void updateBookRating(Long bookId) {
+        Double avg = reviewRepository.findAverageRatingByBookId(bookId);
+        Long count = reviewRepository.findReviewCountByBookId(bookId);
+
+        Book book = bookRepository.findById(bookId).orElseThrow();
+        book.setRating(avg != null ? Math.round(avg * 10.0) / 10.0 : 0);
+        book.setRatingCount(count != null ? count.intValue() : 0);
+        bookRepository.save(book);
     }
 
     private ReviewDTO toDTO(Review review) {

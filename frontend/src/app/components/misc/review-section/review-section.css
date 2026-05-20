@@ -177,3 +177,34 @@
 .menu-btn:hover {
   color: var(--p-neutral-700);
 }
+
+.report-intro {
+  font-size: 0.9rem;
+  color: var(--p-neutral-600);
+  margin: 0 0 0.5rem;
+}
+
+.report-note {
+  width: 100%;
+  border: 1px solid var(--p-neutral-200);
+  border-radius: 8px;
+  padding: 0.75rem;
+  font-size: 0.9rem;
+  resize: none;
+  outline: none;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.report-note:focus {
+  border-color: var(--p-rose-800);
+}
+
+.report-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--p-neutral-100);
+}

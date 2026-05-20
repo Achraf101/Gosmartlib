@@ -1,6 +1,8 @@
 package be.ap.backend.controller;
 
 import be.ap.backend.dto.ReviewDTO;
+import be.ap.backend.dto.ReviewReportDTO;
+import be.ap.backend.service.ReviewReportService;
 import be.ap.backend.service.ReviewService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +28,9 @@ public class ReviewControllerTest {
 
     @MockitoBean
     private ReviewService reviewService;
+
+    @MockitoBean
+    private ReviewReportService reviewReportService;
 
     @Autowired
     private ReviewController controller;
@@ -179,5 +184,106 @@ public class ReviewControllerTest {
         assertEquals(400, result.getStatusCode().value());
         assertEquals("Je kan alleen je eigen recensie verwijderen.", result.getBody());
         verify(reviewService, times(1)).deleteReview(1L, 2L);
+    }
+
+    @Test
+    void givenValidReport_whenReportReview_thenReturnOk() {
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("userId", "3");
+
+        be.ap.backend.dto.CreateReportDTO dto = new be.ap.backend.dto.CreateReportDTO();
+        dto.setNote("Ongepaste inhoud");
+
+        doNothing().when(reviewReportService).reportReview(1L, 3L, "Ongepaste inhoud");
+
+        ResponseEntity<?> result = controller.reportReview(1L, dto, session);
+
+        assertEquals(200, result.getStatusCode().value());
+        verify(reviewReportService, times(1)).reportReview(1L, 3L, "Ongepaste inhoud");
+    }
+
+    @Test
+    void givenOwnReview_whenReportReview_thenReturnBadRequest() {
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("userId", "1");
+
+        be.ap.backend.dto.CreateReportDTO dto = new be.ap.backend.dto.CreateReportDTO();
+        dto.setNote("eigen recensie");
+
+        doThrow(new IllegalArgumentException("Je kan je eigen recensie niet rapporteren."))
+                .when(reviewReportService).reportReview(1L, 1L, "eigen recensie");
+
+        ResponseEntity<?> result = controller.reportReview(1L, dto, session);
+
+        assertEquals(400, result.getStatusCode().value());
+        assertEquals("Je kan je eigen recensie niet rapporteren.", result.getBody());
+    }
+
+    @Test
+    void givenLibrarian_whenGetPendingReports_thenReturnReports() {
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("role", "BIBLIOTHEEKBEHEERDER");
+
+        ReviewReportDTO report = new ReviewReportDTO();
+        report.setId(1L);
+        report.setNote("Spam");
+
+        when(reviewReportService.getPendingReports()).thenReturn(List.of(report));
+
+        ResponseEntity<?> result = controller.getPendingReports(session);
+
+        assertEquals(200, result.getStatusCode().value());
+        List<?> body = (List<?>) result.getBody();
+        assertNotNull(body);
+        assertEquals(1, body.size());
+        verify(reviewReportService, times(1)).getPendingReports();
+    }
+
+    @Test
+    void givenNonLibrarian_whenGetPendingReports_thenReturn403() {
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("role", "STUDENT");
+
+        ResponseEntity<?> result = controller.getPendingReports(session);
+
+        assertEquals(403, result.getStatusCode().value());
+        verify(reviewReportService, never()).getPendingReports();
+    }
+
+    @Test
+    void givenLibrarian_whenAcceptReport_thenReturnOk() {
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("role", "BIBLIOTHEEKBEHEERDER");
+
+        doNothing().when(reviewReportService).acceptReport(1L);
+
+        ResponseEntity<?> result = controller.acceptReport(1L, session);
+
+        assertEquals(200, result.getStatusCode().value());
+        verify(reviewReportService, times(1)).acceptReport(1L);
+    }
+
+    @Test
+    void givenLibrarian_whenRejectReport_thenReturnOk() {
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("role", "BIBLIOTHEEKBEHEERDER");
+
+        doNothing().when(reviewReportService).rejectReport(1L);
+
+        ResponseEntity<?> result = controller.rejectReport(1L, session);
+
+        assertEquals(200, result.getStatusCode().value());
+        verify(reviewReportService, times(1)).rejectReport(1L);
+    }
+
+    @Test
+    void givenNonLibrarian_whenAcceptReport_thenReturn403() {
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("role", "LEERKRACHT");
+
+        ResponseEntity<?> result = controller.acceptReport(1L, session);
+
+        assertEquals(403, result.getStatusCode().value());
+        verify(reviewReportService, never()).acceptReport(any());
     }
 }

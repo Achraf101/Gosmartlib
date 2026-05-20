@@ -3,11 +3,11 @@
   @for (school of schools; track school.id) {
     <div>
       <h2>{{ school.name }}</h2>
-      <h3>Campussen in deze school:</h3>
-      @for (campus of school.campuses; track campus.id) {
-        <p>- {{ campus.name }}</p>
+      <h3>Locaties in deze school:</h3>
+      @for (location of school.locations; track location.id) {
+        <p>- {{ location.name }}</p>
       }
-      <p-button [routerLink]="['/campus/toevoegen', school.id]">Campus toevoegen</p-button>
+      <p-button [routerLink]="['/locatie/toevoegen', school.id]">Locatie toevoegen</p-button>
     </div>
   }
   <p-button routerLink="/school/toevoegen">School toevoegen</p-button>

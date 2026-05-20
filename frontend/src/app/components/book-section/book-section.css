@@ -29,15 +29,33 @@
 }
 
 .books-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1.5rem;
+  display: flex;
+  gap: 1.25rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 0.75rem;
+}
+
+.books-grid::-webkit-scrollbar {
+  height: 4px;
+}
+
+.books-grid::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.books-grid::-webkit-scrollbar-thumb {
+  background: #ddd;
+  border-radius: 99px;
 }
 
 .book-card {
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   cursor: pointer;
+  scroll-snap-align: start;
 }
 
 .book-cover {
@@ -129,9 +147,6 @@
 }
 
 @media (max-width: 700px) {
-  .books-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
   .monthly-book {
     flex-direction: column;
   }

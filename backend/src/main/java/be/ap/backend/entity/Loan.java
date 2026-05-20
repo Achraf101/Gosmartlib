@@ -27,8 +27,8 @@ public class Loan {
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "campus_id", nullable = false)
-    private Campus campus;
+    @JoinColumn(name = "location_id", nullable = false)
+    private Location location;
 
     @Column(name = "extended", nullable = false)
     private Byte extended = 0;
@@ -52,6 +52,12 @@ public class Loan {
     @Column(name = "closed", nullable = false)
     private Boolean closed = false;
 
+    @Column(name = "returned_at")
+    private LocalDate returnedAt;
+
     @OneToMany(mappedBy = "loan", cascade = CascadeType.ALL)
     private Set<LoanBook> loanBooks = new HashSet<>();
+
+    @Column(name = "group_id")
+    private String groupId;
 }

@@ -34,6 +34,18 @@ public class School implements Serializable {
     @Column(nullable = true, length = 1000, name = "description")
     private String description;
 
+    @Column(name = "borrow_limit", nullable = false)
+    private int borrowLimit;
+
+    @Column(name = "borrow_period", nullable = false)
+    private int borrowPeriod;
+
+    @Column(name = "extend_period", nullable = false)
+    private int extendPeriod;
+
+    @Column(name = "extend_limit", nullable = false)
+    private int extendLimit;
+
     @Column(nullable = false, unique = true, length = 255, name = "ss_subdomain")
     private String ssSubdomain;
 
@@ -41,13 +53,18 @@ public class School implements Serializable {
     @JsonIgnore
     @ToString.Exclude
     @OneToMany(mappedBy = "school", cascade = CascadeType.ALL)
-    private List<Campus> campuses = new ArrayList<>();
+    private List<Location> locations = new ArrayList<>();
 
-    public School(String name, String adres, String contact, String description, String ssSubdomain) {
+    public School(String name, String adres, String contact, String description, int borrowLimit, int borrowPeriod,
+            int extendPeriod, int extendLimit, String ssSubdomain) {
         this.name = name;
         this.adres = adres;
         this.contact = contact;
         this.description = description;
+        this.borrowLimit = borrowLimit;
+        this.borrowPeriod = borrowPeriod;
+        this.extendPeriod = extendPeriod;
+        this.extendLimit = extendLimit;
         this.ssSubdomain = ssSubdomain;
     }
 }

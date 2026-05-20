@@ -1,13 +1,14 @@
 .book-card {
   width: 180px;
-  height: 350px;
+  max-width: 100%;
   cursor: pointer;
   align-items: center;
   text-align: center;
 }
 
 .book-cover {
-  height: 70%;
+  width: 100%;
+  aspect-ratio: 2 / 3;
 }
 
 p {
@@ -31,10 +32,8 @@ p {
 
 .large.book-card {
   width: 240px;
-  height: 600px;
 }
 
 .small.book-card {
-  width: 5px;
-  height: 5px;
+  width: 80px;
 }

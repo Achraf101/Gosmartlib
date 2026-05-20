@@ -3,6 +3,7 @@ package be.ap.backend.controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -17,15 +18,18 @@ import be.ap.backend.dto.BookCardDTO;
 import be.ap.backend.dto.BookLookupDTO;
 import be.ap.backend.dto.BookResultDTO;
 import be.ap.backend.dto.CreateBookDTO;
+import be.ap.backend.dto.UpdateBookDTO;
 import be.ap.backend.entity.Book;
 import be.ap.backend.entity.Clib;
 import be.ap.backend.repository.BookRepository;
 import be.ap.backend.service.BookService;
 import be.ap.backend.service.IsbnLookupService;
+import be.ap.backend.service.OpenLibraryService;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.Map;
 
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -42,13 +46,14 @@ public class BookController {
     private final BookRepository bookRepository;
     private final BookService bookService;
     private final IsbnLookupService isbnLookupService;
+    private final OpenLibraryService openLibraryService;
 
-    // return books only on selected campus
+    // return books only on selected location
     @GetMapping
     public Page<Book> getAll(
             HttpSession session,
             @RequestParam(required = false) Boolean full,
-            @RequestParam(required = false) Long campus,
+            @RequestParam(required = false) Long location,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size) {
 
@@ -59,9 +64,8 @@ public class BookController {
         if (full == true) {
             System.out.println("all books being returned");
             return bookRepository.findAll(pageable);
-        } else if (ids.contains(campus) || campus == null) {
-            System.out.println("all books from a campus being returned");
-            return bookRepository.findAllByCampus(ids, pageable);
+        } else if (ids.contains(location) || location == null) {
+            return bookRepository.findAllByLocation(ids, pageable);
         } else {
             return Page.empty(pageable);
         }
@@ -93,7 +97,7 @@ public class BookController {
     @GetMapping("/filter")
     public Page<Book> filter(
             HttpSession session,
-            @RequestParam(required = false) Long campus,
+            @RequestParam(required = false) Long location,
             @RequestParam(required = false) List<Long> genres,
             @RequestParam(required = false) Long language,
             @RequestParam(required = false) Boolean fiction,
@@ -113,8 +117,8 @@ public class BookController {
 
         Pageable pageable = PageRequest.of(page, size);
 
-        if (getLocationIds(session).contains(campus)) {
-            return bookService.filter(campus, genres, language, fiction, authorIds, seriesIds, pagesMin, pagesMax,
+        if (getLocationIds(session).contains(location)) {
+            return bookService.filter(location, genres, language, fiction, authorIds, seriesIds, pagesMin, pagesMax,
                     clibs,
                     themes,
                     didactic,
@@ -137,6 +141,17 @@ public class BookController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/{id}/ia-preview")
+    public ResponseEntity<Map<String, String>> getIaPreview(@PathVariable Long id) {
+        Book book = bookRepository.findById(id).orElse(null);
+        if (book == null || book.getIsbn() == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return openLibraryService.getIaIdentifier(book.getIsbn())
+                .map(iaId -> ResponseEntity.ok(Map.of("ia_id", iaId)))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     @GetMapping("/bookResult")
     public Page<BookResultDTO> getBooks(
             @RequestParam(defaultValue = "0") int page,
@@ -146,11 +161,16 @@ public class BookController {
         return bookService.getAllBookResults(pageable);
     }
 
+    @PutMapping("/{id}")
+    public Book updateBook(@PathVariable Long id, @RequestBody UpdateBookDTO dto) {
+        return bookService.updateBook(id, dto);
+    }
+
     List<Long> getLocationIds(HttpSession session) {
-        final String campusString = (String) session.getAttribute("campus");
+        final String locationString = (String) session.getAttribute("location");
 
         // transform to array "[1, 2]" -> [1, 2]
-        return Arrays.stream(campusString.replaceAll("[\\[\\]\\s]", "").split(","))
+        return Arrays.stream(locationString.replaceAll("[\\[\\]\\s]", "").split(","))
                 .map(Long::parseLong)
                 .collect(Collectors.toList());
     }

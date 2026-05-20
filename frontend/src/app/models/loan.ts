@@ -10,7 +10,7 @@ export enum LoanStatus {
 
 export interface CreateLoanDTO {
   userId: number;
-  campusId: number;
+  locationId: number;
   extended: number;
   start: string;
   end: string;
@@ -23,13 +23,15 @@ export interface CreateLoanDTO {
 export interface LoanDTO {
   id: number;
   username: String;
-  campusId: number;
+  locationId: number;
   extended: number;
   start: string;
   end: string;
   note: string;
   status: LoanStatus;
   closed: boolean;
-  created: String;
+  created: string;
   books: LoanBookDTO[];
+  groupId?: string;
+  extendPeriod: number;
 }

@@ -8,12 +8,15 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 
 import be.ap.backend.dto.GenreProjection;
 import be.ap.backend.dto.ThemeDTO;
 import be.ap.backend.dto.ThemeProjectionDTO;
+import be.ap.backend.dto.UpdateBookDTO;
 import be.ap.backend.dto.BookResultDTO;
 import be.ap.backend.dto.CreateBookDTO;
 import be.ap.backend.dto.GenreDTO;
@@ -179,5 +182,41 @@ public class BookService {
         page.getContent().forEach(dto -> dto.setThemes(themeMap.getOrDefault(dto.getId(), Set.of())));
 
         return page;
+    }
+
+    public Book updateBook(Long id, UpdateBookDTO dto) {
+        Book book = bookRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        if (dto.getTitle() != null) book.setTitle(dto.getTitle());
+        if (dto.getIsbn() != null) book.setIsbn(dto.getIsbn());
+        if (dto.getDescription() != null) book.setDescription(dto.getDescription());
+        if (dto.getFiction() != null) book.setFiction(dto.getFiction());
+        if (dto.getDidactic() != null) book.setDidactic(dto.getDidactic());
+        if (dto.getPages() != null) book.setPages(dto.getPages());
+        if (dto.getPublished() != null) book.setPublished(dto.getPublished());
+        if (dto.getCover() != null) book.setCover(dto.getCover());
+        if (dto.getFontSize() != null) book.setFontSize(dto.getFontSize());
+        if (dto.getClib() != null) book.setClib(dto.getClib());
+        if (dto.getSeriesNumber() != null) book.setSeriesNumber(dto.getSeriesNumber());
+        if (dto.getAuthor() != null) book.setAuthor(entityManager.find(Author.class, dto.getAuthor()));
+        if (dto.getPublisher() != null) book.setPublisher(entityManager.find(Publisher.class, dto.getPublisher()));
+        if (dto.getLanguage() != null) book.setLanguage(entityManager.find(Language.class, dto.getLanguage()));
+        if (dto.getBookType() != null) book.setBookType(entityManager.find(BookType.class, dto.getBookType()));
+        if (dto.getSeries() != null) book.setSeries(entityManager.find(Series.class, dto.getSeries()));
+        if (dto.getGenres() != null) {
+            Set<Genre> genres = dto.getGenres().stream()
+                    .map(gid -> entityManager.find(Genre.class, gid))
+                    .collect(Collectors.toSet());
+            book.setGenres(genres);
+        }
+        if (dto.getThemes() != null) {
+            Set<Theme> themes = dto.getThemes().stream()
+                    .map(tid -> entityManager.find(Theme.class, tid))
+                    .collect(Collectors.toSet());
+            book.setThemes(themes);
+        }
+
+        return bookRepository.save(book);
     }
 }

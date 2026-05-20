@@ -12,15 +12,19 @@ form {
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
   color: var(--p-neutral-800);
   border: 1px solid var(--p-neutral-100);
+  border-radius: 999px;
+  padding: 0.25rem 0.5rem;
 }
 
 .search-bar .search-input {
-  width: 90%;
-  padding: 0.75rem 3rem 0.75rem 1rem;
-  border-radius: 6px;
+  flex: 1;
+  min-width: 0;
+  padding: 0.75rem 0.75rem 0.75rem 1rem;
+  border-radius: 999px;
   font-size: 0.95rem;
   outline: none;
   border: none;
+  background: transparent;
 }
 
 .search-bar:has(.search-input:focus) {
@@ -39,9 +43,12 @@ button {
   color: var(--p-neutral-400);
   display: flex;
   align-items: center;
-  padding: 0.25rem;
+  justify-content: center;
+  padding: 0.4rem;
   font-size: 1rem;
-  width: 3%;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  border-radius: 999px;
 }
 
 .search-bar button:hover {

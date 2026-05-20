@@ -1,6 +1,6 @@
 package be.ap.backend.controller.auth;
 
-import be.ap.backend.repository.CampusRepository;
+import be.ap.backend.repository.LocationRepository;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
@@ -35,7 +35,7 @@ import com.nimbusds.oauth2.sdk.token.Tokens;
 
 import be.ap.backend.dto.GroupDTO;
 import be.ap.backend.dto.GroupsResponseDto;
-import be.ap.backend.entity.Campus;
+import be.ap.backend.entity.Location;
 import be.ap.backend.entity.School;
 import be.ap.backend.entity.User;
 import be.ap.backend.entity.UserRole;
@@ -46,7 +46,7 @@ import jakarta.servlet.http.HttpSession;
 
 @RestController
 public class OAuthController {
-    private final CampusRepository campusRepository;
+    private final LocationRepository locationRepository;
 
     private final UserRepository userRepository;
     private final SchoolRepository schoolRepository;
@@ -61,10 +61,10 @@ public class OAuthController {
     private String callback;
 
     public OAuthController(UserRepository userRepository, SchoolRepository schoolRepository,
-            CampusRepository campusRepository) {
+            LocationRepository locationRepository) {
         this.userRepository = userRepository;
         this.schoolRepository = schoolRepository;
-        this.campusRepository = campusRepository;
+        this.locationRepository = locationRepository;
     }
 
     @GetMapping("oauth") // smartschool oauth
@@ -122,7 +122,7 @@ public class OAuthController {
 
             session.setAttribute("userId", user.getId());
             session.setAttribute("role", user.getRole().name());
-            session.setAttribute("campus", user.getCampus().getId());
+            session.setAttribute("location", user.getLocation().getId());
             session.setAttribute("school", user.getSchool().getId());
             session.setAttribute("username", user.getSsName());
 
@@ -148,15 +148,14 @@ public class OAuthController {
         }
 
         School school = schoolRepository.findBySsSubdomain(originplatform).orElse(null);
-        List<Campus> campus = campusRepository.findBySchool(school); // set all campus array
-        List<Long> campusIds = campus.stream().map(Campus::getId).collect(Collectors.toList());
+        Location location = locationRepository.findBySchool(school).getFirst();
 
-        if (campus.equals(null))
-            return ResponseEntity.status(500).body("Geen campus gevonden");
+        if (location.equals(null))
+            return ResponseEntity.status(500).body("Geen locatie gevonden");
 
         user.setSsName(userInfo.fullName);
         user.setSchool(school);
-        user.setCampus(campus.getFirst());
+        user.setLocation(location);
         user.setSsRefresh(tokens.getRefreshToken().getValue());
         user.setSsAccess(tokens.getAccessToken().getValue());
         user.setSsId(userInfo.userId);
@@ -181,7 +180,7 @@ public class OAuthController {
 
         session.setAttribute("userId", user.getId());
         session.setAttribute("role", user.getRole().name());
-        session.setAttribute("campus", campusIds);
+        session.setAttribute("location", location.getId());
         session.setAttribute("school", school.getId());
         session.setAttribute("username", user.getSsName());
 

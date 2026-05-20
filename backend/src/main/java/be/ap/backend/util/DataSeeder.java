@@ -10,9 +10,10 @@ import org.springframework.stereotype.Component;
 import be.ap.backend.entity.Author;
 import be.ap.backend.entity.Book;
 import be.ap.backend.entity.BookType;
-import be.ap.backend.entity.Campus;
+import be.ap.backend.entity.Challenge;
+import be.ap.backend.entity.Location;
+import be.ap.backend.entity.Classroom;
 import be.ap.backend.entity.Genre;
-import be.ap.backend.entity.Hello;
 import be.ap.backend.entity.Language;
 import be.ap.backend.entity.School;
 import be.ap.backend.entity.Section;
@@ -23,9 +24,10 @@ import be.ap.backend.entity.UserRole;
 import be.ap.backend.repository.AuthorRepository;
 import be.ap.backend.repository.BookRepository;
 import be.ap.backend.repository.BookTypeRepository;
-import be.ap.backend.repository.CampusRepository;
+import be.ap.backend.repository.ChallengeRepository;
+import be.ap.backend.repository.LocationRepository;
+import be.ap.backend.repository.ClassroomRepository;
 import be.ap.backend.repository.GenreRepository;
-import be.ap.backend.repository.HelloRepository;
 import be.ap.backend.repository.LanguageRepository;
 import be.ap.backend.repository.SchoolRepository;
 import be.ap.backend.repository.SectionBookRepository;
@@ -42,27 +44,31 @@ public class DataSeeder implements CommandLineRunner {
     @Value("${app.seeding.enabled:true}")
     private boolean seedingEnabled;
 
+    @Value("${ADMIN_PASSWORD:admin}")
+    private String adminPassword;
+
     private final GenreRepository genreRepository;
-    private final HelloRepository helloRepository;
     private final LanguageRepository languageRepository;
     private final BookTypeRepository bookTypeRepository;
     private final BookRepository bookRepository;
     private final AuthorRepository authorRepository;
     private final SectionRepository sectionRepository;
+    private final ChallengeRepository challengeRepository;
     private final SectionBookRepository sectionBookRepository;
     private final ThemeRepository themeRepository;
     private final UserRepository userRepository;
-    private final CampusRepository campusRepository;
+    private final LocationRepository locationRepository;
     private final SchoolRepository schoolRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ClassroomRepository classroomRepository;
 
-    public DataSeeder(HelloRepository helloRepository, LanguageRepository languageRepository,
+    public DataSeeder(LanguageRepository languageRepository,
             BookTypeRepository bookTypeRepository, GenreRepository genreRepository,
             BookRepository bookRepository, AuthorRepository authorRepository,
             SectionRepository sectionRepository, SectionBookRepository sectionBookRepository,
-            ThemeRepository themeRepository, UserRepository userRepository, CampusRepository campusRepository,
-            SchoolRepository schoolRepository, PasswordEncoder passwordEncoder) {
-        this.helloRepository = helloRepository;
+            ThemeRepository themeRepository, UserRepository userRepository, LocationRepository locationRepository,
+            SchoolRepository schoolRepository, PasswordEncoder passwordEncoder,
+            ChallengeRepository challengeRepository, ClassroomRepository classroomRepository) {
         this.languageRepository = languageRepository;
         this.bookTypeRepository = bookTypeRepository;
         this.genreRepository = genreRepository;
@@ -70,17 +76,24 @@ public class DataSeeder implements CommandLineRunner {
         this.authorRepository = authorRepository;
         this.sectionRepository = sectionRepository;
         this.sectionBookRepository = sectionBookRepository;
+        this.challengeRepository = challengeRepository;
         this.themeRepository = themeRepository;
         this.userRepository = userRepository;
-        this.campusRepository = campusRepository;
+        this.locationRepository = locationRepository;
         this.schoolRepository = schoolRepository;
         this.passwordEncoder = passwordEncoder;
+        this.classroomRepository = classroomRepository;
     }
 
     @Override
     public void run(String... args) {
         if (!seedingEnabled)
             return;
+
+        seedSchoolsAndLocations();
+        seedChallenges();
+        seedTestUsers();
+        seedClassrooms();
 
         if (bookRepository.count() > 0) {
             if (sectionRepository.count() == 0) {
@@ -89,16 +102,15 @@ public class DataSeeder implements CommandLineRunner {
             return;
         }
         seedDatabase();
+
     }
 
     private void seedDatabase() {
-        helloRepository.save(new Hello("Database en API werken."));
         seedLanguages();
         BookType boek = seedBookTypes();
         seedGenres();
         seedThemes();
         seedBooks(boek);
-        makeLibraryManager();
     }
 
     private void seedLanguages() {
@@ -229,6 +241,63 @@ public class DataSeeder implements CommandLineRunner {
         saveSectionBook(boekVanDeMaandSection, boekVanDeMaand, (short) 0);
     }
 
+    private void seedChallenges() {
+        if (challengeRepository.count() > 0)
+            return;
+
+        String[][] challenges = {
+                { "Lees een Fantasy boek", "genre", "Fantasy" },
+                { "Lees een Sciencefiction boek", "genre", "Sciencefiction" },
+                { "Lees een Thriller boek", "genre", "Spanning / thriller" },
+                { "Lees een Detective boek", "genre", "Detective / misdaad" },
+                { "Lees een Dystopie boek", "genre", "Dystopie" },
+                { "Lees een Historische roman", "genre", "Historische roman" },
+                { "Lees een Romantiek boek", "genre", "Romantiek" },
+                { "Lees een Coming-of-age boek", "genre", "Coming-of-age" },
+                { "Lees een Avontuur boek", "genre", "Avontuur" },
+                { "Lees een Oorlog & conflict boek", "genre", "Oorlog & conflict" },
+                { "Lees een Horror boek", "genre", "Horror" },
+                { "Lees een Humor boek", "genre", "Humor" },
+                { "Lees een Graphic novel of strip", "genre", "Graphic novel / strip" },
+                { "Lees een Poëzie boek", "genre", "Poëzie" },
+                { "Lees een Biografie of autobiografie", "genre", "Biografie / autobiografie" },
+                { "Lees een boek over Wetenschap & technologie", "genre", "Wetenschap & technologie" },
+                { "Lees een Filosofie boek", "genre", "Filosofie" },
+                { "Lees een boek over Maatschappij & politiek", "genre", "Maatschappij & politiek" },
+                { "Lees een Psychologie boek", "genre", "Psychologie" },
+                { "Lees een Geschiedenis boek", "genre", "Geschiedenis" },
+                { "Lees een Kunst & cultuur boek", "genre", "Kunst & cultuur" },
+                { "Lees een Literaire roman", "genre", "Literaire roman" },
+                { "Lees een boek in het Frans", "language", "fr" },
+                { "Lees een boek in het Engels", "language", "en" },
+                { "Lees een boek in het Duits", "language", "de" },
+                { "Lees een boek in het Nederlands", "language", "nl" },
+                { "Lees een boek van meer dan 100 pagina's", "pages", "100" },
+                { "Lees een boek van meer dan 200 pagina's", "pages", "200" },
+                { "Lees een boek van meer dan 300 pagina's", "pages", "300" },
+                { "Lees een boek van meer dan 400 pagina's", "pages", "400" },
+                { "Lees een boek van meer dan 500 pagina's", "pages", "500" },
+                { "Lees een boek van meer dan 150 pagina's", "pages", "150" },
+                { "Lees een boek van meer dan 250 pagina's", "pages", "250" },
+                { "Lees een boek van meer dan 350 pagina's", "pages", "350" },
+                { "Lees een boek gepubliceerd voor 2000", "year", "2000" },
+                { "Lees een boek gepubliceerd voor 1990", "year", "1990" },
+                { "Lees een boek gepubliceerd voor 1980", "year", "1980" },
+                { "Lees een boek gepubliceerd na 2010", "year", "2010" },
+                { "Lees een boek gepubliceerd na 2015", "year", "2015" },
+                { "Lees een boek gepubliceerd na 2018", "year", "2018" },
+                { "Lees een boek gepubliceerd na 2020", "year", "2020" },
+        };
+
+        for (String[] c : challenges) {
+            Challenge challenge = new Challenge();
+            challenge.setDescription(c[0]);
+            challenge.setConditionType(c[1]);
+            challenge.setConditionValue(c[2]);
+            challengeRepository.save(challenge);
+        }
+    }
+
     private Book saveBook(String title, String description, boolean fiction,
             Year published, int pages, BookType bookType, Language language,
             Author author, String cover, Set<Genre> genres, Set<Theme> themes) {
@@ -292,19 +361,68 @@ public class DataSeeder implements CommandLineRunner {
         themeRepository.save(new Theme("Toekomst & technologie"));
     }
 
-    private void makeLibraryManager() {
-        if (userRepository.findByUsername("beheerder").isEmpty()) {
-            Campus campus = campusRepository.findById(1L).orElse(null);
-            School school = schoolRepository.findById(1L).orElse(null);
+    private void seedTestUsers() {
+        Location location = locationRepository.findById(1L)
+                .orElseThrow(() -> new IllegalStateException("Location 1 missing"));
+        School school = schoolRepository.findById(1L).orElseThrow(() -> new IllegalStateException("School 1 missing"));
 
-            User user = new User();
-            user.setUsername("beheerder");
-            user.setPassword(passwordEncoder.encode("test1234"));
-            user.setRole(UserRole.BIBLIOTHEEKBEHEERDER);
-            user.setCampus(campus);
-            user.setSchool(school);
+        seedUser("beheerder", "test1234", UserRole.BIBLIOTHEEKBEHEERDER, location, school);
+        seedUser("admin", "admin", UserRole.ADMIN, location, school);
+        seedUser("leerkracht1", "leerkracht1", UserRole.LEERKRACHT, location, school);
+        seedUser("leerling1", "leerling1", UserRole.STUDENT, location, school);
+        seedUser("leerling2", "leerling2", UserRole.STUDENT, location, school);
+        seedUser("leerling3", "leerling3", UserRole.STUDENT, location, school);
+    }
 
-            userRepository.save(user);
+    private void seedUser(String username, String password, UserRole role, Location location, School school) {
+        User user = userRepository.findByUsername(username).orElse(new User());
+        if (user.getPassword() == null) {
+            user.setPassword(passwordEncoder.encode(password));
         }
+        user.setUsername(username);
+        user.setRole(role);
+        user.setLocation(location);
+        user.setSchool(school);
+        userRepository.save(user);
+    }
+
+    private void seedClassrooms() {
+        if (classroomRepository.count() > 0)
+            return;
+
+        User teacher = userRepository.findByUsername("leerkracht1").orElse(null);
+        User s1 = userRepository.findByUsername("leerling1").orElse(null);
+        User s2 = userRepository.findByUsername("leerling2").orElse(null);
+        User s3 = userRepository.findByUsername("leerling3").orElse(null);
+        Location location = locationRepository.findById(1L).orElse(null);
+        School school = schoolRepository.findById(1L).orElse(null);
+
+        if (teacher == null)
+            return;
+
+        Classroom klas = new Classroom();
+        klas.setName("3A");
+        klas.setTeacher(teacher);
+        klas.setLocation(location);
+        klas.setSchool(school);
+        if (s1 != null)
+            klas.getStudents().add(s1);
+        if (s2 != null)
+            klas.getStudents().add(s2);
+        if (s3 != null)
+            klas.getStudents().add(s3);
+        classroomRepository.save(klas);
+    }
+
+    private void seedSchoolsAndLocations() {
+        if (schoolRepository.count() > 0)
+            return;
+        School school = schoolRepository.save(
+                new School("AP Hogeschool", "", "", "", 10, 14, 14, 3, "aphogeschool"));
+        Location location = new Location();
+        location.setSchool(school);
+        location.setName("Blok A");
+        location.setAdres("");
+        locationRepository.save(location);
     }
 }

@@ -19,8 +19,8 @@ export class BookTypeService {
     return this.apiService.get<BookType>(this.endpoint);
   }
 
-  getByName(query: string): Observable<BookType> {
-    return this.apiService.get<BookType>(`${this.endpoint}/search/${query}`);
+  getByName(query: string): Observable<BookType[]> {
+    return this.apiService.get<BookType[]>(`${this.endpoint}/search/${query}`);
   }
 
   addBookType(booktype: Omit<BookType, 'id'>): Observable<BookType> {

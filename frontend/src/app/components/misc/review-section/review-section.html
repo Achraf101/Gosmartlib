@@ -1,6 +1,6 @@
 <div class="review-section">
   <h2>Recensies</h2>
-  
+
   @if (!submitted) {
   <div class="review-form">
     <h3>Schrijf een recensie</h3>
@@ -57,3 +57,29 @@
     }
   </div>
 </div>
+
+<p-dialog
+  header="Recensie rapporteren"
+  [(visible)]="reportDialogVisible"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '28rem' }"
+>
+  <p class="report-intro">Waarom rapporteer je deze recensie? (optioneel)</p>
+  <textarea
+    class="report-note"
+    [(ngModel)]="reportNote"
+    placeholder="Voeg een notitie toe..."
+    maxlength="500"
+    rows="4"
+  ></textarea>
+  <span class="char-count">{{ reportNote.length }}/500</span>
+  @if (reportError) {
+  <p class="error">{{ reportError }}</p>
+  }
+  <div class="report-actions">
+    <p-button label="Annuleren" severity="secondary" (onClick)="reportDialogVisible = false" />
+    <p-button label="Rapporteren" icon="pi pi-flag" severity="danger" (onClick)="submitReport()" />
+  </div>
+</p-dialog>

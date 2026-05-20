@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import {
   FormsModule,
   ReactiveFormsModule,
@@ -25,7 +25,7 @@ import { MessageModule } from 'primeng/message';
 import { Router } from '@angular/router';
 
 import { isbnValidator, maxEntries } from '../../utils/validator';
-import { BookCard, BookLookupDTO, CreateBook } from '../../models/book';
+import { BookCard, BookDetail, BookLookupDTO, CreateBook } from '../../models/book';
 import { Author } from '../../models/author';
 import { Genre } from '../../models/genre';
 import { Publisher } from '../../models/publisher';
@@ -47,8 +47,8 @@ import { NavBarComponent } from '../nav-bar/nav-bar';
 import { BulkUpload } from '../bulk-upload/bulk-upload';
 import { Theme } from '../../models/theme';
 import { ThemeService } from '../../services/theme';
-// import { JsonPipe } from '@angular/common';
 import { BookCardComponent } from '../misc/book-card/book-card';
+import { BookCover } from '../misc/book-cover/book-cover';
 
 @Component({
   selector: 'app-bookform',
@@ -74,8 +74,8 @@ import { BookCardComponent } from '../misc/book-card/book-card';
     ToastModule,
     MessageModule,
     BulkUpload,
-    // JsonPipe,
     BookCardComponent,
+    BookCover,
   ],
   templateUrl: './bookform.html',
   styleUrl: './bookform.css',
@@ -98,7 +98,7 @@ export class BookformComponent implements OnInit {
     genres: new FormControl<number[] | null>([], [maxEntries(5), Validators.required]),
     themes: new FormControl<number[] | null>([], [maxEntries(5)]),
     description: new FormControl<string | null>(null, [
-      Validators.maxLength(500),
+      Validators.maxLength(1000),
       Validators.required,
     ]),
     published: new FormControl<number | null>(null, [Validators.min(1)]),
@@ -156,6 +156,8 @@ export class BookformComponent implements OnInit {
   ];
   cLIBS = ['A', 'B', 'C', 'D'];
 
+  @Input() bookToEdit?: BookDetail;
+
   constructor(
     private genreService: GenreService,
     private messageService: MessageService,
@@ -182,6 +184,10 @@ export class BookformComponent implements OnInit {
       this.setDefaultBookType();
     });
     this.seriesService.getAll().subscribe((s) => (this.series = s));
+    if (this.bookToEdit) {
+      this.prefillFromBook(this.bookToEdit);
+      this.lookupMethod = 'manual';
+    }
   }
 
   private setDefaultBookType(): void {
@@ -197,7 +203,24 @@ export class BookformComponent implements OnInit {
   }
 
   addBook(activateCallback: (step: number) => void): void {
-    if (this.bookForm.valid) {
+    if (!this.bookForm.valid) return;
+
+    if (this.bookToEdit) {
+      this.bookService.updateBook(this.bookToEdit.id, this.bookForm.value as any).subscribe({
+        next: () => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Succes',
+            detail: 'Boek bijgewerkt.',
+            life: 3000,
+          });
+          this.newBookId = this.bookToEdit!.id;
+          this.coverDisabled = false;
+          activateCallback(3);
+        },
+        error: () => this.showError('Fout bij bijwerken boek.'),
+      });
+    } else {
       const book: CreateBook = {
         ...(this.bookForm.value as any),
         cover_url: this.lookupCoverUrl ?? undefined,
@@ -217,6 +240,39 @@ export class BookformComponent implements OnInit {
         error: () => this.showError('Fout bij opslaan boek.'),
       });
     }
+  }
+
+  private prefillFromBook(book: BookDetail): void {
+    this.bookForm.patchValue({
+      title: book.title,
+      isbn: book.isbn ?? null,
+      description: book.description ?? null,
+      pages: book.pages ?? null,
+      published: book.published ?? null,
+      fiction: book.fiction,
+      didactic: book.didactic,
+      author: book.author?.id ?? null,
+      publisher: book.publisher?.id ?? null,
+      language: book.language?.id ?? null,
+      clib: book.clib ?? null,
+      font_size: book.font_size ?? null,
+      series_count: book.series_number ?? null,
+      genres: book.genres?.map((g) => g.id) ?? [],
+      themes: book.themes?.map((t) => t.id) ?? [],
+    });
+    this.lookupCoverUrl = book.cover ?? null;
+  }
+
+  get previewBookCard(): BookCard {
+    return (
+      this.bookToEdit ?? {
+        id: 0,
+        title: '',
+        cover: this.lookupCoverUrl ?? undefined,
+        author: { id: 0, name: '' },
+        author_name: '',
+      }
+    );
   }
 
   addAuthor(): void {
@@ -274,11 +330,21 @@ export class BookformComponent implements OnInit {
 
     this.uploadService.addCover(formData).subscribe({
       next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Succes',
+          detail: 'Cover bijgewerkt.',
+          life: 3000,
+        });
         this.router.navigate(['/boek', this.newBookId]);
         fileUploader.clear();
       },
       error: () => this.showError('Probleem hij het uploaden van cover.'),
     });
+  }
+
+  goToBookPage() {
+    this.router.navigate(['/boek', this.bookToEdit?.id]);
   }
 
   setMode(mode: 'manual' | 'bulk'): void {
@@ -312,10 +378,10 @@ export class BookformComponent implements OnInit {
         };
         this.isLookingUp = false;
       },
-      error: () => {
-        this.showError('ISBN niet gevonden. Probeer het opnieuw of vul het boek manueel in.');
-        this.isLookingUp = false;
-      },
+      // error: () => {
+      //   this.showError('ISBN niet gevonden. Probeer het opnieuw of vul het boek manueel in.');
+      //   this.isLookingUp = false;
+      // },
     });
   }
 

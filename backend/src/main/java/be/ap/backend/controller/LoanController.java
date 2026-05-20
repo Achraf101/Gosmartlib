@@ -16,9 +16,10 @@ import be.ap.backend.dto.LoanDTO;
 import be.ap.backend.dto.TopBookDTO;
 import be.ap.backend.dto.UpdateNoteDTO;
 import be.ap.backend.dto.UpdateStatusDTO;
+import be.ap.backend.entity.LoanStatus;
 import be.ap.backend.service.LoanService;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpSession;
-
 
 @RestController
 @RequestMapping("loan")
@@ -35,7 +36,10 @@ public class LoanController {
     }
 
     @PostMapping
-    public LoanDTO createLoan(@RequestBody LoanDTO dto) {
+    public List<LoanDTO> createLoan(@RequestBody LoanDTO dto, HttpSession session) {
+        Object raw = session.getAttribute("userId");
+        Long userId = (raw != null) ? Long.valueOf(raw.toString()) : null;
+        dto.setUserId(userId);
         return loanService.createLoan(dto);
     }
 
@@ -56,6 +60,17 @@ public class LoanController {
         return ResponseEntity.ok(loanService.getByUserId(userId));
     }
 
+    @PutMapping("/{id}/extend")
+    public ResponseEntity<?> extendLoan(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(loanService.extendLoan(id));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteLoan(@PathVariable Long id) {
         loanService.deleteLoan(id);
@@ -64,37 +79,44 @@ public class LoanController {
 
     @GetMapping("/overdue/length")
     public ResponseEntity<Integer> getOverdueLoansLength(HttpSession session) {
-        Long campusId = Long.valueOf(session.getAttribute("campus").toString());
-        return ResponseEntity.ok(loanService.getOverdueLoansLength(campusId));
+        Long locationId = Long.valueOf(session.getAttribute("location").toString());
+        return ResponseEntity.ok(loanService.getOverdueLoansLength(locationId));
     }
-    
+
     @GetMapping("/overdue")
     public ResponseEntity<List<LoanDTO>> getOverdueLoans(HttpSession session) {
-        Long campusId = Long.valueOf(session.getAttribute("campus").toString());
-        return ResponseEntity.ok(loanService.getOverdueLoans(campusId));
+        Long locationId = Long.valueOf(session.getAttribute("location").toString());
+        return ResponseEntity.ok(loanService.getOverdueLoans(locationId));
     }
 
     @GetMapping("/top-books")
     public ResponseEntity<List<TopBookDTO>> getTopBooksThisMonth(HttpSession session) {
-        Long campusId = Long.valueOf(session.getAttribute("campus").toString());
-        return ResponseEntity.ok(loanService.getTopBooksThisMonth(campusId));
+        Long locationId = Long.valueOf(session.getAttribute("location").toString());
+        return ResponseEntity.ok(loanService.getTopBooksThisMonth(locationId));
     }
 
     @GetMapping("/due-soon/length")
     public ResponseEntity<Integer> getDueSoonLoansLength(HttpSession session) {
-        Long campusId = Long.valueOf(session.getAttribute("campus").toString());
-        return ResponseEntity.ok(loanService.getDueSoonLoansLength(campusId));
+        Long locationId = Long.valueOf(session.getAttribute("location").toString());
+        return ResponseEntity.ok(loanService.getDueSoonLoansLength(locationId));
     }
 
     @GetMapping("/due-soon")
     public ResponseEntity<List<LoanDTO>> getDueSoonLoans(HttpSession session) {
-        Long campusId = Long.valueOf(session.getAttribute("campus").toString());
-        return ResponseEntity.ok(loanService.getDueSoonLoans(campusId));
+        Long locationId = Long.valueOf(session.getAttribute("location").toString());
+        return ResponseEntity.ok(loanService.getDueSoonLoans(locationId));
     }
 
     @GetMapping("/top-genres")
     public ResponseEntity<List<TopBookDTO>> getTopGenresThisMonth(HttpSession session) {
-        Long campusId = Long.valueOf(session.getAttribute("campus").toString());
-        return ResponseEntity.ok(loanService.getTopGenresThisMonth(campusId));
+        Long locationId = Long.valueOf(session.getAttribute("location").toString());
+        return ResponseEntity.ok(loanService.getTopGenresThisMonth(locationId));
     }
+
+    @GetMapping("/state/{state}")
+    public ResponseEntity<List<LoanDTO>> getByStateAndLocation(@PathVariable LoanStatus state, HttpSession session) {
+        Long locationId = Long.valueOf(session.getAttribute("location").toString());
+        return ResponseEntity.ok(loanService.getByStateAndLocation(state, locationId));
+    }
+
 }

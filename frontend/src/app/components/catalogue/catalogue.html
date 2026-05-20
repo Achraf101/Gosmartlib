@@ -3,7 +3,15 @@
   @if (selectMode) {
     <div class="select-mode-banner">
       <i class="pi pi-info-circle"></i>
-      Kies een boek als boek van de maand voor graad {{ grade }}
+      @if (grade) {
+        Kies een boek als boek van de maand voor graad {{ grade }}
+      }
+      @if (ranking) {
+        Kies een boek als uitgelichte boeken
+      }
+      @if (listId) {
+        kies een boek om toe te voegen aan de lijst
+      }
     </div>
   }
 
@@ -12,6 +20,25 @@
   <a [routerLink]="['/catalogus/filter']" [queryParams]="activeQueryParams" class="filter-link">
     <i class="pi pi-filter"></i> <span>Zoeken met filters</span>
   </a>
+
+  <div class="view-toggle">
+    <button
+      class="toggle-btn"
+      [class.active]="viewMode === 'list'"
+      (click)="setViewMode('list')"
+      title="Lijstweergave"
+    >
+      <i class="pi pi-list"></i>
+    </button>
+    <button
+      class="toggle-btn"
+      [class.active]="viewMode === 'grid'"
+      (click)="setViewMode('grid')"
+      title="Kaartweergave"
+    >
+      <i class="pi pi-th-large"></i>
+    </button>
+  </div>
 
   <div class="catalogue-layout">
     <aside class="filter-sidebar">
@@ -131,18 +158,57 @@
       }
 
       @if (!loading.isLoading && books.length > 0) {
-        <div class="book-list">
-          @for (book of books; track book.id) {
-            <b-result [book]="book" (onBookClick)="onBookClick(book)" />
-            <p-divider class="show-mobile" />
-          }
-        </div>
+        @if (viewMode === 'list') {
+          <div class="book-list">
+            @for (book of books; track book.id) {
+              <b-result [book]="book" (onBookClick)="onBookClick(book)" />
+              <p-divider class="show-mobile" />
+            }
+          </div>
+        }
+        @if (viewMode === 'grid') {
+          <div class="book-grid">
+            @for (book of books; track book.id) {
+              <div class="grid-card" (click)="onBookClick(book)">
+                <div class="grid-cover">
+                  <b-cover [bookCard]="getAsBookCard(book)"></b-cover>
+                </div>
+                <div class="grid-info">
+                  <p class="grid-title">{{ book.title }}</p>
+                  @if (book.author) {
+                    <p class="grid-author">{{ book.author.name }}</p>
+                  }
+                  @if (book.genres && book.genres.length > 0) {
+                    <div class="grid-tags">
+                      @for (genre of book.genres.slice(0, 2); track $index) {
+                        <span class="grid-tag">{{ genre.name }}</span>
+                      }
+                    </div>
+                  }
+                  @if (book.themes && book.themes.length > 0) {
+                    <div class="grid-tags">
+                      @for (theme of book.themes.slice(0, 2); track $index) {
+                        <span class="grid-tag grid-tag--theme">{{ theme.name }}</span>
+                      }
+                    </div>
+                  }
+                  @if (book.rating) {
+                    <span class="grid-rating">
+                      <i class="pi pi-star-fill"></i> {{ book.rating | number: '1.0-1' }}
+                      <span class="grid-rating-count">({{ book.rating_count }})</span>
+                    </span>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
 
         <p-paginator
           [first]="currentPage * rows"
           [rows]="rows"
           [totalRecords]="totalRecords"
-          [rowsPerPageOptions]="[5, 10, 20]"
+          [rowsPerPageOptions]="rowsPerPageOptions"
           (onPageChange)="onPageChange($event)"
           [class.first-page]="currentPage === 0"
         />
@@ -156,7 +222,7 @@
   [modal]="true"
   [closable]="true"
   header="{{ selectedBook?.title }}"
-  [style]="{ width: '400px' }"
+  [style]="{ width: 'min(90vw, 400px)' }"
 >
   <div class="dialog-content">
     @if (selectedBook?.cover) {
@@ -185,6 +251,9 @@
           icon="pi pi-check"
           (onClick)="setAsSpotlight()"
         />
+      }
+      @if (listId) {
+        <p-button label="Toevoegen aan lijst" icon="pi pi-plus" (onClick)="addBookToList()" />
       }
     }
   </ng-template>

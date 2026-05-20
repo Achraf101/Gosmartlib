@@ -1,0 +1,14 @@
+.class-detail {
+  padding: 2rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.class-detail h1 {
+  margin: 1rem 0 1.5rem;
+}
+
+.row-skeleton {
+  display: block;
+  margin-bottom: 0.5rem;
+}

@@ -110,7 +110,7 @@
   font-size: 0.8rem;
 }
 
-@media (width> 800px) {
+@media (min-width: 800px) {
   .show-mobile {
     visibility: hidden;
     position: relative;

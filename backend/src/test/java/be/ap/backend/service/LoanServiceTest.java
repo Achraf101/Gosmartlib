@@ -4,11 +4,12 @@ import be.ap.backend.dto.LoanBookDTO;
 import be.ap.backend.dto.LoanDTO;
 import be.ap.backend.dto.TopBookDTO;
 import be.ap.backend.entity.*;
-import be.ap.backend.repository.CampusBookRepository;
+import be.ap.backend.repository.LocationBookRepository;
 import be.ap.backend.repository.LoanBookRepository;
 import be.ap.backend.repository.LoanRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,45 +45,51 @@ public class LoanServiceTest {
     private LoanBookRepository loanBookRepository;
 
     @Mock
-    private CampusBookRepository campusBookRepository;
+    private LocationBookRepository locationBookRepository;
 
     @Mock
-    private CampusBookService campusBookService;
+    private LocationBookService locationBookService;
 
     @InjectMocks
     private LoanService loanService;
 
     private User user;
-    private Campus campus;
+    private Location location;
     private Book book;
-    private CampusBook campusBook;
+    private LocationBook locationBook;
     private Loan loan;
+    private School school;
 
     @BeforeEach
     void setUp() {
+        school = new School();
+        school.setId(1L);
+        school.setBorrowLimit(5);
+        school.setBorrowPeriod(14);
+
         user = new User();
         user.setId(1L);
+        user.setSchool(school);
 
-        campus = new Campus();
-        campus.setId(1L);
-        campus.setBorrowLimit(5);
-        campus.setBorrowPeriod(14);
+        location = new Location();
+        location.setId(1L);
+        location.setSchool(school);
 
         book = new Book();
         book.setId(1L);
         book.setTitle("De brief voor de koning");
 
-        campusBook = new CampusBook();
-        campusBook.setId(1L);
-        campusBook.setCampus(campus);
-        campusBook.setBook(book);
-        campusBook.setAmount(3);
-        campusBook.setCurrentAmount(3);
+        locationBook = new LocationBook();
+        locationBook.setId(1L);
+        locationBook.setLocation(location);
+        locationBook.setBook(book);
+        locationBook.setAmount(3);
+        locationBook.setCurrentAmount(3);
 
         loan = new Loan();
         loan.setId(1L);
         loan.setUser(user);
-        loan.setCampus(campus);
+        loan.setLocation(location);
         loan.setStart(LocalDate.now().plusDays(1));
         loan.setEnd(LocalDate.now().plusDays(15));
         loan.setStatus(LoanStatus.REQUESTED);
@@ -96,19 +103,18 @@ public class LoanServiceTest {
         LoanDTO dto = validLoanDTO();
 
         when(entityManager.find(User.class, 1L)).thenReturn(user);
-        when(entityManager.find(Campus.class, 1L)).thenReturn(campus);
+        when(entityManager.find(Location.class, 1L)).thenReturn(location);
         when(entityManager.find(Book.class, 1L)).thenReturn(book);
-        when(campusBookRepository.findByCampusIdAndBookId(1L, 1L)).thenReturn(Optional.of(campusBook));
-        when(loanRepository.save(any())).thenReturn(loan);
-        when(loanBookRepository.saveAll(any())).thenReturn(List.of());
+        when(locationBookRepository.findByLocationIdAndBookId(1L, 1L)).thenReturn(Optional.of(locationBook));
+        when(loanRepository.save(any())).thenAnswer(i -> i.getArgument(0));
 
-        LoanDTO result = loanService.createLoan(dto);
+        List<LoanDTO> result = loanService.createLoan(dto);
 
-        assertThat(result).isNotNull();
-        assertThat(result.getUserId()).isEqualTo(1L);
+        assertThat(result).isNotNull().hasSize(1);
+        assertThat(result.get(0).getUserId()).isEqualTo(1L);
         verify(loanRepository).save(any());
-        verify(loanBookRepository).saveAll(any());
-        verify(campusBookService).updateCurrentAmount(campusBook, 1);
+        verify(loanBookRepository).save(any());
+        verify(locationBookService).updateCurrentAmount(locationBook, 1);
     }
 
     @Test
@@ -177,6 +183,9 @@ public class LoanServiceTest {
         LoanDTO dto = validLoanDTO();
         dto.getBooks()[0].setBookId(null);
 
+        when(entityManager.find(User.class, 1L)).thenReturn(user);
+        when(entityManager.find(Location.class, 1L)).thenReturn(location);
+
         assertThatThrownBy(() -> loanService.createLoan(dto))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("bookId is verplicht");
@@ -186,6 +195,9 @@ public class LoanServiceTest {
     void createLoan_bookZeroAmount_throwsIllegalArgument() {
         LoanDTO dto = validLoanDTO();
         dto.getBooks()[0].setRequestedAmount(0);
+
+        when(entityManager.find(User.class, 1L)).thenReturn(user);
+        when(entityManager.find(Location.class, 1L)).thenReturn(location);
 
         assertThatThrownBy(() -> loanService.createLoan(dto))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -204,29 +216,30 @@ public class LoanServiceTest {
     }
 
     @Test
-    void createLoan_campusNotFound_throwsEntityNotFoundException() {
+    void createLoan_locationNotFound_throwsEntityNotFoundException() {
         LoanDTO dto = validLoanDTO();
 
         when(entityManager.find(User.class, 1L)).thenReturn(user);
-        when(entityManager.find(Campus.class, 1L)).thenReturn(null);
+        when(entityManager.find(Location.class, 1L)).thenReturn(null);
 
         assertThatThrownBy(() -> loanService.createLoan(dto))
                 .isInstanceOf(EntityNotFoundException.class)
-                .hasMessageContaining("Campus niet gevonden");
+                .hasMessageContaining("Locatie niet gevonden");
     }
 
     @Test
     void createLoan_exceedsBorrowLimit_throwsIllegalArgument() {
-        campus.setBorrowLimit(1);
-        LoanDTO dto = validLoanDTO();
+        school.setBorrowLimit(1);
 
         LoanBookDTO extra = new LoanBookDTO();
         extra.setBookId(2L);
         extra.setRequestedAmount(1);
+
+        LoanDTO dto = validLoanDTO();
         dto.setBooks(new LoanBookDTO[] { dto.getBooks()[0], extra });
 
         when(entityManager.find(User.class, 1L)).thenReturn(user);
-        when(entityManager.find(Campus.class, 1L)).thenReturn(campus);
+        when(entityManager.find(Location.class, 1L)).thenReturn(location);
 
         assertThatThrownBy(() -> loanService.createLoan(dto))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -239,7 +252,7 @@ public class LoanServiceTest {
         dto.setEnd(dto.getStart().plusDays(99));
 
         when(entityManager.find(User.class, 1L)).thenReturn(user);
-        when(entityManager.find(Campus.class, 1L)).thenReturn(campus);
+        when(entityManager.find(Location.class, 1L)).thenReturn(location);
 
         assertThatThrownBy(() -> loanService.createLoan(dto))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -248,13 +261,13 @@ public class LoanServiceTest {
 
     @Test
     void createLoan_notEnoughCurrentAmount_throwsIllegalArgument() {
-        campusBook.setCurrentAmount(0);
+        locationBook.setCurrentAmount(0);
         LoanDTO dto = validLoanDTO();
 
         when(entityManager.find(User.class, 1L)).thenReturn(user);
-        when(entityManager.find(Campus.class, 1L)).thenReturn(campus);
+        when(entityManager.find(Location.class, 1L)).thenReturn(location);
         when(entityManager.find(Book.class, 1L)).thenReturn(book);
-        when(campusBookRepository.findByCampusIdAndBookId(1L, 1L)).thenReturn(Optional.of(campusBook));
+        when(locationBookRepository.findByLocationIdAndBookId(1L, 1L)).thenReturn(Optional.of(locationBook));
 
         assertThatThrownBy(() -> loanService.createLoan(dto))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -266,7 +279,7 @@ public class LoanServiceTest {
         LoanDTO dto = validLoanDTO();
 
         when(entityManager.find(User.class, 1L)).thenReturn(user);
-        when(entityManager.find(Campus.class, 1L)).thenReturn(campus);
+        when(entityManager.find(Location.class, 1L)).thenReturn(location);
         when(entityManager.find(Book.class, 1L)).thenReturn(null);
 
         assertThatThrownBy(() -> loanService.createLoan(dto))
@@ -275,17 +288,72 @@ public class LoanServiceTest {
     }
 
     @Test
-    void createLoan_bookNotFoundOnCampus_throwsEntityNotFoundException() {
+    void createLoan_bookNotFoundOnLocation_throwsEntityNotFoundException() {
         LoanDTO dto = validLoanDTO();
 
         when(entityManager.find(User.class, 1L)).thenReturn(user);
-        when(entityManager.find(Campus.class, 1L)).thenReturn(campus);
+        when(entityManager.find(Location.class, 1L)).thenReturn(location);
         when(entityManager.find(Book.class, 1L)).thenReturn(book);
-        when(campusBookRepository.findByCampusIdAndBookId(1L, 1L)).thenReturn(Optional.empty());
+        when(locationBookRepository.findByLocationIdAndBookId(1L, 1L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> loanService.createLoan(dto))
                 .isInstanceOf(EntityNotFoundException.class)
-                .hasMessageContaining("Boek niet gevonden in campus");
+                .hasMessageContaining("Boek niet gevonden in locatie");
+    }
+
+    @Test
+    void createLoan_singleBook_groupIdIsNull() {
+        LoanDTO dto = validLoanDTO();
+
+        when(entityManager.find(User.class, 1L)).thenReturn(user);
+        when(entityManager.find(Location.class, 1L)).thenReturn(location);
+        when(entityManager.find(Book.class, 1L)).thenReturn(book);
+        when(locationBookRepository.findByLocationIdAndBookId(1L, 1L)).thenReturn(Optional.of(locationBook));
+        when(loanRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        List<LoanDTO> result = loanService.createLoan(dto);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getGroupId()).isNull();
+    }
+
+    @Test
+    void createLoan_multipleBooks_sameGroupId() {
+        Book book2entity = new Book();
+        book2entity.setId(2L);
+        book2entity.setTitle("Tweede boek");
+
+        LocationBook locationBook2 = new LocationBook();
+        locationBook2.setId(2L);
+        locationBook2.setLocation(location);
+        locationBook2.setBook(book2entity);
+        locationBook2.setAmount(3);
+        locationBook2.setCurrentAmount(3);
+
+        LoanBookDTO book1 = new LoanBookDTO();
+        book1.setBookId(1L);
+        book1.setRequestedAmount(1);
+
+        LoanBookDTO book2 = new LoanBookDTO();
+        book2.setBookId(2L);
+        book2.setRequestedAmount(1);
+
+        LoanDTO dto = validLoanDTO();
+        dto.setBooks(new LoanBookDTO[] { book1, book2 });
+
+        when(entityManager.find(User.class, 1L)).thenReturn(user);
+        when(entityManager.find(Location.class, 1L)).thenReturn(location);
+        when(entityManager.find(Book.class, 1L)).thenReturn(book);
+        when(entityManager.find(Book.class, 2L)).thenReturn(book2entity);
+        when(locationBookRepository.findByLocationIdAndBookId(1L, 1L)).thenReturn(Optional.of(locationBook));
+        when(locationBookRepository.findByLocationIdAndBookId(1L, 2L)).thenReturn(Optional.of(locationBook2));
+        when(loanRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        List<LoanDTO> result = loanService.createLoan(dto);
+
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).getGroupId()).isNotNull();
+        assertThat(result.get(1).getGroupId()).isEqualTo(result.get(0).getGroupId());
     }
 
     // ── getRequested ──────────────────────────────────────────────
@@ -386,27 +454,27 @@ public class LoanServiceTest {
         loan.setLoanBooks(Set.of(loanBook));
 
         when(loanRepository.findById(1L)).thenReturn(Optional.of(loan));
-        when(campusBookRepository.findByCampusIdAndBookId(1L, 1L)).thenReturn(Optional.of(campusBook));
+        when(locationBookRepository.findByLocationIdAndBookId(1L, 1L)).thenReturn(Optional.of(locationBook));
         when(loanRepository.save(loan)).thenReturn(loan);
 
         loanService.updateStatus(1L, LoanStatus.DECLINED);
 
-        verify(campusBookService).updateCurrentAmount(campusBook, -2);
+        verify(locationBookService).updateCurrentAmount(locationBook, -2);
     }
 
     @Test
-    void updateStatus_declined_campusBookNotFound_throwsEntityNotFoundException() {
+    void updateStatus_declined_locationBookNotFound_throwsEntityNotFoundException() {
         LoanBook loanBook = new LoanBook();
         loanBook.setBook(book);
         loanBook.setRequestedAmount(2);
         loan.setLoanBooks(Set.of(loanBook));
 
         when(loanRepository.findById(1L)).thenReturn(Optional.of(loan));
-        when(campusBookRepository.findByCampusIdAndBookId(1L, 1L)).thenReturn(Optional.empty());
+        when(locationBookRepository.findByLocationIdAndBookId(1L, 1L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> loanService.updateStatus(1L, LoanStatus.DECLINED))
                 .isInstanceOf(EntityNotFoundException.class)
-                .hasMessageContaining("Book not found on campus");
+                .hasMessageContaining("Book not found on location");
     }
 
     // ── getByUserId ───────────────────────────────────────────────
@@ -451,26 +519,36 @@ public class LoanServiceTest {
                 .hasMessageContaining("Uitlening niet gevonden");
     }
 
-    // ── helper ────────────────────────────────────────────────────
+    // ── getByStateAndLocation ─────────────────────────────────────
 
-    private LoanDTO validLoanDTO() {
-        LoanBookDTO loanBookDTO = new LoanBookDTO();
-        loanBookDTO.setBookId(1L);
-        loanBookDTO.setRequestedAmount(1);
+    @Test
+    void getByStateAndLocation_returnsMatchingLoans() {
+        loan.setStatus(LoanStatus.ACCEPTED);
+        loan.setLoanBooks(new HashSet<>());
+        when(loanRepository.findByStateAndLocation(LoanStatus.ACCEPTED, 1L)).thenReturn(List.of(loan));
 
-        LoanDTO dto = new LoanDTO();
-        dto.setUserId(1L);
-        dto.setCampusId(1L);
-        dto.setStart(LocalDate.now().plusDays(1));
-        dto.setEnd(LocalDate.now().plusDays(15));
-        dto.setBooks(new LoanBookDTO[] { loanBookDTO });
-        return dto;
+        List<LoanDTO> result = loanService.getByStateAndLocation(LoanStatus.ACCEPTED, 1L);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getUserId()).isEqualTo(1L);
     }
+
+    @Test
+    void getByStateAndLocation_empty_returnsEmptyList() {
+        when(loanRepository.findByStateAndLocation(LoanStatus.DECLINED, 1L)).thenReturn(List.of());
+
+        List<LoanDTO> result = loanService.getByStateAndLocation(LoanStatus.DECLINED, 1L);
+
+        assertThat(result).isEmpty();
+    }
+
+    // ── getOverdueLoans ───────────────────────────────────────────
 
     @Test
     void getOverdueLoans_returnsListOfDTOs() {
         loan.setStatus(LoanStatus.RECEIVED);
         loan.setEnd(LocalDate.now().minusDays(1));
+        loan.setLoanBooks(new HashSet<>());
 
         when(loanRepository.findOverdueLoans(anyList(), any(LocalDate.class), eq(1L)))
                 .thenReturn(List.of(loan));
@@ -511,10 +589,13 @@ public class LoanServiceTest {
         assertThat(result).isEqualTo(0);
     }
 
+    // ── getDueSoonLoans ───────────────────────────────────────────
+
     @Test
     void getDueSoonLoans_returnsListOfDTOs() {
         loan.setStatus(LoanStatus.RECEIVED);
         loan.setEnd(LocalDate.now().plusDays(3));
+        loan.setLoanBooks(new HashSet<>());
 
         when(loanRepository.findDueSoonLoans(anyList(), any(LocalDate.class), any(LocalDate.class), eq(1L)))
                 .thenReturn(List.of(loan));
@@ -555,6 +636,8 @@ public class LoanServiceTest {
         assertThat(result).isEqualTo(0);
     }
 
+    // ── getTopBooksThisMonth ──────────────────────────────────────
+
     @Test
     void getTopBooksThisMonth_returnsTopBooks() {
         LoanBook loanBook = new LoanBook();
@@ -573,33 +656,20 @@ public class LoanServiceTest {
 
     @Test
     void getTopBooksThisMonth_limitsToFive() {
-        LoanBook loanBook = new LoanBook();
-        loanBook.setBook(book);
-
-        Book book2 = new Book(); book2.setId(2L); book2.setTitle("Het kerstvarken");
-        LoanBook lb2 = new LoanBook(); lb2.setBook(book2);
-
-        Book book3 = new Book(); book3.setId(3L); book3.setTitle("Onze versplinterde zielen");
-        LoanBook lb3 = new LoanBook(); lb3.setBook(book3);
-
-        Book book4 = new Book(); book4.setId(4L); book4.setTitle("Kruistocht");
-        LoanBook lb4 = new LoanBook(); lb4.setBook(book4);
-
-        Book book5 = new Book(); book5.setId(5L); book5.setTitle("Geef me de ruimte");
-        LoanBook lb5 = new LoanBook(); lb5.setBook(book5);
-
-        Book book6 = new Book(); book6.setId(6L); book6.setTitle("Extra boek");
-        LoanBook lb6 = new LoanBook(); lb6.setBook(book6);
-
-        Loan l1 = new Loan(); l1.setLoanBooks(Set.of(loanBook));
-        Loan l2 = new Loan(); l2.setLoanBooks(Set.of(lb2));
-        Loan l3 = new Loan(); l3.setLoanBooks(Set.of(lb3));
-        Loan l4 = new Loan(); l4.setLoanBooks(Set.of(lb4));
-        Loan l5 = new Loan(); l5.setLoanBooks(Set.of(lb5));
-        Loan l6 = new Loan(); l6.setLoanBooks(Set.of(lb6));
+        List<Loan> loans = new ArrayList<>();
+        for (int i = 1; i <= 6; i++) {
+            Book b = new Book();
+            b.setId((long) i);
+            b.setTitle("Boek " + i);
+            LoanBook lb = new LoanBook();
+            lb.setBook(b);
+            Loan l = new Loan();
+            l.setLoanBooks(Set.of(lb));
+            loans.add(l);
+        }
 
         when(loanRepository.findByDateRangeWithBooks(any(), any(), anyList(), eq(1L)))
-                .thenReturn(List.of(l1, l2, l3, l4, l5, l6));
+                .thenReturn(loans);
 
         List<TopBookDTO> result = loanService.getTopBooksThisMonth(1L);
 
@@ -616,13 +686,15 @@ public class LoanServiceTest {
         assertThat(result).isEmpty();
     }
 
+    // ── getTopGenresThisMonth ─────────────────────────────────────
+
     @Test
     void getTopGenresThisMonth_returnsTopGenres() {
-    Object[] row = {"Fantasy", 5L};
-    List<Object[]> rows = new ArrayList<>();
-    rows.add(row);
-    when(loanRepository.findTopGenres(anyList(), any(), any(), eq(1L)))
-        .thenReturn(rows);
+        Object[] row = { "Fantasy", 5L };
+        List<Object[]> rows = new ArrayList<>();
+        rows.add(row);
+        when(loanRepository.findTopGenres(anyList(), any(), any(), eq(1L)))
+                .thenReturn(rows);
 
         List<TopBookDTO> result = loanService.getTopGenresThisMonth(1L);
 
@@ -644,13 +716,12 @@ public class LoanServiceTest {
     @Test
     void getTopGenresThisMonth_limitsToFive() {
         List<Object[]> rows = List.of(
-            new Object[]{"Fantasy", 10L},
-            new Object[]{"Horror", 9L},
-            new Object[]{"Humor", 8L},
-            new Object[]{"Avontuur", 7L},
-            new Object[]{"Poëzie", 6L},
-            new Object[]{"Romantiek", 5L}
-        );
+                new Object[] { "Fantasy", 10L },
+                new Object[] { "Horror", 9L },
+                new Object[] { "Humor", 8L },
+                new Object[] { "Avontuur", 7L },
+                new Object[] { "Poëzie", 6L },
+                new Object[] { "Romantiek", 5L });
 
         when(loanRepository.findTopGenres(anyList(), any(), any(), eq(1L)))
                 .thenReturn(rows);
@@ -658,5 +729,127 @@ public class LoanServiceTest {
         List<TopBookDTO> result = loanService.getTopGenresThisMonth(1L);
 
         assertThat(result.size()).isLessThanOrEqualTo(5);
+    }
+
+    // ── helper ────────────────────────────────────────────────────
+
+    private LoanDTO validLoanDTO() {
+        LoanBookDTO loanBookDTO = new LoanBookDTO();
+        loanBookDTO.setBookId(1L);
+        loanBookDTO.setRequestedAmount(1);
+
+        LoanDTO dto = new LoanDTO();
+        dto.setUserId(1L);
+        dto.setLocationId(1L);
+        dto.setStart(LocalDate.now().plusDays(1));
+        dto.setEnd(LocalDate.now().plusDays(15));
+        dto.setBooks(new LoanBookDTO[] { loanBookDTO });
+        return dto;
+    }
+
+    // ── extendLoan ────────────────────────────────────────────────
+
+    @Test
+    void extendLoan_success() {
+        school.setExtendLimit(3);
+        school.setExtendPeriod(7);
+        location.setSchool(school);
+        loan.setStatus(LoanStatus.RECEIVED);
+        loan.setExtended((byte) 0);
+        loan.setEnd(LocalDate.now().plusDays(15));
+        loan.setLoanBooks(new HashSet<>());
+
+        when(loanRepository.findById(1L)).thenReturn(Optional.of(loan));
+        when(loanRepository.save(loan)).thenReturn(loan);
+
+        LoanDTO result = loanService.extendLoan(1L);
+
+        assertThat(loan.getExtended()).isEqualTo((byte) 1);
+        assertThat(loan.getEnd()).isEqualTo(LocalDate.now().plusDays(22));
+        assertThat(result).isNotNull();
+        verify(loanRepository).save(loan);
+    }
+
+    @Test
+    void extendLoan_withAcceptedStatus_success() {
+        school.setExtendLimit(3);
+        school.setExtendPeriod(7);
+        location.setSchool(school);
+        loan.setStatus(LoanStatus.ACCEPTED);
+        loan.setExtended((byte) 0);
+        loan.setEnd(LocalDate.now().plusDays(15));
+        loan.setLoanBooks(new HashSet<>());
+
+        when(loanRepository.findById(1L)).thenReturn(Optional.of(loan));
+        when(loanRepository.save(loan)).thenReturn(loan);
+
+        LoanDTO result = loanService.extendLoan(1L);
+
+        assertThat(result).isNotNull();
+        verify(loanRepository).save(loan);
+    }
+
+    @Test
+    void extendLoan_notFound_throwsEntityNotFoundException() {
+        when(loanRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> loanService.extendLoan(99L))
+                .isInstanceOf(EntityNotFoundException.class)
+                .hasMessageContaining("Lening niet gevonden met id: 99");
+    }
+
+    @Test
+    void extendLoan_wrongStatus_throwsIllegalArgument() {
+        loan.setStatus(LoanStatus.REQUESTED);
+
+        when(loanRepository.findById(1L)).thenReturn(Optional.of(loan));
+
+        assertThatThrownBy(() -> loanService.extendLoan(1L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Lening kan niet verlengd worden met status");
+    }
+
+    @Test
+    void extendLoan_returnedStatus_throwsIllegalArgument() {
+        loan.setStatus(LoanStatus.RETURNED);
+
+        when(loanRepository.findById(1L)).thenReturn(Optional.of(loan));
+
+        assertThatThrownBy(() -> loanService.extendLoan(1L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Lening kan niet verlengd worden met status");
+    }
+
+    @Test
+    void extendLoan_maxExtensionsReached_throwsIllegalArgument() {
+        school.setExtendLimit(2);
+        school.setExtendPeriod(7);
+        location.setSchool(school);
+        loan.setStatus(LoanStatus.RECEIVED);
+        loan.setExtended((byte) 2);
+
+        when(loanRepository.findById(1L)).thenReturn(Optional.of(loan));
+
+        assertThatThrownBy(() -> loanService.extendLoan(1L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Maximum aantal verlengingen bereikt");
+    }
+
+    @Test
+    void extendLoan_incrementsExtendedCount() {
+        school.setExtendLimit(3);
+        school.setExtendPeriod(7);
+        location.setSchool(school);
+        loan.setStatus(LoanStatus.RECEIVED);
+        loan.setExtended((byte) 1);
+        loan.setEnd(LocalDate.now().plusDays(15));
+        loan.setLoanBooks(new HashSet<>());
+
+        when(loanRepository.findById(1L)).thenReturn(Optional.of(loan));
+        when(loanRepository.save(loan)).thenReturn(loan);
+
+        loanService.extendLoan(1L);
+
+        assertThat(loan.getExtended()).isEqualTo((byte) 2);
     }
 }

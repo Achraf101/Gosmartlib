@@ -36,4 +36,8 @@ public class LanguageController {
         return languageRepository.save(language);
     }
 
+    @GetMapping("code/{code}")
+    public Language searchByCode(@PathVariable String code) {
+        return languageRepository.findByCode(code);
+    }
 }

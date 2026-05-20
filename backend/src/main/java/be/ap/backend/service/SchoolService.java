@@ -5,12 +5,13 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
-import be.ap.backend.dto.CampusDTO;
+import be.ap.backend.dto.LocationDTO;
 import be.ap.backend.dto.SchoolDTO;
 import be.ap.backend.entity.School;
 import be.ap.backend.exception.ArgumentsInvalidException;
 import be.ap.backend.exception.MissingArgumentsException;
 import be.ap.backend.repository.SchoolRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -31,6 +32,17 @@ public class SchoolService {
         if (dto.getSsSubdomain() == null) {
             throw new MissingArgumentsException("Smartschool url is verplicht!");
         }
+        if (dto.getBorrowLimit() <= 0 || dto.getBorrowPeriod() <= 0 || dto.getExtendLimit() <= 0
+                || dto.getExtendPeriod() <= 0) {
+            throw new ArgumentsInvalidException("Getallen moeten minimaal 1 zijn!");
+        }
+        if (dto.getBorrowLimit() > 999 || dto.getBorrowPeriod() > 999 || dto.getExtendPeriod() > 999) {
+            throw new ArgumentsInvalidException(
+                    "Uitleenlimiet, uitleenperiode en verlengperiode mogen niet groter zijn dan 999!");
+        }
+        if (dto.getExtendLimit() > 10) {
+            throw new ArgumentsInvalidException("Maximaal aantal verlengingen mag niet meer zijn dan 10!");
+        }
 
         School saved = new School();
         saved.setName(dto.getName());
@@ -38,6 +50,10 @@ public class SchoolService {
         saved.setContact(dto.getContact());
         saved.setDescription(dto.getDescription());
         saved.setSsSubdomain(dto.getSsSubdomain());
+        saved.setBorrowLimit(dto.getBorrowLimit());
+        saved.setBorrowPeriod(dto.getBorrowPeriod());
+        saved.setExtendLimit(dto.getExtendLimit());
+        saved.setExtendPeriod(dto.getExtendPeriod());
 
         return toDTO(schoolRepository.save(saved));
     }
@@ -62,20 +78,64 @@ public class SchoolService {
         dto.setContact(school.getContact());
         dto.setDescription(school.getDescription());
         dto.setSsSubdomain(school.getSsSubdomain());
+        dto.setBorrowLimit(school.getBorrowLimit());
+        dto.setBorrowPeriod(school.getBorrowPeriod());
+        dto.setExtendLimit(school.getExtendLimit());
+        dto.setExtendPeriod(school.getExtendPeriod());
 
-        List<CampusDTO> campusDTOs = school.getCampuses().stream()
-                .map(campus -> {
-                    CampusDTO c = new CampusDTO();
-                    c.setId(campus.getId());
-                    c.setName(campus.getName());
-                    c.setAdres(campus.getAdres());
-                    c.setBorrowLimit(campus.getBorrowLimit());
+        List<LocationDTO> locationDTOs = school.getLocations().stream()
+                .map(location -> {
+                    LocationDTO c = new LocationDTO();
+                    c.setId(location.getId());
+                    c.setName(location.getName());
+                    c.setAdres(location.getAdres());
                     c.setSchoolId(school.getId());
                     return c;
                 })
                 .collect(java.util.stream.Collectors.toList());
 
-        dto.setCampuses(campusDTOs);
+        dto.setLocations(locationDTOs);
         return dto;
+    }
+
+    public SchoolDTO updateSchool(Long id, SchoolDTO dto) {
+        School school = schoolRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("School niet gevonden met id: " + id));
+
+        if (dto.getName() == null) {
+            throw new MissingArgumentsException("Schoolnaam is verplicht!");
+        }
+        if (dto.getAdres().length() > 500 || dto.getContact().length() > 500) {
+            throw new ArgumentsInvalidException("Adres en contact mogen niet langer zijn dan 500 tekens!");
+        }
+        if (dto.getDescription().length() > 1000) {
+            throw new ArgumentsInvalidException("Beschrijving mag niet langer zijn dan 1000 tekens!");
+        }
+        if (dto.getSsSubdomain() == null) {
+            throw new MissingArgumentsException("Smartschool url is verplicht!");
+        }
+        if (dto.getBorrowLimit() <= 0 || dto.getBorrowPeriod() <= 0 || dto.getExtendLimit() <= 0
+                || dto.getExtendPeriod() <= 0) {
+            throw new ArgumentsInvalidException("Getallen moeten minimaal 1 zijn!");
+        }
+        if (dto.getBorrowLimit() > 999 || dto.getBorrowPeriod() > 999 || dto.getExtendPeriod() > 999) {
+            throw new ArgumentsInvalidException(
+                    "Uitleenlimiet, uitleenperiode en verlengperiode mogen niet groter zijn dan 999!");
+        }
+        if (dto.getExtendLimit() > 10) {
+            throw new ArgumentsInvalidException("Maximaal aantal verlengingen mag niet meer zijn dan 10!");
+        }
+
+        school.setName(dto.getName());
+        school.setAdres(dto.getAdres());
+        school.setContact(dto.getContact());
+        school.setDescription(dto.getDescription());
+        school.setSsSubdomain(dto.getSsSubdomain());
+        school.setBorrowLimit(dto.getBorrowLimit());
+        school.setBorrowPeriod(dto.getBorrowPeriod());
+        school.setExtendLimit(dto.getExtendLimit());
+        school.setExtendPeriod(dto.getExtendPeriod());
+
+        return toDTO(schoolRepository.save(school));
     }
 }

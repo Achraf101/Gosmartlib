@@ -1,7 +1,4 @@
 <form class="search-bar" (submit)="$event.preventDefault(); onSearch()">
-  <button type="submit" class="search-btn">
-    <i class="pi pi-search"></i>
-  </button>
   <input
     type="text"
     class="search-input"
@@ -14,4 +11,7 @@
       <i class="pi pi-times"></i>
     </button>
   }
+  <button type="submit" class="search-btn">
+    <i class="pi pi-search"></i>
+  </button>
 </form>
