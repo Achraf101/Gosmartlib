@@ -18,5 +18,15 @@ public class IncompleteBookDTO {
     private Integer pages;
     private String coverUrl;
     private String languageCode;
+    private String languageName;
+    private String bookTypeName;
+    private String genresRaw;
+    private String themesRaw;
+    private String fontSize;
+    private String fiction;
+    private String didactic;
+    private String schoolOnly;
+    private String clib;
     private List<String> missingFields;
+    private List<String> invalidFields;
 }

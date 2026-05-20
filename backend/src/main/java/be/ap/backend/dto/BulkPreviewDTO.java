@@ -3,6 +3,8 @@ package be.ap.backend.dto;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class BulkPreviewDTO {
 
     private final List<PreviewItem> items = new ArrayList<>();
@@ -17,7 +19,9 @@ public class BulkPreviewDTO {
 
     public List<PreviewItem> getItems()  { return items; }
     public int getTotal()                { return items.size(); }
+    @JsonProperty("foundCount")
     public int getFoundCount()           { return (int) items.stream().filter(PreviewItem::isFound).count(); }
+    @JsonProperty("notFoundCount")
     public int getNotFoundCount()        { return getTotal() - getFoundCount(); }
 
     public static class PreviewItem {
