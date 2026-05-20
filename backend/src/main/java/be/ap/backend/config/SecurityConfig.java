@@ -72,8 +72,6 @@ public class SecurityConfig {
                             res.setContentType("application/json");
                             res.getWriter().write("{\"message\":\"Login successful\"}");
 
-                            session.setAttribute("school", user.get("school"));
-System.out.println("DEBUG school in session: " + session.getAttribute("school"));
                         })
                         .failureHandler((req, res, exception) -> {
                             res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -132,5 +130,4 @@ System.out.println("DEBUG school in session: " + session.getAttribute("school"))
         return usr;
     }
 
-    
 }
