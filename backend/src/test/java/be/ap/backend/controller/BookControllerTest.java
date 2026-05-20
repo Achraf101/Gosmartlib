@@ -16,6 +16,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -49,6 +50,7 @@ import be.ap.backend.entity.Clib;
 import be.ap.backend.repository.BookRepository;
 import be.ap.backend.service.BookService;
 import be.ap.backend.service.IsbnLookupService;
+import be.ap.backend.service.OpenLibraryService;
 
 @ExtendWith(MockitoExtension.class)
 public class BookControllerTest {
@@ -63,6 +65,9 @@ public class BookControllerTest {
 
     @Mock
     private IsbnLookupService isbnLookupService;
+
+    @Mock
+    private OpenLibraryService openLibraryService;
 
     @InjectMocks
     private BookController controller;
@@ -205,6 +210,58 @@ public class BookControllerTest {
 
         assertEquals(404, response.getStatusCode().value());
         verify(isbnLookupService, times(1)).lookup("0000000000000");
+    }
+
+    @Test
+    void givenBookWithIsbnAndIaFound_whenGetIaPreview_thenReturn200WithIaId() {
+        Book book = new Book();
+        book.setId(1L);
+        book.setIsbn("9780747532743");
+
+        when(repository.findById(1L)).thenReturn(Optional.of(book));
+        when(openLibraryService.getIaIdentifier("9780747532743")).thenReturn(Optional.of("lordofrings00tolk_5"));
+
+        ResponseEntity<Map<String, String>> response = controller.getIaPreview(1L);
+
+        assertEquals(200, response.getStatusCode().value());
+        assertEquals("lordofrings00tolk_5", response.getBody().get("ia_id"));
+    }
+
+    @Test
+    void givenBookWithIsbnButNoIaFound_whenGetIaPreview_thenReturn404() {
+        Book book = new Book();
+        book.setId(2L);
+        book.setIsbn("9780000000000");
+
+        when(repository.findById(2L)).thenReturn(Optional.of(book));
+        when(openLibraryService.getIaIdentifier("9780000000000")).thenReturn(Optional.empty());
+
+        ResponseEntity<Map<String, String>> response = controller.getIaPreview(2L);
+
+        assertEquals(404, response.getStatusCode().value());
+    }
+
+    @Test
+    void givenBookWithoutIsbn_whenGetIaPreview_thenReturn404() {
+        Book book = new Book();
+        book.setId(3L);
+
+        when(repository.findById(3L)).thenReturn(Optional.of(book));
+
+        ResponseEntity<Map<String, String>> response = controller.getIaPreview(3L);
+
+        assertEquals(404, response.getStatusCode().value());
+        verify(openLibraryService, times(0)).getIaIdentifier(any());
+    }
+
+    @Test
+    void givenMissingBook_whenGetIaPreview_thenReturn404() {
+        when(repository.findById(99L)).thenReturn(Optional.empty());
+
+        ResponseEntity<Map<String, String>> response = controller.getIaPreview(99L);
+
+        assertEquals(404, response.getStatusCode().value());
+        verify(openLibraryService, times(0)).getIaIdentifier(any());
     }
 
     @Test
