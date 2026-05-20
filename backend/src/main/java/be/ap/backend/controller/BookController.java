@@ -20,8 +20,10 @@ import be.ap.backend.entity.Clib;
 import be.ap.backend.repository.BookRepository;
 import be.ap.backend.service.BookService;
 import be.ap.backend.service.IsbnLookupService;
+import be.ap.backend.service.OpenLibraryService;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -38,6 +40,7 @@ public class BookController {
     private final BookRepository bookRepository;
     private final BookService bookService;
     private final IsbnLookupService isbnLookupService;
+    private final OpenLibraryService openLibraryService;
 
     @GetMapping
     public Page<Book> getAll(
@@ -100,6 +103,17 @@ public class BookController {
     public ResponseEntity<BookLookupDTO> lookupByIsbn(@PathVariable String isbn) {
         return isbnLookupService.lookup(isbn)
                 .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/{id}/ia-preview")
+    public ResponseEntity<Map<String, String>> getIaPreview(@PathVariable Long id) {
+        Book book = bookRepository.findById(id).orElse(null);
+        if (book == null || book.getIsbn() == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return openLibraryService.getIaIdentifier(book.getIsbn())
+                .map(iaId -> ResponseEntity.ok(Map.of("ia_id", iaId)))
                 .orElse(ResponseEntity.notFound().build());
     }
 
