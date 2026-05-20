@@ -151,12 +151,12 @@
                           pTextarea
                           rows="8"
                           fluid
-                          maxlength="500"
+                          maxlength="1000"
                         ></textarea>
                       </p-iftalabel>
                       <app-char-counter
                         [text]="bookForm.get('description')?.value ?? ''"
-                        [maxLength]="500"
+                        [maxLength]="1000"
                       ></app-char-counter>
                     </div>
                     <div class="inputitem">
@@ -466,7 +466,7 @@
                   <ng-template #content let-activateCallback="activateCallback">
                     @if (bookToEdit?.cover || lookupCoverUrl) {
                       <div class="cover-preview">
-                        <b-cover [bookCard]="bookToEdit!"></b-cover>
+                        <b-cover [bookCard]="previewBookCard"></b-cover>
                         <p class="cover-preview-note">
                           @if (bookToEdit) {
                             Huidige boekomslag. Upload een nieuwe om hem te vervangen.
