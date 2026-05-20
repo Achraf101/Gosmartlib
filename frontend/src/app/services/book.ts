@@ -136,7 +136,7 @@ export class BookService {
       params = params.set('didactic', filters.didactic.toString());
     }
 
-    if (filters.campus) params = params.set('campus', filters.campus);
+    if (filters.location) params = params.set('location', filters.location);
     return this.apiService.get<Page<BookResult>>(`${this.endpoint}/filter`, params);
   }
 

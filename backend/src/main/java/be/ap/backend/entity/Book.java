@@ -116,7 +116,7 @@ public class Book {
 
     @JsonIgnore
     @OneToMany(mappedBy = "book")
-    private List<CampusBook> campusBooks = new ArrayList<>();
+    private List<LocationBook> locationBooks = new ArrayList<>();
 
     @JsonProperty("series_name")
     public String getSeriesName() {

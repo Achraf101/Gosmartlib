@@ -111,5 +111,5 @@ export interface BookFilter {
   clibs?: string[];
   published?: [number, number];
   publisher?: number[];
-  campus?: number;
+  location?: number;
 }

@@ -116,14 +116,16 @@ public class OAuthController {
             SecurityContext securityContext = SecurityContextHolder.getContext();
             securityContext.setAuthentication(auth);
 
-            // 👇 manually save security context to session
+            // manually save security context to session
             session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY,
                     securityContext);
 
             session.setAttribute("userId", user.getId());
             session.setAttribute("role", user.getRole().name());
-            session.setAttribute("location", user.getLocation().getId());
-            session.setAttribute("school", user.getSchool().getId());
+            School s = user.getSchool();
+            session.setAttribute("school", s.getId());
+            List<Long> locationIdList = getLocationIds(s);
+            session.setAttribute("location", locationIdList.toString());
             session.setAttribute("username", user.getSsName());
 
             return ResponseEntity.status(HttpStatus.FOUND).header("Location",
@@ -174,7 +176,7 @@ public class OAuthController {
         SecurityContext securityContext = SecurityContextHolder.getContext();
         securityContext.setAuthentication(auth);
 
-        // 👇 manually save security context to session
+        // manually save security context to session
         session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY,
                 securityContext);
 
@@ -242,5 +244,10 @@ public class OAuthController {
     private class UserInfo {
         public String userId;
         public String fullName;
+    }
+
+    private List<Long> getLocationIds(School s) {
+        return locationRepository.getBySchoolId(s.getId()).stream().map(Location::getId)
+                .collect(Collectors.toList());
     }
 }

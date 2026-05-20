@@ -22,9 +22,9 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
     Page<Book> findAll(Pageable pageable);
 
-    // get all with the campuses
-    @Query("SELECT cb.book FROM CampusBook cb WHERE cb.campus.id IN :campusIds")
-    Page<Book> findAllByCampus(@Param("campusIds") List<Long> campus, Pageable pageable);
+    // get all with the locations
+    @Query("SELECT DISTINCT lb.book FROM LocationBook lb WHERE lb.location.id IN :locationIds")
+    Page<Book> findAllByLocation(@Param("locationIds") List<Long> locationIds, Pageable pageable);
 
     boolean existsByIsbn(String isbn);
 
@@ -40,8 +40,8 @@ public interface BookRepository extends JpaRepository<Book, Long> {
                 )
             FROM Book b
             JOIN b.genres g
-            JOIN b.campusBooks cb
-            WHERE cb.campus.id IN :campusIds
+            JOIN b.locationBooks lb
+            WHERE lb.location.id IN :locationIds
             AND g IN (
                 SELECT g2
                 FROM Book b2
@@ -50,7 +50,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
             )
             AND b.id != :id
             """)
-    List<BookCardDTO> findRelated(@Param("id") Long id, @Param("campusIds") List<Long> campusIds);
+    List<BookCardDTO> findRelated(@Param("id") Long id, @Param("locationIds") List<Long> locationIds);
 
     @Query("""
             SELECT DISTINCT b FROM Book b
@@ -58,8 +58,8 @@ public interface BookRepository extends JpaRepository<Book, Long> {
             LEFT JOIN b.themes t
             LEFT JOIN b.genres g
             LEFT JOIN b.series s
-            JOIN b.campusBooks cb
-            WHERE cb.campus.id IN :campusIds
+            JOIN b.locationBooks lb
+            WHERE lb.location.id IN :locationIds
             AND (
             LOWER(b.title) LIKE LOWER(CONCAT('%', :query, '%'))
             OR LOWER(a.name) LIKE LOWER(CONCAT('%', :query, '%'))
@@ -68,7 +68,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
             OR LOWER(t.name) LIKE LOWER(CONCAT('%', :query, '%'))
             OR b.isbn LIKE CONCAT('%', :query, '%')
             )""")
-    Page<Book> search(@Param("campusIds") List<Long> campusIds, @Param("query") String query, Pageable pageable);
+    Page<Book> search(@Param("locationIds") List<Long> locationIds, @Param("query") String query, Pageable pageable);
 
     @Query("""
             SELECT new be.ap.backend.dto.BookResultDTO(
@@ -121,8 +121,8 @@ public interface BookRepository extends JpaRepository<Book, Long> {
             LEFT JOIN b.language l
             LEFT JOIN b.series s
             LEFT JOIN b.themes t
-            JOIN b.campusBooks cb
-            WHERE cb.campus.id = :campusId
+            JOIN b.locationBooks lb
+            WHERE lb.location.id = :locationId
             AND (:genres IS NULL OR g.id IN :genres)
             AND (:language IS NULL OR l.id = :language)
             AND (:didactic IS NULL OR b.didactic = :didactic)
@@ -135,7 +135,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
             AND (:themes IS NULL OR t.id IN :themes)
             """)
     Page<Book> filter(
-            @Param("campusId") Long campus,
+            @Param("locationId") Long location,
             @Param("genres") List<Long> genres,
             @Param("language") Long language,
             @Param("fiction") Boolean fiction,

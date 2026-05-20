@@ -64,14 +64,14 @@ export class CatalogueComponent implements OnInit {
   currentPage = 0;
   searchQuery = '';
   activeFilters: BookFilter | null = null;
-  hideLocation = false; // TODO check if necessary
+  hideLocation = false;
 
   genres: Genre[] = [];
   themes: Theme[] = [];
   languages: Language[] = [];
-  location: Location[] = [];
+  locations: Location[] = [];
   oneLocation: boolean = false;
-  sidebarLocation?: number;
+  sidebarLocation: number | null = null;
   sidebarGenres: number[] = [];
   sidebarThemes: number[] = [];
   sidebarDidactic: boolean = false;
@@ -89,8 +89,6 @@ export class CatalogueComponent implements OnInit {
   ranking: number | null = null;
   listId: number | null = null;
   showDialog = false;
-
-  readonly placeholder = '/assets/no-cover.svg';
 
   constructor(
     private bookService: BookService,
@@ -113,7 +111,7 @@ export class CatalogueComponent implements OnInit {
 
     if (this.auth.currentUser?.location !== undefined) {
       if (this.auth.currentUser?.location.length > 1) {
-        this.location = this.auth.currentUser.location;
+        this.locations = this.auth.currentUser.location;
       } else {
         this.oneLocation = true;
         this.sidebarLocation = this.auth.currentUser.location[0].id;
@@ -129,7 +127,7 @@ export class CatalogueComponent implements OnInit {
       this.ranking = params['ranking'] ? Number(params['ranking']) : null;
       this.listId = params['listId'] ? Number(params['listId']) : null;
 
-      this.sidebarLocation = params['location'] ? Number(params['location']) : undefined;
+      this.sidebarLocation = params['location'] ? Number(params['location']) : null;
       this.sidebarGenres = params['genres'] ? params['genres'].split(',').map(Number) : [];
       this.sidebarThemes = params['themes'] ? params['themes'].split(',').map(Number) : [];
       this.sidebarLanguage = params['language'] ? Number(params['language']) : null;
@@ -159,7 +157,7 @@ export class CatalogueComponent implements OnInit {
           series: params['seriesIds'] ? params['seriesIds'].split(',').map(Number) : undefined,
           clibs: params['clibs'] ? params['clibs'].split(',') : undefined,
           didactic: params['didactic'] !== undefined ? params['didactic'] === 'true' : undefined,
-          location: params['location'] !== undefined ? params['location'] : undefined,
+          location: params['location'] !== undefined ? Number(params['location']) : undefined,
           pages:
             params['pagesMin'] || params['pagesMax']
               ? [
@@ -208,7 +206,7 @@ export class CatalogueComponent implements OnInit {
     } else {
       delete params['didactic'];
     }
-    if (this.sidebarLocation !== undefined && !this.oneLocation) {
+    if (this.sidebarLocation !== undefined) {
       params['location'] = this.sidebarLocation;
     } else {
       delete params['location'];
@@ -223,7 +221,7 @@ export class CatalogueComponent implements OnInit {
     this.sidebarDidactic = false;
     if (this.oneLocation !== true) {
       // do not remove location filter when only one is present
-      this.sidebarLocation = undefined;
+      this.sidebarLocation = null; // TODO check if necessary
     }
     this.sidebarLanguage = null;
     this.sidebarPagesMin = null;

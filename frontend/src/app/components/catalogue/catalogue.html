@@ -43,16 +43,16 @@
   <div class="catalogue-layout">
     <aside class="filter-sidebar">
       <h3>Filters</h3>
-      @if (oneCampus !== true) {
+      @if (oneLocation !== true) {
         <div class="sidebar-section">
-          <label>Campus</label>
+          <label>Locatie</label>
           <p-select
-            [options]="campus"
-            [(ngModel)]="sidebarCampus"
+            [options]="locations"
+            [(ngModel)]="sidebarLocation"
             optionLabel="name"
             optionValue="id"
             [showClear]="true"
-            placeholder="Campus"
+            placeholder="Locatie"
           />
         </div>
       }
