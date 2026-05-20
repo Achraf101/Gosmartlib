@@ -11,6 +11,7 @@ import {
 } from '../models/book';
 import { Page } from '../models/page';
 import { HttpParams } from '@angular/common/http';
+import { AuthService } from './auth';
 
 @Injectable({
   providedIn: 'root',
@@ -18,10 +19,16 @@ import { HttpParams } from '@angular/common/http';
 export class BookService {
   private readonly endpoint = 'book';
 
-  constructor(private apiService: ApiService) {}
+  constructor(
+    private apiService: ApiService,
+    private auth: AuthService,
+  ) {}
 
-  getAll(page: number = 0, size: number = 5): Observable<Page<BookResult>> {
-    const params = new HttpParams().set('page', page.toString()).set('size', size.toString());
+  getAll(page: number = 0, size: number = 5, full: boolean = false): Observable<Page<BookResult>> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString())
+      .set('full', full);
     return this.apiService.get<Page<BookResult>>(this.endpoint, params);
   }
 
@@ -125,6 +132,7 @@ export class BookService {
       params = params.set('didactic', filters.didactic.toString());
     }
 
+    if (filters.campus) params = params.set('campus', filters.campus);
     return this.apiService.get<Page<BookResult>>(`${this.endpoint}/filter`, params);
   }
 }
