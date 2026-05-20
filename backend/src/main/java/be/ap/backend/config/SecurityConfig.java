@@ -1,10 +1,16 @@
 package be.ap.backend.config;
 
+import be.ap.backend.entity.Campus;
+import be.ap.backend.entity.School;
 import be.ap.backend.entity.User;
+import be.ap.backend.repository.CampusRepository;
 import be.ap.backend.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -23,12 +29,14 @@ import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
     @Value("${app.bcrypt-rounds}")
     private int strength;
 
     private final UserService userService;
+    private final CampusRepository campusRepository;
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
@@ -38,10 +46,6 @@ public class SecurityConfig {
     @Bean
     public HttpSessionEventPublisher httpSessionEventPublisher() {
         return new HttpSessionEventPublisher();
-    }
-
-    public SecurityConfig(UserService userService) {
-        this.userService = userService;
     }
 
     @Bean
@@ -63,6 +67,7 @@ public class SecurityConfig {
                             HttpSession session = req.getSession(true);
 
                             session.setAttribute("userId", user.get("userId"));
+                            session.setAttribute("school", user.get("school"));
                             session.setAttribute("campus", user.get("campus"));
                             session.setAttribute("role", user.get("role"));
                             session.setAttribute("username", user.get("username"));
@@ -112,12 +117,20 @@ public class SecurityConfig {
     private Map<String, String> getUserDetails(Authentication auth) {
         User u = (User) auth.getPrincipal();
 
-        String campus = u.getCampus() != null ? u.getCampus().getId().toString() : "";
+        School school = u.getSchool();
+        List<Campus> campus = campusRepository.findBySchool(school);
+        List<Long> campusIds = campus.stream().map(Campus::getId)
+                .collect(Collectors.toList());
+        System.out.println(campus.toString());
+
+        String schoolString = u.getSchool() != null ? u.getSchool().getId().toString() : "";
 
         System.out.println(u.getUsername());
         Map<String, String> usr = Map.of(
                 "userId", u.getId().toString(),
-                "campus", campus,
+                "campus", campusIds.toString(),
+                "school",
+                schoolString,
                 "role", u.getRole().name(),
                 "username", u.getUsername() // not smartschool name
         );
