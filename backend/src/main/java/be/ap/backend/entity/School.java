@@ -47,12 +47,19 @@ public class School implements Serializable {
     @Column(nullable = false, unique = true, length = 255, name = "ss_subdomain")
     private String ssSubdomain;
 
+    @Column(name = "oneroster_client_id", length = 255)
+    private String oneRosterClientId;
+
+    @Column(name = "oneroster_client_secret", length = 255)
+    private String oneRosterClientSecret;
+
     @ToString.Exclude
     @OneToMany(mappedBy = "school", cascade = CascadeType.ALL)
     private List<Location> locations = new ArrayList<>();
 
     public School(String name, String adres, String contact, String description, int borrowLimit, int borrowPeriod,
-            int extendPeriod, int extendLimit, String ssSubdomain) {
+            int extendPeriod, int extendLimit, String ssSubdomain, String oneRosterClientId,
+            String oneRosterClientSecret) {
         this.name = name;
         this.adres = adres;
         this.contact = contact;
@@ -62,5 +69,7 @@ public class School implements Serializable {
         this.extendPeriod = extendPeriod;
         this.extendLimit = extendLimit;
         this.ssSubdomain = ssSubdomain;
+        this.oneRosterClientId = oneRosterClientId;
+        this.oneRosterClientSecret = oneRosterClientSecret;
     }
 }

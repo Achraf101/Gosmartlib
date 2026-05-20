@@ -25,7 +25,7 @@ public class Classroom {
     @EqualsAndHashCode.Include
     private Long id;
 
-    @Column(name = "name", nullable = false, length = 255)
+    @Column(name = "name", nullable = true, length = 255)
     private String name;
 
     @ManyToOne
@@ -37,11 +37,14 @@ public class Classroom {
     private Location location;
 
     @ManyToOne
-    @JoinColumn(name = "teacher_id", nullable = false)
+    @JoinColumn(name = "teacher_id", nullable = true)
     private User teacher;
 
     @Column(name = "hidden", nullable = false)
     private boolean hidden = false;
+
+    @Column(name = "ss_id", unique = true, length = 255)
+    private String ssId;
 
     @JsonIgnore
     @ManyToMany
