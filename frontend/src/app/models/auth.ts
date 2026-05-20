@@ -1,7 +1,10 @@
 export interface AuthUser {
   userId: number;
-  username: string;
   role: string;
-  locationId: number;
-  schoolId: number;
+  schoolId: number | null;
+  locationId: number | null;
+  firstName: string | null;
+  lastName: string | null;
+  email: string | null;
+  username: string | null;
 }

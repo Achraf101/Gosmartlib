@@ -1,13 +1,10 @@
 package be.ap.backend.controller.auth;
 
-import be.ap.backend.repository.LocationRepository;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -33,23 +30,21 @@ import com.nimbusds.oauth2.sdk.http.HTTPResponse;
 import com.nimbusds.oauth2.sdk.id.*;
 import com.nimbusds.oauth2.sdk.token.Tokens;
 
-import be.ap.backend.dto.GroupDTO;
-import be.ap.backend.dto.GroupsResponseDto;
-import be.ap.backend.entity.Location;
 import be.ap.backend.entity.School;
 import be.ap.backend.entity.User;
-import be.ap.backend.entity.UserRole;
 import be.ap.backend.repository.SchoolRepository;
 import be.ap.backend.repository.UserRepository;
+import be.ap.backend.service.SmartschoolLookupService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
 
 @RestController
+@RequiredArgsConstructor
 public class OAuthController {
-    private final LocationRepository locationRepository;
-
     private final UserRepository userRepository;
     private final SchoolRepository schoolRepository;
+    private final SmartschoolLookupService lookupService;
 
     @Value("${app.smartschool.client-id}")
     private String clientId;
@@ -60,13 +55,6 @@ public class OAuthController {
     @Value("${app.smartschool.callback}")
     private String callback;
 
-    public OAuthController(UserRepository userRepository, SchoolRepository schoolRepository,
-            LocationRepository locationRepository) {
-        this.userRepository = userRepository;
-        this.schoolRepository = schoolRepository;
-        this.locationRepository = locationRepository;
-    }
-
     @GetMapping("oauth") // smartschool oauth
     public ResponseEntity<?> getMethodName(@RequestParam String code, @RequestParam String originplatform,
             HttpServletRequest httpRequest)
@@ -74,8 +62,6 @@ public class OAuthController {
         AuthorizationCode authCode = new AuthorizationCode(code);
 
         URI tokenEndpoint = new URI("https://" + originplatform + ".smartschool.be/OAuth/index/token");
-        String userInfoEndpoint = "https://" + originplatform + ".smartschool.be/Api/V1/userinfo";
-        String userGroupEndpoint = "https://" + originplatform + ".smartschool.be/Api/V1/groupinfo";
 
         TokenRequest request = new TokenRequest(
                 tokenEndpoint,
@@ -96,74 +82,35 @@ public class OAuthController {
 
         Tokens tokens = response.toSuccessResponse().getTokens();
 
-        // get userinfo (smartschool userID)
-        UserInfo userInfo = getUserInfo(tokens, userInfoEndpoint);
+        String ssId = getSsId(tokens, "https://" + originplatform + ".smartschool.be/Api/V1/userinfo");
+        if (ssId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Kon gebruiker niet ophalen van SmartSchool.");
+        }
 
         // check if user already exists (create if not)
-        Optional<User> optUser = userRepository.findBySsId(userInfo.userId);
+        Optional<User> optUser = userRepository.findBySsId(ssId);
 
-        // user exists create session
-        if (!optUser.isEmpty()) {
-            User user = optUser.get();
-            // create session with extra attributes
-            HttpSession session = httpRequest.getSession(true);
-
-            Authentication auth = new UsernamePasswordAuthenticationToken(
-                    user.getId(),
-                    null,
-                    user.getAuthorities());
-
-            SecurityContext securityContext = SecurityContextHolder.getContext();
-            securityContext.setAuthentication(auth);
-
-            // 👇 manually save security context to session
-            session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY,
-                    securityContext);
-
-            session.setAttribute("userId", user.getId());
-            session.setAttribute("role", user.getRole().name());
-            session.setAttribute("location", user.getLocation().getId());
-            session.setAttribute("school", user.getSchool().getId());
-            session.setAttribute("username", user.getSsName());
-
-            return ResponseEntity.status(HttpStatus.FOUND).header("Location",
-                    "/").build();
+        if (optUser.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("Gebruiker nog niet gesynchroniseerd. Neem contact op met je administrator.");
         }
 
-        // register the new user
-        // get user role from smartschool
-        List<String> groups = getUserGroups(tokens, userGroupEndpoint);
-        groups = groups.stream()
-                .map(String::toLowerCase)
-                .collect(Collectors.toList());
-        User user = new User();
-        if (groups.contains("leerkrachten") || groups.contains("leerkracht")) {
-            user.setRole(UserRole.LEERKRACHT);
-        } else if (groups.contains("leerlingen") || groups.contains("leerling") || groups.contains("studenten")
-                || groups.contains("student")) {
-            user.setRole(UserRole.STUDENT);
-        } else {
-            // gets lowest role as default if nothing matches
-            user.setRole(UserRole.STUDENT);
+        User user = optUser.get();
+
+        School school = schoolRepository.findBySsSubdomain(originplatform)
+                .orElse(null);
+        if (school == null) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("School niet gevonden.");
         }
 
-        School school = schoolRepository.findBySsSubdomain(originplatform).orElse(null);
-        Location location = locationRepository.findBySchool(school).getFirst();
+        String roleEndpoint = user.getRole().name().equals("STUDENT") ? "student" : "teacher";
+        Map<String, Object> orUser = lookupService.getUser(school, user.getOneRosterId(), roleEndpoint);
 
-        if (location.equals(null))
-            return ResponseEntity.status(500).body("Geen locatie gevonden");
+        String firstName = orUser != null ? (String) orUser.get("givenName") : "";
+        String lastName = orUser != null ? (String) orUser.get("familyName") : "";
+        String email = orUser != null ? (String) orUser.get("email") : "";
+        Long locationId = school.getLocations().isEmpty() ? null : school.getLocations().get(0).getId();
 
-        user.setSsName(userInfo.fullName);
-        user.setSchool(school);
-        user.setLocation(location);
-        user.setSsRefresh(tokens.getRefreshToken().getValue());
-        user.setSsAccess(tokens.getAccessToken().getValue());
-        user.setSsId(userInfo.userId);
-        user.setSsName(userInfo.fullName);
-
-        userRepository.save(user);
-
-        // create session
         HttpSession session = httpRequest.getSession(true);
 
         Authentication auth = new UsernamePasswordAuthenticationToken(
@@ -180,67 +127,33 @@ public class OAuthController {
 
         session.setAttribute("userId", user.getId());
         session.setAttribute("role", user.getRole().name());
-        session.setAttribute("location", location.getId());
         session.setAttribute("school", school.getId());
-        session.setAttribute("username", user.getSsName());
+        session.setAttribute("location", locationId);
+        session.setAttribute("firstName", firstName);
+        session.setAttribute("lastName", lastName);
+        session.setAttribute("email", email);
 
-        System.out.println(session.toString());
-
-        return ResponseEntity.status(HttpStatus.FOUND).header("Location", "/").build();
+        return ResponseEntity.status(HttpStatus.FOUND).header("Location",
+                "/").build();
     }
 
-    private UserInfo getUserInfo(Tokens tokens, String userInfoUrl) {
-
+    private String getSsId(Tokens tokens, String userInfoUrl) {
         RestTemplate rest = new RestTemplate();
-
-        HttpHeaders headers = new HttpHeaders();
-
-        headers.setBearerAuth(tokens.getAccessToken().getValue());
-
-        HttpEntity<Void> entity = new HttpEntity<>(headers);
-
-        ResponseEntity<Map<String, String>> res = rest.exchange(
-                userInfoUrl,
-                HttpMethod.GET,
-                entity,
-                new ParameterizedTypeReference<Map<String, String>>() {
-                });
-
-        Map<String, String> user = res.getBody();
-
-        UserInfo ui = new UserInfo();
-        ui.userId = (String) user.get("userID");
-        ui.fullName = (String) user.get("fullname");
-
-        return ui;
-    }
-
-    private List<String> getUserGroups(Tokens tokens, String userGroupUrl) {
-        RestTemplate rest = new RestTemplate();
-
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(tokens.getAccessToken().getValue());
-
         HttpEntity<Void> entity = new HttpEntity<>(headers);
 
-        ResponseEntity<GroupsResponseDto> res = rest.exchange(
-                userGroupUrl,
-                HttpMethod.GET,
-                entity,
-                GroupsResponseDto.class);
-
-        GroupsResponseDto data = res.getBody();
-
-        List<String> groups = data.getParentGroups()
-                .stream()
-                .map(GroupDTO::getName)
-                .toList();
-
-        return groups;
-    }
-
-    private class UserInfo {
-        public String userId;
-        public String fullName;
+        try {
+            ResponseEntity<Map<String, String>> res = rest.exchange(
+                    userInfoUrl,
+                    HttpMethod.GET,
+                    entity,
+                    new ParameterizedTypeReference<Map<String, String>>() {
+                    });
+            Map<String, String> body = res.getBody();
+            return body != null ? body.get("userID") : null;
+        } catch (Exception e) {
+            return null;
+        }
     }
 }
