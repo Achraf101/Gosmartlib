@@ -33,4 +33,5 @@ export interface LoanDTO {
   created: string;
   books: LoanBookDTO[];
   groupId?: string;
+  extendPeriod: number;
 }
