@@ -304,6 +304,14 @@ table td {
   display: block;
 }
 
+.preview-iframe {
+  width: 100%;
+  height: 600px;
+  border: none;
+  border-radius: 0;
+  display: block;
+}
+
 @media (min-width: 800px) {
   .show-desktop {
     display: inline-block;

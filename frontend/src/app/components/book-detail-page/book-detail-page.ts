@@ -45,6 +45,7 @@ import { FileSelectEvent, FileUpload, FileUploadModule } from 'primeng/fileuploa
 import { MaterialComponent } from '../material/material';
 import { AuthService } from '../../services/auth';
 import { Textarea } from 'primeng/textarea';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-book-detail-page',
@@ -92,6 +93,9 @@ export class BookDetailPage implements OnInit {
   uploadDialogVisible = false;
   pendingFile?: File;
   uploadNote = '';
+  previewDialogVisible = false;
+  previewUrl: SafeResourceUrl | null = null;
+  iaId: string | null = null;
   today = new Date();
   endDate = new Date();
   loading = new DelayedLoader();
@@ -118,6 +122,7 @@ export class BookDetailPage implements OnInit {
     private readonly materialService: MaterialService,
     private readonly uploadService: UploadService,
     public auth: AuthService,
+    private readonly sanitizer: DomSanitizer,
   ) {}
 
   ngOnInit(): void {
@@ -149,6 +154,7 @@ export class BookDetailPage implements OnInit {
     this.loading.start();
     this.error = '';
     this.book = undefined;
+    this.iaId = null;
 
     this.bookService.getById(this.bookId).subscribe({
       next: (book) => {
@@ -174,6 +180,13 @@ export class BookDetailPage implements OnInit {
             });
           },
         });
+
+        if (book.isbn) {
+          this.bookService.getIaPreview(this.bookId).subscribe({
+            next: (data) => (this.iaId = data.ia_id),
+            error: () => {},
+          });
+        }
 
         this.loading.stop();
       },
@@ -418,6 +431,14 @@ export class BookDetailPage implements OnInit {
     this.cartForm.controls.requestedAmount.setValidators(validators);
     this.loanForm.controls.requestedAmount.updateValueAndValidity();
     this.cartForm.controls.requestedAmount.updateValueAndValidity();
+  }
+
+  openPreview(): void {
+    if (!this.iaId) return;
+    this.previewUrl = this.sanitizer.bypassSecurityTrustResourceUrl(
+      `https://archive.org/embed/${this.iaId}`,
+    );
+    this.previewDialogVisible = true;
   }
 
   getStarFill(position: number): number {

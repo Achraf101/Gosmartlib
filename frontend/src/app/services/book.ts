@@ -49,6 +49,10 @@ export class BookService {
     return this.apiService.get<BookLookupDTO>(`${this.endpoint}/isbn/${encodeURIComponent(isbn)}`);
   }
 
+  getIaPreview(id: number): Observable<{ ia_id: string }> {
+    return this.apiService.get<{ ia_id: string }>(`${this.endpoint}/${id}/ia-preview`);
+  }
+
   // get all bookResults
   getAllBookResults(page: number = 0, size: number = 5): Observable<Page<BookResult>> {
     const params = new HttpParams().set('page', page.toString()).set('size', size.toString());

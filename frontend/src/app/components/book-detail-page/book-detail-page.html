@@ -114,6 +114,15 @@
             severity="primary"
             (onClick)="cartDialogVisible = true"
           />
+          @if (iaId) {
+            <p-button
+              class="btn"
+              label="Boekpreview"
+              severity="secondary"
+              icon="pi pi-book"
+              (onClick)="openPreview()"
+            />
+          }
         </div>
       </div>
     </div>
@@ -436,6 +445,18 @@
           (onClick)="confirmUpload()"
         />
       </ng-template>
+    </p-dialog>
+
+    <p-dialog
+      header="Boekpreview"
+      [(visible)]="previewDialogVisible"
+      [modal]="true"
+      [resizable]="false"
+      [style]="{ width: '90vw' }"
+    >
+      @if (previewUrl) {
+        <iframe [src]="previewUrl" class="preview-iframe" frameborder="0" allowfullscreen></iframe>
+      }
     </p-dialog>
 
     <div class="box">
