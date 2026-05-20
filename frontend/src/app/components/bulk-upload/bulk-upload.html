@@ -152,8 +152,8 @@
           <span class="label">Fouten</span>
         </div>
         <div class="metric neutral">
-          <span class="value">{{ result.total_processed }}</span>
-          <span class="label">Totaal verwerkt</span>
+          <span class="value">{{ result.incomplete.length }}</span>
+          <span class="label">Onvolledig</span>
         </div>
       </div>
 
@@ -194,10 +194,7 @@
 
       @if (result.incomplete.length > 0) {
         <div class="incomplete-section">
-          <h4>
-            <span class="badge incomplete">{{ result.incomplete.length }}</span>
-            Onvolledig — vul de ontbrekende velden in
-          </h4>
+          <h4>vul de ontbrekende velden in</h4>
 
           @for (book of result.incomplete; track $index) {
             <p-card class="incomplete-card">
@@ -207,106 +204,209 @@
                   <div class="book-info">
                     <h3>{{ book.title }}</h3>
                     <p class="book-author">{{ book.author_name }}</p>
+                    @if (book.isbn) {
+                      <p class="book-isbn">ISBN: {{ book.isbn }}</p>
+                    }
                   </div>
                 </div>
+
+                @if (book.invalid_fields.length > 0) {
+                  <div class="invalid-notice">
+                    <span class="badge error">Ongeldige waarden gecorrigeerd</span>
+                    @for (msg of book.invalid_fields; track $index) {
+                      <p class="invalid-msg">{{ msg }}</p>
+                    }
+                  </div>
+                }
               </ng-template>
 
               <div class="incomplete-fields">
-                @if (book.missing_fields.includes('boektype')) {
-                  <div class="field">
-                    <label for="booktype-{{ book.isbn }}">Boektype *</label>
-                    <input
-                      pInputText
-                      id="booktype-{{ book.isbn }}"
-                      [(ngModel)]="completions[book.isbn].bookTypeName"
-                      placeholder="Voer boektype in"
-                      class="w-full"
+                <div class="field" [class.missing]="isFieldMissing(book, 'beschrijving')">
+                  <label>Beschrijving * (max 1000 tekens)</label>
+                  <textarea
+                    pTextarea
+                    [(ngModel)]="completions[getCompletionKey(book)].description"
+                    [maxlength]="1000"
+                    [rows]="4"
+                    class="w-full"
+                  >
+                  </textarea>
+                  <small
+                    >{{ completions[getCompletionKey(book)].description?.length || 0 }} /
+                    1000</small
+                  >
+                </div>
+
+                <div class="field" [class.missing]="isFieldMissing(book, 'boektype')">
+                  <label>Boektype *</label>
+                  <p-iftalabel>
+                    <p-multiselect
+                      fluid
+                      display="chip"
+                      [options]="bookTypes"
+                      [(ngModel)]="completions[getCompletionKey(book)].bookTypes"
+                      [selectionLimit]="1"
+                      optionLabel="name"
+                      optionValue="id"
+                      [showToggleAll]="false"
+                      id="genres-{{ getCompletionKey(book) }}"
                     />
-                  </div>
-                }
+                    <label>Boektype</label>
+                  </p-iftalabel>
+                </div>
 
-                @if (book.missing_fields.includes('genres')) {
-                  <div class="field">
-                    <label for="genres-{{ book.isbn }}">Genres * (spatie-gescheiden)</label>
-                    <input
-                      pInputText
-                      id="genres-{{ book.isbn }}"
-                      [(ngModel)]="completions[book.isbn].genresRaw"
-                      placeholder="bv. fantasy avontuur"
-                      class="w-full"
+                <div class="field" [class.missing]="isFieldMissing(book, 'genres')">
+                  <label>Genres *</label>
+                  <p-iftalabel>
+                    <p-multiselect
+                      fluid
+                      display="chip"
+                      [options]="genres"
+                      [(ngModel)]="completions[getCompletionKey(book)].genreIds"
+                      [selectionLimit]="5"
+                      optionLabel="name"
+                      optionValue="id"
+                      [showToggleAll]="false"
+                      id="genres-{{ getCompletionKey(book) }}"
                     />
-                  </div>
-                }
+                    <label for="genres-{{ getCompletionKey(book) }}">Genre(s)</label>
+                  </p-iftalabel>
+                </div>
 
-                @if (book.missing_fields.includes('taal')) {
-                  <div class="field">
-                    <label for="language-{{ book.isbn }}">Taal *</label>
-                    <input
-                      pInputText
-                      id="language-{{ book.isbn }}"
-                      [(ngModel)]="completions[book.isbn].languageName"
-                      placeholder="bv. Nederlands"
-                      class="w-full"
+                <div class="field" [class.missing]="isFieldMissing(book, 'taal')">
+                  <label>Taal *</label>
+                  <p-iftalabel>
+                    <p-multiselect
+                      fluid
+                      display="chip"
+                      [options]="languages"
+                      [(ngModel)]="completions[getCompletionKey(book)].language"
+                      [selectionLimit]="1"
+                      optionLabel="name"
+                      optionValue="id"
+                      [showToggleAll]="false"
+                      id="genres-{{ getCompletionKey(book) }}"
                     />
-                  </div>
-                }
+                    <label for="genres-{{ getCompletionKey(book) }}">Taal</label>
+                  </p-iftalabel>
+                </div>
 
-                @if (book.missing_fields.includes('beschrijving')) {
-                  <div class="field">
-                    <label for="description-{{ book.isbn }}"
-                      >Beschrijving * (max 1000 tekens)</label
-                    >
-                    <textarea
-                      pInputTextarea
-                      id="description-{{ book.isbn }}"
-                      [(ngModel)]="completions[book.isbn].description"
-                      placeholder="Voer beschrijving in"
-                      [maxlength]="1000"
-                      [rows]="4"
-                      class="w-full"
-                    ></textarea>
-                    <small class="text-muted">
-                      {{ completions[book.isbn].description?.length || 0 }} / 1000 tekens
-                    </small>
-                  </div>
-                }
+                <div class="field" [class.missing]="isFieldMissing(book, 'fictie')">
+                  <label>Fictie *</label>
+                  <p-select
+                    [(ngModel)]="completions[getCompletionKey(book)].fiction"
+                    [options]="[
+                      { label: 'Ja', value: 'JA' },
+                      { label: 'Nee', value: 'NEE' },
+                    ]"
+                    optionLabel="label"
+                    optionValue="value"
+                    class="w-full"
+                  >
+                  </p-select>
+                </div>
 
-                @if (book.missing_fields.includes('fictie')) {
-                  <div class="field">
-                    <label for="fiction-{{ book.isbn }}">Fictie *</label>
-                    <p-select
-                      id="fiction-{{ book.isbn }}"
-                      [(ngModel)]="completions[book.isbn].fiction"
-                      [options]="[
-                        { label: 'Ja', value: 'JA' },
-                        { label: 'Nee', value: 'NEE' },
-                      ]"
-                      optionLabel="label"
-                      optionValue="value"
-                      placeholder="Selecteer"
-                      class="w-full"
-                    ></p-select>
-                  </div>
-                }
+                <div class="field">
+                  <label>Uitgever (optioneel)</label>
+                  <input
+                    pInputText
+                    [(ngModel)]="completions[getCompletionKey(book)].publisherName"
+                    placeholder="Uitgever"
+                    class="w-full"
+                  />
+                </div>
+
+                <div class="field">
+                  <label>Thema's (optioneel, spatie-gescheiden)</label>
+                  <p-iftalabel>
+                    <p-multiselect
+                      fluid
+                      display="chip"
+                      [options]="themes"
+                      [(ngModel)]="completions[getCompletionKey(book)].themes"
+                      [selectionLimit]="5"
+                      optionLabel="name"
+                      optionValue="id"
+                      [showToggleAll]="false"
+                      id="genres-{{ getCompletionKey(book) }}"
+                    />
+                    <label for="genres-{{ getCompletionKey(book) }}">Thema(s)</label>
+                  </p-iftalabel>
+                </div>
+
+                <div class="field">
+                  <label>leesniveau (optioneel, A/B/C/D)</label>
+                  <input
+                    pInputText
+                    [(ngModel)]="completions[getCompletionKey(book)].clib"
+                    placeholder="A, B, C of D"
+                    class="w-full"
+                  />
+                </div>
+
+                <div class="field">
+                  <label>Lettergrootte (optioneel)</label>
+                  <p-select
+                    [(ngModel)]="completions[getCompletionKey(book)].fontSize"
+                    [options]="[
+                      { label: 'Groot', value: 'groot' },
+                      { label: 'Medium', value: 'medium' },
+                      { label: 'Klein', value: 'klein' },
+                      { label: 'Geen', value: '' },
+                    ]"
+                    optionLabel="label"
+                    optionValue="value"
+                    class="w-full"
+                  >
+                  </p-select>
+                </div>
+
+                <div class="field">
+                  <label>Aantal pagina's (optioneel)</label>
+                  <input
+                    pInputText
+                    type="number"
+                    [(ngModel)]="completions[getCompletionKey(book)].pages"
+                    class="w-full"
+                  />
+                </div>
+
+                <div class="field">
+                  <label>Jaar van uitgave (optioneel)</label>
+                  <input
+                    pInputText
+                    type="number"
+                    [(ngModel)]="completions[getCompletionKey(book)].year"
+                    class="w-full"
+                  />
+                </div>
+
+                <div class="field">
+                  <label>Cover URL (optioneel)</label>
+                  <input
+                    pInputText
+                    [(ngModel)]="completions[getCompletionKey(book)].cover"
+                    placeholder="https://..."
+                    class="w-full"
+                  />
+                </div>
               </div>
 
               <ng-template pTemplate="footer">
-                <div class="card-footer">
-                  <p-button
-                    label="Opslaan"
-                    icon="pi pi-check"
-                    (onClick)="submitCompletion(book)"
-                    [loading]="false"
-                    severity="success"
-                  ></p-button>
-                </div>
+                <p-button
+                  label="Opslaan"
+                  icon="pi pi-check"
+                  (onClick)="submitCompletion(book)"
+                  severity="primary"
+                >
+                </p-button>
               </ng-template>
             </p-card>
           }
+
+          <p-button (click)="reset()">Nieuw bestand uploaden</p-button>
         </div>
       }
-
-      <p-button (click)="reset()">Nieuw bestand uploaden</p-button>
     </div>
   }
 </div>

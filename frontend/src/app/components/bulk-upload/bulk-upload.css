@@ -377,3 +377,25 @@ hr {
   justify-content: flex-end;
   padding: 1rem;
 }
+
+.w-full {
+  resize: vertical;
+}
+
+.field.missing {
+  background-color: rgba(239, 68, 68, 0.08);
+  border-radius: 6px;
+  padding: 8px;
+}
+
+.field.missing label {
+  color: #ef4444;
+}
+
+.field.missing input,
+.field.missing textarea,
+.field.missing .p-select,
+.field.missing .p-multiselect {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 1px #ef4444;
+}
