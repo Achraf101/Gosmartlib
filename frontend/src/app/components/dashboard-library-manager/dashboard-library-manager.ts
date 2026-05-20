@@ -36,6 +36,9 @@ import { LocationSettings } from '../../models/location-settings';
 import { LocationSettingsService } from '../../services/location-settings';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { isVisible } from '../../models/location-settings';
+import { SmartschoolSyncService } from '../../services/smartschool-sync';
+import { ConfirmDialogModule, ConfirmDialog } from 'primeng/confirmdialog';
+import { ConfirmationService } from 'primeng/api';
 
 @Component({
   selector: 'app-library-manager-dashboard',
@@ -57,8 +60,9 @@ import { isVisible } from '../../models/location-settings';
     ProgressBarModule,
     ToggleSwitchModule,
     FormsModule,
+    ConfirmDialog,
   ],
-  providers: [MessageService],
+  providers: [MessageService, ConfirmationService],
   templateUrl: './dashboard-library-manager.html',
   styleUrl: './dashboard-library-manager.css',
 })
@@ -67,6 +71,7 @@ export class DashboardLibraryManager implements OnInit {
   publisherFormVisible = false;
   pendingLoanCount = 0;
   isVisible = isVisible;
+  syncLoading = false;
 
   activeSection: Section | null = null;
   grades = [
@@ -110,6 +115,8 @@ export class DashboardLibraryManager implements OnInit {
     private messageService: MessageService,
     private locationBookService: LocationBookService,
     private locationSettingsService: LocationSettingsService,
+    private smartschoolSyncService: SmartschoolSyncService,
+    private confirmationService: ConfirmationService,
   ) {}
 
   ngOnInit(): void {
@@ -377,6 +384,42 @@ export class DashboardLibraryManager implements OnInit {
     this.loanService.getTopGenres().subscribe({
       next: (genres) => (this.topGenres = genres),
       error: () => (this.topGenres = []),
+    });
+  }
+
+  syncSmartschool(): void {
+    this.syncLoading = true;
+    this.smartschoolSyncService.syncSchool(1).subscribe({
+      next: () => {
+        this.syncLoading = false;
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Sync voltooid',
+          detail: 'Smartschool data is gesynchroniseerd.',
+        });
+      },
+      error: () => {
+        this.syncLoading = false;
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Fout',
+          detail: 'Synchronisatie mislukt.',
+        });
+      },
+    });
+  }
+  confirmSync() {
+    this.confirmationService.confirm({
+      header: 'Bevestiging',
+      message: 'Ben je zeker dat je de Smartschool synchronisatie wilt starten?',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Ja',
+      rejectLabel: 'Annuleren',
+      acceptButtonStyleClass: 'p-button-primary',
+      rejectButtonStyleClass: 'p-button-secondary',
+      accept: () => {
+        this.syncSmartschool();
+      },
     });
   }
 }

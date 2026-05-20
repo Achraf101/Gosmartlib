@@ -115,6 +115,24 @@
     </div>
   </p-card>
 
+  <p-card class="nav-card">
+    <div class="card-content">
+      <i class="pi pi-refresh card-icon"></i>
+      <span class="card-title">Smartschool sync</span>
+      <span class="card-desc">Synchroniseer gebruikers en klassen</span>
+    </div>
+    <div class="card-actions">
+      <p-button
+        label="Synchroniseren"
+        icon="pi pi-refresh"
+        severity="secondary"
+        size="small"
+        [loading]="syncLoading"
+        (onClick)="confirmSync()"
+      />
+    </div>
+  </p-card>
+
   <div class="stats-grid">
     @if (isVisible(locationSettings, 'DASHBOARD', 'TOP_BOOKS')) {
       <p-card class="stats-card">
@@ -503,3 +521,4 @@
     <p-button label="Opslaan" icon="pi pi-check" (onClick)="addPublisher()" />
   </ng-template>
 </p-dialog>
+<p-confirmDialog></p-confirmDialog>
