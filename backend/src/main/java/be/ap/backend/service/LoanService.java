@@ -193,6 +193,12 @@ public class LoanService {
         loanRepository.deleteById(id);
     }
 
+    public List<LoanDTO> getByStateAndLocation(LoanStatus state, Long locationId) {
+        return loanRepository.findByStateAndLocation(state, locationId).stream()
+                .map(this::toDTO)
+                .toList();
+    }
+
     private LoanDTO toDTO(Loan loan) {
         LoanDTO dto = new LoanDTO();
         dto.setId(loan.getId());
@@ -207,6 +213,7 @@ public class LoanService {
         dto.setCreated(loan.getCreated());
         dto.setUsername(loan.getUser().getUsername());
         dto.setGroupId(loan.getGroupId());
+        dto.setExtendPeriod(loan.getLocation().getSchool().getExtendPeriod());
 
         LoanBookDTO[] books = loan.getLoanBooks().stream()
                 .map(lb -> {
@@ -275,6 +282,26 @@ public class LoanService {
                 .limit(5)
                 .map(row -> new TopBookDTO((String) row[0], ((Long) row[1]).intValue()))
                 .toList();
+    }
+
+    public LoanDTO extendLoan(Long id) {
+        Loan loan = loanRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Lening niet gevonden met id: " + id));
+
+        if (loan.getStatus() != LoanStatus.RECEIVED && loan.getStatus() != LoanStatus.ACCEPTED) {
+            throw new IllegalArgumentException("Lening kan niet verlengd worden met status: " + loan.getStatus());
+        }
+
+        School school = loan.getLocation().getSchool();
+
+        if (loan.getExtended() >= school.getExtendLimit()) {
+            throw new IllegalArgumentException("Maximum aantal verlengingen bereikt.");
+        }
+
+        loan.setEnd(loan.getEnd().plusDays(school.getExtendPeriod()));
+        loan.setExtended((byte) (loan.getExtended() + 1));
+
+        return toDTO(loanRepository.save(loan));
     }
 
 }

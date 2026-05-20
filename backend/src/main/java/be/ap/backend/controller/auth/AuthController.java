@@ -17,15 +17,20 @@ public class AuthController {
         final String role = (String) session.getAttribute("role");
         final Object locationRaw = session.getAttribute("location");
         final Object userIdRaw = session.getAttribute("userId");
+        final Object schoolRaw = session.getAttribute("school"); // voeg toe
+
         final Long locationId = (locationRaw != null && !locationRaw.toString().isBlank())
                 ? Long.valueOf(locationRaw.toString())
                 : null;
         final Long userId = (userIdRaw != null) ? Long.valueOf(userIdRaw.toString()) : null;
+        final Long schoolId = (schoolRaw != null) ? Long.valueOf(schoolRaw.toString()) : null; // voeg toe
+
         return ResponseEntity.ok(Map.of(
                 "username", username,
                 "role", role,
                 "locationId", locationId != null ? locationId : 0,
-                "userId", userId != null ? userId : 0));
+                "userId", userId != null ? userId : 0,
+                "schoolId", schoolId != null ? schoolId : 0)); // voeg toe
     }
 
     @GetMapping("me/id")

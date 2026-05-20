@@ -125,14 +125,14 @@ export class DashboardLibraryManager implements OnInit {
   }
 
   loadPendingCount(): void {
-  this.loanService.getRequested().subscribe({
-    next: (loans) => {
-      const uniqueGroups = new Set(loans.map(l => l.groupId ?? l.id));
-      this.pendingLoanCount = uniqueGroups.size;
-    },
-    error: () => (this.pendingLoanCount = 0),
-  });
-}
+    this.loanService.getRequested().subscribe({
+      next: (loans) => {
+        const uniqueGroups = new Set(loans.map((l) => l.groupId ?? l.id));
+        this.pendingLoanCount = uniqueGroups.size;
+      },
+      error: () => (this.pendingLoanCount = 0),
+    });
+  }
 
   loadSectionAndBooks(): void {
     this.monthlyBooksLoading = true;
@@ -241,6 +241,14 @@ export class DashboardLibraryManager implements OnInit {
 
   goToCatalogus(): void {
     this.router.navigate(['/catalogus']);
+  }
+
+  goToPickUp(): void {
+    this.router.navigate(['/ophalen']);
+  }
+
+  goToReturn(): void {
+    this.router.navigate(['/terugbrengen']);
   }
 
   addAuthor(): void {
@@ -371,4 +379,8 @@ export class DashboardLibraryManager implements OnInit {
       error: () => (this.topGenres = []),
     });
   }
+
+  goToSchoolSettings(): void {
+  this.router.navigate(['/school/instellingen']);
+}
 }
