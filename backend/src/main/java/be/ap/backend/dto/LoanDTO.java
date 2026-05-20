@@ -26,4 +26,6 @@ public class LoanDTO {
     private LocalDateTime created;
     @JsonProperty("groupId")
     private String groupId;
+    @JsonProperty("extendPeriod")
+    private int extendPeriod;
 }

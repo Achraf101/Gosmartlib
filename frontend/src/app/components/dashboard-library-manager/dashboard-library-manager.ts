@@ -379,4 +379,8 @@ export class DashboardLibraryManager implements OnInit {
       error: () => (this.topGenres = []),
     });
   }
+
+  goToSchoolSettings(): void {
+  this.router.navigate(['/school/instellingen']);
+}
 }

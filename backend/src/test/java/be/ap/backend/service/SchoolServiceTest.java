@@ -1,6 +1,7 @@
 package be.ap.backend.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -17,7 +18,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import be.ap.backend.dto.SchoolDTO;
 import be.ap.backend.entity.School;
+import be.ap.backend.exception.ArgumentsInvalidException;
+import be.ap.backend.exception.MissingArgumentsException;
 import be.ap.backend.repository.SchoolRepository;
+import jakarta.persistence.EntityNotFoundException;
 
 @ExtendWith(MockitoExtension.class)
 public class SchoolServiceTest {
@@ -114,5 +118,95 @@ public class SchoolServiceTest {
 
         assertEquals(true, result.isEmpty());
         verify(schoolRepository).findById(1L);
+    }
+
+    // ── updateSchool ──────────────────────────────────────────────
+
+    @Test
+    void updateSchool_success() {
+        School existing = buildSchoolEntity(1L, "AP hogeschool");
+        SchoolDTO dto = buildValidDTO("AP hogeschool updated");
+
+        when(schoolRepository.findById(1L)).thenReturn(Optional.of(existing));
+        when(schoolRepository.save(any(School.class))).thenReturn(existing);
+
+        SchoolDTO result = schoolService.updateSchool(1L, dto);
+
+        assertEquals("AP hogeschool updated", result.getName());
+        verify(schoolRepository).save(any(School.class));
+    }
+
+    @Test
+    void updateSchool_notFound_throwsEntityNotFoundException() {
+        SchoolDTO dto = buildValidDTO("AP hogeschool");
+
+        when(schoolRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThrows(EntityNotFoundException.class, () -> schoolService.updateSchool(99L, dto));
+    }
+
+    @Test
+    void updateSchool_missingName_throwsMissingArgumentsException() {
+        School existing = buildSchoolEntity(1L, "AP hogeschool");
+        SchoolDTO dto = buildValidDTO(null);
+
+        when(schoolRepository.findById(1L)).thenReturn(Optional.of(existing));
+
+        assertThrows(MissingArgumentsException.class, () -> schoolService.updateSchool(1L, dto));
+    }
+
+    @Test
+    void updateSchool_adresTooLong_throwsArgumentsInvalidException() {
+        School existing = buildSchoolEntity(1L, "AP hogeschool");
+        SchoolDTO dto = buildValidDTO("AP hogeschool");
+        dto.setAdres("a".repeat(501));
+
+        when(schoolRepository.findById(1L)).thenReturn(Optional.of(existing));
+
+        assertThrows(ArgumentsInvalidException.class, () -> schoolService.updateSchool(1L, dto));
+    }
+
+    @Test
+    void updateSchool_descriptionTooLong_throwsArgumentsInvalidException() {
+        School existing = buildSchoolEntity(1L, "AP hogeschool");
+        SchoolDTO dto = buildValidDTO("AP hogeschool");
+        dto.setDescription("a".repeat(1001));
+
+        when(schoolRepository.findById(1L)).thenReturn(Optional.of(existing));
+
+        assertThrows(ArgumentsInvalidException.class, () -> schoolService.updateSchool(1L, dto));
+    }
+
+    @Test
+    void updateSchool_missingSsSubdomain_throwsMissingArgumentsException() {
+        School existing = buildSchoolEntity(1L, "AP hogeschool");
+        SchoolDTO dto = buildValidDTO("AP hogeschool");
+        dto.setSsSubdomain(null);
+
+        when(schoolRepository.findById(1L)).thenReturn(Optional.of(existing));
+
+        assertThrows(MissingArgumentsException.class, () -> schoolService.updateSchool(1L, dto));
+    }
+
+    @Test
+    void updateSchool_borrowLimitZero_throwsArgumentsInvalidException() {
+        School existing = buildSchoolEntity(1L, "AP hogeschool");
+        SchoolDTO dto = buildValidDTO("AP hogeschool");
+        dto.setBorrowLimit(0);
+
+        when(schoolRepository.findById(1L)).thenReturn(Optional.of(existing));
+
+        assertThrows(ArgumentsInvalidException.class, () -> schoolService.updateSchool(1L, dto));
+    }
+
+    @Test
+    void updateSchool_extendLimitTooHigh_throwsArgumentsInvalidException() {
+        School existing = buildSchoolEntity(1L, "AP hogeschool");
+        SchoolDTO dto = buildValidDTO("AP hogeschool");
+        dto.setExtendLimit(11);
+
+        when(schoolRepository.findById(1L)).thenReturn(Optional.of(existing));
+
+        assertThrows(ArgumentsInvalidException.class, () -> schoolService.updateSchool(1L, dto));
     }
 }

@@ -31,4 +31,9 @@ public class SchoolController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<SchoolDTO> updateSchool(@PathVariable Long id, @RequestBody SchoolDTO dto) {
+        return ResponseEntity.ok(schoolService.updateSchool(id, dto));
+    }
 }
