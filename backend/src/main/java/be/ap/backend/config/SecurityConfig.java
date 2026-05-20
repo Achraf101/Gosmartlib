@@ -64,12 +64,16 @@ public class SecurityConfig {
 
                             session.setAttribute("userId", user.get("userId"));
                             session.setAttribute("location", user.get("location"));
+                            session.setAttribute("school", user.get("school"));
                             session.setAttribute("role", user.get("role"));
                             session.setAttribute("username", user.get("username"));
 
                             res.setStatus(HttpServletResponse.SC_OK);
                             res.setContentType("application/json");
                             res.getWriter().write("{\"message\":\"Login successful\"}");
+
+                            session.setAttribute("school", user.get("school"));
+System.out.println("DEBUG school in session: " + session.getAttribute("school"));
                         })
                         .failureHandler((req, res, exception) -> {
                             res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -113,15 +117,20 @@ public class SecurityConfig {
         User u = (User) auth.getPrincipal();
 
         String location = u.getLocation() != null ? u.getLocation().getId().toString() : "";
+        String school = u.getSchool() != null ? u.getSchool().getId().toString() : "";
 
         System.out.println(u.getUsername());
         Map<String, String> usr = Map.of(
                 "userId", u.getId().toString(),
                 "location", location,
+                "school", school,
                 "role", u.getRole().name(),
                 "username", u.getUsername() // not smartschool name
+
         );
 
         return usr;
     }
+
+    
 }
