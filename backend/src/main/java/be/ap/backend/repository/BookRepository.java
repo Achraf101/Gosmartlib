@@ -22,6 +22,10 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
     Page<Book> findAll(Pageable pageable);
 
+    // get all with the campuses
+    @Query("SELECT cb.book FROM CampusBook cb WHERE cb.campus.id IN :campusIds")
+    Page<Book> findAllByCampus(@Param("campusIds") List<Long> campus, Pageable pageable);
+
     boolean existsByIsbn(String isbn);
 
     @Query("SELECT b.isbn FROM Book b WHERE b.isbn IS NOT NULL")
@@ -36,7 +40,9 @@ public interface BookRepository extends JpaRepository<Book, Long> {
                 )
             FROM Book b
             JOIN b.genres g
-            WHERE g IN (
+            JOIN b.campusBooks cb
+            WHERE cb.campus.id IN :campusIds
+            AND g IN (
                 SELECT g2
                 FROM Book b2
                 JOIN b2.genres g2
@@ -44,20 +50,25 @@ public interface BookRepository extends JpaRepository<Book, Long> {
             )
             AND b.id != :id
             """)
-    List<BookCardDTO> findRelated(@Param("id") Long id);
+    List<BookCardDTO> findRelated(@Param("id") Long id, @Param("campusIds") List<Long> campusIds);
 
-    @Query("SELECT DISTINCT b FROM Book b " +
-            "LEFT JOIN b.author a " +
-            "LEFT JOIN b.themes t " +
-            "LEFT JOIN b.genres g " +
-            "LEFT JOIN b.series s " +
-            "WHERE LOWER(b.title) LIKE LOWER(CONCAT('%', :query, '%')) " +
-            "OR LOWER(a.name) LIKE LOWER(CONCAT('%', :query, '%')) " +
-            "OR LOWER(g.name) LIKE LOWER(CONCAT('%', :query, '%')) " +
-            "OR LOWER(s.name) LIKE LOWER(CONCAT('%', :query, '%')) " +
-            "OR LOWER(t.name) LIKE LOWER(CONCAT('%', :query, '%')) " +
-            "OR b.isbn LIKE CONCAT('%', :query, '%')")
-    Page<Book> search(@Param("query") String query, Pageable pageable);
+    @Query("""
+            SELECT DISTINCT b FROM Book b
+            LEFT JOIN b.author a
+            LEFT JOIN b.themes t
+            LEFT JOIN b.genres g
+            LEFT JOIN b.series s
+            JOIN b.campusBooks cb
+            WHERE cb.campus.id IN :campusIds
+            AND (
+            LOWER(b.title) LIKE LOWER(CONCAT('%', :query, '%'))
+            OR LOWER(a.name) LIKE LOWER(CONCAT('%', :query, '%'))
+            OR LOWER(g.name) LIKE LOWER(CONCAT('%', :query, '%'))
+            OR LOWER(s.name) LIKE LOWER(CONCAT('%', :query, '%'))
+            OR LOWER(t.name) LIKE LOWER(CONCAT('%', :query, '%'))
+            OR b.isbn LIKE CONCAT('%', :query, '%')
+            )""")
+    Page<Book> search(@Param("campusIds") List<Long> campusIds, @Param("query") String query, Pageable pageable);
 
     @Query("""
             SELECT new be.ap.backend.dto.BookResultDTO(
@@ -103,23 +114,28 @@ public interface BookRepository extends JpaRepository<Book, Long> {
             """)
     List<ThemeProjectionDTO> findThemesForBooks(@Param("bookIds") List<Long> bookIds);
 
-    @Query("SELECT DISTINCT b FROM Book b " +
-            "LEFT JOIN b.author a " +
-            "LEFT JOIN b.genres g " +
-            "LEFT JOIN b.language l " +
-            "LEFT JOIN b.series s " +
-            "LEFT JOIN b.themes t " +
-            "WHERE (:genres IS NULL OR g.id IN :genres) " +
-            "AND (:language IS NULL OR l.id = :language) " +
-            "AND (:didactic IS NULL OR b.didactic = :didactic) " +
-            "AND (:fiction IS NULL OR b.fiction = :fiction) " +
-            "AND (:authorIds IS NULL OR a.id IN :authorIds) " +
-            "AND (COALESCE(:seriesIds, NULL) IS NULL OR s.id IN :seriesIds) " +
-            "AND (:pagesMin IS NULL OR b.pages >= :pagesMin) " +
-            "AND (:pagesMax IS NULL OR b.pages <= :pagesMax) " +
-            "AND (COALESCE(:clibs, NULL) IS NULL OR b.clib IN :clibs) " +
-            "AND (:themes IS NULL OR t.id IN :themes) ")
+    @Query(value = """
+            SELECT DISTINCT b FROM Book b
+            LEFT JOIN b.author a
+            LEFT JOIN b.genres g
+            LEFT JOIN b.language l
+            LEFT JOIN b.series s
+            LEFT JOIN b.themes t
+            JOIN b.campusBooks cb
+            WHERE cb.campus.id = :campusId
+            AND (:genres IS NULL OR g.id IN :genres)
+            AND (:language IS NULL OR l.id = :language)
+            AND (:didactic IS NULL OR b.didactic = :didactic)
+            AND (:fiction IS NULL OR b.fiction = :fiction)
+            AND (:authorIds IS NULL OR a.id IN :authorIds)
+            AND (COALESCE(:seriesIds, NULL) IS NULL OR s.id IN :seriesIds)
+            AND (:pagesMin IS NULL OR b.pages >= :pagesMin)
+            AND (:pagesMax IS NULL OR b.pages <= :pagesMax)
+            AND (COALESCE(:clibs, NULL) IS NULL OR b.clib IN :clibs)
+            AND (:themes IS NULL OR t.id IN :themes)
+            """)
     Page<Book> filter(
+            @Param("campusId") Long campus,
             @Param("genres") List<Long> genres,
             @Param("language") Long language,
             @Param("fiction") Boolean fiction,

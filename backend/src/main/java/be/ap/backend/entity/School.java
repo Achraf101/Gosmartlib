@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,7 +15,7 @@ import lombok.ToString;
 @Table(name = "school")
 @Data
 @NoArgsConstructor
-public class School implements Serializable{
+public class School implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,6 +38,7 @@ public class School implements Serializable{
     private String ssSubdomain;
 
     // One school has many campuses
+    @JsonIgnore
     @ToString.Exclude
     @OneToMany(mappedBy = "school", cascade = CascadeType.ALL)
     private List<Campus> campuses = new ArrayList<>();

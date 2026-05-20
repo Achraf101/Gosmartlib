@@ -115,6 +115,7 @@ public class BookService {
     }
 
     public Page<Book> filter(
+            Long campusId,
             List<Long> genres,
             Long language,
             Boolean fiction,
@@ -132,6 +133,7 @@ public class BookService {
         }
 
         return bookRepository.filter(
+                campusId,
                 genres,
                 language,
                 fiction,

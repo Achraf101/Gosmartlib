@@ -2,6 +2,8 @@ package be.ap.backend.entity;
 
 import java.io.Serializable;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "campus")
 @Data
 @NoArgsConstructor
-public class Campus implements Serializable{
+public class Campus implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -34,6 +36,7 @@ public class Campus implements Serializable{
     @Column(name = "extend_limit", nullable = false)
     private int extendLimit;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "school_id")
     private School school;
