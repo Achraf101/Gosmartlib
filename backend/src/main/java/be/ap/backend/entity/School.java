@@ -49,7 +49,6 @@ public class School implements Serializable {
     @Column(nullable = false, unique = true, length = 255, name = "ss_subdomain")
     private String ssSubdomain;
 
-    // One school has many campuses
     @JsonIgnore
     @ToString.Exclude
     @OneToMany(mappedBy = "school", cascade = CascadeType.ALL)
