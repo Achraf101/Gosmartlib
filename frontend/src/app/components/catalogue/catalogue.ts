@@ -271,8 +271,15 @@ export class CatalogueComponent implements OnInit {
           this.showDialog = false;
           this.router.navigate(['/dashboard/bibliotheek-beheerder']);
         },
-        error: () => {
+        error: (err) => {
           this.showDialog = false;
+          if (err.status === 409) {
+            this.messageService.add({
+              severity: 'warn',
+              summary: 'Al in de kijker',
+              detail: 'Dit boek staat al in de kijker.',
+            });
+          }
         },
       });
   }

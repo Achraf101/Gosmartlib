@@ -36,6 +36,7 @@ import { LocationSettings } from '../../models/location-settings';
 import { LocationSettingsService } from '../../services/location-settings';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { isVisible } from '../../models/location-settings';
+import { AuthService } from '../../services/auth';
 
 @Component({
   selector: 'app-library-manager-dashboard',
@@ -101,6 +102,8 @@ export class DashboardLibraryManager implements OnInit {
   spotlightBooks: { [ranking: number]: BookDetail | null } = { 1: null, 2: null, 3: null, 4: null };
   spotlightSectionId: number | null = null;
 
+  schoolId = 0;
+
   constructor(
     private router: Router,
     private authorService: AuthorService,
@@ -110,9 +113,14 @@ export class DashboardLibraryManager implements OnInit {
     private messageService: MessageService,
     private locationBookService: LocationBookService,
     private locationSettingsService: LocationSettingsService,
+    private authService: AuthService,
   ) {}
 
   ngOnInit(): void {
+    if (this.authService.currentUser) {
+      this.schoolId = this.authService.currentUser.schoolId;
+    }
+
     this.loadPendingCount();
     this.loadSectionAndBooks();
     this.loadSpotlightBooks();
@@ -136,7 +144,7 @@ export class DashboardLibraryManager implements OnInit {
 
   loadSectionAndBooks(): void {
     this.monthlyBooksLoading = true;
-    this.sectionService.getAll().subscribe({
+    this.sectionService.getAll(this.schoolId).subscribe({
       next: (sections) => {
         this.activeSection = sections.find((s) => s.title === 'Boek van de maand') ?? null;
         if (this.activeSection) {
@@ -173,7 +181,7 @@ export class DashboardLibraryManager implements OnInit {
   }
 
   loadSpotlightBooks(): void {
-    this.sectionService.getAll().subscribe({
+    this.sectionService.getAll(this.schoolId).subscribe({
       next: (sections) => {
         const spotlight = sections.find((s) => s.title === 'In de kijker');
         if (spotlight) {
@@ -204,6 +212,7 @@ export class DashboardLibraryManager implements OnInit {
   }
 
   changeBookOfMonth(grade: number): void {
+    console.log(this.monthlyBooks);
     this.router.navigate(['/catalogus'], {
       queryParams: {
         selectMode: true,
@@ -214,6 +223,7 @@ export class DashboardLibraryManager implements OnInit {
   }
 
   changeSpotlightBook(ranking: number): void {
+    console.log(this.spotlightSectionId);
     this.router.navigate(['/catalogus'], {
       queryParams: {
         selectMode: true,
@@ -381,6 +391,6 @@ export class DashboardLibraryManager implements OnInit {
   }
 
   goToSchoolSettings(): void {
-  this.router.navigate(['/school/instellingen']);
-}
+    this.router.navigate(['/school/instellingen']);
+  }
 }
