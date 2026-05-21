@@ -11,10 +11,10 @@ import be.ap.backend.dto.CurrentUserDTO;
 import jakarta.servlet.http.HttpSession;
 
 @RestController
-@RequestMapping("api/auth")
+@RequestMapping("/auth")
 public class CurrentUserController {
 
-    @GetMapping("current-user")
+    @GetMapping("/current-user")
     public ResponseEntity<CurrentUserDTO> getCurrentUser(HttpSession session) {
         Object userRaw = session.getAttribute("userId");
         if (userRaw == null) {
