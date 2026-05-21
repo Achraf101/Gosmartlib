@@ -13,7 +13,6 @@ import be.ap.backend.dto.StudentPreviewDTO;
 import be.ap.backend.entity.Classroom;
 import be.ap.backend.entity.Loan;
 import be.ap.backend.entity.User;
-import be.ap.backend.entity.UserRole;
 import be.ap.backend.repository.ClassroomRepository;
 import be.ap.backend.repository.LoanRepository;
 import jakarta.persistence.EntityNotFoundException;
