@@ -28,6 +28,7 @@ public class CurrentUserController {
         currentUser.setFirstName((String) session.getAttribute("firstName"));
         currentUser.setLastName((String) session.getAttribute("lastName"));
         currentUser.setEmail((String) session.getAttribute("email"));
+        currentUser.setUsername((String) session.getAttribute("username"));
         return ResponseEntity.ok(currentUser);
     }
 

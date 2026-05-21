@@ -64,7 +64,6 @@ public class SecurityConfig {
                             session.setAttribute("location", u.getLocation() != null ? u.getLocation().getId() : null);
                             session.setAttribute("role", u.getRole().name());
                             session.setAttribute("username", u.getUsername());
-
                             res.setStatus(HttpServletResponse.SC_OK);
                             res.setContentType("application/json");
                             res.getWriter().write("{\"message\":\"Login successful\"}");
