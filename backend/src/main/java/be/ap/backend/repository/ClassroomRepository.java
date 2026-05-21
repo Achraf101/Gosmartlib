@@ -9,7 +9,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import be.ap.backend.entity.Classroom;
-import be.ap.backend.entity.User;
 
 @Repository
 public interface ClassroomRepository extends JpaRepository<Classroom, Long> {
@@ -26,8 +25,6 @@ public interface ClassroomRepository extends JpaRepository<Classroom, Long> {
             AND se.role = 'STUDENT'
             """)
     boolean teacherHasStudent(@Param("teacherId") Long teacherId, @Param("studentId") Long studentId);
-
-    List<Classroom> findByStudentsContaining(User student);
 
     Optional<Classroom> findBySsId(String ssId);
 }
