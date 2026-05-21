@@ -10,14 +10,19 @@
       <div class="user-info">
         <app-loan-cart />
         <i class="pi pi-user hide-mobile"></i>
-        <span class="username">{{ user.username }}</span>
+        <span class="username">{{ user.firstName }}</span>
       </div>
       <button class="icon-btn" (click)="logout()" title="Uitloggen">
         <i class="pi pi-sign-out" style="font-size: 1.2rem"></i>
       </button>
     }
     <button class="icon-btn hamburger-btn" (click)="toggleMenu()" aria-label="Menu openen">
-      <i class="pi" [class.pi-bars]="!menuOpen" [class.pi-times]="menuOpen" style="font-size: 1.2rem"></i>
+      <i
+        class="pi"
+        [class.pi-bars]="!menuOpen"
+        [class.pi-times]="menuOpen"
+        style="font-size: 1.2rem"
+      ></i>
     </button>
   </div>
 </header>
@@ -31,17 +36,31 @@
     (click)="menuOpen = false"
     >Startpagina</a
   >
-  <a routerLink="/catalogus" routerLinkActive="active" class="nav-link" (click)="menuOpen = false">Catalogus</a>
-  <a routerLink="/uitleningen" routerLinkActive="active" class="nav-link" (click)="menuOpen = false">Mijn uitleningen</a>
+  <a routerLink="/catalogus" routerLinkActive="active" class="nav-link" (click)="menuOpen = false"
+    >Catalogus</a
+  >
+  <a routerLink="/uitleningen" routerLinkActive="active" class="nav-link" (click)="menuOpen = false"
+    >Mijn uitleningen</a
+  >
   <a routerLink="/favorieten" routerLinkActive="active" class="nav-link" (click)="menuOpen = false"
     >Mijn leeslijst &amp; favorieten</a
   >
   @if (authService.hasRole('BIBLIOTHEEKBEHEERDER')) {
-    <a routerLink="/dashboard/bibliotheek-beheerder" routerLinkActive="active" class="nav-link" (click)="menuOpen = false"
+    <a
+      routerLink="/dashboard/bibliotheek-beheerder"
+      routerLinkActive="active"
+      class="nav-link"
+      (click)="menuOpen = false"
       >Dashboard</a
     >
   }
   @if (authService.hasRole('LEERKRACHT')) {
-    <a routerLink="/leerkracht/klassen" routerLinkActive="active" class="nav-link" (click)="menuOpen = false">Mijn klassen</a>
+    <a
+      routerLink="/leerkracht/klassen"
+      routerLinkActive="active"
+      class="nav-link"
+      (click)="menuOpen = false"
+      >Mijn klassen</a
+    >
   }
 </nav>
