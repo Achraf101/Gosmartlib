@@ -2,6 +2,7 @@ package be.ap.backend.repository;
 
 import be.ap.backend.entity.Classroom;
 import be.ap.backend.entity.Enrollment;
+import be.ap.backend.entity.User;
 import be.ap.backend.entity.UserRole;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -22,5 +23,8 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
     boolean existsByUserIdAndClassroomIdAndRole(Long userId, Long classroomId, UserRole role);
 
     boolean existsByUserIdAndClassroomId(Long userId, Long classroomId);
+
+    @Query("SELECT e.user FROM Enrollment e WHERE e.classroom.id = :classroomId AND e.role = 'STUDENT'")
+    List<User> findStudentsByClassroomId(@Param("classroomId") Long classroomId);
 
 }

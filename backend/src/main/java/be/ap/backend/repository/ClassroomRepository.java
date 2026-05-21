@@ -13,17 +13,17 @@ import be.ap.backend.entity.User;
 
 @Repository
 public interface ClassroomRepository extends JpaRepository<Classroom, Long> {
-    @Query("SELECT DISTINCT c FROM Classroom c LEFT JOIN FETCH c.students WHERE c.id = :id")
+    @Query("SELECT DISTINCT c FROM Classroom c LEFT JOIN FETCH c.enrollments e LEFT JOIN FETCH e.user WHERE c.id = :id")
     Optional<Classroom> findByIdWithStudents(@Param("id") Long id);
 
     @Query("""
-            SELECT CASE WHEN COUNT(s) > 0 THEN TRUE ELSE FALSE END
-            FROM Enrollment e
-            JOIN e.classroom c
-            JOIN c.students s
-            WHERE e.user.id = :teacherId
-            AND e.role = 'LEERKRACHT'
-            AND s.id = :studentId
+            SELECT CASE WHEN COUNT(se) > 0 THEN TRUE ELSE FALSE END
+            FROM Enrollment te
+            JOIN Enrollment se ON se.classroom = te.classroom
+            WHERE te.user.id = :teacherId
+            AND te.role = 'LEERKRACHT'
+            AND se.user.id = :studentId
+            AND se.role = 'STUDENT'
             """)
     boolean teacherHasStudent(@Param("teacherId") Long teacherId, @Param("studentId") Long studentId);
 

@@ -9,14 +9,12 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 
 @Entity
 @Table(name = "classroom")
 @Data
 @NoArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@ToString(exclude = { "students" })
 public class Classroom {
 
     @Id
@@ -47,7 +45,13 @@ public class Classroom {
     private String ssId;
 
     @JsonIgnore
-    @ManyToMany
-    @JoinTable(name = "classroom_student", joinColumns = @JoinColumn(name = "classroom_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
-    private Set<User> students = new HashSet<>();
+    @OneToMany(mappedBy = "classroom")
+    private Set<Enrollment> enrollments = new HashSet<>();
+
+    public Set<User> getStudents() {
+        return enrollments.stream()
+                .filter(e -> e.getRole() == UserRole.STUDENT)
+                .map(Enrollment::getUser)
+                .collect(java.util.stream.Collectors.toSet());
+    }
 }
