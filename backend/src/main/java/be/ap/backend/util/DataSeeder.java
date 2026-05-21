@@ -421,8 +421,14 @@ public class DataSeeder implements CommandLineRunner {
                 new School("AP Hogeschool", "", "", "", 10, 14, 14, 3, "aphogeschool"));
         Location location = new Location();
         location.setSchool(school);
-        location.setName("Blok A");
+        location.setName("Ellerman");
         location.setAdres("");
         locationRepository.save(location);
+
+        Location location1 = new Location();
+        location1.setSchool(school);
+        location1.setName("Noorderplaats");
+        location1.setAdres("");
+        locationRepository.save(location1);
     }
 }
