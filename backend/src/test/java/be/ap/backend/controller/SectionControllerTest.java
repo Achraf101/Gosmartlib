@@ -36,12 +36,12 @@ public class SectionControllerTest {
     @Test
     public void getAllSections_returnsStatus200() {
 
-        when(sectionService.getAllSections()).thenReturn(List.of());
+        when(sectionService.getAllSections(1L)).thenReturn(List.of());
 
-        List<Section> result = sectionController.getAllSections();
+        List<Section> result = sectionController.getAllSections(1L);
 
         assertNotNull(result);
-        verify(sectionService, times(1)).getAllSections();
+        verify(sectionService, times(1)).getAllSections(1L);
     }
 
     @Test

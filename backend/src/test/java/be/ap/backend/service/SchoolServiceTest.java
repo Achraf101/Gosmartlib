@@ -21,6 +21,7 @@ import be.ap.backend.entity.School;
 import be.ap.backend.exception.ArgumentsInvalidException;
 import be.ap.backend.exception.MissingArgumentsException;
 import be.ap.backend.repository.SchoolRepository;
+import be.ap.backend.repository.SectionRepository;
 import jakarta.persistence.EntityNotFoundException;
 
 @ExtendWith(MockitoExtension.class)
@@ -29,12 +30,15 @@ public class SchoolServiceTest {
     @Mock
     private SchoolRepository schoolRepository;
 
+    @Mock
+    private SectionRepository sectionRepository;
+
     private SchoolService schoolService;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        schoolService = new SchoolService(schoolRepository);
+        schoolService = new SchoolService(schoolRepository, sectionRepository);
     }
 
     // Helper to build a valid SchoolDTO
