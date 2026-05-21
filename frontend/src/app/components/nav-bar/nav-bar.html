@@ -7,8 +7,6 @@
       <i class="pi pi-bell" style="font-size: 1.2rem"></i>
     </button>
     @if (authService.currentUser$ | async; as user) {
-      <!-- DEBUG: verwijder na diagnose -->
-      <pre style="color: red">{{ user | json }}</pre>
       <div class="user-info">
         <app-loan-cart />
         <i class="pi pi-user hide-mobile"></i>

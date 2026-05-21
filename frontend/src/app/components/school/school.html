@@ -9,6 +9,15 @@
       }
       <p-button [routerLink]="['/locatie/toevoegen', school.id]">Locatie toevoegen</p-button>
     </div>
+    <p-button
+      label="Synchroniseren"
+      icon="pi pi-refresh"
+      severity="secondary"
+      size="small"
+      [loading]="syncLoading"
+      (onClick)="confirmSync()"
+    />
   }
   <p-button routerLink="/school/toevoegen">School toevoegen</p-button>
 </div>
+<p-confirmDialog></p-confirmDialog>

@@ -14,8 +14,8 @@ public class Enrollment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "ss_id", unique = true, length = 255)
-    private String ssId;
+    @Column(name = "one_roster_id", unique = true, length = 255)
+    private String oneRosterId;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = true)

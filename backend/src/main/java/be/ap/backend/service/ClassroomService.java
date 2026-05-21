@@ -23,16 +23,18 @@ public class ClassroomService {
     private final ClassroomRepository classroomRepository;
     private final LoanRepository loanRepository;
     private final SmartschoolLookupService lookupService;
+    private final EnrollmentService enrollmentService;
 
     public ClassroomService(ClassroomRepository classroomRepository, LoanRepository loanRepository,
-            SmartschoolLookupService lookupService) {
+            SmartschoolLookupService lookupService, EnrollmentService enrollmentService) {
         this.classroomRepository = classroomRepository;
         this.loanRepository = loanRepository;
         this.lookupService = lookupService;
+        this.enrollmentService = enrollmentService;
     }
 
     public List<ClassroomDTO> getClassroomsForTeacher(Long teacherId) {
-        return classroomRepository.findByTeacherIdWithStudents(teacherId).stream()
+        return enrollmentService.getClassroomsForTeacher(teacherId).stream()
                 .map(c -> new ClassroomDTO(c.getId(), c.getName(), c.getStudents().size()))
                 .toList();
     }
@@ -41,7 +43,7 @@ public class ClassroomService {
         Classroom classroom = classroomRepository.findByIdWithStudents(classroomId)
                 .orElseThrow(() -> new EntityNotFoundException("Klas niet gevonden met id: " + classroomId));
 
-        if (classroom.getTeacher() == null || !classroom.getTeacher().getId().equals(teacherId)) {
+        if (!enrollmentService.isTeacherOfClassroom(teacherId, classroomId)) {
             throw new SecurityException("Je bent niet de leerkracht van deze klas.");
         }
 
