@@ -1,10 +1,16 @@
 package be.ap.backend.config;
 
+import be.ap.backend.entity.Location;
+import be.ap.backend.entity.School;
 import be.ap.backend.entity.User;
+import be.ap.backend.repository.LocationRepository;
 import be.ap.backend.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -23,12 +29,14 @@ import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
     @Value("${app.bcrypt-rounds}")
     private int strength;
 
     private final UserService userService;
+    private final LocationRepository locationRepository;
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
@@ -38,10 +46,6 @@ public class SecurityConfig {
     @Bean
     public HttpSessionEventPublisher httpSessionEventPublisher() {
         return new HttpSessionEventPublisher();
-    }
-
-    public SecurityConfig(UserService userService) {
-        this.userService = userService;
     }
 
     @Bean
@@ -114,13 +118,16 @@ public class SecurityConfig {
     private Map<String, String> getUserDetails(Authentication auth) {
         User u = (User) auth.getPrincipal();
 
-        String location = u.getLocation() != null ? u.getLocation().getId().toString() : "";
-        String school = u.getSchool() != null ? u.getSchool().getId().toString() : "";
+        School s = u.getSchool();
 
-        System.out.println(u.getUsername());
+        String school = s != null ? u.getSchool().getId().toString() : "";
+        List<Long> location = locationRepository.findBySchool(s).stream()
+                .map(Location::getId)
+                .collect(Collectors.toList());
+
         Map<String, String> usr = Map.of(
                 "userId", u.getId().toString(),
-                "location", location,
+                "location", location.toString(),
                 "school", school,
                 "role", u.getRole().name(),
                 "username", u.getUsername() // not smartschool name

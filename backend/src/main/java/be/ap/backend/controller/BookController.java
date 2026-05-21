@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.validation.annotation.Validated;
+
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import be.ap.backend.dto.BookCardDTO;
@@ -24,7 +26,9 @@ import be.ap.backend.service.BookService;
 import be.ap.backend.service.IsbnLookupService;
 import be.ap.backend.service.OpenLibraryService;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.Map;
 
 import org.springframework.data.domain.Page;
@@ -44,12 +48,27 @@ public class BookController {
     private final IsbnLookupService isbnLookupService;
     private final OpenLibraryService openLibraryService;
 
+    // return books only on selected location
     @GetMapping
     public Page<Book> getAll(
+            HttpSession session,
+            @RequestParam(required = false) Boolean full,
+            @RequestParam(required = false) Long location,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size) {
+
         Pageable pageable = PageRequest.of(page, size);
-        return bookRepository.findAll(pageable);
+
+        List<Long> ids = getLocationIds(session);
+
+        if (full == true) {
+            System.out.println("all books being returned");
+            return bookRepository.findAll(pageable);
+        } else if (ids.contains(location) || location == null) {
+            return bookRepository.findAllByLocation(ids, pageable);
+        } else {
+            return Page.empty(pageable);
+        }
     }
 
     @GetMapping("/{id}")
@@ -59,20 +78,26 @@ public class BookController {
 
     @GetMapping("/search/{query}")
     public Page<Book> search(
+            HttpSession session,
             @PathVariable String query,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size) {
+
+        List<Long> ids = getLocationIds(session);
         Pageable pageable = PageRequest.of(page, size);
-        return bookRepository.search(query, pageable);
+
+        return bookRepository.search(ids, query, pageable);
     }
 
     @GetMapping("/{id}/related")
-    public List<BookCardDTO> getRelated(@PathVariable Long id) {
-        return bookRepository.findRelated(id);
+    public List<BookCardDTO> getRelated(HttpSession session, @PathVariable Long id) {
+        return bookRepository.findRelated(id, getLocationIds(session));
     }
 
     @GetMapping("/filter")
     public Page<Book> filter(
+            HttpSession session,
+            @RequestParam(required = false) Long location,
             @RequestParam(required = false) List<Long> genres,
             @RequestParam(required = false) Long language,
             @RequestParam(required = false) Boolean fiction,
@@ -91,9 +116,17 @@ public class BookController {
         }
 
         Pageable pageable = PageRequest.of(page, size);
-        return bookService.filter(genres, language, fiction, authorIds, seriesIds, pagesMin, pagesMax, clibs, themes,
-                didactic,
-                pageable);
+
+        if (getLocationIds(session).contains(location)) {
+            return bookService.filter(location, genres, language, fiction, authorIds, seriesIds, pagesMin, pagesMax,
+                    clibs,
+                    themes,
+                    didactic,
+                    pageable);
+        } else {
+            return Page.empty(pageable);
+        }
+
     }
 
     @PostMapping
@@ -131,5 +164,14 @@ public class BookController {
     @PutMapping("/{id}")
     public Book updateBook(@PathVariable Long id, @RequestBody UpdateBookDTO dto) {
         return bookService.updateBook(id, dto);
+    }
+
+    List<Long> getLocationIds(HttpSession session) {
+        final String locationString = (String) session.getAttribute("location");
+
+        // transform to array "[1, 2]" -> [1, 2]
+        return Arrays.stream(locationString.replaceAll("[\\[\\]\\s]", "").split(","))
+                .map(Long::parseLong)
+                .collect(Collectors.toList());
     }
 }
