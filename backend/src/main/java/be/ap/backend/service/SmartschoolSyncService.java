@@ -186,7 +186,7 @@ public class SmartschoolSyncService {
                     role = UserRole.LEERKRACHT;
 
                 Enrollment enrollment = enrollmentRepository.findByOneRosterId(oneRosterId).orElse(new Enrollment());
-                enrollment.setOneRosterId(userOneRosterId);
+                enrollment.setOneRosterId(oneRosterId);
                 enrollment.setUser(user);
                 enrollment.setClassroom(classroom);
                 enrollment.setRole(role);
