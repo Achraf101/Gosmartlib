@@ -68,8 +68,8 @@ public class ClassroomService {
 
         Map<String, Object> user = lookupService.getUser(student.getSchool(), student.getOneRosterId(), "student");
 
-        String firstName = (String) user.get("first_name");
-        String lastName = (String) user.get("last_name");
+        String firstName = (String) user.get("givenName");
+        String lastName = (String) user.get("familyName");
 
         return new StudentPreviewDTO(
                 student.getId(),
