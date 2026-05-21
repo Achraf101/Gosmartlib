@@ -13,8 +13,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class StudentPreviewDTO {
     private Long id;
-    private String username;
-    private String name;
+    @JsonProperty("firstName")
+    private String firstName;
+    @JsonProperty("lastName")
+    private String lastName;
     @JsonProperty("lastActivity")
     private LocalDate lastActivity;
 }

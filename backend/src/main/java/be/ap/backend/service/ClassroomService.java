@@ -49,7 +49,10 @@ public class ClassroomService {
 
         return classroom.getStudents().stream()
                 .map(this::toStudentPreview)
-                .sorted(Comparator.comparing(p -> p.getName() != null ? p.getName().toLowerCase() : ""))
+                .sorted(Comparator
+                        .comparing(
+                                (StudentPreviewDTO p) -> p.getLastName() != null ? p.getLastName().toLowerCase() : "")
+                        .thenComparing(p -> p.getFirstName() != null ? p.getFirstName().toLowerCase() : ""))
                 .toList();
     }
 
