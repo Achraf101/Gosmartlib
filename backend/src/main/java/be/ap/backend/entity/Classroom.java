@@ -31,10 +31,6 @@ public class Classroom {
     private School school;
 
     @ManyToOne
-    @JoinColumn(name = "location_id", nullable = true)
-    private Location location;
-
-    @ManyToOne
     @JoinColumn(name = "teacher_id", nullable = true)
     private User teacher;
 

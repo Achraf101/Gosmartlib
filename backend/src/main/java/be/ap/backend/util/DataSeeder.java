@@ -391,7 +391,6 @@ public class DataSeeder implements CommandLineRunner {
             return;
 
         User teacher = userRepository.findByUsername("leerkracht1").orElse(null);
-        Location location = locationRepository.findById(1L).orElse(null);
         School school = schoolRepository.findById(1L).orElse(null);
 
         if (teacher == null)
@@ -400,7 +399,6 @@ public class DataSeeder implements CommandLineRunner {
         Classroom klas = new Classroom();
         klas.setName("3A");
         klas.setTeacher(teacher);
-        klas.setLocation(location);
         klas.setSchool(school);
         classroomRepository.save(klas);
     }
