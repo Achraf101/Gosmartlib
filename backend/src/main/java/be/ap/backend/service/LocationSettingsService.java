@@ -28,7 +28,7 @@ public class LocationSettingsService {
     }
 
     public LocationSettingsDTO getSettings(Long schoolId) {
-        return locationSettingsRepository.findById(schoolId)
+        return locationSettingsRepository.findBySchoolId(schoolId)
                 .map(s -> new LocationSettingsDTO(
                         s.getSchoolId(),
                         s.getHiddenComponents().stream()
@@ -39,7 +39,7 @@ public class LocationSettingsService {
 
     public LocationSettingsDTO updateSettings(Long schoolId, LocationSettingsDTO dto) {
         School school = schoolRepository.findById(schoolId).orElseThrow();
-        LocationSettings settings = locationSettingsRepository.findById(schoolId)
+        LocationSettings settings = locationSettingsRepository.findBySchoolId(schoolId)
                 .orElse(new LocationSettings());
         settings.setSchool(school);
         settings.setHiddenComponents(
