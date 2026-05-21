@@ -10,7 +10,11 @@
       <div class="user-info">
         <app-loan-cart />
         <i class="pi pi-user hide-mobile"></i>
-        <span class="username">{{ user.firstName }}</span>
+        @if (user.username) {
+          <span class="username">{{ user.username }}</span>
+        } @else {
+          <span class="username">{{ user.firstName }} {{ user.lastName }}</span>
+        }
       </div>
       <button class="icon-btn" (click)="logout()" title="Uitloggen">
         <i class="pi pi-sign-out" style="font-size: 1.2rem"></i>
