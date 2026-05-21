@@ -14,7 +14,7 @@ import jakarta.servlet.http.HttpSession;
 @RequestMapping("api/auth")
 public class CurrentUserController {
 
-    @GetMapping("/current-user")
+    @GetMapping("current-user")
     public ResponseEntity<CurrentUserDTO> getCurrentUser(HttpSession session) {
         Object userRaw = session.getAttribute("userId");
         if (userRaw == null) {
