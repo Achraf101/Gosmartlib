@@ -36,8 +36,8 @@ export interface StudentReportStatsDTO {
 
 export interface StudentReportDTO {
   studentId: number;
-  studentName: string;
-  studentUsername: string;
+  firstName: string;
+  lastName: string;
   borrowCounts: BorrowCountsDTO;
   borrowedBooksPreview: BorrowedBookPreviewDTO[];
   reviews: StudentReviewDTO[];

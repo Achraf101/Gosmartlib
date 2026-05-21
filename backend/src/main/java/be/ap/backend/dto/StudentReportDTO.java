@@ -14,10 +14,10 @@ import lombok.NoArgsConstructor;
 public class StudentReportDTO {
     @JsonProperty("studentId")
     private Long studentId;
-    @JsonProperty("studentName")
-    private String studentName;
-    @JsonProperty("studentUsername")
-    private String studentUsername;
+    @JsonProperty("firstName")
+    private String firstName;
+    @JsonProperty("lastName")
+    private String lastName;
     @JsonProperty("borrowCounts")
     private BorrowCountsDTO borrowCounts;
     @JsonProperty("borrowedBooksPreview")

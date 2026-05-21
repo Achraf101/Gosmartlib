@@ -68,14 +68,15 @@ public class StudentReportService {
 
         StudentReportStatsDTO stats = buildStats(studentId, today);
 
-        Map<String, Object> user = lookupService.getUser(student.getSchool(), student.getOneRosterId(), "STUDENT");
+        Map<String, Object> user = lookupService.getUser(student.getSchool(), student.getOneRosterId(), "student");
 
-        String name = (String) user.get("name");
+        String firstName = (String) user.get("givenName");
+        String lastName = (String) user.get("familyName");
 
         return new StudentReportDTO(
                 student.getId(),
-                name,
-                student.getUsername(),
+                firstName,
+                lastName,
                 counts,
                 preview,
                 reviews,
