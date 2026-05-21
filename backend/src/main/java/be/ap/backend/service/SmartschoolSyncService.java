@@ -122,12 +122,12 @@ public class SmartschoolSyncService {
                 break;
 
             for (Map<String, Object> c : classes) {
-                String ssId = (String) c.get("sourcedId");
-                if (ssId == null)
+                String oneRosterId = (String) c.get("sourcedId");
+                if (oneRosterId == null)
                     continue;
 
-                Classroom classroom = classroomRepository.findBySsId(ssId).orElse(new Classroom());
-                classroom.setSsId(ssId);
+                Classroom classroom = classroomRepository.findBySsId(oneRosterId).orElse(new Classroom());
+                classroom.setSsId(oneRosterId);
                 classroom.setSchool(school);
                 classroomRepository.save(classroom);
                 synced++;
@@ -162,8 +162,8 @@ public class SmartschoolSyncService {
                 break;
 
             for (Map<String, Object> e : enrollments) {
-                String ssId = (String) e.get("sourcedId");
-                if (ssId == null)
+                String oneRosterId = (String) e.get("sourcedId");
+                if (oneRosterId == null)
                     continue;
 
                 // Resolve user via oneRosterId
@@ -185,7 +185,7 @@ public class SmartschoolSyncService {
                 else if ("teacher".equals(roleStr))
                     role = UserRole.LEERKRACHT;
 
-                Enrollment enrollment = enrollmentRepository.findBySsId(ssId).orElse(new Enrollment());
+                Enrollment enrollment = enrollmentRepository.findByOneRosterId(oneRosterId).orElse(new Enrollment());
                 enrollment.setOneRosterId(userOneRosterId);
                 enrollment.setUser(user);
                 enrollment.setClassroom(classroom);
