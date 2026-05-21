@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -16,6 +17,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -24,7 +26,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -49,6 +50,8 @@ import be.ap.backend.entity.Clib;
 import be.ap.backend.repository.BookRepository;
 import be.ap.backend.service.BookService;
 import be.ap.backend.service.IsbnLookupService;
+import jakarta.servlet.http.HttpSession;
+import be.ap.backend.service.OpenLibraryService;
 
 @ExtendWith(MockitoExtension.class)
 public class BookControllerTest {
@@ -64,13 +67,20 @@ public class BookControllerTest {
     @Mock
     private IsbnLookupService isbnLookupService;
 
+    @Mock
+    private OpenLibraryService openLibraryService;
+
     @InjectMocks
     private BookController controller;
 
+    @Mock
+    HttpSession session;
     private ObjectMapper objectMapper = new ObjectMapper();
 
     @BeforeEach
     void setUp() {
+        session = mock(HttpSession.class);
+        lenient().when(session.getAttribute("location")).thenReturn("[1, 2]");
         mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
     }
 
@@ -104,14 +114,14 @@ public class BookControllerTest {
         book2.setTitle("Book 2");
 
         Page<Book> page = new PageImpl<>(List.of(book1, book2));
-        when(repository.findAll(any(Pageable.class))).thenReturn(page);
+        when(repository.findAllByLocation(any(), any(Pageable.class))).thenReturn(page);
 
-        Page<Book> result = controller.getAll(0, 5);
+        Page<Book> result = controller.getAll(session, false, null, 0, 5);
 
         assertEquals(2, result.getContent().size());
         assertEquals("Book 1", result.getContent().get(0).getTitle());
         assertEquals("Book 2", result.getContent().get(1).getTitle());
-        verify(repository, times(1)).findAll(any(Pageable.class));
+        verify(repository, times(1)).findAllByLocation(any(), any(Pageable.class));
     }
 
     @Test
@@ -144,15 +154,15 @@ public class BookControllerTest {
         Book book = new Book();
         book.setId(1L);
         book.setTitle("Harry Potter");
-
         Page<Book> page = new PageImpl<>(List.of(book));
-        when(repository.search(eq("Harry"), any(Pageable.class))).thenReturn(page);
 
-        Page<Book> result = controller.search("Harry", 0, 5);
+        when(repository.search(any(), eq("Harry"), any(Pageable.class))).thenReturn(page);
+
+        Page<Book> result = controller.search(session, "Harry", 0, 5);
 
         assertEquals(1, result.getContent().size());
         assertEquals("Harry Potter", result.getContent().get(0).getTitle());
-        verify(repository, times(1)).search(eq("Harry"), any(Pageable.class));
+        verify(repository, times(1)).search(any(), eq("Harry"), any(Pageable.class));
     }
 
     @Test
@@ -164,13 +174,13 @@ public class BookControllerTest {
                 new BookCardDTO(2L, "Title 1", "cover", author),
                 new BookCardDTO(3L, "Title 2", "cover", author));
 
-        when(repository.findRelated(1L)).thenReturn(relatedBooks);
+        when(repository.findRelated(eq(1L), any())).thenReturn(relatedBooks);
 
-        List<BookCardDTO> result = controller.getRelated(1L);
+        List<BookCardDTO> result = controller.getRelated(session, 1L);
 
         assertNotNull(result);
         assertEquals(2, result.size());
-        verify(repository, times(1)).findRelated(1L);
+        verify(repository, times(1)).findRelated(eq(1L), any());
     }
 
     @Test
@@ -208,172 +218,279 @@ public class BookControllerTest {
     }
 
     @Test
+    void givenBookWithIsbnAndIaFound_whenGetIaPreview_thenReturn200WithIaId() {
+        Book book = new Book();
+        book.setId(1L);
+        book.setIsbn("9780747532743");
+
+        when(repository.findById(1L)).thenReturn(Optional.of(book));
+        when(openLibraryService.getIaIdentifier("9780747532743")).thenReturn(Optional.of("lordofrings00tolk_5"));
+
+        ResponseEntity<Map<String, String>> response = controller.getIaPreview(1L);
+
+        assertEquals(200, response.getStatusCode().value());
+        assertEquals("lordofrings00tolk_5", response.getBody().get("ia_id"));
+    }
+
+    @Test
+    void givenBookWithIsbnButNoIaFound_whenGetIaPreview_thenReturn404() {
+        Book book = new Book();
+        book.setId(2L);
+        book.setIsbn("9780000000000");
+
+        when(repository.findById(2L)).thenReturn(Optional.of(book));
+        when(openLibraryService.getIaIdentifier("9780000000000")).thenReturn(Optional.empty());
+
+        ResponseEntity<Map<String, String>> response = controller.getIaPreview(2L);
+
+        assertEquals(404, response.getStatusCode().value());
+    }
+
+    @Test
+    void givenBookWithoutIsbn_whenGetIaPreview_thenReturn404() {
+        Book book = new Book();
+        book.setId(3L);
+
+        when(repository.findById(3L)).thenReturn(Optional.of(book));
+
+        ResponseEntity<Map<String, String>> response = controller.getIaPreview(3L);
+
+        assertEquals(404, response.getStatusCode().value());
+        verify(openLibraryService, times(0)).getIaIdentifier(any());
+    }
+
+    @Test
+    void givenMissingBook_whenGetIaPreview_thenReturn404() {
+        when(repository.findById(99L)).thenReturn(Optional.empty());
+
+        ResponseEntity<Map<String, String>> response = controller.getIaPreview(99L);
+
+        assertEquals(404, response.getStatusCode().value());
+        verify(openLibraryService, times(0)).getIaIdentifier(any());
+    }
+
+    @Test
     void givenPagesMinGreaterThanMax_whenFilter_thenThrow400() {
         assertThrows(ResponseStatusException.class,
-                () -> controller.filter(null, null, null, null, null, 500, 100, null, null, null, 0, 5));
+                () -> controller.filter(session, null, null, null, null, null, null, 500, 100, null, null, null, 0, 5));
     }
 
     @Test
     void givenPagesMinEqualToMax_whenFilter_thenProceedNormally() {
         Page<Book> mockPage = new PageImpl<>(List.of(new Book()));
-        when(service.filter(any(), any(), any(), any(), any(), eq(200), eq(200), any(), any(), any(),
-                any(Pageable.class)))
+        Long locationId = 1L;
+        when(session.getAttribute("location")).thenReturn("[1]");
+
+        when(service.filter(any(), any(), any(), any(), any(), any(), eq(Integer.valueOf(200)),
+                eq(Integer.valueOf(200)), any(), any(), any(),
+                any()))
                 .thenReturn(mockPage);
 
-        Page<Book> result = controller.filter(null, null, null, null, null, 200, 200, null, null, null, 0, 5);
+        Page<Book> result = controller.filter(session, locationId, null, null, null, null,
+                null, 200, 200, null, null, null,
+                0,
+                5);
 
         assertEquals(1, result.getTotalElements());
     }
 
     @Test
     void givenNoParams_whenFilter_thenReturnAllBooks() {
+        Long locationId = 1L;
+        when(session.getAttribute("location")).thenReturn("[1]");
+
         Page<Book> mockPage = new PageImpl<>(List.of(new Book(), new Book(), new Book()));
-        when(service.filter(isNull(), isNull(), isNull(), isNull(), isNull(),
-                isNull(), isNull(), isNull(), isNull(), isNull(), any(Pageable.class)))
+        when(service.filter(eq(1L), isNull(), isNull(), isNull(), isNull(), isNull(),
+                isNull(), isNull(), isNull(), isNull(), isNull(), any()))
                 .thenReturn(mockPage);
 
-        Page<Book> result = controller.filter(null, null, null, null, null,
+        Page<Book> result = controller.filter(session, locationId, null, null, null, null, null,
                 null, null, null, null, null, 0, 5);
 
         assertEquals(3, result.getTotalElements());
-        verify(service, times(1)).filter(isNull(), isNull(), isNull(), isNull(), isNull(),
-                isNull(), isNull(), isNull(), isNull(), isNull(), any(Pageable.class));
+        verify(service, times(1)).filter(eq(1L), isNull(), isNull(), isNull(), isNull(), isNull(),
+                isNull(), isNull(), isNull(), isNull(), isNull(), any());
     }
 
     @Test
     void givenFictionTrue_whenFilter_thenReturnOnlyFictionBooks() {
+        Long locationId = 1L;
+        when(session.getAttribute("location")).thenReturn("[1]");
+
         Book book = new Book();
         book.setTitle("De brief voor de koning");
         book.setFiction(true);
-
         Page<Book> mockPage = new PageImpl<>(List.of(book));
-        when(service.filter(any(), any(), eq(true), any(), any(), any(), any(), any(), any(), any(),
-                any(Pageable.class)))
+
+        when(service.filter(eq(1L), isNull(), isNull(), eq(true), isNull(), isNull(),
+                isNull(), isNull(), isNull(), isNull(), isNull(), any()))
                 .thenReturn(mockPage);
 
-        Page<Book> result = controller.filter(null, null, true, null, null,
+        Page<Book> result = controller.filter(session, locationId, null, null, true, null, null,
                 null, null, null, null, null, 0, 5);
 
         assertEquals(1, result.getTotalElements());
         assertTrue(result.getContent().get(0).getFiction());
-        verify(service, times(1)).filter(any(), any(), eq(true), any(), any(),
-                any(), any(), any(), any(), any(), any(Pageable.class));
+        verify(service, times(1)).filter(eq(1L), isNull(), isNull(), eq(true), isNull(), isNull(),
+                isNull(), isNull(), isNull(), isNull(), isNull(), any());
     }
 
     @Test
     void givenGenreFilter_whenFilter_thenReturnMatchingBooks() {
+        Long locationId = 1L;
+        when(session.getAttribute("location")).thenReturn("[1]");
+
         Book book = new Book();
         book.setTitle("Harry Potter en de vuurbeker");
-
         Page<Book> mockPage = new PageImpl<>(List.of(book));
-        when(service.filter(eq(List.of(1L)), any(), any(), any(), any(), any(), any(), any(), any(), any(),
-                any(Pageable.class)))
+
+        when(service.filter(eq(1L), eq(List.of(1L)), isNull(), isNull(), isNull(), isNull(),
+                isNull(), isNull(), isNull(), isNull(), isNull(), any()))
                 .thenReturn(mockPage);
 
-        Page<Book> result = controller.filter(List.of(1L), null, null, null, null,
+        Page<Book> result = controller.filter(session, locationId, List.of(1L), null, null, null, null,
                 null, null, null, null, null, 0, 5);
 
         assertEquals(1, result.getTotalElements());
         assertEquals("Harry Potter en de vuurbeker", result.getContent().get(0).getTitle());
-        verify(service, times(1)).filter(eq(List.of(1L)), any(), any(), any(), any(),
-                any(), any(), any(), any(), any(), any(Pageable.class));
+        verify(service, times(1)).filter(eq(1L), eq(List.of(1L)), isNull(), isNull(), isNull(), isNull(),
+                isNull(), isNull(), isNull(), isNull(), isNull(), any());
     }
 
     @Test
     void givenAuthorFilter_whenFilter_thenReturnMatchingBooks() {
+        Long locationId = 1L;
         Book book = new Book();
         book.setTitle("Kruistocht in Spijkerbroek");
-
         Page<Book> mockPage = new PageImpl<>(List.of(book));
-        when(service.filter(any(), any(), any(), eq(List.of(2L)), any(), any(), any(), any(), any(), any(),
-                any(Pageable.class)))
+
+        when(service.filter(eq(1L), isNull(), isNull(), isNull(), eq(List.of(2L)), isNull(),
+                isNull(), isNull(), isNull(), isNull(), isNull(), any()))
                 .thenReturn(mockPage);
 
-        Page<Book> result = controller.filter(null, null, null, List.of(2L), null,
+        Page<Book> result = controller.filter(session, locationId, null, null, null, List.of(2L), null,
                 null, null, null, null, null, 0, 5);
 
         assertEquals(1, result.getTotalElements());
         assertEquals("Kruistocht in Spijkerbroek", result.getContent().get(0).getTitle());
-        verify(service, times(1)).filter(any(), any(), any(), eq(List.of(2L)), any(),
-                any(), any(), any(), any(), any(), any(Pageable.class));
+        verify(service, times(1)).filter(eq(1L), isNull(), isNull(), isNull(), eq(List.of(2L)), isNull(),
+                isNull(), isNull(), isNull(), isNull(), isNull(), any());
     }
 
     @Test
     void givenSeriesFilter_whenFilter_thenReturnMatchingBooks() {
+        Long locationId = 1L;
         Book book = new Book();
         book.setTitle("Harry Potter en de Steen der Wijzen");
-
         Page<Book> mockPage = new PageImpl<>(List.of(book));
-        when(service.filter(any(), any(), any(), any(), eq(List.of(1L)), any(), any(), any(), any(), any(),
-                any(Pageable.class)))
+
+        when(service.filter(eq(1L), isNull(), isNull(), isNull(), isNull(), eq(List.of(1L)),
+                isNull(), isNull(), isNull(), isNull(), isNull(), any()))
                 .thenReturn(mockPage);
 
-        Page<Book> result = controller.filter(null, null, null, null, List.of(1L),
+        Page<Book> result = controller.filter(session, locationId, null, null, null, null, List.of(1L),
                 null, null, null, null, null, 0, 5);
 
         assertEquals(1, result.getTotalElements());
         assertEquals("Harry Potter en de Steen der Wijzen", result.getContent().get(0).getTitle());
-        verify(service, times(1)).filter(any(), any(), any(), any(), eq(List.of(1L)),
-                any(), any(), any(), any(), any(), any(Pageable.class));
+        verify(service, times(1)).filter(eq(1L), isNull(), isNull(), isNull(), isNull(), eq(List.of(1L)),
+                isNull(), isNull(), isNull(), isNull(), isNull(), any());
     }
 
     @Test
     void givenThemeFilter_whenFilter_thenReturnMatchingBooks() {
+        Long locationId = 1L;
         Book book = new Book();
         book.setTitle("De Alchemist");
-
         Page<Book> mockPage = new PageImpl<>(List.of(book));
-        when(service.filter(any(), any(), any(), any(), any(), any(), any(), any(), eq(List.of(5L)), any(),
-                any(Pageable.class)))
+
+        when(service.filter(eq(1L), isNull(), isNull(), isNull(), isNull(), isNull(),
+                isNull(), isNull(), isNull(), eq(List.of(5L)), isNull(), any()))
                 .thenReturn(mockPage);
 
-        Page<Book> result = controller.filter(null, null, null, null, null,
+        Page<Book> result = controller.filter(session, locationId, null, null, null, null, null,
                 null, null, null, List.of(5L), null, 0, 5);
 
         assertEquals(1, result.getTotalElements());
         assertEquals("De Alchemist", result.getContent().get(0).getTitle());
-        verify(service, times(1)).filter(any(), any(), any(), any(), any(),
-                any(), any(), any(), eq(List.of(5L)), any(), any(Pageable.class));
+        verify(service, times(1)).filter(eq(1L), isNull(), isNull(), isNull(), isNull(), isNull(),
+                isNull(), isNull(), isNull(), eq(List.of(5L)), isNull(), any());
     }
 
     @Test
     void givenPageRangeFilter_whenFilter_thenReturnMatchingBooks() {
+        Long locationId = 1L;
         Book book = new Book();
         book.setTitle("De brief voor de koning");
-
         Page<Book> mockPage = new PageImpl<>(List.of(book));
-        when(service.filter(any(), any(), any(), any(), any(), eq(100), eq(500), any(), any(),
-                any(),
-                any(Pageable.class)))
+
+        when(service.filter(eq(1L), isNull(), isNull(), isNull(), isNull(), isNull(),
+                eq(100), eq(500), isNull(), isNull(), isNull(), any()))
                 .thenReturn(mockPage);
 
-        Page<Book> result = controller.filter(null, null, null, null, null,
+        Page<Book> result = controller.filter(session, locationId, null, null, null, null, null,
                 100, 500, null, null, null, 0, 5);
 
         assertNotNull(result);
         assertEquals(1, result.getTotalElements());
-        verify(service, times(1)).filter(any(), any(), any(), any(), any(),
-                eq(100), eq(500), any(), any(), any(), any(Pageable.class));
+        verify(service, times(1)).filter(eq(1L), isNull(), isNull(), isNull(), isNull(), isNull(),
+                eq(100), eq(500), isNull(), isNull(), isNull(), any());
     }
 
     @Test
     void givenClibFilter_whenFilter_thenReturnMatchingBooks() {
+        Long locationId = 1L;
         Book book = new Book();
         book.setTitle("Clib Book");
-
         Page<Book> mockPage = new PageImpl<>(List.of(book));
         List<Clib> clibs = List.of(Clib.A);
 
-        when(service.filter(any(), any(), any(), any(), any(), any(), any(), eq(clibs), any(), any(),
-                any(Pageable.class)))
+        when(service.filter(eq(1L), isNull(), isNull(), isNull(), isNull(), isNull(),
+                isNull(), isNull(), eq(clibs), isNull(), isNull(), any()))
                 .thenReturn(mockPage);
 
-        Page<Book> result = controller.filter(null, null, null, null, null,
+        Page<Book> result = controller.filter(session, locationId, null, null, null, null, null,
                 null, null, clibs, null, null, 0, 5);
 
         assertEquals(1, result.getTotalElements());
-        verify(service, times(1)).filter(any(), any(), any(), any(), any(),
-                any(), any(), eq(clibs), any(), any(), any(Pageable.class));
+        verify(service, times(1)).filter(eq(1L), isNull(), isNull(), isNull(), isNull(), isNull(),
+                isNull(), isNull(), eq(clibs), isNull(), isNull(), any());
+    }
+
+    @Test
+    void givenValidLocationString_whenGetLocationIds_thenReturnListOfIds() {
+        HttpSession session = mock(HttpSession.class);
+        when(session.getAttribute("location")).thenReturn("[1, 2, 3]");
+
+        List<Long> result = controller.getLocationIds(session);
+
+        assertEquals(List.of(1L, 2L, 3L), result);
+    }
+
+    @Test
+    void givenSingleLocation_whenGetLocationIds_thenReturnSingleItemList() {
+        HttpSession session = mock(HttpSession.class);
+        when(session.getAttribute("location")).thenReturn("[1]");
+
+        List<Long> result = controller.getLocationIds(session);
+
+        assertEquals(List.of(1L), result);
+    }
+
+    @Test
+    void givenNullAttribute_whenGetLocationIds_thenThrowException() {
+        HttpSession session = mock(HttpSession.class);
+        when(session.getAttribute("location")).thenReturn(null);
+
+        assertThrows(NullPointerException.class, () -> controller.getLocationIds(session));
+    }
+
+    @Test
+    void givenEmptyString_whenGetLocationIds_thenThrowException() {
+        HttpSession session = mock(HttpSession.class);
+        when(session.getAttribute("location")).thenReturn("[]");
+
+        assertThrows(NumberFormatException.class, () -> controller.getLocationIds(session));
     }
 
     @Test

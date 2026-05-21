@@ -142,7 +142,7 @@ export class LocationDetailPageComponent implements OnInit {
     this.loading.start();
     const request = this.searchQuery.trim()
       ? this.bookService.search(this.searchQuery.trim(), this.currentPage, this.rows)
-      : this.bookService.getAll(this.currentPage, this.rows);
+      : this.bookService.getAll(this.currentPage, this.rows, true);
 
     request.subscribe({
       next: (page) => {

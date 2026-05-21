@@ -376,7 +376,8 @@ public class DataSeeder implements CommandLineRunner {
 
         SchoolDTO dto1 = new SchoolDTO();
         dto1.setName("AP Hogeschool");
-        dto1.setAdres(""); dto1.setContact(""); dto1.setDescription("");
+        dto1.setAdres(""); dto1.setContact(""); 
+        dto1.setDescription("");
         dto1.setSsSubdomain("aphogeschool");
         dto1.setBorrowLimit(10); 
         dto1.setBorrowPeriod(14);
@@ -386,7 +387,8 @@ public class DataSeeder implements CommandLineRunner {
 
         SchoolDTO dto2 = new SchoolDTO();
         dto2.setName("AP Universiteit");
-        dto2.setAdres(""); dto2.setContact(""); dto2.setDescription("");
+        dto2.setAdres(""); dto2.setContact(""); 
+        dto2.setDescription("");
         dto2.setSsSubdomain("apuniversiteit");
         dto2.setBorrowLimit(10); 
         dto2.setBorrowPeriod(14);
@@ -394,14 +396,23 @@ public class DataSeeder implements CommandLineRunner {
          dto2.setExtendPeriod(14);
         SchoolDTO school2 = schoolService.addSchool(dto2);
 
+        School savedSchool1 = schoolRepository.findById(school1.getId()).orElseThrow();
+        School savedSchool2 = schoolRepository.findById(school2.getId()).orElseThrow();
+
         Location location = new Location();
-        location.setSchool(schoolRepository.findById(school1.getId()).orElseThrow());
-        location.setName("Blok A");
+        location.setSchool(savedSchool1);
+        location.setName("Ellerman");
         location.setAdres("");
         locationRepository.save(location);
 
+        Location location1 = new Location();
+        location1.setSchool(savedSchool1);
+        location1.setName("Noorderplaats");
+        location1.setAdres("");
+        locationRepository.save(location1);
+
         Location imposterLocation = new Location();
-        imposterLocation.setSchool(schoolRepository.findById(school2.getId()).orElseThrow());
+        imposterLocation.setSchool(savedSchool2);
         imposterLocation.setName("Blok A");
         imposterLocation.setAdres("");
         locationRepository.save(imposterLocation);

@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -47,6 +49,7 @@ public class School implements Serializable {
     @Column(nullable = false, unique = true, length = 255, name = "ss_subdomain")
     private String ssSubdomain;
 
+    @JsonIgnore
     @ToString.Exclude
     @OneToMany(mappedBy = "school", cascade = CascadeType.ALL)
     private List<Location> locations = new ArrayList<>();

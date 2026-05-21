@@ -48,4 +48,12 @@ public class SessionContext {
     public void setLocationId(Long id) {
         session.setAttribute("locationId", id);
     }
+
+    public Long getSchoolId() {
+        return (Long) session.getAttribute("schoolId");
+    }
+
+    public void setSchoolId(Long id) {
+        session.setAttribute("schoolId", id);
+    }
 }
