@@ -19,8 +19,8 @@ public class SectionController {
     private final SectionService sectionService;
 
     @GetMapping
-    public List<Section> getAllSections() {
-        return sectionService.getAllSections();
+    public List<Section> getAllSections(@RequestParam Long schoolId) {
+        return sectionService.getAllSections(schoolId);
     }
 
     @GetMapping("/{id}/books")
