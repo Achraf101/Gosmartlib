@@ -219,10 +219,7 @@ export class CatalogueComponent implements OnInit {
     this.sidebarGenres = [];
     this.sidebarThemes = [];
     this.sidebarDidactic = false;
-    if (this.oneLocation !== true) {
-      // do not remove location filter when only one is present
-      this.sidebarLocation = null; // TODO check if necessary
-    }
+    this.sidebarLocation = null;
     this.sidebarLanguage = null;
     this.sidebarPagesMin = null;
     this.sidebarPagesMax = null;
