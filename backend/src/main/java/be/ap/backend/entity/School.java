@@ -57,6 +57,22 @@ public class School implements Serializable {
     @OneToMany(mappedBy = "school", cascade = CascadeType.ALL)
     private List<Location> locations = new ArrayList<>();
 
+    @ToString.Exclude
+    @OneToMany(mappedBy = "school", cascade = CascadeType.ALL)
+    private List<Classroom> classrooms = new ArrayList<>();
+
+    @ToString.Exclude
+    @OneToMany(mappedBy = "school", cascade = CascadeType.ALL)
+    private List<Enrollment> enrollments = new ArrayList<>();
+
+    @ToString.Exclude
+    @OneToMany(mappedBy = "school", cascade = CascadeType.ALL)
+    private List<User> users = new ArrayList<>();
+
+    @ToString.Exclude
+    @OneToMany(mappedBy = "school", cascade = CascadeType.ALL)
+    private List<Material> materials = new ArrayList<>();
+
     public School(String name, String adres, String contact, String description, int borrowLimit, int borrowPeriod,
             int extendPeriod, int extendLimit, String ssSubdomain, String oneRosterClientId,
             String oneRosterClientSecret) {
