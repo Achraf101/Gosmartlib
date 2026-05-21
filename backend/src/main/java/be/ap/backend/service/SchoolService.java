@@ -8,9 +8,11 @@ import org.springframework.stereotype.Service;
 import be.ap.backend.dto.LocationDTO;
 import be.ap.backend.dto.SchoolDTO;
 import be.ap.backend.entity.School;
+import be.ap.backend.entity.Section;
 import be.ap.backend.exception.ArgumentsInvalidException;
 import be.ap.backend.exception.MissingArgumentsException;
 import be.ap.backend.repository.SchoolRepository;
+import be.ap.backend.repository.SectionRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
@@ -18,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SchoolService {
     private final SchoolRepository schoolRepository;
+    private final SectionRepository sectionRepository;
 
     public SchoolDTO addSchool(SchoolDTO dto) {
         if (dto.getName() == null) {
@@ -55,7 +58,9 @@ public class SchoolService {
         saved.setExtendLimit(dto.getExtendLimit());
         saved.setExtendPeriod(dto.getExtendPeriod());
 
-        return toDTO(schoolRepository.save(saved));
+        School school = schoolRepository.save(saved);
+        createDefaultSections(school.getId());
+        return toDTO(school);
     }
 
     public List<SchoolDTO> getAll() {
@@ -137,5 +142,21 @@ public class SchoolService {
         school.setExtendPeriod(dto.getExtendPeriod());
 
         return toDTO(schoolRepository.save(school));
+    }
+
+    private void createDefaultSections(Long schoolId) {
+        Section spotlightedSection = new Section();
+        spotlightedSection.setTitle("In de kijker");
+        spotlightedSection.setRanking((byte) 0);
+        spotlightedSection.setSchoolId(schoolId);
+        spotlightedSection.setHidden(false);
+        sectionRepository.save(spotlightedSection);
+
+        Section monthlySection = new Section();
+        monthlySection.setTitle("Boek van de maand");
+        monthlySection.setRanking((byte) 1);
+        monthlySection.setSchoolId(schoolId);
+        monthlySection.setHidden(false);
+        sectionRepository.save(monthlySection);
     }
 }
