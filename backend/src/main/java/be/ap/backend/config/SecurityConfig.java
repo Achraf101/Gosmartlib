@@ -4,8 +4,6 @@ import be.ap.backend.entity.User;
 import be.ap.backend.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import java.util.Map;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,7 +13,6 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -51,21 +48,22 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/login", "/auth/logout", "/oauth", "/auth/me", "/error").permitAll()
+                        .requestMatchers("/auth/login", "/auth/logout", "/oauth", "/auth/me", "/auth/current-user",
+                                "/error")
+                        .permitAll()
                         .anyRequest().authenticated())
                 .formLogin(form -> form
                         .loginProcessingUrl("/auth/login")
                         .usernameParameter("username")
                         .passwordParameter("password")
                         .successHandler((req, res, authentication) -> {
-                            // custom session attributes
-                            Map<String, String> user = getUserDetails(authentication);
+                            User u = (User) authentication.getPrincipal();
                             HttpSession session = req.getSession(true);
 
-                            session.setAttribute("userId", user.get("userId"));
-                            session.setAttribute("location", user.get("location"));
-                            session.setAttribute("role", user.get("role"));
-                            session.setAttribute("username", user.get("username"));
+                            session.setAttribute("userId", u.getId());
+                            session.setAttribute("location", u.getLocation() != null ? u.getLocation().getId() : null);
+                            session.setAttribute("role", u.getRole().name());
+                            session.setAttribute("username", u.getUsername());
 
                             res.setStatus(HttpServletResponse.SC_OK);
                             res.setContentType("application/json");
@@ -109,19 +107,4 @@ public class SecurityConfig {
         return provider;
     }
 
-    private Map<String, String> getUserDetails(Authentication auth) {
-        User u = (User) auth.getPrincipal();
-
-        String location = u.getLocation() != null ? u.getLocation().getId().toString() : "";
-
-        System.out.println(u.getUsername());
-        Map<String, String> usr = Map.of(
-                "userId", u.getId().toString(),
-                "location", location,
-                "role", u.getRole().name(),
-                "username", u.getUsername() // not smartschool name
-        );
-
-        return usr;
-    }
 }

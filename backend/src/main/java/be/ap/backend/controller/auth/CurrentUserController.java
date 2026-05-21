@@ -20,16 +20,25 @@ public class CurrentUserController {
         if (userRaw == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Niet ingelogd.");
         }
-
         CurrentUserDTO currentUser = new CurrentUserDTO();
-        currentUser.setUserId((Long) session.getAttribute("userId"));
+        currentUser.setUserId(toLong(session.getAttribute("userId")));
         currentUser.setRole((String) session.getAttribute("role"));
-        currentUser.setSchoolId((Long) session.getAttribute("school"));
-        currentUser.setLocationId((Long) session.getAttribute("location"));
+        currentUser.setSchoolId(toLong(session.getAttribute("school")));
+        currentUser.setLocationId(toLong(session.getAttribute("location")));
         currentUser.setFirstName((String) session.getAttribute("firstName"));
         currentUser.setLastName((String) session.getAttribute("lastName"));
         currentUser.setEmail((String) session.getAttribute("email"));
-
         return ResponseEntity.ok(currentUser);
+    }
+
+    private Long toLong(Object value) {
+        if (value == null)
+            return null;
+        if (value instanceof Long l)
+            return l;
+        if (value instanceof Number n)
+            return n.longValue();
+        String s = value.toString().trim();
+        return s.isBlank() ? null : Long.valueOf(s);
     }
 }
