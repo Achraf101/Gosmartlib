@@ -14,7 +14,7 @@ import java.util.Optional;
 
 @Repository
 public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
-    Optional<Enrollment> findBySsId(String ssId);
+    Optional<Enrollment> findByOneRosterId(String oneRosterId);
 
     @Query("SELECT DISTINCT e.classroom FROM Enrollment e LEFT JOIN FETCH e.classroom.students WHERE e.user.id = :userId AND e.role = 'LEERKRACHT' AND e.classroom.hidden = false ORDER BY e.classroom.name ASC")
     List<Classroom> findClassroomsByTeacherId(@Param("userId") Long userId);
