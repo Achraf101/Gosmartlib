@@ -88,9 +88,9 @@ export class UserLoansPageComponent implements OnInit {
   get extendedEndDate(): Date | null {
     if (!this.loanToExtend) return null;
     const date = new Date(this.loanToExtend.end);
-    date.setDate(date.getDate() + 14);
+    date.setDate(date.getDate() + this.loanToExtend.extendPeriod);
     return date;
-  }
+}
 
   isOverdue(endDate: string | Date): boolean {
     const end = new Date(endDate);

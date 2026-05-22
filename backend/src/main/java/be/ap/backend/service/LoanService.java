@@ -213,6 +213,7 @@ public class LoanService {
         dto.setCreated(loan.getCreated());
         dto.setUsername(loan.getUser().getUsername());
         dto.setGroupId(loan.getGroupId());
+        dto.setExtendPeriod(loan.getLocation().getSchool().getExtendPeriod());
 
         LoanBookDTO[] books = loan.getLoanBooks().stream()
                 .map(lb -> {

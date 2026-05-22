@@ -23,11 +23,9 @@
         }
       </h3>
       <div id="book-info-image">
-        @if (book.cover == '' || book.cover == null) {
-          <img src="{{ placeholder }}" alt="boek omslag" />
-        } @else {
-          <p-image src="/static/cover/{{ book.cover }}" preview alt="boek omslag" class="cover" />
-        }
+        <div class="img">
+          <b-cover [bookCard]="book"></b-cover>
+        </div>
         <div id="stars">
           <div class="rating-display">
             <div class="custom-stars">
@@ -114,6 +112,15 @@
             severity="primary"
             (onClick)="cartDialogVisible = true"
           />
+          @if (iaId) {
+            <p-button
+              class="btn"
+              label="Boekpreview"
+              severity="secondary"
+              icon="pi pi-book"
+              (onClick)="openPreview()"
+            />
+          }
         </div>
       </div>
     </div>
@@ -410,11 +417,14 @@
       [resizable]="false"
       [style]="{ width: '30rem' }"
     >
-      <div style="display: flex; flex-direction: column; gap: 1rem;">
-        <p>Ben je zeker dat je <strong>{{ pendingFile?.name }}</strong> wil uploaden?</p>
-        <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+      <div style="display: flex; flex-direction: column; gap: 1rem">
+        <p>
+          Ben je zeker dat je <strong>{{ pendingFile?.name }}</strong> wil uploaden?
+        </p>
+        <div style="display: flex; flex-direction: column; gap: 0.4rem">
           <label for="uploadNote">
-            Notitie <span style="color: var(--text-color-secondary); font-size: 0.8rem;">(optioneel)</span>
+            Notitie
+            <span style="color: var(--text-color-secondary); font-size: 0.8rem">(optioneel)</span>
           </label>
           <textarea
             pTextarea
@@ -439,6 +449,18 @@
           (onClick)="confirmUpload()"
         />
       </ng-template>
+    </p-dialog>
+
+    <p-dialog
+      header="Boekpreview"
+      [(visible)]="previewDialogVisible"
+      [modal]="true"
+      [resizable]="false"
+      [style]="{ width: '90vw' }"
+    >
+      @if (previewUrl) {
+        <iframe [src]="previewUrl" class="preview-iframe" frameborder="0" allowfullscreen></iframe>
+      }
     </p-dialog>
 
     <div class="box">

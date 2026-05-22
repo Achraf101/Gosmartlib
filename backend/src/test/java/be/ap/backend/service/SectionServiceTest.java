@@ -47,9 +47,8 @@ public class SectionServiceTest {
         s1.setTitle("In de kijker");
         Section s2 = new Section();
         s2.setTitle("Boek van de maand");
-        when(sectionRepository.findByHiddenFalseOrderByRankingAsc()).thenReturn(List.of(s1, s2));
-
-        List<Section> result = sectionService.getAllSections();
+        when(sectionRepository.findByHiddenFalseAndSchoolIdOrderByRankingAsc(1L)).thenReturn(List.of(s1, s2));
+        List<Section> result = sectionService.getAllSections(1L);
 
         assertEquals(2, result.size());
         assertEquals("In de kijker", result.get(0).getTitle());

@@ -19,11 +19,15 @@ export class LanguageService {
     return this.apiService.get<Language>(this.endpoint);
   }
 
-  getByName(query: string): Observable<Language> {
-    return this.apiService.get<Language>(`${this.endpoint}/search/${query}`);
+  getByName(query: string): Observable<Language[]> {
+    return this.apiService.get<Language[]>(`${this.endpoint}/search/${query}`);
   }
 
   addLanguage(language: Omit<Language, 'id'>): Observable<Language> {
     return this.apiService.post<Language>(`${this.endpoint}`, language);
+  }
+
+  getByCode(code: string): Observable<Language> {
+    return this.apiService.get<Language>(`${this.endpoint}/code/${code}`);
   }
 }

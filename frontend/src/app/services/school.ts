@@ -22,4 +22,8 @@ export class SchoolService {
   getById(id: number): Observable<School> {
     return this.apiService.get<School>(`${this.endpoint}/${id}`);
   }
+
+  updateSchool(id: number, school: Omit<School, 'id'>): Observable<School> {
+  return this.apiService.put<School>(`${this.endpoint}/${id}`, school);
+}
 }

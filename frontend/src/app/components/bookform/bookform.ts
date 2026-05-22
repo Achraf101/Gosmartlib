@@ -47,7 +47,6 @@ import { NavBarComponent } from '../nav-bar/nav-bar';
 import { BulkUpload } from '../bulk-upload/bulk-upload';
 import { Theme } from '../../models/theme';
 import { ThemeService } from '../../services/theme';
-// import { JsonPipe } from '@angular/common';
 import { BookCardComponent } from '../misc/book-card/book-card';
 import { BookCover } from '../misc/book-cover/book-cover';
 
@@ -75,7 +74,6 @@ import { BookCover } from '../misc/book-cover/book-cover';
     ToastModule,
     MessageModule,
     BulkUpload,
-    // JsonPipe,
     BookCardComponent,
     BookCover,
   ],
@@ -100,7 +98,7 @@ export class BookformComponent implements OnInit {
     genres: new FormControl<number[] | null>([], [maxEntries(5), Validators.required]),
     themes: new FormControl<number[] | null>([], [maxEntries(5)]),
     description: new FormControl<string | null>(null, [
-      Validators.maxLength(500),
+      Validators.maxLength(1000),
       Validators.required,
     ]),
     published: new FormControl<number | null>(null, [Validators.min(1)]),
@@ -263,6 +261,18 @@ export class BookformComponent implements OnInit {
       themes: book.themes?.map((t) => t.id) ?? [],
     });
     this.lookupCoverUrl = book.cover ?? null;
+  }
+
+  get previewBookCard(): BookCard {
+    return (
+      this.bookToEdit ?? {
+        id: 0,
+        title: '',
+        cover: this.lookupCoverUrl ?? undefined,
+        author: { id: 0, name: '' },
+        author_name: '',
+      }
+    );
   }
 
   addAuthor(): void {

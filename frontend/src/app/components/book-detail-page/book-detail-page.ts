@@ -46,6 +46,9 @@ import { LocationBookService } from '../../services/locationbook';
 import { Location } from '../../models/location';
 import { SchoolService } from '../../services/school';
 import { School } from '../../models/school';
+import { Textarea } from 'primeng/textarea';
+import { BookCover } from '../misc/book-cover/book-cover';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-book-detail-page',
@@ -69,6 +72,7 @@ import { School } from '../../models/school';
     ReviewSectionComponent,
     FileUploadModule,
     MaterialComponent,
+    BookCover,
   ],
   templateUrl: './book-detail-page.html',
   styleUrl: './book-detail-page.css',
@@ -92,6 +96,9 @@ export class BookDetailPage implements OnInit {
   uploadDialogVisible = false;
   pendingFile?: File;
   uploadNote = '';
+  previewDialogVisible = false;
+  previewUrl: SafeResourceUrl | null = null;
+  iaId: string | null = null;
   today = new Date();
   endDate = new Date();
   loading = new DelayedLoader();
@@ -121,6 +128,7 @@ export class BookDetailPage implements OnInit {
     private readonly uploadService: UploadService,
     private readonly schoolService: SchoolService,
     public auth: AuthService,
+    private readonly sanitizer: DomSanitizer,
     private router: Router,
     public authService: AuthService,
   ) {}
@@ -154,6 +162,7 @@ export class BookDetailPage implements OnInit {
     this.loading.start();
     this.error = '';
     this.book = undefined;
+    this.iaId = null;
 
     this.bookService.getById(this.bookId).subscribe({
       next: (book) => {
@@ -179,6 +188,13 @@ export class BookDetailPage implements OnInit {
             });
           },
         });
+
+        if (book.isbn) {
+          this.bookService.getIaPreview(this.bookId).subscribe({
+            next: (data) => (this.iaId = data.ia_id),
+            error: () => {},
+          });
+        }
 
         this.loading.stop();
       },
@@ -429,6 +445,14 @@ export class BookDetailPage implements OnInit {
     this.cartForm.controls.requestedAmount.setValidators(validators);
     this.loanForm.controls.requestedAmount.updateValueAndValidity();
     this.cartForm.controls.requestedAmount.updateValueAndValidity();
+  }
+
+  openPreview(): void {
+    if (!this.iaId) return;
+    this.previewUrl = this.sanitizer.bypassSecurityTrustResourceUrl(
+      `https://archive.org/embed/${this.iaId}`,
+    );
+    this.previewDialogVisible = true;
   }
 
   getStarFill(position: number): number {

@@ -12,8 +12,9 @@ export class SectionService {
 
   constructor(private apiService: ApiService) {}
 
-  getAll(): Observable<any[]> {
-    return this.apiService.get<any[]>(this.endpoint);
+  getAll(schoolId: number): Observable<any[]> {
+    const params = new HttpParams().set('schoolId', schoolId.toString());
+    return this.apiService.get<any[]>(this.endpoint, params);
   }
 
   getBooksBySection(id: number): Observable<any[]> {

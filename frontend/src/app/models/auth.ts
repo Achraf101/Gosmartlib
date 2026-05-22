@@ -1,3 +1,5 @@
+import { Location } from './location';
+
 export interface AuthUser {
   userId: number;
   role: string;
@@ -7,4 +9,5 @@ export interface AuthUser {
   lastName: string | null;
   email: string | null;
   username: string | null;
+  location: Location[];
 }

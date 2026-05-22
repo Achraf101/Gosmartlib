@@ -27,16 +27,16 @@ public class LocationSettings implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @Column(name = "location_id")
-    private Long locationId;
+    @Column(name = "school_id")
+    private Long schoolId;
 
     @MapsId
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "location_id")
-    private Location location;
+    @JoinColumn(name = "school_id")
+    private School school;
 
     @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "location_hidden_components", joinColumns = @JoinColumn(name = "location_id"))
+    @CollectionTable(name = "location_hidden_components", joinColumns = @JoinColumn(name = "school_id"))
     private Set<HiddenComponent> hiddenComponents = new HashSet<>();
 
     public boolean isVisible(ComponentScreen screen, ComponentType type) {

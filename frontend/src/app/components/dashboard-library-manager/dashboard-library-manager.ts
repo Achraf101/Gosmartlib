@@ -149,7 +149,7 @@ export class DashboardLibraryManager implements OnInit {
 
   loadSectionAndBooks(): void {
     this.monthlyBooksLoading = true;
-    this.sectionService.getAll().subscribe({
+    this.sectionService.getAll(this.schoolId).subscribe({
       next: (sections) => {
         this.activeSection = sections.find((s) => s.title === 'Boek van de maand') ?? null;
         if (this.activeSection) {
@@ -186,7 +186,7 @@ export class DashboardLibraryManager implements OnInit {
   }
 
   loadSpotlightBooks(): void {
-    this.sectionService.getAll().subscribe({
+    this.sectionService.getAll(this.schoolId).subscribe({
       next: (sections) => {
         const spotlight = sections.find((s) => s.title === 'In de kijker');
         if (spotlight) {
@@ -217,6 +217,7 @@ export class DashboardLibraryManager implements OnInit {
   }
 
   changeBookOfMonth(grade: number): void {
+    console.log(this.monthlyBooks);
     this.router.navigate(['/catalogus'], {
       queryParams: {
         selectMode: true,
@@ -227,6 +228,7 @@ export class DashboardLibraryManager implements OnInit {
   }
 
   changeSpotlightBook(ranking: number): void {
+    console.log(this.spotlightSectionId);
     this.router.navigate(['/catalogus'], {
       queryParams: {
         selectMode: true,
@@ -427,5 +429,8 @@ export class DashboardLibraryManager implements OnInit {
         this.syncSmartschool();
       },
     });
+  }
+  goToSchoolSettings(): void {
+    this.router.navigate(['/school/instellingen']);
   }
 }

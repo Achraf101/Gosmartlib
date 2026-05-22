@@ -132,6 +132,13 @@
       />
     </div>
   </p-card>
+  <p-card class="nav-card" (click)="goToSchoolSettings()">
+    <div class="card-content">
+      <i class="pi pi-cog card-icon"></i>
+      <span class="card-title">Schoolinstellingen</span>
+      <span class="card-desc">Pas de gegevens van je school aan</span>
+    </div>
+  </p-card>
 
   <div class="stats-grid">
     @if (isVisible(locationSettings, 'DASHBOARD', 'TOP_BOOKS')) {

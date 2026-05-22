@@ -66,7 +66,7 @@ public class OAuthController {
         TokenRequest request = new TokenRequest(
                 tokenEndpoint,
                 new ClientSecretBasic(
-                        new ClientID(this.clientId), // todo read from variable
+                        new ClientID(this.clientId),
                         new Secret(this.clientSecret)),
                 new AuthorizationCodeGrant(
                         authCode,
@@ -121,7 +121,7 @@ public class OAuthController {
         SecurityContext securityContext = SecurityContextHolder.getContext();
         securityContext.setAuthentication(auth);
 
-        // 👇 manually save security context to session
+        // manually save security context to session
         session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY,
                 securityContext);
 

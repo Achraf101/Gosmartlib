@@ -62,11 +62,13 @@ public class SecurityConfig {
 
                             session.setAttribute("userId", u.getId());
                             session.setAttribute("location", u.getLocation() != null ? u.getLocation().getId() : null);
+                            session.setAttribute("school", u.getSchool() != null ? u.getSchool().getId() : null);
                             session.setAttribute("role", u.getRole().name());
                             session.setAttribute("username", u.getUsername());
                             res.setStatus(HttpServletResponse.SC_OK);
                             res.setContentType("application/json");
                             res.getWriter().write("{\"message\":\"Login successful\"}");
+
                         })
                         .failureHandler((req, res, exception) -> {
                             res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

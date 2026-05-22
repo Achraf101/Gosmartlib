@@ -19,8 +19,8 @@ export class GenreService {
     return this.apiService.get<Genre>(this.endpoint);
   }
 
-  getByName(query: string): Observable<Genre> {
-    return this.apiService.get<Genre>(`${this.endpoint}/search/${query}`);
+  getByName(query: string): Observable<Genre[]> {
+    return this.apiService.get<Genre[]>(`${this.endpoint}/search/${query}`);
   }
 
   addAuthor(genre: Omit<Genre, 'id'>): Observable<Genre> {

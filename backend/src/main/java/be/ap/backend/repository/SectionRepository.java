@@ -7,5 +7,5 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface SectionRepository extends JpaRepository<Section, Long> {
-    List<Section> findByHiddenFalseOrderByRankingAsc();
+    List<Section> findByHiddenFalseAndSchoolIdOrderByRankingAsc(Long schoolId);
 }
