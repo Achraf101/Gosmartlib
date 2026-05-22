@@ -58,7 +58,6 @@ public class DataSeeder implements CommandLineRunner {
     private final SchoolRepository schoolRepository;
     private final PasswordEncoder passwordEncoder;
     private final ClassroomRepository classroomRepository;
-    private final EncryptionService encryptionService;
     private final SchoolService schoolService;
 
     public DataSeeder(LanguageRepository languageRepository,
@@ -80,7 +79,6 @@ public class DataSeeder implements CommandLineRunner {
         this.schoolRepository = schoolRepository;
         this.passwordEncoder = passwordEncoder;
         this.classroomRepository = classroomRepository;
-        this.encryptionService = encryptionService;
         this.schoolService = schoolService;
     }
 
@@ -377,9 +375,8 @@ public class DataSeeder implements CommandLineRunner {
         dto1.setBorrowPeriod(14);
         dto1.setExtendLimit(3);
         dto1.setExtendPeriod(14);
-        dto1.setOneRosterClientId(encryptionService.encrypt("ec58f0fb-6bd3-48d3-a165-6b73a324d5ad"));
-        dto1.setOneRosterClientSecret(
-                encryptionService.encrypt("755b033b7096ad2abe34142df0b67fe974d0e555ab6c0d6c9475e417c2a8"));
+        dto1.setOneRosterClientId("ec58f0fb-6bd3-48d3-a165-6b73a324d5ad");
+        dto1.setOneRosterClientSecret("755b033b7096ad2abe34142df0b67fe974d0e555ab6c0d6c9475e417c2a8");
         SchoolDTO school1 = schoolService.addSchool(dto1);
 
         SchoolDTO dto2 = new SchoolDTO();
@@ -392,9 +389,8 @@ public class DataSeeder implements CommandLineRunner {
         dto2.setBorrowPeriod(14);
         dto2.setExtendLimit(3);
         dto2.setExtendPeriod(14);
-        dto2.setOneRosterClientId(encryptionService.encrypt("ec58f0fb-6bd3-48d3-a165-6b73a324d5ad"));
-        dto2.setOneRosterClientSecret(
-                encryptionService.encrypt("755b033b7096ad2abe34142df0b67fe974d0e555ab6c0d6c9475e417c2a8"));
+        dto2.setOneRosterClientId("ec58f0fb-6bd3-48d3-a165-6b73a324d5ad");
+        dto2.setOneRosterClientSecret("755b033b7096ad2abe34142df0b67fe974d0e555ab6c0d6c9475e417c2a8");
         SchoolDTO school2 = schoolService.addSchool(dto2);
 
         School savedSchool1 = schoolRepository.findById(school1.getId()).orElseThrow();

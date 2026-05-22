@@ -111,8 +111,6 @@ public class SchoolService {
         dto.setBorrowPeriod(school.getBorrowPeriod());
         dto.setExtendLimit(school.getExtendLimit());
         dto.setExtendPeriod(school.getExtendPeriod());
-        dto.setOneRosterClientId(school.getOneRosterClientId());
-        dto.setOneRosterClientSecret(school.getOneRosterClientSecret());
 
         List<LocationDTO> locationDTOs = school.getLocations().stream()
                 .map(location -> {

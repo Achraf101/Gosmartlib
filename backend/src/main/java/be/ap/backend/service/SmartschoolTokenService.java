@@ -31,6 +31,7 @@ public class SmartschoolTokenService {
     private final ConcurrentHashMap<Long, Instant> expiryCache = new ConcurrentHashMap<>();
 
     public String getAccessToken(School school) {
+        log.info("############################getAccessToken called for school={}", school.getSsSubdomain());
         Long schoolId = school.getId();
 
         if (tokenCache.containsKey(schoolId) &&
@@ -46,6 +47,10 @@ public class SmartschoolTokenService {
         String tokenUrl = "https://" + school.getSsSubdomain() + ".smartschool.be/ims/oneroster/token";
 
         OneRosterCredentials credentials = schoolService.getCredentials(school.getId());
+
+        log.info("#############################clientId={} secret-length={}",
+                credentials.getClientId(),
+                credentials.getClientSecret() != null ? credentials.getClientSecret().length() : "null");
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -73,6 +78,10 @@ public class SmartschoolTokenService {
         expiryCache.put(school.getId(), Instant.now().plusSeconds(expiresIn));
 
         log.info("Token obtained for school {}", school.getSsSubdomain());
+        log.debug("####################################Token request for school={} clientId={} secret-length={}",
+                school.getSsSubdomain(),
+                credentials.getClientId(),
+                credentials.getClientSecret() != null ? credentials.getClientSecret().length() : "null");
         return token;
     }
 }
