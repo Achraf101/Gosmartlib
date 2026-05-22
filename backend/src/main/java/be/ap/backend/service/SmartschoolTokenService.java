@@ -1,6 +1,7 @@
 package be.ap.backend.service;
 
 import be.ap.backend.entity.School;
+import be.ap.backend.model.OneRosterCredentials;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,6 +24,7 @@ public class SmartschoolTokenService {
     private String scope;
 
     private final RestTemplate restTemplate;
+    private final SchoolService schoolService;
 
     // Cache per school-ID
     private final ConcurrentHashMap<Long, String> tokenCache = new ConcurrentHashMap<>();
@@ -43,13 +45,15 @@ public class SmartschoolTokenService {
     private String fetchNewToken(School school) {
         String tokenUrl = "https://" + school.getSsSubdomain() + ".smartschool.be/ims/oneroster/token";
 
+        OneRosterCredentials credentials = schoolService.getCredentials(school.getId());
+
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("grant_type", "client_credentials");
-        body.add("client_id", school.getOneRosterClientId());
-        body.add("client_secret", school.getOneRosterClientSecret());
+        body.add("client_id", credentials.getClientId());
+        body.add("client_secret", credentials.getClientSecret());
         body.add("scope", scope);
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
