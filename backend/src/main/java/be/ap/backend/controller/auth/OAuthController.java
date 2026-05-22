@@ -1,6 +1,5 @@
 package be.ap.backend.controller.auth;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -19,7 +18,6 @@ public class OAuthController {
     @GetMapping("oauth")
     public ResponseEntity<?> handleOAuth(@RequestParam String code, @RequestParam String originplatform,
             HttpServletRequest httpRequest) throws Exception {
-        oAuthService.handleCallback(code, originplatform, httpRequest);
-        return ResponseEntity.status(HttpStatus.FOUND).header("Location", "/").build();
+        return oAuthService.handleCallback(code, originplatform, httpRequest);
     }
 }

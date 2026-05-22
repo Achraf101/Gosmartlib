@@ -24,8 +24,8 @@ public class SectionService {
     private final SectionBookRepository sectionBookRepository;
     private final BookRepository bookRepository;
 
-    public List<Section> getAllSections() {
-        return sectionRepository.findByHiddenFalseOrderByRankingAsc();
+    public List<Section> getAllSections(Long schoolId) {
+        return sectionRepository.findByHiddenFalseAndSchoolIdOrderByRankingAsc(schoolId);
     }
 
     public List<Book> getBooksBySection(Long sectionId) {
@@ -67,6 +67,14 @@ public class SectionService {
 
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Boek niet gevonden"));
+
+        boolean alreadyExists = sectionBookRepository.findBySectionIdAndGradeIsNullOrderByRankingAsc(sectionId)
+                .stream()
+                .anyMatch(sb -> sb.getBook().getId().equals(bookId));
+
+        if (alreadyExists) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Dit boek staat al in de kijker");
+        }
 
         sectionBookRepository.findBySectionIdAndRanking(sectionId, ranking)
                 .ifPresent(sectionBookRepository::delete);

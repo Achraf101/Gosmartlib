@@ -62,7 +62,8 @@ export class BookSectionComponent implements OnInit {
 
   ngOnInit(): void {
     this.loading.start();
-    this.sectionService.getAll().subscribe({
+
+    this.sectionService.getAll(this.schoolId).subscribe({
       next: (sections) => {
         this.sections = sections;
         if (this.sections.length > 0) {
@@ -94,6 +95,10 @@ export class BookSectionComponent implements OnInit {
       },
       error: () => (this.locationSettings = null),
     });
+  }
+
+  private get schoolId(): number {
+    return this.authService.currentUser?.schoolId ?? 0;
   }
 
   get isMonthlySection(): boolean {

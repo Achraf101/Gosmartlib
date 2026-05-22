@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 
 import be.ap.backend.dto.GenreProjection;
 import be.ap.backend.dto.ThemeDTO;
@@ -33,6 +34,7 @@ import be.ap.backend.entity.Language;
 import be.ap.backend.repository.BookRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -42,6 +44,7 @@ public class BookService {
     private final BookRepository bookRepository;
     private final EntityManager entityManager;
     private final UploadService uploadService;
+    private final OpenLibraryService openLibraryService;
 
     public Book saveBook(CreateBookDTO dto) {
         Book book = new Book();
@@ -119,6 +122,7 @@ public class BookService {
     }
 
     public Page<Book> filter(
+            Long locationId,
             List<Long> genres,
             Long language,
             Boolean fiction,
@@ -140,6 +144,7 @@ public class BookService {
         }
 
         return bookRepository.filter(
+                locationId,
                 genres,
                 language,
                 fiction,
@@ -239,8 +244,15 @@ public class BookService {
         return bookRepository.save(book);
     }
 
-    public Page<Book> getAll(Pageable pageable) {
-        return bookRepository.findAll(pageable);
+    public Page<Book> getAll(HttpSession session, Boolean full, Long location, Pageable pageable) {
+        List<Long> ids = getLocationIds(session);
+        if (Boolean.TRUE.equals(full)) {
+            return bookRepository.findAll(pageable);
+        } else if (location == null || ids.contains(location)) {
+            return bookRepository.findAllByLocation(ids, pageable);
+        } else {
+            return Page.empty(pageable);
+        }
     }
 
     public Book getById(Long id) {
@@ -248,11 +260,30 @@ public class BookService {
                 .orElseThrow(() -> new EntityNotFoundException("Boek niet gevonden met id: " + id));
     }
 
-    public Page<Book> search(String query, Pageable pageable) {
-        return bookRepository.search(query, pageable);
+    public Page<Book> search(HttpSession session, String query, Pageable pageable) {
+        List<Long> ids = getLocationIds(session);
+        return bookRepository.search(ids, query, pageable);
     }
 
-    public List<BookCardDTO> getRelated(Long id) {
-        return bookRepository.findRelated(id);
+    public List<BookCardDTO> getRelated(HttpSession session, Long id) {
+        List<Long> ids = getLocationIds(session);
+        return bookRepository.findRelated(id, ids);
+    }
+
+    public ResponseEntity<Map<String, String>> getIaPreview(Long id) {
+        Book book = bookRepository.findById(id).orElse(null);
+        if (book == null || book.getIsbn() == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return openLibraryService.getIaIdentifier(book.getIsbn())
+                .map(iaId -> ResponseEntity.ok(Map.of("ia_id", iaId)))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    private List<Long> getLocationIds(HttpSession session) {
+        Object raw = session.getAttribute("location");
+        if (raw == null)
+            return List.of();
+        return List.of((Long) raw);
     }
 }

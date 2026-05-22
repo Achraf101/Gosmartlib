@@ -23,14 +23,14 @@ public class LocationSettingsController {
 
     @GetMapping
     public ResponseEntity<LocationSettingsDTO> getSettings(HttpSession session) {
-        Long locationId = Long.valueOf(session.getAttribute("location").toString());
-        return ResponseEntity.ok(locationSettingsService.getSettings(locationId));
+        Long schoolId = Long.valueOf(session.getAttribute("school").toString());
+        return ResponseEntity.ok(locationSettingsService.getSettings(schoolId));
     }
 
     @PutMapping
     public ResponseEntity<LocationSettingsDTO> updateSettings(@RequestBody LocationSettingsDTO dto,
             HttpSession session) {
-        Long locationId = Long.valueOf(session.getAttribute("location").toString());
-        return ResponseEntity.ok(locationSettingsService.updateSettings(locationId, dto));
+        Long schoolId = Long.valueOf(session.getAttribute("school").toString());
+        return ResponseEntity.ok(locationSettingsService.updateSettings(schoolId, dto));
     }
 }

@@ -3,6 +3,7 @@ package be.ap.backend.service;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -21,15 +22,25 @@ public class ClassroomService {
 
     private final ClassroomRepository classroomRepository;
     private final LoanRepository loanRepository;
+    private final SmartschoolLookupService lookupService;
+    private final EnrollmentService enrollmentService;
 
-    public ClassroomService(ClassroomRepository classroomRepository, LoanRepository loanRepository) {
+    public ClassroomService(ClassroomRepository classroomRepository, LoanRepository loanRepository,
+            SmartschoolLookupService lookupService, EnrollmentService enrollmentService) {
         this.classroomRepository = classroomRepository;
         this.loanRepository = loanRepository;
+        this.lookupService = lookupService;
+        this.enrollmentService = enrollmentService;
     }
 
     public List<ClassroomDTO> getClassroomsForTeacher(Long teacherId) {
-        return classroomRepository.findByTeacherIdWithStudents(teacherId).stream()
-                .map(c -> new ClassroomDTO(c.getId(), c.getName(), c.getStudents().size()))
+
+        return enrollmentService.getClassroomsForTeacher(teacherId).stream()
+                .map(c -> {
+                    Map<String, Object> classData = lookupService.getClassroom(c.getSchool(), c.getSsId());
+                    String name = classData != null ? (String) classData.get("title") : c.getName();
+                    return new ClassroomDTO(c.getId(), name, c.getStudents().size());
+                })
                 .toList();
     }
 
@@ -37,13 +48,16 @@ public class ClassroomService {
         Classroom classroom = classroomRepository.findByIdWithStudents(classroomId)
                 .orElseThrow(() -> new EntityNotFoundException("Klas niet gevonden met id: " + classroomId));
 
-        if (classroom.getTeacher() == null || !classroom.getTeacher().getId().equals(teacherId)) {
+        if (!enrollmentService.isTeacherOfClassroom(teacherId, classroomId)) {
             throw new SecurityException("Je bent niet de leerkracht van deze klas.");
         }
 
         return classroom.getStudents().stream()
                 .map(this::toStudentPreview)
-                .sorted(Comparator.comparing(p -> p.getName() != null ? p.getName().toLowerCase() : ""))
+                .sorted(Comparator
+                        .comparing(
+                                (StudentPreviewDTO p) -> p.getLastName() != null ? p.getLastName().toLowerCase() : "")
+                        .thenComparing(p -> p.getFirstName() != null ? p.getFirstName().toLowerCase() : ""))
                 .toList();
     }
 
@@ -57,14 +71,15 @@ public class ClassroomService {
                 .filter(d -> d != null)
                 .max(Comparator.naturalOrder());
 
-        String displayName = student.getSsName() != null && !student.getSsName().isBlank()
-                ? student.getSsName()
-                : student.getUsername();
+        Map<String, Object> user = lookupService.getUser(student.getSchool(), student.getOneRosterId(), "student");
+
+        String firstName = (String) user.get("givenName");
+        String lastName = (String) user.get("familyName");
 
         return new StudentPreviewDTO(
                 student.getId(),
-                student.getUsername(),
-                displayName,
+                firstName,
+                lastName,
                 last.orElse(null));
     }
 }

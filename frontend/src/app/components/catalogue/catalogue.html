@@ -43,6 +43,19 @@
   <div class="catalogue-layout">
     <aside class="filter-sidebar">
       <h3>Filters</h3>
+      @if (oneLocation !== true) {
+        <div class="sidebar-section">
+          <label>Locatie</label>
+          <p-select
+            [options]="locations"
+            [(ngModel)]="sidebarLocation"
+            optionLabel="name"
+            optionValue="id"
+            [showClear]="true"
+            placeholder="Locatie"
+          />
+        </div>
+      }
 
       <div class="sidebar-section">
         <label>Genre</label>

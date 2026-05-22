@@ -7,6 +7,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import be.ap.backend.dto.SchoolDTO;
 import be.ap.backend.entity.Author;
 import be.ap.backend.entity.Book;
 import be.ap.backend.entity.BookType;
@@ -16,8 +17,6 @@ import be.ap.backend.entity.Classroom;
 import be.ap.backend.entity.Genre;
 import be.ap.backend.entity.Language;
 import be.ap.backend.entity.School;
-import be.ap.backend.entity.Section;
-import be.ap.backend.entity.SectionBook;
 import be.ap.backend.entity.Theme;
 import be.ap.backend.entity.User;
 import be.ap.backend.entity.UserRole;
@@ -30,10 +29,10 @@ import be.ap.backend.repository.ClassroomRepository;
 import be.ap.backend.repository.GenreRepository;
 import be.ap.backend.repository.LanguageRepository;
 import be.ap.backend.repository.SchoolRepository;
-import be.ap.backend.repository.SectionBookRepository;
-import be.ap.backend.repository.SectionRepository;
 import be.ap.backend.repository.ThemeRepository;
 import be.ap.backend.repository.UserRepository;
+import be.ap.backend.service.EncryptionService;
+import be.ap.backend.service.SchoolService;
 
 import org.springframework.beans.factory.annotation.Value;
 
@@ -52,30 +51,27 @@ public class DataSeeder implements CommandLineRunner {
     private final BookTypeRepository bookTypeRepository;
     private final BookRepository bookRepository;
     private final AuthorRepository authorRepository;
-    private final SectionRepository sectionRepository;
     private final ChallengeRepository challengeRepository;
-    private final SectionBookRepository sectionBookRepository;
     private final ThemeRepository themeRepository;
     private final UserRepository userRepository;
     private final LocationRepository locationRepository;
     private final SchoolRepository schoolRepository;
     private final PasswordEncoder passwordEncoder;
     private final ClassroomRepository classroomRepository;
+    private final SchoolService schoolService;
 
     public DataSeeder(LanguageRepository languageRepository,
             BookTypeRepository bookTypeRepository, GenreRepository genreRepository,
             BookRepository bookRepository, AuthorRepository authorRepository,
-            SectionRepository sectionRepository, SectionBookRepository sectionBookRepository,
             ThemeRepository themeRepository, UserRepository userRepository, LocationRepository locationRepository,
             SchoolRepository schoolRepository, PasswordEncoder passwordEncoder,
-            ChallengeRepository challengeRepository, ClassroomRepository classroomRepository) {
+            ChallengeRepository challengeRepository, ClassroomRepository classroomRepository,
+            EncryptionService encryptionService, SchoolService schoolService) {
         this.languageRepository = languageRepository;
         this.bookTypeRepository = bookTypeRepository;
         this.genreRepository = genreRepository;
         this.bookRepository = bookRepository;
         this.authorRepository = authorRepository;
-        this.sectionRepository = sectionRepository;
-        this.sectionBookRepository = sectionBookRepository;
         this.challengeRepository = challengeRepository;
         this.themeRepository = themeRepository;
         this.userRepository = userRepository;
@@ -83,6 +79,7 @@ public class DataSeeder implements CommandLineRunner {
         this.schoolRepository = schoolRepository;
         this.passwordEncoder = passwordEncoder;
         this.classroomRepository = classroomRepository;
+        this.schoolService = schoolService;
     }
 
     @Override
@@ -94,13 +91,6 @@ public class DataSeeder implements CommandLineRunner {
         seedChallenges();
         seedTestUsers();
         seedClassrooms();
-
-        if (bookRepository.count() > 0) {
-            if (sectionRepository.count() == 0) {
-                seedSections();
-            }
-            return;
-        }
         seedDatabase();
 
     }
@@ -179,31 +169,31 @@ public class DataSeeder implements CommandLineRunner {
         Author rima = createAuthor("Rima Orie");
         Author benno = createAuthor("Benno Barnard");
 
-        Book b1 = saveBook("De brief voor de koning",
+        saveBook("De brief voor de koning",
                 "Vijf jongelingen moeten, voordat ze tot ridder geslagen worden, de nacht biddend en wakend doorbrengen.",
                 true, Year.of(1962), 449, boek, nl, tonke,
                 "eacc8ca9ee1827042fc7835e7de56227.webp",
                 Set.of(roman, avontuur), Set.of(avontuurEnOntdekking));
 
-        Book b2 = saveBook("Harry Potter en de vuurbeker",
+        saveBook("Harry Potter en de vuurbeker",
                 "Als tovenaar-in-de-dop Harry Potter deelneemt aan een internationaal tovenaarstoernooi, dreigt er onverwacht gevaar.",
                 true, Year.of(2000), 546, boek, nl, jk,
                 "b983a2f49e023bb4e2b8c5370552c0f4.webp",
                 Set.of(fantasy, avontuur), Set.of(avontuurEnOntdekking));
 
-        Book b3 = saveBook("Kruistocht in Spijkerbroek",
+        saveBook("Kruistocht in Spijkerbroek",
                 "Dolf Wega belandt door een tijdmachine plotseling in de kinderkruistocht van 1212.",
                 true, Year.of(1973), 264, boek, nl, thea,
                 "5a6539e1224f4a55659a0136a0de562f.webp",
                 Set.of(roman, avontuur), Set.of(avontuurEnOntdekking));
 
-        Book b4 = saveBook("Geef me de ruimte!",
+        saveBook("Geef me de ruimte!",
                 "De lotgevallen van een Vlaams meisje dat van huis wegloopt en in het middeleeuwse Frankrijk een zwervend bestaan gaat leiden.",
                 true, Year.of(1976), 406, boek, nl, thea,
                 "6353feab95305a1264c9430a565515de.webp",
                 Set.of(roman, avontuur), Set.of(identiteitEnZelfbeeld));
 
-        Book b5 = saveBook("De Zwendelprins",
+        saveBook("De Zwendelprins",
                 "Simran (17) werkt als keukenhulp in het paleis van de maharadja van Suryan als ze wordt ontvoerd door een mysterieuze prins.",
                 true, Year.of(2019), 399, boek, nl, rima,
                 "811278f6a3909b01ed523a55f4b6b817.webp",
@@ -214,31 +204,6 @@ public class DataSeeder implements CommandLineRunner {
                 false, Year.of(2012), 319, boek, nl, benno,
                 "82f15cee848b29e0f9684f691f2f020e.webp",
                 Set.of(geschiedenis), Set.of());
-
-        seedSectionsWithBooks(b1, b2, b3, b4, b5);
-    }
-
-    private void seedSections() {
-        java.util.List<Book> books = bookRepository.findAll().stream().limit(5).toList();
-        if (books.size() < 2) {
-            System.out.println("Not enough books to seed sections.");
-            return;
-        }
-        createSectionsFromBooks(books.subList(0, Math.min(4, books.size() - 1)), books.get(books.size() - 1));
-    }
-
-    private void seedSectionsWithBooks(Book b1, Book b2, Book b3, Book b4, Book b5) {
-        createSectionsFromBooks(java.util.List.of(b1, b2, b3, b4), b5);
-    }
-
-    private void createSectionsFromBooks(java.util.List<Book> inDeKijkerBooks, Book boekVanDeMaand) {
-        Section inDeKijker = createSection("In de kijker", (byte) 0);
-        Section boekVanDeMaandSection = createSection("Boek van de maand", (byte) 1);
-
-        for (int i = 0; i < inDeKijkerBooks.size(); i++) {
-            saveSectionBook(inDeKijker, inDeKijkerBooks.get(i), (short) (i + 1));
-        }
-        saveSectionBook(boekVanDeMaandSection, boekVanDeMaand, (short) 0);
     }
 
     private void seedChallenges() {
@@ -317,26 +282,14 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     private Author createAuthor(String name) {
-        Author author = new Author();
-        author.setName(name);
-        return authorRepository.save(author);
-    }
-
-    private Section createSection(String title, byte ranking) {
-        Section section = new Section();
-        section.setTitle(title);
-        section.setRanking(ranking);
-        section.setSchoolId(1L);
-        section.setHidden(false);
-        return sectionRepository.save(section);
-    }
-
-    private void saveSectionBook(Section section, Book book, short ranking) {
-        SectionBook sb = new SectionBook();
-        sb.setSection(section);
-        sb.setBook(book);
-        sb.setRanking(ranking);
-        sectionBookRepository.save(sb);
+        return authorRepository.findByName(name)
+                .stream()
+                .findFirst()
+                .orElseGet(() -> {
+                    Author author = new Author();
+                    author.setName(name);
+                    return authorRepository.save(author);
+                });
     }
 
     private void seedThemes() {
@@ -365,6 +318,8 @@ public class DataSeeder implements CommandLineRunner {
         Location location = locationRepository.findById(1L)
                 .orElseThrow(() -> new IllegalStateException("Location 1 missing"));
         School school = schoolRepository.findById(1L).orElseThrow(() -> new IllegalStateException("School 1 missing"));
+        School imposterSchool = schoolRepository.findById(2L)
+                .orElseThrow(() -> new IllegalStateException("School 1 missing"));
 
         seedUser("beheerder", "test1234", UserRole.BIBLIOTHEEKBEHEERDER, location, school);
         seedUser("admin", "admin", UserRole.ADMIN, location, school);
@@ -372,6 +327,9 @@ public class DataSeeder implements CommandLineRunner {
         seedUser("leerling1", "leerling1", UserRole.STUDENT, location, school);
         seedUser("leerling2", "leerling2", UserRole.STUDENT, location, school);
         seedUser("leerling3", "leerling3", UserRole.STUDENT, location, school);
+        seedUser("imposter", "imposter", UserRole.STUDENT, location, imposterSchool);
+        seedUser("imposterBeheerder", "imposterBeheerder", UserRole.BIBLIOTHEEKBEHEERDER, location, imposterSchool);
+
     }
 
     private void seedUser(String username, String password, UserRole role, Location location, School school) {
@@ -391,10 +349,6 @@ public class DataSeeder implements CommandLineRunner {
             return;
 
         User teacher = userRepository.findByUsername("leerkracht1").orElse(null);
-        User s1 = userRepository.findByUsername("leerling1").orElse(null);
-        User s2 = userRepository.findByUsername("leerling2").orElse(null);
-        User s3 = userRepository.findByUsername("leerling3").orElse(null);
-        Location location = locationRepository.findById(1L).orElse(null);
         School school = schoolRepository.findById(1L).orElse(null);
 
         if (teacher == null)
@@ -403,26 +357,61 @@ public class DataSeeder implements CommandLineRunner {
         Classroom klas = new Classroom();
         klas.setName("3A");
         klas.setTeacher(teacher);
-        klas.setLocation(location);
         klas.setSchool(school);
-        if (s1 != null)
-            klas.getStudents().add(s1);
-        if (s2 != null)
-            klas.getStudents().add(s2);
-        if (s3 != null)
-            klas.getStudents().add(s3);
         classroomRepository.save(klas);
     }
 
     private void seedSchoolsAndLocations() {
         if (schoolRepository.count() > 0)
             return;
-        School school = schoolRepository.save(
-                new School("AP Hogeschool", "", "", "", 10, 14, 14, 3, "aphogeschool"));
+
+        SchoolDTO dto1 = new SchoolDTO();
+        dto1.setName("AP Hogeschool");
+        dto1.setAdres("");
+        dto1.setContact("");
+        dto1.setDescription("");
+        dto1.setSsSubdomain("aphogeschool");
+        dto1.setBorrowLimit(10);
+        dto1.setBorrowPeriod(14);
+        dto1.setExtendLimit(3);
+        dto1.setExtendPeriod(14);
+        dto1.setOneRosterClientId("ec58f0fb-6bd3-48d3-a165-6b73a324d5ad");
+        dto1.setOneRosterClientSecret("755b033b7096ad2abe34142df0b67fe974d0e555ab6c0d6c9475e417c2a8");
+        SchoolDTO school1 = schoolService.addSchool(dto1);
+
+        SchoolDTO dto2 = new SchoolDTO();
+        dto2.setName("AP Universiteit");
+        dto2.setAdres("");
+        dto2.setContact("");
+        dto2.setDescription("");
+        dto2.setSsSubdomain("apuniversiteit");
+        dto2.setBorrowLimit(10);
+        dto2.setBorrowPeriod(14);
+        dto2.setExtendLimit(3);
+        dto2.setExtendPeriod(14);
+        dto2.setOneRosterClientId("ec58f0fb-6bd3-48d3-a165-6b73a324d5ad");
+        dto2.setOneRosterClientSecret("755b033b7096ad2abe34142df0b67fe974d0e555ab6c0d6c9475e417c2a8");
+        SchoolDTO school2 = schoolService.addSchool(dto2);
+
+        School savedSchool1 = schoolRepository.findById(school1.getId()).orElseThrow();
+        School savedSchool2 = schoolRepository.findById(school2.getId()).orElseThrow();
+
         Location location = new Location();
-        location.setSchool(school);
-        location.setName("Blok A");
+        location.setSchool(savedSchool1);
+        location.setName("Ellerman");
         location.setAdres("");
         locationRepository.save(location);
+
+        Location location1 = new Location();
+        location1.setSchool(savedSchool1);
+        location1.setName("Noorderplaats");
+        location1.setAdres("");
+        locationRepository.save(location1);
+
+        Location imposterLocation = new Location();
+        imposterLocation.setSchool(savedSchool2);
+        imposterLocation.setName("Blok A");
+        imposterLocation.setAdres("");
+        locationRepository.save(imposterLocation);
     }
 }

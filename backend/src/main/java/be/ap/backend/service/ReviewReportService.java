@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -21,6 +22,7 @@ public class ReviewReportService {
     private final ReviewRepository reviewRepository;
     private final ReviewService reviewService;
     private final UserRepository userRepository;
+    private final SmartschoolLookupService lookupService;
 
     public ReviewReport reportReview(Long reviewId, Long userId, String note) {
         Review review = reviewRepository.findById(reviewId)
@@ -69,18 +71,30 @@ public class ReviewReportService {
         dto.setStatus(report.getStatus());
 
         reviewRepository.findById(report.getReviewId()).ifPresent(review -> {
+
             dto.setReviewRating(review.getRating());
             dto.setReviewContent(review.getContent());
             dto.setReviewAdded(review.getAdded());
             dto.setReviewUserId(review.getUserId());
             dto.setBookId(review.getBook().getId());
             dto.setBookTitle(review.getBook().getTitle());
-            userRepository.findById(review.getUserId()).ifPresent(u ->
-                dto.setReviewUsername(u.getUsername() != null ? u.getUsername() : u.getSsName()));
+            userRepository.findById(review.getUserId())
+                    .ifPresent(u -> {
+                        Map<String, Object> user = lookupService.getUser(u.getSchool(), u.getOneRosterId(),
+                                u.getRole().toString());
+
+                        String name = (String) user.get("name");
+                        dto.setReviewUsername(u.getUsername() != null ? u.getUsername() : name);
+                    });
         });
 
-        userRepository.findById(report.getReporterUserId()).ifPresent(u ->
-            dto.setReporterUsername(u.getUsername() != null ? u.getUsername() : u.getSsName()));
+        userRepository.findById(report.getReporterUserId())
+                .ifPresent(u -> {
+                    Map<String, Object> user = lookupService.getUser(u.getSchool(), u.getOneRosterId(),
+                            u.getRole().toString());
+                    String name = (String) user.get("name");
+                    dto.setReporterUsername(u.getUsername() != null ? u.getUsername() : name);
+                });
 
         return dto;
     }

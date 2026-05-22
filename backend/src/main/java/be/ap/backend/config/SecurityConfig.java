@@ -4,8 +4,6 @@ import be.ap.backend.entity.User;
 import be.ap.backend.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import java.util.Map;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,7 +13,6 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -45,33 +42,32 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http)
-            throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/login", "/auth/logout", "/oauth", "/auth/me", "/error").permitAll()
+                        .requestMatchers("/auth/login", "/auth/logout", "/oauth", "/auth/me", "/auth/current-user",
+                                "/error")
+                        .permitAll()
                         .anyRequest().authenticated())
                 .formLogin(form -> form
                         .loginProcessingUrl("/auth/login")
                         .usernameParameter("username")
                         .passwordParameter("password")
                         .successHandler((req, res, authentication) -> {
-                            // custom session attributes
-                            Map<String, String> user = getUserDetails(authentication);
+                            User u = (User) authentication.getPrincipal();
                             HttpSession session = req.getSession(true);
 
-                            session.setAttribute("userId", user.get("userId"));
-                            session.setAttribute("location", user.get("location"));
-                            session.setAttribute("school", user.get("school"));
-                            session.setAttribute("role", user.get("role"));
-                            session.setAttribute("username", user.get("username"));
+                            session.setAttribute("userId", u.getId());
+                            session.setAttribute("location", u.getLocation() != null ? u.getLocation().getId() : null);
+                            session.setAttribute("school", u.getSchool() != null ? u.getSchool().getId() : null);
+                            session.setAttribute("role", u.getRole().name());
+                            session.setAttribute("username", u.getUsername());
 
                             res.setStatus(HttpServletResponse.SC_OK);
                             res.setContentType("application/json");
                             res.getWriter().write("{\"message\":\"Login successful\"}");
-
                         })
                         .failureHandler((req, res, exception) -> {
                             res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -93,8 +89,6 @@ public class SecurityConfig {
                             res.setContentType("application/json");
                             res.getWriter().write("{\"message\":\"Unauthorized\"}");
                         }))
-                // uncomment so you can test with bruno using basic auth
-                // .httpBasic(Customizer.withDefaults())
                 .authenticationProvider(authenticationProvider());
         return http.build();
     }
@@ -110,24 +104,4 @@ public class SecurityConfig {
         provider.setPasswordEncoder(passwordEncoder());
         return provider;
     }
-
-    private Map<String, String> getUserDetails(Authentication auth) {
-        User u = (User) auth.getPrincipal();
-
-        String location = u.getLocation() != null ? u.getLocation().getId().toString() : "";
-        String school = u.getSchool() != null ? u.getSchool().getId().toString() : "";
-
-        
-        Map<String, String> usr = Map.of(
-                "userId", u.getId().toString(),
-                "location", location,
-                "school", school,
-                "role", u.getRole().name(),
-                "username", u.getUsername() // not smartschool name
-
-        );
-
-        return usr;
-    }
-
 }

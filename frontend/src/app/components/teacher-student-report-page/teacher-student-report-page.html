@@ -10,7 +10,7 @@
   } @else if (error || !report) {
     <p-message severity="error" text="Rapport kon niet geladen worden."></p-message>
   } @else {
-    <h1>{{ report.studentName || report.studentUsername }}</h1>
+    <h1>{{ report.firstName }} {{ report.lastName }}</h1>
 
     <div class="counts-grid">
       <p-card class="count-card">
@@ -41,7 +41,13 @@
       </p-card>
       <p-card>
         <h3>Gemiddelde beoordeling</h3>
-        <p>{{ report.stats.averageRating !== null ? (report.stats.averageRating + ' / 5') : 'Geen recensies' }}</p>
+        <p>
+          {{
+            report.stats.averageRating !== null
+              ? report.stats.averageRating + ' / 5'
+              : 'Geen recensies'
+          }}
+        </p>
       </p-card>
       <p-card>
         <h3>Punctualiteit</h3>
@@ -65,7 +71,9 @@
             @if (b.author) {
               <p class="author">{{ b.author }}</p>
             }
-            <p class="dates">{{ b.start | date: 'dd/MM/yyyy' }} - {{ b.end | date: 'dd/MM/yyyy' }}</p>
+            <p class="dates">
+              {{ b.start | date: 'dd/MM/yyyy' }} - {{ b.end | date: 'dd/MM/yyyy' }}
+            </p>
             @if (b.returned) {
               <p-tag severity="success" value="Teruggebracht"></p-tag>
             } @else if (b.overdue) {
@@ -82,7 +90,10 @@
 
     <h2>Recensies</h2>
     @if (report.reviews.length === 0) {
-      <p-message severity="info" text="Deze leerling heeft nog geen recensies geschreven."></p-message>
+      <p-message
+        severity="info"
+        text="Deze leerling heeft nog geen recensies geschreven."
+      ></p-message>
     } @else {
       <div class="reviews-list">
         @for (r of report.reviews; track r.id) {

@@ -9,14 +9,12 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 
 @Entity
 @Table(name = "classroom")
 @Data
 @NoArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@ToString(exclude = { "students" })
 public class Classroom {
 
     @Id
@@ -25,7 +23,7 @@ public class Classroom {
     @EqualsAndHashCode.Include
     private Long id;
 
-    @Column(name = "name", nullable = false, length = 255)
+    @Column(name = "name", nullable = true, length = 255)
     private String name;
 
     @ManyToOne
@@ -33,18 +31,23 @@ public class Classroom {
     private School school;
 
     @ManyToOne
-    @JoinColumn(name = "location_id", nullable = true)
-    private Location location;
-
-    @ManyToOne
-    @JoinColumn(name = "teacher_id", nullable = false)
+    @JoinColumn(name = "teacher_id", nullable = true)
     private User teacher;
 
     @Column(name = "hidden", nullable = false)
     private boolean hidden = false;
 
+    @Column(name = "ss_id", unique = true, length = 255)
+    private String ssId;
+
     @JsonIgnore
-    @ManyToMany
-    @JoinTable(name = "classroom_student", joinColumns = @JoinColumn(name = "classroom_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
-    private Set<User> students = new HashSet<>();
+    @OneToMany(mappedBy = "classroom")
+    private Set<Enrollment> enrollments = new HashSet<>();
+
+    public Set<User> getStudents() {
+        return enrollments.stream()
+                .filter(e -> e.getRole() == UserRole.STUDENT)
+                .map(Enrollment::getUser)
+                .collect(java.util.stream.Collectors.toSet());
+    }
 }

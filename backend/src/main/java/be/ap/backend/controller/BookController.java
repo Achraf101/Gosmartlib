@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.validation.annotation.Validated;
+
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import be.ap.backend.dto.BookCardDTO;
@@ -22,10 +24,11 @@ import be.ap.backend.service.BookService;
 import be.ap.backend.service.IsbnLookupService;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.data.domain.Page;
-import org.springframework.http.ResponseEntity;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.ResponseEntity;
 
 @Validated
 @RestController
@@ -38,9 +41,12 @@ public class BookController {
 
     @GetMapping
     public ResponseEntity<Page<Book>> getAll(
+            HttpSession session,
+            @RequestParam(required = false) Boolean full,
+            @RequestParam(required = false) Long location,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size) {
-        return ResponseEntity.ok(bookService.getAll(PageRequest.of(page, size)));
+        return ResponseEntity.ok(bookService.getAll(session, full, location, PageRequest.of(page, size)));
     }
 
     @GetMapping("/{id}")
@@ -50,19 +56,22 @@ public class BookController {
 
     @GetMapping("/search/{query}")
     public ResponseEntity<Page<Book>> search(
+            HttpSession session,
             @PathVariable String query,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size) {
-        return ResponseEntity.ok(bookService.search(query, PageRequest.of(page, size)));
+        return ResponseEntity.ok(bookService.search(session, query, PageRequest.of(page, size)));
     }
 
     @GetMapping("/{id}/related")
-    public ResponseEntity<List<BookCardDTO>> getRelated(@PathVariable Long id) {
-        return ResponseEntity.ok(bookService.getRelated(id));
+    public ResponseEntity<List<BookCardDTO>> getRelated(HttpSession session, @PathVariable Long id) {
+        return ResponseEntity.ok(bookService.getRelated(session, id));
     }
 
     @GetMapping("/filter")
     public ResponseEntity<Page<Book>> filter(
+            HttpSession session,
+            @RequestParam(required = false) Long location,
             @RequestParam(required = false) List<Long> genres,
             @RequestParam(required = false) Long language,
             @RequestParam(required = false) Boolean fiction,
@@ -75,7 +84,13 @@ public class BookController {
             @RequestParam(required = false) Boolean didactic,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size) {
-        return ResponseEntity.ok(bookService.filter(genres, language, fiction, authorIds, seriesIds, pagesMin, pagesMax, clibs, themes, didactic, PageRequest.of(page, size)));
+
+        List<Long> ids = getLocationIds(session);
+        if (location != null && !ids.contains(location)) {
+            return ResponseEntity.ok(Page.empty(PageRequest.of(page, size)));
+        }
+        return ResponseEntity.ok(bookService.filter(location, genres, language, fiction, authorIds, seriesIds, pagesMin,
+                pagesMax, clibs, themes, didactic, PageRequest.of(page, size)));
     }
 
     @PostMapping
@@ -90,6 +105,11 @@ public class BookController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/{id}/ia-preview")
+    public ResponseEntity<Map<String, String>> getIaPreview(@PathVariable Long id) {
+        return bookService.getIaPreview(id);
+    }
+
     @GetMapping("/bookResult")
     public ResponseEntity<Page<BookResultDTO>> getBooks(
             @RequestParam(defaultValue = "0") int page,
@@ -100,5 +120,12 @@ public class BookController {
     @PutMapping("/{id}")
     public ResponseEntity<Book> updateBook(@PathVariable Long id, @RequestBody UpdateBookDTO dto) {
         return ResponseEntity.ok(bookService.updateBook(id, dto));
+    }
+
+    List<Long> getLocationIds(HttpSession session) {
+        Object raw = session.getAttribute("location");
+        if (raw == null)
+            return List.of();
+        return List.of((Long) raw);
     }
 }

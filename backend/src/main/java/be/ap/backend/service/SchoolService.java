@@ -8,9 +8,12 @@ import org.springframework.stereotype.Service;
 import be.ap.backend.dto.LocationDTO;
 import be.ap.backend.dto.SchoolDTO;
 import be.ap.backend.entity.School;
+import be.ap.backend.entity.Section;
 import be.ap.backend.exception.ArgumentsInvalidException;
 import be.ap.backend.exception.MissingArgumentsException;
+import be.ap.backend.model.OneRosterCredentials;
 import be.ap.backend.repository.SchoolRepository;
+import be.ap.backend.repository.SectionRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
@@ -18,6 +21,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SchoolService {
     private final SchoolRepository schoolRepository;
+    private final EncryptionService encryptionService;
+    private final SectionRepository sectionRepository;
 
     public SchoolDTO addSchool(SchoolDTO dto) {
         if (dto.getName() == null) {
@@ -43,6 +48,12 @@ public class SchoolService {
         if (dto.getExtendLimit() > 10) {
             throw new ArgumentsInvalidException("Maximaal aantal verlengingen mag niet meer zijn dan 10!");
         }
+        if (dto.getOneRosterClientId() == null) {
+            throw new MissingArgumentsException("CLient ID is verplicht!");
+        }
+        if (dto.getOneRosterClientSecret() == null) {
+            throw new MissingArgumentsException("CLient Secret is verplicht!");
+        }
 
         School saved = new School();
         saved.setName(dto.getName());
@@ -55,7 +66,25 @@ public class SchoolService {
         saved.setExtendLimit(dto.getExtendLimit());
         saved.setExtendPeriod(dto.getExtendPeriod());
 
-        return toDTO(schoolRepository.save(saved));
+        if (dto.getOneRosterClientId() != null) {
+            saved.setOneRosterClientId(encryptionService.encrypt(dto.getOneRosterClientId()));
+        }
+        if (dto.getOneRosterClientSecret() != null) {
+            saved.setOneRosterClientSecret(encryptionService.encrypt(dto.getOneRosterClientSecret()));
+        }
+
+        School school = schoolRepository.save(saved);
+        createDefaultSections(school.getId());
+        return toDTO(school);
+    }
+
+    public OneRosterCredentials getCredentials(Long schoolId) {
+        School school = schoolRepository.findById(schoolId)
+                .orElseThrow(() -> new MissingArgumentsException("School niet gevonden"));
+
+        return new OneRosterCredentials(
+                encryptionService.decrypt(school.getOneRosterClientId()),
+                encryptionService.decrypt(school.getOneRosterClientSecret()));
     }
 
     public List<SchoolDTO> getAll() {
@@ -137,5 +166,21 @@ public class SchoolService {
         school.setExtendPeriod(dto.getExtendPeriod());
 
         return toDTO(schoolRepository.save(school));
+    }
+
+    private void createDefaultSections(Long schoolId) {
+        Section spotlightedSection = new Section();
+        spotlightedSection.setTitle("In de kijker");
+        spotlightedSection.setRanking((byte) 0);
+        spotlightedSection.setSchoolId(schoolId);
+        spotlightedSection.setHidden(false);
+        sectionRepository.save(spotlightedSection);
+
+        Section monthlySection = new Section();
+        monthlySection.setTitle("Boek van de maand");
+        monthlySection.setRanking((byte) 1);
+        monthlySection.setSchoolId(schoolId);
+        monthlySection.setHidden(false);
+        sectionRepository.save(monthlySection);
     }
 }
