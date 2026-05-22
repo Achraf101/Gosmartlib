@@ -39,6 +39,7 @@ import { isVisible } from '../../models/location-settings';
 import { SmartschoolSyncService } from '../../services/smartschool-sync';
 import { ConfirmDialogModule, ConfirmDialog } from 'primeng/confirmdialog';
 import { ConfirmationService } from 'primeng/api';
+import { AuthService } from '../../services/auth';
 
 @Component({
   selector: 'app-library-manager-dashboard',
@@ -117,6 +118,7 @@ export class DashboardLibraryManager implements OnInit {
     private locationSettingsService: LocationSettingsService,
     private smartschoolSyncService: SmartschoolSyncService,
     private confirmationService: ConfirmationService,
+    private authService: AuthService,
   ) {}
 
   ngOnInit(): void {
@@ -129,6 +131,10 @@ export class DashboardLibraryManager implements OnInit {
     this.loadLocationSettings();
     this.loadDueSoonLoans();
     this.loadTopGenres();
+  }
+
+  private get schoolId(): number {
+    return this.authService.currentUser?.schoolId ?? 0;
   }
 
   loadPendingCount(): void {
@@ -389,7 +395,7 @@ export class DashboardLibraryManager implements OnInit {
 
   syncSmartschool(): void {
     this.syncLoading = true;
-    this.smartschoolSyncService.syncSchool(1).subscribe({
+    this.smartschoolSyncService.syncSchool(this.schoolId).subscribe({
       next: () => {
         this.syncLoading = false;
         this.messageService.add({

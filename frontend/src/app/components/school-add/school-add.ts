@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { SchoolService } from '../../services/school';
-import { School } from '../../models/school';
+import { CreateSchool, School } from '../../models/school';
 import { InputTextModule } from 'primeng/inputtext';
 import { TooltipModule } from 'primeng/tooltip';
 import { IftaLabel } from 'primeng/iftalabel';
@@ -11,6 +11,7 @@ import { Message } from 'primeng/message';
 import { Button } from 'primeng/button';
 import { CharCounterComponent } from '../char-counter/char-counter';
 import { Router } from '@angular/router';
+import { NavBarComponent } from '../nav-bar/nav-bar';
 
 @Component({
   selector: 'app-school',
@@ -23,6 +24,7 @@ import { Router } from '@angular/router';
     Message,
     Button,
     CharCounterComponent,
+    NavBarComponent,
   ],
   templateUrl: './school-add.html',
   styleUrl: './school-add.css',
@@ -62,6 +64,8 @@ export class SchoolAddComponent {
       Validators.min(1),
       Validators.max(10),
     ]),
+    clientId: new FormControl('', [Validators.required, Validators.maxLength(255)]),
+    clientSecret: new FormControl('', [Validators.required, Validators.maxLength(255)]),
   });
 
   loading = false;
@@ -74,9 +78,9 @@ export class SchoolAddComponent {
 
     this.loading = true;
 
-    const rawValue = this.form.value as School;
+    const rawValue = this.form.value as CreateSchool;
 
-    const school: Omit<School, 'id'> = {
+    const school: Omit<CreateSchool, 'id'> = {
       name: rawValue.name?.trim() ?? '',
       adres: rawValue.adres?.trim() ?? '',
       contact: rawValue.contact?.trim() ?? '',
@@ -86,6 +90,8 @@ export class SchoolAddComponent {
       borrowPeriod: Number(rawValue.borrowPeriod),
       extendLimit: Number(rawValue.extendLimit),
       extendPeriod: Number(rawValue.extendPeriod),
+      clientId: rawValue.clientId?.trim() ?? '',
+      clientSecret: rawValue.clientSecret?.trim() ?? '',
     };
 
     this.schoolService.addSchool(school).subscribe({

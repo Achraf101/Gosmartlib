@@ -1,3 +1,4 @@
+<app-nav-bar></app-nav-bar>
 <form [formGroup]="form" (ngSubmit)="onSubmit()">
   <div class="field">
     <p-iftaLabel>
@@ -175,6 +176,56 @@
           >Alleen positieve getallen toegestaan! (Max. 10)</p-message
         >
       </small>
+    }
+  </div>
+  <div class="field">
+    <p-iftaLabel>
+      <label for="clientId">Client ID voor oneRoster</label>
+      <textarea
+        id="clientId"
+        rows="5"
+        cols="30"
+        pTextarea
+        formControlName="clientId"
+        [autoResize]="true"
+        maxlength="255"
+      ></textarea>
+      <app-char-counter
+        [text]="form.get('clientId')?.value ?? ''"
+        [maxLength]="255"
+      ></app-char-counter>
+    </p-iftaLabel>
+    @if (form.controls.clientId.invalid && form.controls.clientId.touched) {
+      <small class="p-error"
+        ><p-message severity="error" size="small" variant="simple"
+          >Client ID is verplicht! (Max. 255 tekens)</p-message
+        ></small
+      >
+    }
+  </div>
+  <div class="field">
+    <p-iftaLabel>
+      <label for="clientSecret">Client Secret voor OneRoster</label>
+      <textarea
+        id="clientSecret"
+        rows="5"
+        cols="30"
+        pTextarea
+        formControlName="clientSecret"
+        [autoResize]="true"
+        maxlength="255"
+      ></textarea>
+      <app-char-counter
+        [text]="form.get('clientSecret')?.value ?? ''"
+        [maxLength]="255"
+      ></app-char-counter>
+    </p-iftaLabel>
+    @if (form.controls.clientSecret.invalid && form.controls.clientSecret.touched) {
+      <small class="p-error"
+        ><p-message severity="error" size="small" variant="simple"
+          >Client Secret is verplicht! (Max. 255 tekens)</p-message
+        ></small
+      >
     }
   </div>
   <div class="btn">

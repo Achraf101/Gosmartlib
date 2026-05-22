@@ -11,6 +11,7 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 @Component({
   selector: 'app-school',
   imports: [Button, RouterLink, NavBarComponent, ConfirmDialogModule],
+  providers: [ConfirmationService],
   templateUrl: './school.html',
   styleUrl: './school.css',
 })
@@ -38,9 +39,9 @@ export class SchoolComponent {
     });
   }
 
-  syncSmartschool(): void {
+  syncSmartschool(schoolId: number): void {
     this.syncLoading = true;
-    this.smartschoolSyncService.syncSchool(1).subscribe({
+    this.smartschoolSyncService.syncSchool(schoolId).subscribe({
       next: () => {
         this.syncLoading = false;
         this.messageService.add({
@@ -59,7 +60,7 @@ export class SchoolComponent {
       },
     });
   }
-  confirmSync() {
+  confirmSync(schoolId: number) {
     this.confirmationService.confirm({
       header: 'Bevestiging',
       message: 'Ben je zeker dat je de Smartschool synchronisatie wilt starten?',
@@ -69,7 +70,7 @@ export class SchoolComponent {
       acceptButtonStyleClass: 'p-button-primary',
       rejectButtonStyleClass: 'p-button-secondary',
       accept: () => {
-        this.syncSmartschool();
+        this.syncSmartschool(schoolId);
       },
     });
   }

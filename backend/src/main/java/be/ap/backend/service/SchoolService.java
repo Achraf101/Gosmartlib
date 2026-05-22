@@ -44,6 +44,12 @@ public class SchoolService {
         if (dto.getExtendLimit() > 10) {
             throw new ArgumentsInvalidException("Maximaal aantal verlengingen mag niet meer zijn dan 10!");
         }
+        if (dto.getOneRosterClientId() == null) {
+            throw new MissingArgumentsException("CLient ID is verplicht!");
+        }
+        if (dto.getOneRosterClientSecret() == null) {
+            throw new MissingArgumentsException("CLient Secret is verplicht!");
+        }
 
         School saved = new School();
         saved.setName(dto.getName());
@@ -99,6 +105,8 @@ public class SchoolService {
         dto.setBorrowPeriod(school.getBorrowPeriod());
         dto.setExtendLimit(school.getExtendLimit());
         dto.setExtendPeriod(school.getExtendPeriod());
+        dto.setOneRosterClientId(school.getOneRosterClientId());
+        dto.setOneRosterClientSecret(school.getOneRosterClientSecret());
 
         List<LocationDTO> locationDTOs = school.getLocations().stream()
                 .map(location -> {
