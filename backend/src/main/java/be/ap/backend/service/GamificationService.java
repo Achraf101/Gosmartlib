@@ -1,5 +1,7 @@
 package be.ap.backend.service;
 
+import be.ap.backend.dto.ChallengeDTO;
+import be.ap.backend.dto.GamificationDTO;
 import be.ap.backend.entity.Challenge;
 import be.ap.backend.entity.Loan;
 import be.ap.backend.entity.LoanStatus;
@@ -34,6 +36,31 @@ public class GamificationService {
                         || loan.getStatus() == LoanStatus.RETURNED)
                 .mapToInt(loan -> loan.getLoanBooks().size())
                 .sum();
+    }
+
+    public GamificationDTO getGamification(Long userId) {
+        int totalBooks = getTotalBooks(userId);
+        String streakLevel = getStreakLevel(totalBooks);
+        List<UserChallenge> userChallenges = getChallengesForUser(userId);
+
+        checkChallenges(userId);
+
+        List<ChallengeDTO> challengeDTOs = userChallenges.stream().map(uc -> {
+            ChallengeDTO dto = new ChallengeDTO();
+            dto.setId(uc.getId());
+            dto.setDescription(uc.getChallenge().getDescription());
+            dto.setConditionType(uc.getChallenge().getConditionType());
+            dto.setConditionValue(uc.getChallenge().getConditionValue());
+            dto.setCompleted(uc.isCompleted());
+            return dto;
+        }).toList();
+
+        GamificationDTO result = new GamificationDTO();
+        result.setTotalBooks(totalBooks);
+        result.setStreakLevel(streakLevel);
+        result.setChallenges(challengeDTOs);
+
+        return result;
     }
 
     public String getStreakLevel(int totalBooks) {

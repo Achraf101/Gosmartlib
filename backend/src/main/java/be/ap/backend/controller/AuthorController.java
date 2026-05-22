@@ -4,10 +4,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import be.ap.backend.entity.Author;
-import be.ap.backend.repository.AuthorRepository;
+import be.ap.backend.service.AuthorService;
 
 import java.util.List;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,26 +20,25 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AuthorController {
 
-    private final AuthorRepository authorRepository;
+    private final AuthorService authorService;
 
-    @GetMapping()
-    public List<Author> getAll() {
-        return authorRepository.findAll();
+    @GetMapping
+    public ResponseEntity<List<Author>> getAll() {
+        return ResponseEntity.ok(authorService.getAll());
     }
 
     @GetMapping("/{id}")
-    public Author getById(@PathVariable Long id) {
-        return authorRepository.findById(id).orElse(null);
+    public ResponseEntity<Author> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(authorService.getById(id));
     }
 
-    @GetMapping("search/{query}")
-    public List<Author> searchAuthor(@PathVariable String query) {
-        return authorRepository.searchByName(query);
+    @GetMapping("/search/{query}")
+    public ResponseEntity<List<Author>> searchAuthor(@PathVariable String query) {
+        return ResponseEntity.ok(authorService.search(query));
     }
 
     @PostMapping
-    public Author addAuthor(@RequestBody Author author) {
-        return authorRepository.save(author);
+    public ResponseEntity<Author> addAuthor(@RequestBody Author author) {
+        return ResponseEntity.ok(authorService.addAuthor(author));
     }
-
 }

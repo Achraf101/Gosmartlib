@@ -8,15 +8,14 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 
 import be.ap.backend.dto.GenreProjection;
 import be.ap.backend.dto.ThemeDTO;
 import be.ap.backend.dto.ThemeProjectionDTO;
 import be.ap.backend.dto.UpdateBookDTO;
+import be.ap.backend.dto.BookCardDTO;
 import be.ap.backend.dto.BookResultDTO;
 import be.ap.backend.dto.CreateBookDTO;
 import be.ap.backend.dto.GenreDTO;
@@ -24,6 +23,7 @@ import be.ap.backend.entity.Author;
 import be.ap.backend.entity.Publisher;
 import be.ap.backend.entity.Series;
 import be.ap.backend.entity.Theme;
+import be.ap.backend.exception.ArgumentsInvalidException;
 import be.ap.backend.entity.Book;
 import be.ap.backend.entity.BookContributor;
 import be.ap.backend.entity.BookType;
@@ -32,6 +32,7 @@ import be.ap.backend.entity.Genre;
 import be.ap.backend.entity.Language;
 import be.ap.backend.repository.BookRepository;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -134,6 +135,10 @@ public class BookService {
             seriesIds = null;
         }
 
+        if (pagesMin != null && pagesMax != null && pagesMin > pagesMax) {
+            throw new ArgumentsInvalidException("pagesMin moet kleiner zijn dan pagesMax");
+        }
+
         return bookRepository.filter(
                 genres,
                 language,
@@ -184,24 +189,40 @@ public class BookService {
 
     public Book updateBook(Long id, UpdateBookDTO dto) {
         Book book = bookRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new EntityNotFoundException("Boek niet gevonden met id: " + id));
 
-        if (dto.getTitle() != null) book.setTitle(dto.getTitle());
-        if (dto.getIsbn() != null) book.setIsbn(dto.getIsbn());
-        if (dto.getDescription() != null) book.setDescription(dto.getDescription());
-        if (dto.getFiction() != null) book.setFiction(dto.getFiction());
-        if (dto.getDidactic() != null) book.setDidactic(dto.getDidactic());
-        if (dto.getPages() != null) book.setPages(dto.getPages());
-        if (dto.getPublished() != null) book.setPublished(dto.getPublished());
-        if (dto.getCover() != null) book.setCover(dto.getCover());
-        if (dto.getFontSize() != null) book.setFontSize(dto.getFontSize());
-        if (dto.getClib() != null) book.setClib(dto.getClib());
-        if (dto.getSeriesNumber() != null) book.setSeriesNumber(dto.getSeriesNumber());
-        if (dto.getAuthor() != null) book.setAuthor(entityManager.find(Author.class, dto.getAuthor()));
-        if (dto.getPublisher() != null) book.setPublisher(entityManager.find(Publisher.class, dto.getPublisher()));
-        if (dto.getLanguage() != null) book.setLanguage(entityManager.find(Language.class, dto.getLanguage()));
-        if (dto.getBookType() != null) book.setBookType(entityManager.find(BookType.class, dto.getBookType()));
-        if (dto.getSeries() != null) book.setSeries(entityManager.find(Series.class, dto.getSeries()));
+        if (dto.getTitle() != null)
+            book.setTitle(dto.getTitle());
+        if (dto.getIsbn() != null)
+            book.setIsbn(dto.getIsbn());
+        if (dto.getDescription() != null)
+            book.setDescription(dto.getDescription());
+        if (dto.getFiction() != null)
+            book.setFiction(dto.getFiction());
+        if (dto.getDidactic() != null)
+            book.setDidactic(dto.getDidactic());
+        if (dto.getPages() != null)
+            book.setPages(dto.getPages());
+        if (dto.getPublished() != null)
+            book.setPublished(dto.getPublished());
+        if (dto.getCover() != null)
+            book.setCover(dto.getCover());
+        if (dto.getFontSize() != null)
+            book.setFontSize(dto.getFontSize());
+        if (dto.getClib() != null)
+            book.setClib(dto.getClib());
+        if (dto.getSeriesNumber() != null)
+            book.setSeriesNumber(dto.getSeriesNumber());
+        if (dto.getAuthor() != null)
+            book.setAuthor(entityManager.find(Author.class, dto.getAuthor()));
+        if (dto.getPublisher() != null)
+            book.setPublisher(entityManager.find(Publisher.class, dto.getPublisher()));
+        if (dto.getLanguage() != null)
+            book.setLanguage(entityManager.find(Language.class, dto.getLanguage()));
+        if (dto.getBookType() != null)
+            book.setBookType(entityManager.find(BookType.class, dto.getBookType()));
+        if (dto.getSeries() != null)
+            book.setSeries(entityManager.find(Series.class, dto.getSeries()));
         if (dto.getGenres() != null) {
             Set<Genre> genres = dto.getGenres().stream()
                     .map(gid -> entityManager.find(Genre.class, gid))
@@ -216,5 +237,22 @@ public class BookService {
         }
 
         return bookRepository.save(book);
+    }
+
+    public Page<Book> getAll(Pageable pageable) {
+        return bookRepository.findAll(pageable);
+    }
+
+    public Book getById(Long id) {
+        return bookRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Boek niet gevonden met id: " + id));
+    }
+
+    public Page<Book> search(String query, Pageable pageable) {
+        return bookRepository.search(query, pageable);
+    }
+
+    public List<BookCardDTO> getRelated(Long id) {
+        return bookRepository.findRelated(id);
     }
 }

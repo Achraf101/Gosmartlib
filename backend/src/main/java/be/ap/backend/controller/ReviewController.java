@@ -28,77 +28,53 @@ public class ReviewController {
     }
 
     @PostMapping("/book/{bookId}")
-    public ResponseEntity<?> addReview(@PathVariable Long bookId, @Valid @RequestBody ReviewDTO dto,
+    public ResponseEntity<ReviewDTO> addReview(@PathVariable Long bookId, @Valid @RequestBody ReviewDTO dto,
             HttpSession session) {
-        Object raw = session.getAttribute("userId");
-        Long userId = (raw != null) ? Long.valueOf(raw.toString()) : null;
-        try {
-            return ResponseEntity.ok(reviewService.addReview(bookId, dto, userId));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        Long userId = Long.valueOf(session.getAttribute("userId").toString());
+        return ResponseEntity.ok(reviewService.addReview(bookId, dto, userId));
     }
 
     @DeleteMapping("/{reviewId}")
-    public ResponseEntity<?> deleteReview(@PathVariable Long reviewId, HttpSession session) {
-        Object raw = session.getAttribute("userId");
-        Long userId = (raw != null) ? Long.valueOf(raw.toString()) : null;
-        try {
-            reviewService.deleteReview(reviewId, userId);
-            return ResponseEntity.ok().build();
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<Void> deleteReview(@PathVariable Long reviewId, HttpSession session) {
+        Long userId = Long.valueOf(session.getAttribute("userId").toString());
+        reviewService.deleteReview(reviewId, userId);
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/{reviewId}/rapporteer")
-    public ResponseEntity<?> reportReview(@PathVariable Long reviewId,
+    public ResponseEntity<Void> reportReview(@PathVariable Long reviewId,
             @Valid @RequestBody CreateReportDTO dto, HttpSession session) {
-        Object raw = session.getAttribute("userId");
-        Long userId = (raw != null) ? Long.valueOf(raw.toString()) : null;
-        try {
-            reviewReportService.reportReview(reviewId, userId, dto.getNote());
-            return ResponseEntity.ok().build();
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        Long userId = Long.valueOf(session.getAttribute("userId").toString());
+        reviewReportService.reportReview(reviewId, userId, dto.getNote());
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/rapportages")
-    public ResponseEntity<?> getPendingReports(HttpSession session) {
+    public ResponseEntity<List<ReviewReportDTO>> getPendingReports(HttpSession session) {
         Object rawRole = session.getAttribute("role");
         if (rawRole == null || !"BIBLIOTHEEKBEHEERDER".equals(rawRole.toString())) {
             return ResponseEntity.status(403).build();
         }
-        List<ReviewReportDTO> reports = reviewReportService.getPendingReports();
-        return ResponseEntity.ok(reports);
+        return ResponseEntity.ok(reviewReportService.getPendingReports());
     }
 
     @PutMapping("/rapportages/{reportId}/accepteren")
-    public ResponseEntity<?> acceptReport(@PathVariable Long reportId, HttpSession session) {
+    public ResponseEntity<Void> acceptReport(@PathVariable Long reportId, HttpSession session) {
         Object rawRole = session.getAttribute("role");
         if (rawRole == null || !"BIBLIOTHEEKBEHEERDER".equals(rawRole.toString())) {
             return ResponseEntity.status(403).build();
         }
-        try {
-            reviewReportService.acceptReport(reportId);
-            return ResponseEntity.ok().build();
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        reviewReportService.acceptReport(reportId);
+        return ResponseEntity.ok().build();
     }
 
     @PutMapping("/rapportages/{reportId}/weigeren")
-    public ResponseEntity<?> rejectReport(@PathVariable Long reportId, HttpSession session) {
+    public ResponseEntity<Void> rejectReport(@PathVariable Long reportId, HttpSession session) {
         Object rawRole = session.getAttribute("role");
         if (rawRole == null || !"BIBLIOTHEEKBEHEERDER".equals(rawRole.toString())) {
             return ResponseEntity.status(403).build();
         }
-        try {
-            reviewReportService.rejectReport(reportId);
-            return ResponseEntity.ok().build();
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        reviewReportService.rejectReport(reportId);
+        return ResponseEntity.ok().build();
     }
 }

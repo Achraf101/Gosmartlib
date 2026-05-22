@@ -1,9 +1,6 @@
 package be.ap.backend.controller;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
@@ -16,7 +13,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,7 +20,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -46,9 +41,12 @@ import be.ap.backend.dto.UpdateBookDTO;
 import be.ap.backend.entity.Author;
 import be.ap.backend.entity.Book;
 import be.ap.backend.entity.Clib;
-import be.ap.backend.repository.BookRepository;
+import be.ap.backend.exception.ArgumentsInvalidException;
 import be.ap.backend.service.BookService;
 import be.ap.backend.service.IsbnLookupService;
+import jakarta.persistence.EntityNotFoundException;
+
+import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
 public class BookControllerTest {
@@ -57,9 +55,6 @@ public class BookControllerTest {
 
     @Mock
     private BookService service;
-
-    @Mock
-    private BookRepository repository;
 
     @Mock
     private IsbnLookupService isbnLookupService;
@@ -85,7 +80,7 @@ public class BookControllerTest {
 
         when(service.saveBook(inputBook)).thenReturn(savedBook);
 
-        Book result = controller.addBook(inputBook);
+        Book result = controller.addBook(inputBook).getBody();
 
         assertNotNull(result);
         assertEquals(1L, result.getId());
@@ -104,14 +99,14 @@ public class BookControllerTest {
         book2.setTitle("Book 2");
 
         Page<Book> page = new PageImpl<>(List.of(book1, book2));
-        when(repository.findAll(any(Pageable.class))).thenReturn(page);
+        when(service.getAll(any(Pageable.class))).thenReturn(page);
 
-        Page<Book> result = controller.getAll(0, 5);
+        Page<Book> result = controller.getAll(0, 5).getBody();
 
         assertEquals(2, result.getContent().size());
         assertEquals("Book 1", result.getContent().get(0).getTitle());
         assertEquals("Book 2", result.getContent().get(1).getTitle());
-        verify(repository, times(1)).findAll(any(Pageable.class));
+        verify(service, times(1)).getAll(any(Pageable.class));
     }
 
     @Test
@@ -120,23 +115,21 @@ public class BookControllerTest {
         book.setId(1L);
         book.setTitle("Test Book");
 
-        when(repository.findById(1L)).thenReturn(Optional.of(book));
+        when(service.getById(1L)).thenReturn(book);
 
-        Book result = controller.getById(1L);
+        Book result = controller.getById(1L).getBody();
 
         assertNotNull(result);
         assertEquals("Test Book", result.getTitle());
-        verify(repository, times(1)).findById(1L);
+        verify(service, times(1)).getById(1L);
     }
 
     @Test
-    void givenMissingId_whenGetById_thenReturnNull() {
-        when(repository.findById(99L)).thenReturn(Optional.empty());
+    void givenMissingId_whenGetById_thenThrowEntityNotFoundException() {
+        when(service.getById(99L)).thenThrow(new EntityNotFoundException("Boek niet gevonden met id: 99"));
 
-        Book result = controller.getById(99L);
-
-        assertEquals(null, result);
-        verify(repository, times(1)).findById(99L);
+        assertThrows(EntityNotFoundException.class, () -> controller.getById(99L));
+        verify(service, times(1)).getById(99L);
     }
 
     @Test
@@ -146,13 +139,13 @@ public class BookControllerTest {
         book.setTitle("Harry Potter");
 
         Page<Book> page = new PageImpl<>(List.of(book));
-        when(repository.search(eq("Harry"), any(Pageable.class))).thenReturn(page);
+        when(service.search(eq("Harry"), any(Pageable.class))).thenReturn(page);
 
-        Page<Book> result = controller.search("Harry", 0, 5);
+        Page<Book> result = controller.search("Harry", 0, 5).getBody();
 
         assertEquals(1, result.getContent().size());
         assertEquals("Harry Potter", result.getContent().get(0).getTitle());
-        verify(repository, times(1)).search(eq("Harry"), any(Pageable.class));
+        verify(service, times(1)).search(eq("Harry"), any(Pageable.class));
     }
 
     @Test
@@ -164,13 +157,13 @@ public class BookControllerTest {
                 new BookCardDTO(2L, "Title 1", "cover", author),
                 new BookCardDTO(3L, "Title 2", "cover", author));
 
-        when(repository.findRelated(1L)).thenReturn(relatedBooks);
+        when(service.getRelated(1L)).thenReturn(relatedBooks);
 
-        List<BookCardDTO> result = controller.getRelated(1L);
+        List<BookCardDTO> result = controller.getRelated(1L).getBody();
 
         assertNotNull(result);
         assertEquals(2, result.size());
-        verify(repository, times(1)).findRelated(1L);
+        verify(service, times(1)).getRelated(1L);
     }
 
     @Test
@@ -178,7 +171,7 @@ public class BookControllerTest {
         Page<BookResultDTO> mockPage = new PageImpl<>(List.of(mock(BookResultDTO.class)));
         when(service.getAllBookResults(PageRequest.of(0, 5))).thenReturn(mockPage);
 
-        Page<BookResultDTO> result = controller.getBooks(0, 5);
+        Page<BookResultDTO> result = controller.getBooks(0, 5).getBody();
 
         assertNotNull(result);
         assertEquals(1, result.getContent().size());
@@ -209,7 +202,11 @@ public class BookControllerTest {
 
     @Test
     void givenPagesMinGreaterThanMax_whenFilter_thenThrow400() {
-        assertThrows(ResponseStatusException.class,
+        when(service.filter(any(), any(), any(), any(), any(), eq(500), eq(100), any(), any(), any(),
+                any(Pageable.class)))
+                .thenThrow(new ArgumentsInvalidException("pagesMin moet kleiner zijn dan pagesMax"));
+
+        assertThrows(ArgumentsInvalidException.class,
                 () -> controller.filter(null, null, null, null, null, 500, 100, null, null, null, 0, 5));
     }
 
@@ -220,7 +217,7 @@ public class BookControllerTest {
                 any(Pageable.class)))
                 .thenReturn(mockPage);
 
-        Page<Book> result = controller.filter(null, null, null, null, null, 200, 200, null, null, null, 0, 5);
+        Page<Book> result = controller.filter(null, null, null, null, null, 200, 200, null, null, null, 0, 5).getBody();
 
         assertEquals(1, result.getTotalElements());
     }
@@ -233,7 +230,7 @@ public class BookControllerTest {
                 .thenReturn(mockPage);
 
         Page<Book> result = controller.filter(null, null, null, null, null,
-                null, null, null, null, null, 0, 5);
+                null, null, null, null, null, 0, 5).getBody();
 
         assertEquals(3, result.getTotalElements());
         verify(service, times(1)).filter(isNull(), isNull(), isNull(), isNull(), isNull(),
@@ -252,7 +249,7 @@ public class BookControllerTest {
                 .thenReturn(mockPage);
 
         Page<Book> result = controller.filter(null, null, true, null, null,
-                null, null, null, null, null, 0, 5);
+                null, null, null, null, null, 0, 5).getBody();
 
         assertEquals(1, result.getTotalElements());
         assertTrue(result.getContent().get(0).getFiction());
@@ -271,7 +268,7 @@ public class BookControllerTest {
                 .thenReturn(mockPage);
 
         Page<Book> result = controller.filter(List.of(1L), null, null, null, null,
-                null, null, null, null, null, 0, 5);
+                null, null, null, null, null, 0, 5).getBody();
 
         assertEquals(1, result.getTotalElements());
         assertEquals("Harry Potter en de vuurbeker", result.getContent().get(0).getTitle());
@@ -290,7 +287,7 @@ public class BookControllerTest {
                 .thenReturn(mockPage);
 
         Page<Book> result = controller.filter(null, null, null, List.of(2L), null,
-                null, null, null, null, null, 0, 5);
+                null, null, null, null, null, 0, 5).getBody();
 
         assertEquals(1, result.getTotalElements());
         assertEquals("Kruistocht in Spijkerbroek", result.getContent().get(0).getTitle());
@@ -309,7 +306,7 @@ public class BookControllerTest {
                 .thenReturn(mockPage);
 
         Page<Book> result = controller.filter(null, null, null, null, List.of(1L),
-                null, null, null, null, null, 0, 5);
+                null, null, null, null, null, 0, 5).getBody();
 
         assertEquals(1, result.getTotalElements());
         assertEquals("Harry Potter en de Steen der Wijzen", result.getContent().get(0).getTitle());
@@ -328,7 +325,7 @@ public class BookControllerTest {
                 .thenReturn(mockPage);
 
         Page<Book> result = controller.filter(null, null, null, null, null,
-                null, null, null, List.of(5L), null, 0, 5);
+                null, null, null, List.of(5L), null, 0, 5).getBody();
 
         assertEquals(1, result.getTotalElements());
         assertEquals("De Alchemist", result.getContent().get(0).getTitle());
@@ -342,13 +339,12 @@ public class BookControllerTest {
         book.setTitle("De brief voor de koning");
 
         Page<Book> mockPage = new PageImpl<>(List.of(book));
-        when(service.filter(any(), any(), any(), any(), any(), eq(100), eq(500), any(), any(),
-                any(),
+        when(service.filter(any(), any(), any(), any(), any(), eq(100), eq(500), any(), any(), any(),
                 any(Pageable.class)))
                 .thenReturn(mockPage);
 
         Page<Book> result = controller.filter(null, null, null, null, null,
-                100, 500, null, null, null, 0, 5);
+                100, 500, null, null, null, 0, 5).getBody();
 
         assertNotNull(result);
         assertEquals(1, result.getTotalElements());
@@ -369,7 +365,7 @@ public class BookControllerTest {
                 .thenReturn(mockPage);
 
         Page<Book> result = controller.filter(null, null, null, null, null,
-                null, null, clibs, null, null, 0, 5);
+                null, null, clibs, null, null, 0, 5).getBody();
 
         assertEquals(1, result.getTotalElements());
         verify(service, times(1)).filter(any(), any(), any(), any(), any(),

@@ -117,7 +117,7 @@ public class SecurityConfig {
         String location = u.getLocation() != null ? u.getLocation().getId().toString() : "";
         String school = u.getSchool() != null ? u.getSchool().getId().toString() : "";
 
-        System.out.println(u.getUsername());
+        
         Map<String, String> usr = Map.of(
                 "userId", u.getId().toString(),
                 "location", location,

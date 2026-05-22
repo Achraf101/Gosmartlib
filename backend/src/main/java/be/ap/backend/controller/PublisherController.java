@@ -4,11 +4,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import be.ap.backend.entity.Publisher;
-import be.ap.backend.repository.PublisherRepository;
+import be.ap.backend.service.PublisherService;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,21 +20,20 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RequiredArgsConstructor
 public class PublisherController {
 
-    private final PublisherRepository publisherRepository;
+    private final PublisherService publisherService;
 
-    @GetMapping()
-    public List<Publisher> getAll() {
-        return publisherRepository.findAll();
+    @GetMapping
+    public ResponseEntity<List<Publisher>> getAll() {
+        return ResponseEntity.ok(publisherService.getAll());
     }
 
-    @GetMapping("search/{query}")
-    public List<Publisher> searchPublisher(@PathVariable String query) {
-        return publisherRepository.findByName(query);
+    @GetMapping("/search/{query}")
+    public ResponseEntity<List<Publisher>> search(@PathVariable String query) {
+        return ResponseEntity.ok(publisherService.search(query));
     }
 
     @PostMapping
-    public Publisher addPublisher(@RequestBody Publisher publisher) {
-        return publisherRepository.save(publisher);
+    public ResponseEntity<Publisher> addPublisher(@RequestBody Publisher publisher) {
+        return ResponseEntity.ok(publisherService.addPublisher(publisher));
     }
-
 }
