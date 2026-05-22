@@ -26,9 +26,7 @@ import be.ap.backend.service.BookService;
 import be.ap.backend.service.IsbnLookupService;
 import be.ap.backend.service.OpenLibraryService;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.Map;
 
 import org.springframework.data.domain.Page;
@@ -64,7 +62,7 @@ public class BookController {
         if (full == true) {
             System.out.println("all books being returned");
             return bookRepository.findAll(pageable);
-        } else if (ids.contains(location) || location == null) {
+        } else if (location == null || ids.contains(location)) {
             return bookRepository.findAllByLocation(ids, pageable);
         } else {
             return Page.empty(pageable);
@@ -167,11 +165,9 @@ public class BookController {
     }
 
     List<Long> getLocationIds(HttpSession session) {
-        final String locationString = (String) session.getAttribute("location");
-
-        // transform to array "[1, 2]" -> [1, 2]
-        return Arrays.stream(locationString.replaceAll("[\\[\\]\\s]", "").split(","))
-                .map(Long::parseLong)
-                .collect(Collectors.toList());
+        Object raw = session.getAttribute("location");
+        if (raw == null)
+            return List.of();
+        return List.of((Long) raw);
     }
 }

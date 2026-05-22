@@ -1,6 +1,11 @@
 <app-nav-bar></app-nav-bar>
 <div class="class-detail">
-  <p-button label="Terug naar klassen" icon="pi pi-arrow-left" severity="secondary" (onClick)="back()" />
+  <p-button
+    label="Terug naar klassen"
+    icon="pi pi-arrow-left"
+    severity="secondary"
+    (onClick)="back()"
+  />
   <h1>Leerlingen</h1>
 
   @if (loading) {
@@ -15,19 +20,24 @@
     <p-table [value]="students" stripedRows>
       <ng-template pTemplate="header">
         <tr>
+          <th>Voornaam</th>
           <th>Naam</th>
-          <th>Gebruikersnaam</th>
           <th>Laatste activiteit</th>
           <th></th>
         </tr>
       </ng-template>
       <ng-template pTemplate="body" let-s>
         <tr>
-          <td>{{ s.name || '-' }}</td>
-          <td>{{ s.username || '-' }}</td>
+          <td>{{ s.firstName || '-' }}</td>
+          <td>{{ s.lastName || '-' }}</td>
           <td>{{ s.lastActivity ? (s.lastActivity | date: 'dd/MM/yyyy') : 'Geen activiteit' }}</td>
           <td>
-            <p-button label="Bekijk rapport" icon="pi pi-chart-bar" iconPos="right" (onClick)="openReport(s.id)" />
+            <p-button
+              label="Bekijk rapport"
+              icon="pi pi-chart-bar"
+              iconPos="right"
+              (onClick)="openReport(s.id)"
+            />
           </td>
         </tr>
       </ng-template>

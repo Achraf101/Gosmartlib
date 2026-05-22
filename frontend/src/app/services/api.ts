@@ -6,17 +6,22 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class ApiService {
-
   private readonly baseUrl = '/api';
 
   constructor(private http: HttpClient) {}
-  
+
   get<T>(path: string, params?: HttpParams): Observable<T> {
     return this.http.get<T>(`${this.baseUrl}/${path}`, { params });
   }
 
-  post<T>(path: string, body: unknown): Observable<T> {
-    return this.http.post<T>(`${this.baseUrl}/${path}`, body);
+  post<T>(
+    path: string,
+    body: unknown,
+    options?: { responseType?: 'json' | 'text' },
+  ): Observable<T> {
+    return this.http.post<T>(`${this.baseUrl}/${path}`, body, {
+      responseType: (options?.responseType ?? 'json') as 'json',
+    });
   }
 
   put<T>(path: string, body: unknown): Observable<T> {

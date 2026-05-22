@@ -7,7 +7,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpSession;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@SpringBootTest
+@WebMvcTest(ClassroomController.class)
 public class ClassroomControllerTest {
 
     @MockitoBean
@@ -107,12 +107,13 @@ public class ClassroomControllerTest {
     }
 
     @Test
-    void getStudents_classroomNotFound_throwsEntityNotFoundException() {
+    void getStudents_classroomNotFound_propagatesEntityNotFoundException() {
         when(classroomService.getStudentsForClassroom(1L, 99L))
                 .thenThrow(new EntityNotFoundException("Klas niet gevonden"));
 
         assertThatThrownBy(() -> classroomController.getStudents(99L, teacherSession()))
-                .isInstanceOf(EntityNotFoundException.class);
+                .isInstanceOf(EntityNotFoundException.class)
+                .hasMessageContaining("Klas niet gevonden");
     }
 
     @Test
@@ -120,5 +121,12 @@ public class ClassroomControllerTest {
         assertThatThrownBy(() -> classroomController.getStudents(10L, studentSession()))
                 .isInstanceOf(ResponseStatusException.class)
                 .hasMessageContaining("403");
+    }
+
+    @Test
+    void getStudents_notLoggedIn_returns401() {
+        assertThatThrownBy(() -> classroomController.getStudents(10L, emptySession()))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining("401");
     }
 }

@@ -36,6 +36,9 @@ import { LocationSettings } from '../../models/location-settings';
 import { LocationSettingsService } from '../../services/location-settings';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { isVisible } from '../../models/location-settings';
+import { SmartschoolSyncService } from '../../services/smartschool-sync';
+import { ConfirmDialogModule, ConfirmDialog } from 'primeng/confirmdialog';
+import { ConfirmationService } from 'primeng/api';
 import { AuthService } from '../../services/auth';
 
 @Component({
@@ -58,8 +61,9 @@ import { AuthService } from '../../services/auth';
     ProgressBarModule,
     ToggleSwitchModule,
     FormsModule,
+    ConfirmDialog,
   ],
-  providers: [MessageService],
+  providers: [ConfirmationService],
   templateUrl: './dashboard-library-manager.html',
   styleUrl: './dashboard-library-manager.css',
 })
@@ -68,6 +72,7 @@ export class DashboardLibraryManager implements OnInit {
   publisherFormVisible = false;
   pendingLoanCount = 0;
   isVisible = isVisible;
+  syncLoading = false;
 
   activeSection: Section | null = null;
   grades = [
@@ -102,8 +107,6 @@ export class DashboardLibraryManager implements OnInit {
   spotlightBooks: { [ranking: number]: BookDetail | null } = { 1: null, 2: null, 3: null, 4: null };
   spotlightSectionId: number | null = null;
 
-  schoolId = 0;
-
   constructor(
     private router: Router,
     private authorService: AuthorService,
@@ -113,14 +116,12 @@ export class DashboardLibraryManager implements OnInit {
     private messageService: MessageService,
     private locationBookService: LocationBookService,
     private locationSettingsService: LocationSettingsService,
+    private smartschoolSyncService: SmartschoolSyncService,
+    private confirmationService: ConfirmationService,
     private authService: AuthService,
   ) {}
 
   ngOnInit(): void {
-    if (this.authService.currentUser) {
-      this.schoolId = this.authService.currentUser.schoolId;
-    }
-
     this.loadPendingCount();
     this.loadSectionAndBooks();
     this.loadSpotlightBooks();
@@ -130,6 +131,10 @@ export class DashboardLibraryManager implements OnInit {
     this.loadLocationSettings();
     this.loadDueSoonLoans();
     this.loadTopGenres();
+  }
+
+  private get schoolId(): number {
+    return this.authService.currentUser?.schoolId ?? 0;
   }
 
   loadPendingCount(): void {
@@ -390,6 +395,41 @@ export class DashboardLibraryManager implements OnInit {
     });
   }
 
+  syncSmartschool(): void {
+    this.syncLoading = true;
+    this.smartschoolSyncService.syncSchool(this.schoolId).subscribe({
+      next: () => {
+        this.syncLoading = false;
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Sync voltooid',
+          detail: 'Smartschool data is gesynchroniseerd.',
+        });
+      },
+      error: () => {
+        this.syncLoading = false;
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Fout',
+          detail: 'Synchronisatie mislukt.',
+        });
+      },
+    });
+  }
+  confirmSync() {
+    this.confirmationService.confirm({
+      header: 'Bevestiging',
+      message: 'Ben je zeker dat je de Smartschool synchronisatie wilt starten?',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Ja',
+      rejectLabel: 'Annuleren',
+      acceptButtonStyleClass: 'p-button-primary',
+      rejectButtonStyleClass: 'p-button-secondary',
+      accept: () => {
+        this.syncSmartschool();
+      },
+    });
+  }
   goToSchoolSettings(): void {
     this.router.navigate(['/school/instellingen']);
   }

@@ -45,7 +45,6 @@ export class BookSectionComponent implements OnInit {
   loading = new DelayedLoader();
   locationSettings: LocationSettings | null = null;
   isVisible = isVisible;
-  schoolId = 0;
 
   grades = [
     { label: 'Graad 1', value: 1 },
@@ -63,9 +62,6 @@ export class BookSectionComponent implements OnInit {
 
   ngOnInit(): void {
     this.loading.start();
-    if (this.authService.currentUser) {
-      this.schoolId = this.authService.currentUser?.schoolId;
-    }
 
     this.sectionService.getAll(this.schoolId).subscribe({
       next: (sections) => {
@@ -99,6 +95,10 @@ export class BookSectionComponent implements OnInit {
       },
       error: () => (this.locationSettings = null),
     });
+  }
+
+  private get schoolId(): number {
+    return this.authService.currentUser?.schoolId ?? 0;
   }
 
   get isMonthlySection(): boolean {

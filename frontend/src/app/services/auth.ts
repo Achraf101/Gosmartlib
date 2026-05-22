@@ -17,7 +17,7 @@ export class AuthService {
   ) {}
 
   loadCurrentUser(): Observable<AuthUser | null> {
-    return this.http.get<AuthUser>(`${this.baseUrl}/me`, { withCredentials: true }).pipe(
+    return this.http.get<AuthUser>(`${this.baseUrl}/current-user`, { withCredentials: true }).pipe(
       tap((user) => this.currentUserSubject.next(user)),
       catchError(() => {
         this.currentUserSubject.next(null);

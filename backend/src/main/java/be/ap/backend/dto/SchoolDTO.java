@@ -23,5 +23,9 @@ public class SchoolDTO {
     private int extendPeriod;
     @JsonProperty("subdomain")
     private String ssSubdomain;
+    @JsonProperty("clientId")
+    private String oneRosterClientId;
+    @JsonProperty("clientSecret")
+    private String oneRosterClientSecret;
     private List<LocationDTO> locations;
 }

@@ -6,7 +6,6 @@ import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 
@@ -14,7 +13,7 @@ import java.util.List;
 @Table(name = "user")
 @Data
 @NoArgsConstructor
-public class User implements UserDetails, Serializable {
+public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -38,17 +37,15 @@ public class User implements UserDetails, Serializable {
     @JoinColumn(name = "location_id", nullable = true)
     private Location location;
 
-    @Column(name = "ss_name", length = 255)
-    private String ssName;
-
     @Column(name = "ss_id", unique = true, length = 255)
     private String ssId;
 
-    @Column(name = "ss_access", length = 1023)
-    private String ssAccess;
+    // bij messages terug nodig
+    // @Column(name = "ss_refresh", length = 1023)
+    // private String ssRefresh;
 
-    @Column(name = "ss_refresh", length = 1023)
-    private String ssRefresh;
+    @Column(name = "oneroster_id", unique = true, length = 255)
+    private String oneRosterId;
 
     public User(String username, String password, UserRole role) {
         this.username = username;

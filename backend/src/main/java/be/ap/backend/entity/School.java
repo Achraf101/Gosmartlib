@@ -49,13 +49,36 @@ public class School implements Serializable {
     @Column(nullable = false, unique = true, length = 255, name = "ss_subdomain")
     private String ssSubdomain;
 
+    @Column(name = "oneroster_client_id", length = 500)
+    private String oneRosterClientId;
+
+    @Column(name = "oneroster_client_secret", length = 500)
+    private String oneRosterClientSecret;
+
     @JsonIgnore
     @ToString.Exclude
     @OneToMany(mappedBy = "school", cascade = CascadeType.ALL)
     private List<Location> locations = new ArrayList<>();
 
+    @ToString.Exclude
+    @OneToMany(mappedBy = "school", cascade = CascadeType.ALL)
+    private List<Classroom> classrooms = new ArrayList<>();
+
+    @ToString.Exclude
+    @OneToMany(mappedBy = "school", cascade = CascadeType.ALL)
+    private List<Enrollment> enrollments = new ArrayList<>();
+
+    @ToString.Exclude
+    @OneToMany(mappedBy = "school", cascade = CascadeType.ALL)
+    private List<User> users = new ArrayList<>();
+
+    @ToString.Exclude
+    @OneToMany(mappedBy = "school", cascade = CascadeType.ALL)
+    private List<Material> materials = new ArrayList<>();
+
     public School(String name, String adres, String contact, String description, int borrowLimit, int borrowPeriod,
-            int extendPeriod, int extendLimit, String ssSubdomain) {
+            int extendPeriod, int extendLimit, String ssSubdomain, String oneRosterClientId,
+            String oneRosterClientSecret) {
         this.name = name;
         this.adres = adres;
         this.contact = contact;
@@ -65,5 +88,7 @@ public class School implements Serializable {
         this.extendPeriod = extendPeriod;
         this.extendLimit = extendLimit;
         this.ssSubdomain = ssSubdomain;
+        this.oneRosterClientId = oneRosterClientId;
+        this.oneRosterClientSecret = oneRosterClientSecret;
     }
 }

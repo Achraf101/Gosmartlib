@@ -1,17 +1,9 @@
 package be.ap.backend.config;
 
-import be.ap.backend.entity.Location;
-import be.ap.backend.entity.School;
 import be.ap.backend.entity.User;
-import be.ap.backend.repository.LocationRepository;
 import be.ap.backend.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import lombok.RequiredArgsConstructor;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,7 +13,6 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -29,14 +20,12 @@ import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 @Configuration
 @EnableWebSecurity
-@RequiredArgsConstructor
 public class SecurityConfig {
 
     @Value("${app.bcrypt-rounds}")
     private int strength;
 
     private final UserService userService;
-    private final LocationRepository locationRepository;
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
@@ -48,6 +37,10 @@ public class SecurityConfig {
         return new HttpSessionEventPublisher();
     }
 
+    public SecurityConfig(UserService userService) {
+        this.userService = userService;
+    }
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http)
             throws Exception {
@@ -55,23 +48,23 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/login", "/auth/logout", "/oauth", "/auth/me", "/error").permitAll()
+                        .requestMatchers("/auth/login", "/auth/logout", "/oauth", "/auth/me", "/auth/current-user",
+                                "/error")
+                        .permitAll()
                         .anyRequest().authenticated())
                 .formLogin(form -> form
                         .loginProcessingUrl("/auth/login")
                         .usernameParameter("username")
                         .passwordParameter("password")
                         .successHandler((req, res, authentication) -> {
-                            // custom session attributes
-                            Map<String, String> user = getUserDetails(authentication);
+                            User u = (User) authentication.getPrincipal();
                             HttpSession session = req.getSession(true);
 
-                            session.setAttribute("userId", user.get("userId"));
-                            session.setAttribute("location", user.get("location"));
-                            session.setAttribute("school", user.get("school"));
-                            session.setAttribute("role", user.get("role"));
-                            session.setAttribute("username", user.get("username"));
-
+                            session.setAttribute("userId", u.getId());
+                            session.setAttribute("location", u.getLocation() != null ? u.getLocation().getId() : null);
+                            session.setAttribute("school", u.getSchool() != null ? u.getSchool().getId() : null);
+                            session.setAttribute("role", u.getRole().name());
+                            session.setAttribute("username", u.getUsername());
                             res.setStatus(HttpServletResponse.SC_OK);
                             res.setContentType("application/json");
                             res.getWriter().write("{\"message\":\"Login successful\"}");
@@ -113,28 +106,6 @@ public class SecurityConfig {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userService);
         provider.setPasswordEncoder(passwordEncoder());
         return provider;
-    }
-
-    private Map<String, String> getUserDetails(Authentication auth) {
-        User u = (User) auth.getPrincipal();
-
-        School s = u.getSchool();
-
-        String school = s != null ? u.getSchool().getId().toString() : "";
-        List<Long> location = locationRepository.findBySchool(s).stream()
-                .map(Location::getId)
-                .collect(Collectors.toList());
-
-        Map<String, String> usr = Map.of(
-                "userId", u.getId().toString(),
-                "location", location.toString(),
-                "school", school,
-                "role", u.getRole().name(),
-                "username", u.getUsername() // not smartschool name
-
-        );
-
-        return usr;
     }
 
 }
