@@ -70,20 +70,20 @@ export class LoanCartComponent {
     return this.authService.currentUser?.userId ?? 0;
   }
 
-  private get locationId(): number {
-    return this.authService.currentUser?.locationId ?? 0;
-  }
+  // private get locationId(): number {
+  //   return this.authService.currentUser?.locationId ?? 0;
+  // }
 
   private get schoolId(): number {
     return this.authService.currentUser?.schoolId ?? 0;
   }
 
   ngOnInit(): void {
-    this.locationService.getById(this.locationId).subscribe({
-      next: (location) => {
-        this.location = location;
-      },
-    });
+    // this.locationService.getById(this.locationId).subscribe({
+    //   next: (location) => {
+    //     this.location = location;
+    //   },
+    // });
     this.schoolService.getById(this.schoolId).subscribe({
       next: (school) => {
         ((this.school = school), this.cartService.setBorrowLimit(school.borrowLimit));
@@ -91,9 +91,10 @@ export class LoanCartComponent {
     });
   }
 
+  //TODO: locatie terug zetten (waar 1) maar via school
   loadMaxAmounts(): void {
     for (const item of this.cartService.items()) {
-      this.locationBookService.getLocationBook(this.locationId, item.bookId).subscribe({
+      this.locationBookService.getLocationBook(1, item.bookId).subscribe({
         next: (locationBook: LocationBook) => {
           this.maxAmounts.set(item.bookId, locationBook.current_amount);
         },
@@ -145,7 +146,7 @@ export class LoanCartComponent {
 
     const loan: CreateLoanDTO = {
       userId: this.userId,
-      locationId: this.locationId,
+      locationId: 1, //this.locationId
       extended: 0,
       start: this.formatDate(this.checkoutForm.value.start!),
       end: this.formatDate(this.calculatedEnd ?? new Date()),

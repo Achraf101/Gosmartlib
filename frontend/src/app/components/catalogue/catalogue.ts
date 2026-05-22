@@ -30,6 +30,8 @@ import { RadioButton } from 'primeng/radiobutton';
 import { Location } from '../../models/location';
 import { BookListService } from '../../services/book-list';
 import { MessageService } from 'primeng/api';
+import { SchoolService } from '../../services/school';
+import { School } from '../../models/school';
 
 @Component({
   selector: 'app-catalogue',
@@ -89,6 +91,7 @@ export class CatalogueComponent implements OnInit {
   ranking: number | null = null;
   listId: number | null = null;
   showDialog = false;
+  school?: School;
 
   constructor(
     private bookService: BookService,
@@ -100,6 +103,7 @@ export class CatalogueComponent implements OnInit {
     public auth: AuthService,
     public bookListService: BookListService,
     public messageService: MessageService,
+    public schoolService: SchoolService,
   ) {}
 
   ngOnInit(): void {
@@ -109,14 +113,17 @@ export class CatalogueComponent implements OnInit {
     });
     this.apiService.get<Language[]>('language').subscribe((l) => (this.languages = l));
 
-    if (this.auth.currentUser?.location !== undefined) {
-      if (this.auth.currentUser?.location.length > 1) {
-        this.locations = this.auth.currentUser.location;
-      } else {
-        this.oneLocation = true;
-        this.sidebarLocation = this.auth.currentUser.location[0].id;
-      }
-    }
+    this.schoolService.getById(this.auth.currentUser?.schoolId ?? 1).subscribe({
+      next: (data) => {
+        this.school = data;
+        if (this.school.locations && this.school.locations.length > 1) {
+          this.locations = this.school.locations;
+        } else if (this.school.locations?.length === 1) {
+          this.oneLocation = true;
+          this.sidebarLocation = this.school.locations[0].id;
+        }
+      },
+    });
 
     this.route.queryParams.subscribe((params) => {
       this.searchQuery = params['q'] || '';
