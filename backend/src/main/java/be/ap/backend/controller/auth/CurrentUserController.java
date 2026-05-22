@@ -24,7 +24,6 @@ public class CurrentUserController {
         currentUser.setUserId(toLong(session.getAttribute("userId")));
         currentUser.setRole((String) session.getAttribute("role"));
         currentUser.setSchoolId(toLong(session.getAttribute("school")));
-        currentUser.setLocationId(toLong(session.getAttribute("location")));
         currentUser.setFirstName((String) session.getAttribute("firstName"));
         currentUser.setLastName((String) session.getAttribute("lastName"));
         currentUser.setEmail((String) session.getAttribute("email"));

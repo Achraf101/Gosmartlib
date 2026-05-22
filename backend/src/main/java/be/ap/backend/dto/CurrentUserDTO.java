@@ -11,8 +11,6 @@ public class CurrentUserDTO {
     private String role;
     @JsonProperty("schoolId")
     private Long schoolId;
-    @JsonProperty("locationId")
-    private Long locationId;
     @JsonProperty("firstName")
     private String firstName;
     @JsonProperty("lastName")

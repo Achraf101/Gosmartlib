@@ -315,31 +315,28 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     private void seedTestUsers() {
-        Location location = locationRepository.findById(1L)
-                .orElseThrow(() -> new IllegalStateException("Location 1 missing"));
         School school = schoolRepository.findById(1L).orElseThrow(() -> new IllegalStateException("School 1 missing"));
         School imposterSchool = schoolRepository.findById(2L)
                 .orElseThrow(() -> new IllegalStateException("School 1 missing"));
 
-        seedUser("beheerder", "test1234", UserRole.BIBLIOTHEEKBEHEERDER, location, school);
-        seedUser("admin", "admin", UserRole.ADMIN, location, school);
-        seedUser("leerkracht1", "leerkracht1", UserRole.LEERKRACHT, location, school);
-        seedUser("leerling1", "leerling1", UserRole.STUDENT, location, school);
-        seedUser("leerling2", "leerling2", UserRole.STUDENT, location, school);
-        seedUser("leerling3", "leerling3", UserRole.STUDENT, location, school);
-        seedUser("imposter", "imposter", UserRole.STUDENT, location, imposterSchool);
-        seedUser("imposterBeheerder", "imposterBeheerder", UserRole.BIBLIOTHEEKBEHEERDER, location, imposterSchool);
+        seedUser("beheerder", "test1234", UserRole.BIBLIOTHEEKBEHEERDER, school);
+        seedUser("admin", "admin", UserRole.ADMIN, school);
+        seedUser("leerkracht1", "leerkracht1", UserRole.LEERKRACHT, school);
+        seedUser("leerling1", "leerling1", UserRole.STUDENT, school);
+        seedUser("leerling2", "leerling2", UserRole.STUDENT, school);
+        seedUser("leerling3", "leerling3", UserRole.STUDENT, school);
+        seedUser("imposter", "imposter", UserRole.STUDENT, imposterSchool);
+        seedUser("imposterBeheerder", "imposterBeheerder", UserRole.BIBLIOTHEEKBEHEERDER, imposterSchool);
 
     }
 
-    private void seedUser(String username, String password, UserRole role, Location location, School school) {
+    private void seedUser(String username, String password, UserRole role, School school) {
         User user = userRepository.findByUsername(username).orElse(new User());
         if (user.getPassword() == null) {
             user.setPassword(passwordEncoder.encode(password));
         }
         user.setUsername(username);
         user.setRole(role);
-        user.setLocation(location);
         user.setSchool(school);
         userRepository.save(user);
     }

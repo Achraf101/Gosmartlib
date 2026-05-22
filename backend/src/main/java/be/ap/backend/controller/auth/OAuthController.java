@@ -109,7 +109,6 @@ public class OAuthController {
         String firstName = orUser != null ? (String) orUser.get("givenName") : "";
         String lastName = orUser != null ? (String) orUser.get("familyName") : "";
         String email = orUser != null ? (String) orUser.get("email") : "";
-        Long locationId = school.getLocations().isEmpty() ? null : school.getLocations().get(0).getId();
 
         HttpSession session = httpRequest.getSession(true);
 
@@ -128,7 +127,6 @@ public class OAuthController {
         session.setAttribute("userId", user.getId());
         session.setAttribute("role", user.getRole().name());
         session.setAttribute("school", school.getId());
-        session.setAttribute("location", locationId);
         session.setAttribute("firstName", firstName);
         session.setAttribute("lastName", lastName);
         session.setAttribute("email", email);
