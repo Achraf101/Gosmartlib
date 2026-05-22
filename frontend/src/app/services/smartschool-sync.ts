@@ -9,6 +9,6 @@ export class SmartschoolSyncService {
   constructor(private api: ApiService) {}
 
   syncSchool(schoolId: number): Observable<string> {
-    return this.api.post<string>(`smartschool/sync/${schoolId}`, {});
+    return this.api.post<string>(`smartschool/sync/${schoolId}`, {}, { responseType: 'text' });
   }
 }
