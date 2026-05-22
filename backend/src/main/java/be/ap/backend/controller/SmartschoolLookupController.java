@@ -35,7 +35,7 @@ public class SmartschoolLookupController {
             @PathVariable Long schoolId,
             @PathVariable String ssId) {
         School school = getSchool(schoolId);
-        Map<String, Object> classroom = lookupService.getClass(school, ssId);
+        Map<String, Object> classroom = lookupService.getClassroom(school, ssId);
         if (classroom == null)
             return ResponseEntity.notFound().build();
         return ResponseEntity.ok(classroom);

@@ -30,7 +30,7 @@ public class SmartschoolLookupService {
     }
 
     @SuppressWarnings("unchecked")
-    public Map<String, Object> getClass(School school, String ssId) {
+    public Map<String, Object> getClassroom(School school, String ssId) {
         String url = "https://" + school.getSsSubdomain() + ".smartschool.be/ims/oneroster/v1p1/classes/" + ssId;
         Map<String, Object> response = get(school, url);
         if (response == null)

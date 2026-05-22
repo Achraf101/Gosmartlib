@@ -10,7 +10,7 @@
   } @else if (error || !report) {
     <p-message severity="error" text="Rapport kon niet geladen worden."></p-message>
   } @else {
-    <h1>{{ report.firstName || report.lastName }}</h1>
+    <h1>{{ report.firstName }} {{ report.lastName }}</h1>
 
     <div class="counts-grid">
       <p-card class="count-card">

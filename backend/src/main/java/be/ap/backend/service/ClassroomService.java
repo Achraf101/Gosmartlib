@@ -34,8 +34,13 @@ public class ClassroomService {
     }
 
     public List<ClassroomDTO> getClassroomsForTeacher(Long teacherId) {
+
         return enrollmentService.getClassroomsForTeacher(teacherId).stream()
-                .map(c -> new ClassroomDTO(c.getId(), c.getName(), c.getStudents().size()))
+                .map(c -> {
+                    Map<String, Object> classData = lookupService.getClassroom(c.getSchool(), c.getSsId());
+                    String name = classData != null ? (String) classData.get("title") : c.getName();
+                    return new ClassroomDTO(c.getId(), name, c.getStudents().size());
+                })
                 .toList();
     }
 
