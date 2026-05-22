@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -41,23 +40,25 @@ public class SmartschoolLookupController {
         return ResponseEntity.ok(classroom);
     }
 
-    @GetMapping("/{schoolId}/users/{ssId}/classes")
-    public ResponseEntity<List<Map<String, Object>>> getClassesForUser(
-            @PathVariable Long schoolId,
-            @PathVariable String ssId) {
-        School school = getSchool(schoolId);
-        List<Map<String, Object>> classes = lookupService.getClassesForUser(school, ssId);
-        return ResponseEntity.ok(classes);
-    }
+    // @GetMapping("/{schoolId}/users/{ssId}/classes")
+    // public ResponseEntity<List<Map<String, Object>>> getClassesForUser(
+    // @PathVariable Long schoolId,
+    // @PathVariable String ssId) {
+    // School school = getSchool(schoolId);
+    // List<Map<String, Object>> classes = lookupService.getClassesForUser(school,
+    // ssId);
+    // return ResponseEntity.ok(classes);
+    // }
 
-    @GetMapping("/{schoolId}/users/{ssId}/enrollments")
-    public ResponseEntity<List<Map<String, Object>>> getEnrollmentsForUser(
-            @PathVariable Long schoolId,
-            @PathVariable String ssId) {
-        School school = getSchool(schoolId);
-        List<Map<String, Object>> enrollments = lookupService.getEnrollmentsForUser(school, ssId);
-        return ResponseEntity.ok(enrollments);
-    }
+    // @GetMapping("/{schoolId}/users/{ssId}/enrollments")
+    // public ResponseEntity<List<Map<String, Object>>> getEnrollmentsForUser(
+    // @PathVariable Long schoolId,
+    // @PathVariable String ssId) {
+    // School school = getSchool(schoolId);
+    // List<Map<String, Object>> enrollments =
+    // lookupService.getEnrollmentsForUser(school, ssId);
+    // return ResponseEntity.ok(enrollments);
+    // }
 
     private School getSchool(Long schoolId) {
         return schoolRepository.findById(schoolId)

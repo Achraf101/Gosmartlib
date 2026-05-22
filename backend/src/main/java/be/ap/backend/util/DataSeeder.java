@@ -34,6 +34,7 @@ import be.ap.backend.repository.SectionBookRepository;
 import be.ap.backend.repository.SectionRepository;
 import be.ap.backend.repository.ThemeRepository;
 import be.ap.backend.repository.UserRepository;
+import be.ap.backend.service.EncryptionService;
 
 import org.springframework.beans.factory.annotation.Value;
 
@@ -61,6 +62,7 @@ public class DataSeeder implements CommandLineRunner {
     private final SchoolRepository schoolRepository;
     private final PasswordEncoder passwordEncoder;
     private final ClassroomRepository classroomRepository;
+    private final EncryptionService encryptionService;
 
     public DataSeeder(LanguageRepository languageRepository,
             BookTypeRepository bookTypeRepository, GenreRepository genreRepository,
@@ -68,7 +70,8 @@ public class DataSeeder implements CommandLineRunner {
             SectionRepository sectionRepository, SectionBookRepository sectionBookRepository,
             ThemeRepository themeRepository, UserRepository userRepository, LocationRepository locationRepository,
             SchoolRepository schoolRepository, PasswordEncoder passwordEncoder,
-            ChallengeRepository challengeRepository, ClassroomRepository classroomRepository) {
+            ChallengeRepository challengeRepository, ClassroomRepository classroomRepository,
+            EncryptionService encryptionService) {
         this.languageRepository = languageRepository;
         this.bookTypeRepository = bookTypeRepository;
         this.genreRepository = genreRepository;
@@ -83,6 +86,7 @@ public class DataSeeder implements CommandLineRunner {
         this.schoolRepository = schoolRepository;
         this.passwordEncoder = passwordEncoder;
         this.classroomRepository = classroomRepository;
+        this.encryptionService = encryptionService;
     }
 
     @Override
@@ -408,8 +412,8 @@ public class DataSeeder implements CommandLineRunner {
             return;
         School school = schoolRepository.save(
                 new School("AP Hogeschool", "", "", "", 10, 14, 14, 3, "aphogeschool",
-                        "ec58f0fb-6bd3-48d3-a165-6b73a324d5ad",
-                        "755b033b7096ad2abe34142df0b67fe974d0e555ab6c0d6c9475e417c2a8"));
+                        encryptionService.encrypt("ec58f0fb-6bd3-48d3-a165-6b73a324d5ad"),
+                        encryptionService.encrypt("755b033b7096ad2abe34142df0b67fe974d0e555ab6c0d6c9475e417c2a8")));
         Location location = new Location();
         location.setSchool(school);
         location.setName("Blok A");

@@ -25,12 +25,15 @@ public class SchoolServiceTest {
     @Mock
     private SchoolRepository schoolRepository;
 
+    @Mock
+    private EncryptionService encryptionService;
+
     private SchoolService schoolService;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        schoolService = new SchoolService(schoolRepository);
+        schoolService = new SchoolService(schoolRepository, encryptionService);
     }
 
     // Helper to build a valid SchoolDTO

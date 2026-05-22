@@ -47,10 +47,10 @@ public class School implements Serializable {
     @Column(nullable = false, unique = true, length = 255, name = "ss_subdomain")
     private String ssSubdomain;
 
-    @Column(name = "oneroster_client_id", length = 255)
+    @Column(name = "oneroster_client_id", length = 500)
     private String oneRosterClientId;
 
-    @Column(name = "oneroster_client_secret", length = 255)
+    @Column(name = "oneroster_client_secret", length = 500)
     private String oneRosterClientSecret;
 
     @ToString.Exclude

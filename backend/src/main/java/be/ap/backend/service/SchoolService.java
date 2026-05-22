@@ -10,6 +10,7 @@ import be.ap.backend.dto.SchoolDTO;
 import be.ap.backend.entity.School;
 import be.ap.backend.exception.ArgumentsInvalidException;
 import be.ap.backend.exception.MissingArgumentsException;
+import be.ap.backend.model.OneRosterCredentials;
 import be.ap.backend.repository.SchoolRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -17,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SchoolService {
     private final SchoolRepository schoolRepository;
+    private final EncryptionService encryptionService;
 
     public SchoolDTO addSchool(SchoolDTO dto) {
         if (dto.getName() == null) {
@@ -54,7 +56,23 @@ public class SchoolService {
         saved.setExtendLimit(dto.getExtendLimit());
         saved.setExtendPeriod(dto.getExtendPeriod());
 
+        if (dto.getOneRosterClientId() != null) {
+            saved.setOneRosterClientId(encryptionService.encrypt(dto.getOneRosterClientId()));
+        }
+        if (dto.getOneRosterClientSecret() != null) {
+            saved.setOneRosterClientSecret(encryptionService.encrypt(dto.getOneRosterClientSecret()));
+        }
+
         return toDTO(schoolRepository.save(saved));
+    }
+
+    public OneRosterCredentials getCredentials(Long schoolId) {
+        School school = schoolRepository.findById(schoolId)
+                .orElseThrow(() -> new MissingArgumentsException("School niet gevonden"));
+
+        return new OneRosterCredentials(
+                encryptionService.decrypt(school.getOneRosterClientId()),
+                encryptionService.decrypt(school.getOneRosterClientSecret()));
     }
 
     public List<SchoolDTO> getAll() {

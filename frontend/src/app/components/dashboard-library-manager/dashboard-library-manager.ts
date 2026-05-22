@@ -62,7 +62,7 @@ import { ConfirmationService } from 'primeng/api';
     FormsModule,
     ConfirmDialog,
   ],
-  providers: [MessageService, ConfirmationService],
+  providers: [ConfirmationService],
   templateUrl: './dashboard-library-manager.html',
   styleUrl: './dashboard-library-manager.css',
 })
