@@ -50,7 +50,7 @@ public class LocationBookControllerTest {
         dto.setAmount(3);
         dto.setCurrentAmount(3);
 
-        LocationBook saved = new LocationBook();
+        LocationBookDetailDTO saved = new LocationBookDetailDTO();
         when(LocationBookService.createLocationBook(any())).thenReturn(saved);
 
         mockMvc.perform(post("/locationbook")

@@ -28,7 +28,7 @@ public class LocationBookService {
 
     private final EntityManager entityManager;
 
-    public LocationBook createLocationBook(LocationBookDTO dto) {
+    public LocationBookDetailDTO createLocationBook(LocationBookDTO dto) {
         if (dto.getLocationId() == null || dto.getBookId() == null) {
             throw new MissingArgumentsException("Locatie en boek zijn verplicht.");
         }
@@ -41,7 +41,7 @@ public class LocationBookService {
                     .orElseThrow();
             existing.setAmount(existing.getAmount() + dto.getAmount());
             existing.setCurrentAmount(existing.getCurrentAmount() + dto.getAmount());
-            return locationBookRepository.save(existing);
+            return toDTO(locationBookRepository.save(existing));
         }
 
         LocationBook newLocationBook = new LocationBook();
@@ -51,7 +51,7 @@ public class LocationBookService {
         newLocationBook.setAmount(dto.getAmount());
         newLocationBook.setCurrentAmount(dto.getAmount());
 
-        return locationBookRepository.save(newLocationBook);
+       return toDTO(locationBookRepository.save(newLocationBook));
     }
 
     public List<LocationBookDetailDTO> findAll() {

@@ -28,7 +28,7 @@ public class LocationBookController {
     private final LocationBookService locationBookService;
 
     @PostMapping
-    public ResponseEntity<LocationBook> createLocationBook(@RequestBody LocationBookDTO dto) {
+    public ResponseEntity<LocationBookDetailDTO> createLocationBook(@RequestBody LocationBookDTO dto) {
         return ResponseEntity.ok(locationBookService.createLocationBook(dto));
     }
 
