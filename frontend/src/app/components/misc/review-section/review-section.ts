@@ -15,7 +15,15 @@ import { MessageService } from 'primeng/api';
 @Component({
   selector: 'app-review-section',
   standalone: true,
-  imports: [CommonModule, FormsModule, RatingModule, MenuModule, ConfirmDialogModule, Dialog, Button],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RatingModule,
+    MenuModule,
+    ConfirmDialogModule,
+    Dialog,
+    Button,
+  ],
   providers: [ConfirmationService],
   templateUrl: './review-section.html',
   styleUrl: './review-section.css',
@@ -50,8 +58,8 @@ export class ReviewSectionComponent implements OnInit {
   }
 
   loadCurrentUser(): void {
-    this.apiService.get<any>('auth/me/id').subscribe({
-        next: (user) => (this.currentUserId = user.userId),
+    this.apiService.get<any>('auth/current-user').subscribe({
+      next: (user) => (this.currentUserId = user.userId),
     });
   }
 
@@ -73,21 +81,23 @@ export class ReviewSectionComponent implements OnInit {
       return;
     }
     this.error = '';
-    this.apiService.post<Review>(`review/book/${this.bookId}`, {
-      rating: this.newRating,
-      content: this.newContent,
-    }).subscribe({
-      next: () => {
-        this.newRating = 0;
-        this.newContent = '';
-        this.submitted = true;
-        this.loadReviews();
-        this.reviewAdded.emit();
-      },
-      error: (err) => {
-        this.error = err.error ?? 'Er is een fout opgetreden.';
-      }
-    });
+    this.apiService
+      .post<Review>(`review/book/${this.bookId}`, {
+        rating: this.newRating,
+        content: this.newContent,
+      })
+      .subscribe({
+        next: () => {
+          this.newRating = 0;
+          this.newContent = '';
+          this.submitted = true;
+          this.loadReviews();
+          this.reviewAdded.emit();
+        },
+        error: (err) => {
+          this.error = err.error ?? 'Er is een fout opgetreden.';
+        },
+      });
   }
 
   onMenuShow(review: Review): void {
