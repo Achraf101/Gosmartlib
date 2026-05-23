@@ -5,42 +5,42 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
-import be.ap.backend.dto.LocationSettingsDTO;
+import be.ap.backend.dto.SchoolSettingsDTO;
 import be.ap.backend.dto.HiddenComponentDTO;
-import be.ap.backend.entity.LocationSettings;
+import be.ap.backend.entity.SchoolSettings;
 import be.ap.backend.entity.School;
 import be.ap.backend.entity.HiddenComponent;
 import be.ap.backend.enums.ComponentScreen;
 import be.ap.backend.enums.ComponentType;
-import be.ap.backend.repository.LocationSettingsRepository;
+import be.ap.backend.repository.SchoolSettingsRepository;
 import be.ap.backend.repository.SchoolRepository;
 
 @Service
-public class LocationSettingsService {
+public class SchoolSettingsService {
 
-    private final LocationSettingsRepository locationSettingsRepository;
+    private final SchoolSettingsRepository schoolSettingsRepository;
     private final SchoolRepository schoolRepository;
 
-    public LocationSettingsService(LocationSettingsRepository locationSettingsRepository,
+    public SchoolSettingsService(SchoolSettingsRepository schoolSettingsRepository,
             SchoolRepository schoolRepository) {
-        this.locationSettingsRepository = locationSettingsRepository;
+        this.schoolSettingsRepository = schoolSettingsRepository;
         this.schoolRepository = schoolRepository;
     }
 
-    public LocationSettingsDTO getSettings(Long schoolId) {
-        return locationSettingsRepository.findBySchoolId(schoolId)
-                .map(s -> new LocationSettingsDTO(
+    public SchoolSettingsDTO getSettings(Long schoolId) {
+        return schoolSettingsRepository.findBySchoolId(schoolId)
+                .map(s -> new SchoolSettingsDTO(
                         s.getSchoolId(),
                         s.getHiddenComponents().stream()
                                 .map(c -> new HiddenComponentDTO(c.getScreen().name(), c.getType().name()))
                                 .collect(Collectors.toSet())))
-                .orElse(new LocationSettingsDTO(schoolId, new HashSet<>()));
+                .orElse(new SchoolSettingsDTO(schoolId, new HashSet<>()));
     }
 
-    public LocationSettingsDTO updateSettings(Long schoolId, LocationSettingsDTO dto) {
+    public SchoolSettingsDTO updateSettings(Long schoolId, SchoolSettingsDTO dto) {
         School school = schoolRepository.findById(schoolId).orElseThrow();
-        LocationSettings settings = locationSettingsRepository.findBySchoolId(schoolId)
-                .orElse(new LocationSettings());
+        SchoolSettings settings = schoolSettingsRepository.findBySchoolId(schoolId)
+                .orElse(new SchoolSettings());
         settings.setSchool(school);
         settings.setHiddenComponents(
                 dto.hiddenComponents().stream()
@@ -48,7 +48,7 @@ public class LocationSettingsService {
                                 ComponentScreen.valueOf(c.screen()),
                                 ComponentType.valueOf(c.type())))
                         .collect(Collectors.toSet()));
-        locationSettingsRepository.save(settings);
+        schoolSettingsRepository.save(settings);
         return getSettings(schoolId);
     }
 }

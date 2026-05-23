@@ -12,8 +12,8 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import be.ap.backend.dto.LocationSettingsDTO;
-import be.ap.backend.service.LocationSettingsService;
+import be.ap.backend.dto.SchoolSettingsDTO;
+import be.ap.backend.service.SchoolSettingsService;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -21,8 +21,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import org.springframework.http.MediaType;
 
-@WebMvcTest(controllers = LocationSettingsController.class, excludeAutoConfiguration = SecurityAutoConfiguration.class)
-@ContextConfiguration(classes = LocationSettingsController.class)
+@WebMvcTest(controllers = SchoolSettingsController.class, excludeAutoConfiguration = SecurityAutoConfiguration.class)
+@ContextConfiguration(classes = SchoolSettingsController.class)
 public class LocationSettingsControllerTest {
 
     @Autowired
@@ -30,11 +30,11 @@ public class LocationSettingsControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
     @MockitoBean
-    private LocationSettingsService locationSettingsService;
+    private SchoolSettingsService locationSettingsService;
 
     @Test
     void getSettings_returnsOk() throws Exception {
-        LocationSettingsDTO dto = new LocationSettingsDTO(1L, new HashSet<>());
+        SchoolSettingsDTO dto = new SchoolSettingsDTO(1L, new HashSet<>());
         when(locationSettingsService.getSettings(eq(1L))).thenReturn(dto);
 
         mockMvc.perform(get("/location-settings")
@@ -45,7 +45,7 @@ public class LocationSettingsControllerTest {
 
     @Test
     void updateSettings_returnsUpdatedDTO() throws Exception {
-        LocationSettingsDTO dto = new LocationSettingsDTO(1L, new HashSet<>());
+        SchoolSettingsDTO dto = new SchoolSettingsDTO(1L, new HashSet<>());
         when(locationSettingsService.updateSettings(eq(1L), any())).thenReturn(dto);
 
         mockMvc.perform(put("/location-settings")
@@ -58,7 +58,7 @@ public class LocationSettingsControllerTest {
 
     @Test
     void getSettings_emptyHiddenComponents_returnsEmptyList() throws Exception {
-        LocationSettingsDTO dto = new LocationSettingsDTO(1L, new HashSet<>());
+        SchoolSettingsDTO dto = new SchoolSettingsDTO(1L, new HashSet<>());
         when(locationSettingsService.getSettings(eq(1L))).thenReturn(dto);
 
         mockMvc.perform(get("/location-settings")

@@ -141,7 +141,7 @@
   </p-card>
 
   <div class="stats-grid">
-    @if (isVisible(locationSettings, 'DASHBOARD', 'TOP_BOOKS')) {
+    @if (isVisible(schoolSettings, 'DASHBOARD', 'TOP_BOOKS')) {
       <p-card class="stats-card">
         <div class="overdue-header">
           <div class="overdue-title-wrap">
@@ -171,7 +171,7 @@
         }
       </p-card>
     }
-    @if (isVisible(locationSettings, 'DASHBOARD', 'TOP_GENRES')) {
+    @if (isVisible(schoolSettings, 'DASHBOARD', 'TOP_GENRES')) {
       <p-card class="stats-card">
         <div class="overdue-header">
           <div class="overdue-title-wrap">
@@ -201,7 +201,7 @@
         }
       </p-card>
     }
-    @if (isVisible(locationSettings, 'DASHBOARD', 'OVERDUE_LOANS')) {
+    @if (isVisible(schoolSettings, 'DASHBOARD', 'OVERDUE_LOANS')) {
       <p-card class="stats-card">
         <div class="overdue-header">
           <div class="overdue-title-wrap">
@@ -248,7 +248,7 @@
         }
       </p-card>
     }
-    @if (isVisible(locationSettings, 'DASHBOARD', 'DUE_SOON')) {
+    @if (isVisible(schoolSettings, 'DASHBOARD', 'DUE_SOON')) {
       <p-card class="stats-card">
         <div class="overdue-header">
           <div class="overdue-title-wrap">
@@ -296,7 +296,7 @@
       </p-card>
     }
   </div>
-  @if (isVisible(locationSettings, 'DASHBOARD', 'IN_SPOTLIGHT')) {
+  @if (isVisible(schoolSettings, 'DASHBOARD', 'IN_SPOTLIGHT')) {
     <p-card class="monthly-card">
       <div class="monthly-header">
         <div class="overdue-title-wrap">
@@ -331,7 +331,7 @@
       </div>
     </p-card>
   }
-  @if (isVisible(locationSettings, 'DASHBOARD', 'MONTHLY_BOOK')) {
+  @if (isVisible(schoolSettings, 'DASHBOARD', 'MONTHLY_BOOK')) {
     <p-card class="monthly-card">
       <div class="monthly-header">
         <div class="overdue-title-wrap">
@@ -381,7 +381,7 @@
         <span class="card-title">Startpagina &amp; dashboard instellingen</span>
       </div>
     </div>
-    @if (locationSettings) {
+    @if (schoolSettings) {
       <div class="personolized-title">
         <span class="grade-label">Startpagina</span>
       </div>
@@ -389,14 +389,14 @@
         <div class="overdue-item">
           <span class="overdue-username">Uitgelichte boeken</span>
           <p-toggleswitch
-            [ngModel]="isVisible(locationSettings, 'HOME', 'IN_SPOTLIGHT')"
+            [ngModel]="isVisible(schoolSettings, 'HOME', 'IN_SPOTLIGHT')"
             (onChange)="toggleComponent('HOME', 'IN_SPOTLIGHT', $event.checked)"
           />
         </div>
         <div class="overdue-item">
           <span class="overdue-username">Boek van de maand</span>
           <p-toggleswitch
-            [ngModel]="isVisible(locationSettings, 'HOME', 'MONTHLY_BOOK')"
+            [ngModel]="isVisible(schoolSettings, 'HOME', 'MONTHLY_BOOK')"
             (onChange)="toggleComponent('HOME', 'MONTHLY_BOOK', $event.checked)"
           />
         </div>
@@ -408,42 +408,42 @@
         <div class="overdue-item">
           <span class="overdue-username">Te laat teruggeven</span>
           <p-toggleswitch
-            [ngModel]="isVisible(locationSettings, 'DASHBOARD', 'OVERDUE_LOANS')"
+            [ngModel]="isVisible(schoolSettings, 'DASHBOARD', 'OVERDUE_LOANS')"
             (onChange)="toggleComponent('DASHBOARD', 'OVERDUE_LOANS', $event.checked)"
           />
         </div>
         <div class="overdue-item">
           <span class="overdue-username">Bijna te laat</span>
           <p-toggleswitch
-            [ngModel]="isVisible(locationSettings, 'DASHBOARD', 'DUE_SOON')"
+            [ngModel]="isVisible(schoolSettings, 'DASHBOARD', 'DUE_SOON')"
             (onChange)="toggleComponent('DASHBOARD', 'DUE_SOON', $event.checked)"
           />
         </div>
         <div class="overdue-item">
           <span class="overdue-username">Meest ontleende boeken</span>
           <p-toggleswitch
-            [ngModel]="isVisible(locationSettings, 'DASHBOARD', 'TOP_BOOKS')"
+            [ngModel]="isVisible(schoolSettings, 'DASHBOARD', 'TOP_BOOKS')"
             (onChange)="toggleComponent('DASHBOARD', 'TOP_BOOKS', $event.checked)"
           />
         </div>
         <div class="overdue-item">
           <span class="overdue-username">Populairste genres</span>
           <p-toggleswitch
-            [ngModel]="isVisible(locationSettings, 'DASHBOARD', 'TOP_GENRES')"
+            [ngModel]="isVisible(schoolSettings, 'DASHBOARD', 'TOP_GENRES')"
             (onChange)="toggleComponent('DASHBOARD', 'TOP_GENRES', $event.checked)"
           />
         </div>
         <div class="overdue-item">
           <span class="overdue-username">Uitgelichte boeken</span>
           <p-toggleswitch
-            [ngModel]="isVisible(locationSettings, 'DASHBOARD', 'IN_SPOTLIGHT')"
+            [ngModel]="isVisible(schoolSettings, 'DASHBOARD', 'IN_SPOTLIGHT')"
             (onChange)="toggleComponent('DASHBOARD', 'IN_SPOTLIGHT', $event.checked)"
           />
         </div>
         <div class="overdue-item">
           <span class="overdue-username">Boek van de maand</span>
           <p-toggleswitch
-            [ngModel]="isVisible(locationSettings, 'DASHBOARD', 'MONTHLY_BOOK')"
+            [ngModel]="isVisible(schoolSettings, 'DASHBOARD', 'MONTHLY_BOOK')"
             (onChange)="toggleComponent('DASHBOARD', 'MONTHLY_BOOK', $event.checked)"
           />
         </div>

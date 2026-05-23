@@ -1,13 +1,13 @@
 package be.ap.backend.service;
 
-import be.ap.backend.dto.LocationSettingsDTO;
+import be.ap.backend.dto.SchoolSettingsDTO;
 import be.ap.backend.dto.HiddenComponentDTO;
-import be.ap.backend.entity.LocationSettings;
+import be.ap.backend.entity.SchoolSettings;
 import be.ap.backend.entity.School;
 import be.ap.backend.entity.HiddenComponent;
 import be.ap.backend.enums.ComponentScreen;
 import be.ap.backend.enums.ComponentType;
-import be.ap.backend.repository.LocationSettingsRepository;
+import be.ap.backend.repository.SchoolSettingsRepository;
 import be.ap.backend.repository.SchoolRepository;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -30,22 +30,22 @@ import static org.mockito.Mockito.*;
 public class LocationSettingsServiceTest {
 
     @Mock
-    private LocationSettingsRepository locationSettingsRepository;
+    private SchoolSettingsRepository locationSettingsRepository;
     @Mock
     private SchoolRepository schoolRepository;
 
     @InjectMocks
-    private LocationSettingsService locationSettingsService;
+    private SchoolSettingsService locationSettingsService;
 
     private School school;
-    private LocationSettings settings;
+    private SchoolSettings settings;
 
     @BeforeEach
     void setUp() {
         school = new School();
         school.setId(1L);
 
-        settings = new LocationSettings();
+        settings = new SchoolSettings();
         settings.setSchool(school);
         settings.setSchoolId(1L);
         settings.setHiddenComponents(new HashSet<>());
@@ -58,7 +58,7 @@ public class LocationSettingsServiceTest {
 
         when(locationSettingsRepository.findBySchoolId(1L)).thenReturn(Optional.of(settings));
 
-        LocationSettingsDTO result = locationSettingsService.getSettings(1L);
+        SchoolSettingsDTO result = locationSettingsService.getSettings(1L);
 
         assertThat(result.schoolId()).isEqualTo(1L);
         assertThat(result.hiddenComponents()).hasSize(1);
@@ -70,7 +70,7 @@ public class LocationSettingsServiceTest {
     void getSettings_noSettingsExist_returnsDefaultEmptyDTO() {
         when(locationSettingsRepository.findBySchoolId(1L)).thenReturn(Optional.empty());
 
-        LocationSettingsDTO result = locationSettingsService.getSettings(1L);
+        SchoolSettingsDTO result = locationSettingsService.getSettings(1L);
 
         assertThat(result.schoolId()).isEqualTo(1L);
         assertThat(result.hiddenComponents()).isEmpty();
@@ -79,7 +79,7 @@ public class LocationSettingsServiceTest {
     @Test
     void updateSettings_createsNewSettings() {
         HiddenComponentDTO dto = new HiddenComponentDTO("DASHBOARD", "TOP_BOOKS");
-        LocationSettingsDTO input = new LocationSettingsDTO(1L, Set.of(dto));
+        SchoolSettingsDTO input = new SchoolSettingsDTO(1L, Set.of(dto));
 
         when(schoolRepository.findById(1L)).thenReturn(Optional.of(school));
         when(locationSettingsRepository.findBySchoolId(1L)).thenReturn(Optional.empty());
@@ -93,7 +93,7 @@ public class LocationSettingsServiceTest {
     @Test
     void updateSettings_updatesExistingSettings() {
         HiddenComponentDTO dto = new HiddenComponentDTO("HOME", "MONTHLY_BOOK");
-        LocationSettingsDTO input = new LocationSettingsDTO(1L, Set.of(dto));
+        SchoolSettingsDTO input = new SchoolSettingsDTO(1L, Set.of(dto));
 
         when(schoolRepository.findById(1L)).thenReturn(Optional.of(school));
         when(locationSettingsRepository.findBySchoolId(1L)).thenReturn(Optional.of(settings));
@@ -106,7 +106,7 @@ public class LocationSettingsServiceTest {
 
     @Test
     void updateSettings_emptyHiddenComponents_savesEmptySet() {
-        LocationSettingsDTO input = new LocationSettingsDTO(1L, new HashSet<>());
+        SchoolSettingsDTO input = new SchoolSettingsDTO(1L, new HashSet<>());
 
         when(schoolRepository.findById(1L)).thenReturn(Optional.of(school));
         when(locationSettingsRepository.findBySchoolId(1L)).thenReturn(Optional.of(settings));
