@@ -201,8 +201,8 @@ public class LoanService {
         loanRepository.deleteById(id);
     }
 
-    public List<LoanDTO> getByStateAndLocation(LoanStatus state, Long locationId) {
-        return toDTOs(loanRepository.findByStateAndLocation(state, locationId));
+    public List<LoanDTO> getByStateAndSchool(LoanStatus state, Long schoolId) {
+        return toDTOs(loanRepository.findByStateAndSchool(state, schoolId));
     }
 
     private LoanDTO toDTO(Loan loan) {
@@ -272,23 +272,23 @@ public class LoanService {
                 .toList();
     }
 
-    public int getOverdueLoansLength(Long locationId) {
+    public int getOverdueLoansLength(Long schoolId) {
         List<LoanStatus> activeStatuses = List.of(LoanStatus.RECEIVED, LoanStatus.ACCEPTED);
-        return loanRepository.countOverdueLoans(activeStatuses, LocalDate.now(), locationId);
+        return loanRepository.countOverdueLoans(activeStatuses, LocalDate.now(), schoolId);
     }
 
-    public List<LoanDTO> getOverdueLoans(Long locationId) {
+    public List<LoanDTO> getOverdueLoans(Long schoolId) {
         List<LoanStatus> activeStatuses = List.of(LoanStatus.RECEIVED, LoanStatus.ACCEPTED);
-        return toDTOs(loanRepository.findOverdueLoans(activeStatuses, LocalDate.now(), locationId));
+        return toDTOs(loanRepository.findOverdueLoans(activeStatuses, LocalDate.now(), schoolId));
 
     }
 
-    public List<TopBookDTO> getTopBooksThisMonth(Long locationId) {
+    public List<TopBookDTO> getTopBooksThisMonth(Long schoolId) {
         LocalDate from = LocalDate.now().withDayOfMonth(1);
         LocalDate to = LocalDate.now();
         List<LoanStatus> statuses = List.of(LoanStatus.RECEIVED, LoanStatus.RETURNED, LoanStatus.ACCEPTED);
 
-        return loanRepository.findByDateRangeWithBooks(from, to, statuses, locationId).stream()
+        return loanRepository.findByDateRangeWithBooks(from, to, statuses, schoolId).stream()
                 .flatMap(l -> l.getLoanBooks().stream())
                 .collect(Collectors.groupingBy(
                         lb -> lb.getBook().getTitle(),
@@ -300,25 +300,25 @@ public class LoanService {
                 .toList();
     }
 
-    public List<LoanDTO> getDueSoonLoans(Long locationId) {
+    public List<LoanDTO> getDueSoonLoans(Long schoolId) {
         List<LoanStatus> activeStatuses = List.of(LoanStatus.RECEIVED, LoanStatus.ACCEPTED);
         return toDTOs(loanRepository.findDueSoonLoans(activeStatuses, LocalDate.now(), LocalDate.now().plusDays(7),
-                locationId));
+                schoolId));
 
     }
 
-    public int getDueSoonLoansLength(Long locationId) {
+    public int getDueSoonLoansLength(Long schoolId) {
         List<LoanStatus> activeStatuses = List.of(LoanStatus.RECEIVED, LoanStatus.ACCEPTED);
         return loanRepository.countDueSoonLoans(activeStatuses, LocalDate.now(), LocalDate.now().plusDays(7),
-                locationId);
+                schoolId);
     }
 
-    public List<TopBookDTO> getTopGenresThisMonth(Long locationId) {
+    public List<TopBookDTO> getTopGenresThisMonth(Long schoolId) {
         LocalDate from = LocalDate.now().withDayOfMonth(1);
         LocalDate to = LocalDate.now();
         List<LoanStatus> statuses = List.of(LoanStatus.RECEIVED, LoanStatus.RETURNED, LoanStatus.ACCEPTED);
 
-        return loanRepository.findTopGenres(statuses, from, to, locationId).stream()
+        return loanRepository.findTopGenres(statuses, from, to, schoolId).stream()
                 .limit(5)
                 .map(row -> new TopBookDTO((String) row[0], ((Long) row[1]).intValue()))
                 .toList();
