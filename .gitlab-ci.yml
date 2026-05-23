@@ -1,6 +1,6 @@
 workflow:
   rules:
-    - if: '$CI_COMMIT_BRANCH == "feature-74-gebruikers-koppelen-aan-ontlening"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
     - when: never
 
 stages:
