@@ -2,11 +2,12 @@ package be.ap.backend.controller;
 
 import be.ap.backend.dto.ReviewDTO;
 import be.ap.backend.dto.ReviewReportDTO;
+import be.ap.backend.entity.ReviewReport;
 import be.ap.backend.service.ReviewReportService;
 import be.ap.backend.service.ReviewService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.TestPropertySource;
@@ -15,9 +16,10 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest
+@WebMvcTest(ReviewController.class)
 @TestPropertySource(properties = {
         "app.bcrypt-rounds=10",
         "app.smartschool.client-id=test",
@@ -159,6 +161,23 @@ public class ReviewControllerTest {
     }
 
     @Test
+    void givenNoSession_whenAddReview_thenPassNullUserId() {
+        MockHttpSession session = new MockHttpSession();
+
+        ReviewDTO input = new ReviewDTO();
+        input.setRating(4);
+        input.setContent("Interessant.");
+
+        when(reviewService.addReview(1L, input, null))
+                .thenThrow(new IllegalArgumentException("Je moet ingelogd zijn om een recensie te plaatsen."));
+
+        ResponseEntity<?> result = controller.addReview(1L, input, session);
+
+        assertEquals(400, result.getStatusCode().value());
+        verify(reviewService, times(1)).addReview(1L, input, null);
+    }
+
+    @Test
     void givenOwnReview_whenDeleteReview_thenReturnOk() {
         MockHttpSession session = new MockHttpSession();
         session.setAttribute("userId", "1");
@@ -187,6 +206,19 @@ public class ReviewControllerTest {
     }
 
     @Test
+    void givenNoSession_whenDeleteReview_thenPassNullUserId() {
+        MockHttpSession session = new MockHttpSession();
+
+        doThrow(new IllegalArgumentException("Je moet ingelogd zijn om een recensie te verwijderen."))
+                .when(reviewService).deleteReview(1L, null);
+
+        ResponseEntity<?> result = controller.deleteReview(1L, session);
+
+        assertEquals(400, result.getStatusCode().value());
+        verify(reviewService, times(1)).deleteReview(1L, null);
+    }
+
+    @Test
     void givenValidReport_whenReportReview_thenReturnOk() {
         MockHttpSession session = new MockHttpSession();
         session.setAttribute("userId", "3");
@@ -194,7 +226,7 @@ public class ReviewControllerTest {
         be.ap.backend.dto.CreateReportDTO dto = new be.ap.backend.dto.CreateReportDTO();
         dto.setNote("Ongepaste inhoud");
 
-        doNothing().when(reviewReportService).reportReview(1L, 3L, "Ongepaste inhoud");
+        when(reviewReportService.reportReview(1L, 3L, "Ongepaste inhoud")).thenReturn(new ReviewReport());
 
         ResponseEntity<?> result = controller.reportReview(1L, dto, session);
 
@@ -217,6 +249,22 @@ public class ReviewControllerTest {
 
         assertEquals(400, result.getStatusCode().value());
         assertEquals("Je kan je eigen recensie niet rapporteren.", result.getBody());
+    }
+
+    @Test
+    void givenNoSession_whenReportReview_thenPassNullUserId() {
+        MockHttpSession session = new MockHttpSession();
+
+        be.ap.backend.dto.CreateReportDTO dto = new be.ap.backend.dto.CreateReportDTO();
+        dto.setNote("Ongepaste inhoud");
+
+        doThrow(new IllegalArgumentException("Je moet ingelogd zijn om een recensie te rapporteren."))
+                .when(reviewReportService).reportReview(1L, null, "Ongepaste inhoud");
+
+        ResponseEntity<?> result = controller.reportReview(1L, dto, session);
+
+        assertEquals(400, result.getStatusCode().value());
+        verify(reviewReportService, times(1)).reportReview(1L, null, "Ongepaste inhoud");
     }
 
     @Test
@@ -251,6 +299,16 @@ public class ReviewControllerTest {
     }
 
     @Test
+    void givenNoSession_whenGetPendingReports_thenReturn403() {
+        MockHttpSession session = new MockHttpSession();
+
+        ResponseEntity<?> result = controller.getPendingReports(session);
+
+        assertEquals(403, result.getStatusCode().value());
+        verify(reviewReportService, never()).getPendingReports();
+    }
+
+    @Test
     void givenLibrarian_whenAcceptReport_thenReturnOk() {
         MockHttpSession session = new MockHttpSession();
         session.setAttribute("role", "BIBLIOTHEEKBEHEERDER");
@@ -261,6 +319,32 @@ public class ReviewControllerTest {
 
         assertEquals(200, result.getStatusCode().value());
         verify(reviewReportService, times(1)).acceptReport(1L);
+    }
+
+    @Test
+    void givenLibrarian_whenAcceptReportNotFound_thenReturnBadRequest() {
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("role", "BIBLIOTHEEKBEHEERDER");
+
+        doThrow(new IllegalArgumentException("Rapportage niet gevonden."))
+                .when(reviewReportService).acceptReport(99L);
+
+        ResponseEntity<?> result = controller.acceptReport(99L, session);
+
+        assertEquals(400, result.getStatusCode().value());
+        assertEquals("Rapportage niet gevonden.", result.getBody());
+        verify(reviewReportService, times(1)).acceptReport(99L);
+    }
+
+    @Test
+    void givenNonLibrarian_whenAcceptReport_thenReturn403() {
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("role", "LEERKRACHT");
+
+        ResponseEntity<?> result = controller.acceptReport(1L, session);
+
+        assertEquals(403, result.getStatusCode().value());
+        verify(reviewReportService, never()).acceptReport(any());
     }
 
     @Test
@@ -277,13 +361,38 @@ public class ReviewControllerTest {
     }
 
     @Test
-    void givenNonLibrarian_whenAcceptReport_thenReturn403() {
+    void givenLibrarian_whenRejectReportNotFound_thenReturnBadRequest() {
         MockHttpSession session = new MockHttpSession();
-        session.setAttribute("role", "LEERKRACHT");
+        session.setAttribute("role", "BIBLIOTHEEKBEHEERDER");
 
-        ResponseEntity<?> result = controller.acceptReport(1L, session);
+        doThrow(new IllegalArgumentException("Rapportage niet gevonden."))
+                .when(reviewReportService).rejectReport(99L);
+
+        ResponseEntity<?> result = controller.rejectReport(99L, session);
+
+        assertEquals(400, result.getStatusCode().value());
+        assertEquals("Rapportage niet gevonden.", result.getBody());
+        verify(reviewReportService, times(1)).rejectReport(99L);
+    }
+
+    @Test
+    void givenNonLibrarian_whenRejectReport_thenReturn403() {
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("role", "STUDENT");
+
+        ResponseEntity<?> result = controller.rejectReport(1L, session);
 
         assertEquals(403, result.getStatusCode().value());
-        verify(reviewReportService, never()).acceptReport(any());
+        verify(reviewReportService, never()).rejectReport(any());
+    }
+
+    @Test
+    void givenNoSession_whenRejectReport_thenReturn403() {
+        MockHttpSession session = new MockHttpSession();
+
+        ResponseEntity<?> result = controller.rejectReport(1L, session);
+
+        assertEquals(403, result.getStatusCode().value());
+        verify(reviewReportService, never()).rejectReport(any());
     }
 }
