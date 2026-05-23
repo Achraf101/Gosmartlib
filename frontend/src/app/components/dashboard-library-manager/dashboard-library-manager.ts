@@ -101,7 +101,7 @@ export class DashboardLibraryManager implements OnInit {
 
   topBooks: { title: string; count: number }[] = [];
   topGenres: { title: string; count: number }[] = [];
-  locationStats: { total_books: number; available_books: number } | null = null;
+  schoolStats: { total_books: number; available_books: number } | null = null;
   schoolSettings: SchoolSettings | null = null;
 
   spotlightBooks: { [ranking: number]: BookDetail | null } = { 1: null, 2: null, 3: null, 4: null };
@@ -127,7 +127,7 @@ export class DashboardLibraryManager implements OnInit {
     this.loadSpotlightBooks();
     this.loadOverdueLoans();
     this.loadTopBooks();
-    this.loadLocationStats();
+    this.loadSchoolStats();
     this.loadSchoolSettings();
     this.loadDueSoonLoans();
     this.loadTopGenres();
@@ -328,10 +328,10 @@ export class DashboardLibraryManager implements OnInit {
     });
   }
 
-  loadLocationStats(): void {
-    this.locationBookService.getLocationStats().subscribe({
-      next: (stats) => (this.locationStats = stats),
-      error: () => (this.locationStats = null),
+  loadSchoolStats(): void {
+    this.locationBookService.getSchoolStats().subscribe({
+      next: (stats) => (this.schoolStats = stats),
+      error: () => (this.schoolStats = null),
     });
   }
 

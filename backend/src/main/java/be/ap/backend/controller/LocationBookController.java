@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import be.ap.backend.dto.LocationBookDTO;
 import be.ap.backend.dto.LocationBookDetailDTO;
-import be.ap.backend.dto.LocationStatsDTO;
+import be.ap.backend.dto.SchoolStatsDTO;
 import be.ap.backend.entity.LocationBook;
 import be.ap.backend.exception.ArgumentsInvalidException;
 import be.ap.backend.exception.BookAlreadyInLocationException;
@@ -69,8 +69,8 @@ public class LocationBookController {
     }
 
     @GetMapping("/stats")
-    public ResponseEntity<LocationStatsDTO> getLocationStats(HttpSession session) {
-        Long locationId = Long.valueOf(session.getAttribute("location").toString());
-        return ResponseEntity.ok(locationBookService.getStatsForLocation(locationId));
+    public ResponseEntity<SchoolStatsDTO> getSchoolStats(HttpSession session) {
+        Long schoolId = Long.valueOf(session.getAttribute("school").toString());
+        return ResponseEntity.ok(locationBookService.getStatsForSchool(schoolId));
     }
 }

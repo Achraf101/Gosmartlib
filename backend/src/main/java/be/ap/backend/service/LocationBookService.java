@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 
 import be.ap.backend.dto.LocationBookDTO;
 import be.ap.backend.dto.LocationBookDetailDTO;
-import be.ap.backend.dto.LocationStatsDTO;
+import be.ap.backend.dto.SchoolStatsDTO;
 import be.ap.backend.entity.Book;
 import be.ap.backend.entity.Location;
 import be.ap.backend.entity.LocationBook;
@@ -94,9 +94,9 @@ public class LocationBookService {
         return dto;
     }
 
-    public LocationStatsDTO getStatsForLocation(Long locationId) {
-        int total = locationBookRepository.sumAmountByLocationId(locationId);
-        int available = locationBookRepository.sumCurrentAmountByLocationId(locationId);
-        return new LocationStatsDTO(total, available);
+    public SchoolStatsDTO getStatsForSchool(Long schoolId) {
+        int total = locationBookRepository.sumAmountBySchoolId(schoolId);
+        int available = locationBookRepository.sumCurrentAmountBySchoolId(schoolId);
+        return new SchoolStatsDTO(total, available);
     }
 }

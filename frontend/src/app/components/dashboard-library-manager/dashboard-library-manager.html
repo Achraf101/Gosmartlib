@@ -75,13 +75,12 @@
     <div class="card-content">
       <i class="pi pi-search card-icon"></i>
       <span class="card-title">Catalogus</span>
-      @if (locationStats) {
+      @if (schoolStats) {
         <span class="card-desc"
-          >{{ locationStats.available_books }}/{{ locationStats.total_books }} boeken
-          beschikbaar</span
+          >{{ schoolStats.available_books }}/{{ schoolStats.total_books }} boeken beschikbaar</span
         >
         <p-progressbar
-          [value]="(locationStats.available_books / locationStats.total_books) * 100"
+          [value]="(schoolStats.available_books / schoolStats.total_books) * 100"
           [showValue]="false"
           style="width: 100%; height: 6px"
         />
