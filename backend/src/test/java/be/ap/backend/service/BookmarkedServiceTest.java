@@ -79,14 +79,14 @@ public class BookmarkedServiceTest {
     void isBookmarkedd_returnsTrue_whenExists() {
         when(bookmarkedRepository.existsByUserIdAndBookId(1L, 1L)).thenReturn(true);
 
-        assertTrue(bookmarkedService.isBookmarkedd(1L, 1L));
+        assertTrue(bookmarkedService.isBookmarked(1L, 1L));
     }
 
     @Test
     void isBookmarkedd_returnsFalse_whenNotExists() {
         when(bookmarkedRepository.existsByUserIdAndBookId(1L, 99L)).thenReturn(false);
 
-        assertFalse(bookmarkedService.isBookmarkedd(1L, 99L));
+        assertFalse(bookmarkedService.isBookmarked(1L, 99L));
     }
 
     @Test

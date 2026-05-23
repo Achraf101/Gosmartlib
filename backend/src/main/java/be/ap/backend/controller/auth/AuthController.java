@@ -30,14 +30,14 @@ public class AuthController {
         final Object schoolRaw = session.getAttribute("school"); // voeg toe
 
         final Long userId = (userIdRaw != null) ? Long.valueOf(userIdRaw.toString()) : null;
-        final Long schoolId = (schoolRaw != null) ? Long.valueOf(schoolRaw.toString()) : null; // voeg toe
+        final Long schoolId = (schoolRaw != null) ? Long.valueOf(schoolRaw.toString()) : null; 
 
         return ResponseEntity.ok(Map.of(
                 "username", username,
                 "location", locations,
                 "role", role,
                 "userId", userId != null ? userId : 0,
-                "schoolId", schoolId != null ? schoolId : 0)); // voeg toe
+                "schoolId", schoolId != null ? schoolId : 0)); 
     }
 
     @GetMapping("me/id")

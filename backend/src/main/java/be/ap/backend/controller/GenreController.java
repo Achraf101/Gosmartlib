@@ -4,11 +4,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import be.ap.backend.entity.Genre;
-import be.ap.backend.repository.GenreRepository;
+import be.ap.backend.service.GenreService;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,21 +20,20 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RequiredArgsConstructor
 public class GenreController {
 
-    private final GenreRepository genreRepository;
+    private final GenreService genreService;
 
-    @GetMapping()
-    public List<Genre> getAll() {
-        return genreRepository.findAll();
+    @GetMapping
+    public ResponseEntity<List<Genre>> getAll() {
+        return ResponseEntity.ok(genreService.getAll());
     }
 
-    @GetMapping("search/{query}")
-    public List<Genre> searchPublisher(@PathVariable String query) {
-        return genreRepository.findByNameContainingIgnoreCase(query);
+    @GetMapping("/search/{query}")
+    public ResponseEntity<List<Genre>> search(@PathVariable String query) {
+        return ResponseEntity.ok(genreService.search(query));
     }
 
     @PostMapping
-    public Genre addPublisher(@RequestBody Genre genre) {
-        return genreRepository.save(genre);
+    public ResponseEntity<Genre> addGenre(@RequestBody Genre genre) {
+        return ResponseEntity.ok(genreService.addGenre(genre));
     }
-
 }

@@ -52,16 +52,16 @@ public class BookmarkedControllerTest {
 
     @Test
     void isBookmarkedd_returnsTrue() {
-        when(bookmarkedService.isBookmarkedd(1L, 1L)).thenReturn(true);
+        when(bookmarkedService.isBookmarked(1L, 1L)).thenReturn(true);
 
-        assertTrue(bookmarkedController.isBookmarkedd(1L, 1L));
+        assertTrue(bookmarkedController.isBookmarked(1L, 1L));
     }
 
     @Test
     void isBookmarkedd_returnsFalse() {
-        when(bookmarkedService.isBookmarkedd(1L, 99L)).thenReturn(false);
+        when(bookmarkedService.isBookmarked(1L, 99L)).thenReturn(false);
 
-        assertFalse(bookmarkedController.isBookmarkedd(1L, 99L));
+        assertFalse(bookmarkedController.isBookmarked(1L, 99L));
     }
 
     @Test

@@ -21,8 +21,8 @@ public class BookmarkedController {
     }
 
     @GetMapping("/{userId}/{bookId}")
-    public boolean isBookmarkedd(@PathVariable Long userId, @PathVariable Long bookId) {
-        return bookmarkedService.isBookmarkedd(userId, bookId);
+    public boolean isBookmarked(@PathVariable Long userId, @PathVariable Long bookId) {
+        return bookmarkedService.isBookmarked(userId, bookId);
     }
 
     @PostMapping("/{userId}/{bookId}")

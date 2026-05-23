@@ -42,8 +42,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http)
-            throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
@@ -65,10 +64,10 @@ public class SecurityConfig {
                             session.setAttribute("school", u.getSchool() != null ? u.getSchool().getId() : null);
                             session.setAttribute("role", u.getRole().name());
                             session.setAttribute("username", u.getUsername());
+
                             res.setStatus(HttpServletResponse.SC_OK);
                             res.setContentType("application/json");
                             res.getWriter().write("{\"message\":\"Login successful\"}");
-
                         })
                         .failureHandler((req, res, exception) -> {
                             res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -90,8 +89,6 @@ public class SecurityConfig {
                             res.setContentType("application/json");
                             res.getWriter().write("{\"message\":\"Unauthorized\"}");
                         }))
-                // uncomment so you can test with bruno using basic auth
-                // .httpBasic(Customizer.withDefaults())
                 .authenticationProvider(authenticationProvider());
         return http.build();
     }
@@ -107,5 +104,4 @@ public class SecurityConfig {
         provider.setPasswordEncoder(passwordEncoder());
         return provider;
     }
-
 }

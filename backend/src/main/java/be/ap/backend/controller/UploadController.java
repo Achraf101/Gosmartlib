@@ -4,7 +4,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import be.ap.backend.dto.CoverDTO;
-import be.ap.backend.dto.MaterialDTO;
 import be.ap.backend.entity.Material;
 import be.ap.backend.service.UploadService;
 import lombok.RequiredArgsConstructor;
