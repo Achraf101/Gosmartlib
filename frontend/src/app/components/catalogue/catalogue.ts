@@ -121,6 +121,12 @@ export class CatalogueComponent implements OnInit {
         } else if (this.school.locations?.length === 1) {
           this.oneLocation = true;
           this.sidebarLocation = this.school.locations[0].id;
+          if (this.activeFilters) {
+            this.activeFilters.location = this.sidebarLocation;
+          } else {
+            this.activeFilters = { location: this.sidebarLocation };
+          }
+          this.loadBooks();
         }
       },
     });

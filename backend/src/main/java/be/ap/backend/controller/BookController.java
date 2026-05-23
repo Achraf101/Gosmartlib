@@ -22,6 +22,7 @@ import be.ap.backend.dto.UpdateBookDTO;
 import be.ap.backend.entity.Book;
 import be.ap.backend.entity.Clib;
 import be.ap.backend.repository.BookRepository;
+import be.ap.backend.repository.LocationRepository;
 import be.ap.backend.service.BookService;
 import be.ap.backend.service.IsbnLookupService;
 import be.ap.backend.service.OpenLibraryService;
@@ -45,6 +46,7 @@ public class BookController {
     private final BookService bookService;
     private final IsbnLookupService isbnLookupService;
     private final OpenLibraryService openLibraryService;
+    private final LocationRepository locationRepository;
 
     // return books only on selected location
     @GetMapping
@@ -165,9 +167,10 @@ public class BookController {
     }
 
     List<Long> getLocationIds(HttpSession session) {
-        Object raw = session.getAttribute("location");
+        Object raw = session.getAttribute("school");
         if (raw == null)
             return List.of();
-        return List.of((Long) raw);
+        Long schoolId = raw instanceof Long l ? l : Long.valueOf(raw.toString());
+        return locationRepository.findIdsBySchoolId(schoolId);
     }
 }
