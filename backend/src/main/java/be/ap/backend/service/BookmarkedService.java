@@ -34,7 +34,7 @@ public class BookmarkedService {
                 .toList();
     }
 
-    public boolean isBookmarkedd(Long userId, Long bookId) {
+    public boolean isBookmarked(Long userId, Long bookId) {
         return bookmarkedRepository.existsByUserIdAndBookId(userId, bookId);
     }
 

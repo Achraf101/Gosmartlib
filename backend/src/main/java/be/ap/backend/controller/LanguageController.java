@@ -4,11 +4,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import be.ap.backend.entity.Language;
-import be.ap.backend.repository.LanguageRepository;
+import be.ap.backend.service.LanguageService;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,25 +20,25 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RequiredArgsConstructor
 public class LanguageController {
 
-    private final LanguageRepository languageRepository;
+    private final LanguageService languageService;
 
-    @GetMapping()
-    public List<Language> getAll() {
-        return languageRepository.findAll();
+    @GetMapping
+    public ResponseEntity<List<Language>> getAll() {
+        return ResponseEntity.ok(languageService.getAll());
     }
 
-    @GetMapping("search/{query}")
-    public List<Language> searchPublisher(@PathVariable String query) {
-        return languageRepository.findByName(query);
+    @GetMapping("/search/{query}")
+    public ResponseEntity<List<Language>> search(@PathVariable String query) {
+        return ResponseEntity.ok(languageService.search(query));
     }
 
     @PostMapping
-    public Language addPublisher(@RequestBody Language language) {
-        return languageRepository.save(language);
+    public ResponseEntity<Language> addLanguage(@RequestBody Language language) {
+        return ResponseEntity.ok(languageService.addLanguage(language));
     }
 
-    @GetMapping("code/{code}")
-    public Language searchByCode(@PathVariable String code) {
-        return languageRepository.findByCode(code);
+    @GetMapping("/code/{code}")
+    public ResponseEntity<Language> findByCode(@PathVariable String code) {
+        return ResponseEntity.ok(languageService.findByCode(code));
     }
 }

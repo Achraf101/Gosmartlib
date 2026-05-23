@@ -16,11 +16,7 @@ import be.ap.backend.dto.LocationBookDTO;
 import be.ap.backend.dto.LocationBookDetailDTO;
 import be.ap.backend.dto.SchoolStatsDTO;
 import be.ap.backend.entity.LocationBook;
-import be.ap.backend.exception.ArgumentsInvalidException;
-import be.ap.backend.exception.BookAlreadyInLocationException;
-import be.ap.backend.exception.MissingArgumentsException;
 import be.ap.backend.service.LocationBookService;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
@@ -28,44 +24,32 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("locationbook")
 @RequiredArgsConstructor
 public class LocationBookController {
+
     private final LocationBookService locationBookService;
 
     @PostMapping
-    public ResponseEntity<?> createLocationBook(@RequestBody LocationBookDTO dto) {
-        try {
-            LocationBook saved = locationBookService.createLocationBook(dto);
-            return ResponseEntity.ok(saved);
-        } catch (MissingArgumentsException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        } catch (ArgumentsInvalidException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        } catch (BookAlreadyInLocationException e) {
-            return ResponseEntity.status(409).body(e.getMessage());
-        }
+    public ResponseEntity<LocationBookDetailDTO> createLocationBook(@RequestBody LocationBookDTO dto) {
+        return ResponseEntity.ok(locationBookService.createLocationBook(dto));
     }
 
     @GetMapping
-    public List<LocationBookDetailDTO> getAll() {
-        return locationBookService.findAll();
+    public ResponseEntity<List<LocationBookDetailDTO>> getAll() {
+        return ResponseEntity.ok(locationBookService.findAll());
     }
 
     @GetMapping("/location/{locationId}")
-    public Page<LocationBookDetailDTO> getByLocation(
+    public ResponseEntity<Page<LocationBookDetailDTO>> getByLocation(
             @PathVariable Long locationId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size) {
-        return locationBookService.findByLocation(locationId, page, size);
+        return ResponseEntity.ok(locationBookService.findByLocation(locationId, page, size));
     }
 
     @GetMapping("/{locationId}/books/{bookId}")
-    public ResponseEntity<?> getLocationBook(
+    public ResponseEntity<LocationBookDetailDTO> getLocationBook(
             @PathVariable Long locationId,
             @PathVariable Long bookId) {
-        try {
-            return ResponseEntity.ok(locationBookService.getLocationBook(locationId, bookId));
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(404).body(e.getMessage());
-        }
+        return ResponseEntity.ok(locationBookService.getLocationBook(locationId, bookId));
     }
 
     @GetMapping("/stats")
