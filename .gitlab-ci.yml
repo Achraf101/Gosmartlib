@@ -1,6 +1,6 @@
 workflow:
   rules:
-    - if: '$CI_COMMIT_BRANCH == "feature-73-klassen-ophalen-via-smartschool"'
+    - if: '$CI_COMMIT_BRANCH == "feature-74-gebruikers-koppelen-aan-ontlening"'
     - when: never
 
 stages:
