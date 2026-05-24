@@ -122,50 +122,24 @@
             />
           }
         </div>
+        <div id="book-available">
+          <p class="avail-title">Beschikbaarheid</p>
+          @if (locationBook) {
+            <p>
+              <span class="avail-label">Status</span>
+              <span class="avail-value" [class.avail-unavailable]="locationBook.current_amount === 0">
+                {{ locationBook.current_amount > 0 ? 'beschikbaar' : 'niet beschikbaar' }}
+              </span>
+            </p>
+            <p>
+              <span class="avail-label">Exemplaren</span>
+              <span class="avail-value">{{ locationBook.current_amount }} / {{ locationBook.amount }} beschikbaar</span>
+            </p>
+          } @else {
+            <p class="avail-value avail-unavailable">Niet beschikbaar op uw locatie.</p>
+          }
+        </div>
       </div>
-    </div>
-
-    <div id="book-available" class="box">
-      <h2>Beschikbaarheid</h2>
-      <table>
-        <caption>
-          {{
-            book.school
-          }}
-        </caption>
-        <tr>
-          <th>Uitgave</th>
-          <th>Beschikbaarheid</th>
-          <th>Informatie</th>
-        </tr>
-        <tr>
-          <td>
-            <p>
-              @if (book.publisher != null) {
-                {{ book.publisher.name }}
-              }
-              @if (book.published != null && book.publisher != null) {
-                ,
-              }
-              @if (book.published != null) {
-                {{ book.published }}
-              }
-            </p>
-          </td>
-          <td>
-            <p>beschikbaar</p>
-          </td>
-          <td>
-            <p>
-              @if (book.language.id != 1) {
-                Anderstalige literatuur:
-              }
-              {{ book.language.name }}
-            </p>
-            <p>{{ genresString }}</p>
-          </td>
-        </tr>
-      </table>
     </div>
     <!-- TODO check if user is teacher -->
     @if (auth.hasRole('LEERKRACHT')) {
