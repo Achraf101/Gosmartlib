@@ -47,16 +47,20 @@ app-material {
 }
 
 #book-info-image {
-  display: grid;
-  grid-template-columns: 130px 1fr;
-  grid-template-rows: auto auto;
-  gap: 0.75rem 1rem;
-  align-items: start;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 1rem;
 }
 
 #book-info-image > .img {
-  width: 130px;
-  height: 195px;
+  width: 90px;
+  height: 135px;
+  flex-shrink: 0;
+}
+
+#stars {
+  flex: 1;
 }
 
 :host ::ng-deep #book-info-image p-image img {
@@ -92,6 +96,7 @@ i.bookmark {
 .bookmark {
   display: flex;
   gap: 5px;
+  align-items: flex-start;
 }
 
 .dropdown-list {
@@ -369,7 +374,7 @@ table td {
     flex-shrink: 0;
   }
 
-  #book-info-image > p-image {
+  #book-info-image > .img {
     width: 180px;
     height: 270px;
   }
