@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap, switchMap, catchError, of } from 'rxjs';
 import { Router } from '@angular/router';
 import { AuthUser } from '../models/auth';
+import { TeacherDTO } from '../models/teacher';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -47,6 +48,14 @@ export class AuthService {
     );
   }
 
+  addRoleForTeacher(teacherId: number): Observable<void> {
+    return this.http.post<void>(
+      `/api/users/${teacherId}/roles`,
+      { role: 'BIBLIOTHEEKBEHEERDER' },
+      { withCredentials: true },
+    );
+  }
+
   get currentUser(): AuthUser | null {
     return this.currentUserSubject.getValue();
   }
@@ -57,6 +66,6 @@ export class AuthService {
 
   hasRole(...roles: string[]): boolean {
     const user = this.currentUserSubject.getValue();
-    return !!user && roles.includes(user.role);
+    return !!user && user.roles.some((r) => roles.includes(r));
   }
 }

@@ -13,7 +13,6 @@ import be.ap.backend.entity.Book;
 import be.ap.backend.entity.BookType;
 import be.ap.backend.entity.Challenge;
 import be.ap.backend.entity.Location;
-import be.ap.backend.entity.Classroom;
 import be.ap.backend.entity.Genre;
 import be.ap.backend.entity.Language;
 import be.ap.backend.entity.School;
@@ -57,7 +56,6 @@ public class DataSeeder implements CommandLineRunner {
     private final LocationRepository locationRepository;
     private final SchoolRepository schoolRepository;
     private final PasswordEncoder passwordEncoder;
-    private final ClassroomRepository classroomRepository;
     private final SchoolService schoolService;
 
     public DataSeeder(LanguageRepository languageRepository,
@@ -78,7 +76,6 @@ public class DataSeeder implements CommandLineRunner {
         this.locationRepository = locationRepository;
         this.schoolRepository = schoolRepository;
         this.passwordEncoder = passwordEncoder;
-        this.classroomRepository = classroomRepository;
         this.schoolService = schoolService;
     }
 
@@ -90,7 +87,6 @@ public class DataSeeder implements CommandLineRunner {
         seedSchoolsAndLocations();
         seedChallenges();
         seedTestUsers();
-        seedClassrooms();
         seedDatabase();
 
     }
@@ -316,18 +312,7 @@ public class DataSeeder implements CommandLineRunner {
 
     private void seedTestUsers() {
         School school = schoolRepository.findById(1L).orElseThrow(() -> new IllegalStateException("School 1 missing"));
-        School imposterSchool = schoolRepository.findById(2L)
-                .orElseThrow(() -> new IllegalStateException("School 1 missing"));
-
-        seedUser("beheerder", "test1234", UserRole.BIBLIOTHEEKBEHEERDER, school);
         seedUser("admin", "admin", UserRole.ADMIN, school);
-        seedUser("leerkracht1", "leerkracht1", UserRole.LEERKRACHT, school);
-        seedUser("leerling1", "leerling1", UserRole.STUDENT, school);
-        seedUser("leerling2", "leerling2", UserRole.STUDENT, school);
-        seedUser("leerling3", "leerling3", UserRole.STUDENT, school);
-        seedUser("imposter", "imposter", UserRole.STUDENT, imposterSchool);
-        seedUser("imposterBeheerder", "imposterBeheerder", UserRole.BIBLIOTHEEKBEHEERDER, imposterSchool);
-
     }
 
     private void seedUser(String username, String password, UserRole role, School school) {
@@ -336,26 +321,9 @@ public class DataSeeder implements CommandLineRunner {
             user.setPassword(passwordEncoder.encode(password));
         }
         user.setUsername(username);
-        user.setRole(role);
+        user.getRoles().add(role);
         user.setSchool(school);
         userRepository.save(user);
-    }
-
-    private void seedClassrooms() {
-        if (classroomRepository.count() > 0)
-            return;
-
-        User teacher = userRepository.findByUsername("leerkracht1").orElse(null);
-        School school = schoolRepository.findById(1L).orElse(null);
-
-        if (teacher == null)
-            return;
-
-        Classroom klas = new Classroom();
-        klas.setName("3A");
-        klas.setTeacher(teacher);
-        klas.setSchool(school);
-        classroomRepository.save(klas);
     }
 
     private void seedSchoolsAndLocations() {
