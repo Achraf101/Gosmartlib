@@ -138,6 +138,16 @@
       <span class="card-desc">Pas de gegevens van je school aan</span>
     </div>
   </p-card>
+  <p-card class="nav-card" (click)="goToPromotePage()">
+    <div class="card-content">
+      <i class="pi pi-cog card-icon"></i>
+      <span class="card-title">Maak andere leerkrachten beheerders</span>
+      <span class="card-desc"
+        >Hier kan je andere leerkrachten medebeheerders maken zodat je niet alles in je eentje moet
+        doen.</span
+      >
+    </div>
+  </p-card>
 
   <div class="stats-grid">
     @if (isVisible(schoolSettings, 'DASHBOARD', 'TOP_BOOKS')) {

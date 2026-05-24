@@ -266,6 +266,10 @@ export class DashboardLibraryManager implements OnInit {
     this.router.navigate(['/terugbrengen']);
   }
 
+  goToPromotePage(): void {
+    this.router.navigate(['school/leerkrachten/', this.schoolId]);
+  }
+
   addAuthor(): void {
     if (this.authorForm.valid) {
       this.authorService.addAuthor(this.authorForm.value as Author).subscribe({

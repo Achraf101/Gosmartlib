@@ -1,0 +1,35 @@
+.promote-page {
+  padding: 2rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.teacher-table td {
+  align-items: center;
+  padding: 0.75rem 1rem;
+}
+
+.teacher-table tr th * {
+  display: flex;
+  justify-content: center;
+}
+
+.teacher-table td > * {
+  display: flex;
+  justify-content: center;
+}
+
+
+.empty-state {
+  padding: 3rem 1rem;
+  text-align: center;
+  color: var(--text-color-secondary);
+  font-size: 0.95rem;
+}
+
+@media (max-width: 700px) {
+  .teachers-table td {
+    justify-content: center;
+    display: flex;
+  }
+}

@@ -1,0 +1,43 @@
+<app-nav-bar></app-nav-bar>
+<div class="promote-page">
+  <h1>Leerkrachten in deze school</h1>
+
+  @if (loading) {
+    @for (i of [1, 2, 3]; track i) {
+      <p-skeleton height="3rem" />
+    }
+  } @else if (teachers.length > 0) {
+    <p-table [value]="teachers" class="teacher-table" stripedRows [paginator]="true" [rows]="5">
+      <ng-template pTemplate="header" class="p-datatable-thead">
+        <tr class="show-desktop">
+          <th><p>Voornaam</p></th>
+          <th><p>Achternaam</p></th>
+          <th><p>Actie</p></th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-teacher class="p-datatable-tbody">
+        <tr>
+          <td>
+            <span>{{ teacher.givenName }}</span>
+          </td>
+          <td>
+            <span>{{ teacher.familyName }}</span>
+          </td>
+          <td>
+            <p-button
+              label="Maak bibliotheekbeheerder"
+              icon="pi pi-user-plus"
+              [loading]="isPromoting(teacher.userId)"
+              [disabled]="promotedIds.has(teacher.userId)"
+              (onClick)="addRoleForTeacher(teacher.userId)"
+            ></p-button>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  } @else {
+    <div class="empty-state">
+      <p>Er zijn nog geen leerkrachten in deze school. Probeer opnieuw te synchroniseren.</p>
+    </div>
+  }
+</div>
