@@ -22,6 +22,7 @@ import { ReviewModerationPageComponent } from './components/review-moderation-pa
 import { PickUpPageComponent } from './components/pick-up-page/pick-up-page';
 import { ReturnPageComponent } from './components/return-page/return-page';
 import { SchoolEditComponent } from './components/school-edit/school-edit';
+import { BegeleidingComponent } from './components/begeleiding/begeleiding';
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: '', redirectTo: 'startpagina', pathMatch: 'full' },
@@ -34,6 +35,7 @@ export const routes: Routes = [
   { path: 'catalogus', component: CatalogueComponent, canActivate: [authGuard] },
   { path: 'boek/:id', component: BookDetailPage, canActivate: [authGuard] },
   { path: 'locatie', component: LocationDetailPageComponent, canActivate: [authGuard] },
+  { path: 'begeleiding', component: BegeleidingComponent, canActivate: [authGuard] },
   { path: 'favorieten', component: FavoritePage, canActivate: [authGuard] },
   {
     path: 'uitleenaanvragen',

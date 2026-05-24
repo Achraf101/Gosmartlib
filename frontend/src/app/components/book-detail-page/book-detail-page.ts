@@ -46,7 +46,6 @@ import { LocationBookService } from '../../services/locationbook';
 import { Location } from '../../models/location';
 import { SchoolService } from '../../services/school';
 import { School } from '../../models/school';
-import { Textarea } from 'primeng/textarea';
 import { BookCover } from '../misc/book-cover/book-cover';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 

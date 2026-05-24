@@ -6,13 +6,9 @@
     <h3>Genre</h3>
     <div class="genre-tags">
       @for (genre of genres; track genre.id) {
-        <button
-          class="tag-btn"
-          [class.active]="isGenreSelected(genre.id)"
-          (click)="toggleGenre(genre.id)"
-        >
-          {{ genre.name }}
-        </button>
+      <button class="tag-btn" [class.active]="isGenreSelected(genre.id)" (click)="toggleGenre(genre.id)">
+        {{ genre.name }}
+      </button>
       }
     </div>
   </div>
@@ -21,52 +17,29 @@
     <h3>Thema</h3>
     <div class="theme-tags">
       @for (theme of themes; track theme.id) {
-        <button
-          class="tag-btn"
-          [class.active]="isThemeSelected(theme.id)"
-          (click)="toggleTheme(theme.id)"
-        >
-          {{ theme.name }}
-        </button>
+      <button class="tag-btn" [class.active]="isThemeSelected(theme.id)" (click)="toggleTheme(theme.id)">
+        {{ theme.name }}
+      </button>
       }
     </div>
   </div>
 
   <div class="filter-group">
     <h3>Taal</h3>
-    <p-select
-      [(ngModel)]="selectedLanguage"
-      [options]="languages"
-      optionLabel="name"
-      optionValue="id"
-      placeholder="Alle talen"
-      [showClear]="true"
-      styleClass="w-full"
-    />
+    <p-select [(ngModel)]="selectedLanguage" [options]="languages" optionLabel="name" optionValue="id"
+      placeholder="Alle talen" [showClear]="true" styleClass="w-full" />
   </div>
 
   <div class="filter-group">
     <h3>Fictie</h3>
     <div class="fiction-btns">
-      <button
-        class="tag-btn"
-        [class.active]="selectedFiction === null"
-        (click)="selectedFiction = null"
-      >
+      <button class="tag-btn" [class.active]="selectedFiction === null" (click)="selectedFiction = null">
         Alle
       </button>
-      <button
-        class="tag-btn"
-        [class.active]="selectedFiction === true"
-        (click)="selectedFiction = true"
-      >
+      <button class="tag-btn" [class.active]="selectedFiction === true" (click)="selectedFiction = true">
         Fictie
       </button>
-      <button
-        class="tag-btn"
-        [class.active]="selectedFiction === false"
-        (click)="selectedFiction = false"
-      >
+      <button class="tag-btn" [class.active]="selectedFiction === false" (click)="selectedFiction = false">
         Non-fictie
       </button>
     </div>
@@ -74,39 +47,28 @@
 
   <div class="filter-group">
     <h3>Auteur</h3>
-    <p-autoComplete
-      [(ngModel)]="selectedAuthors"
-      [suggestions]="authorSuggestions"
-      (completeMethod)="searchAuthors($event)"
-      optionLabel="name"
-      placeholder="Typ een auteursnaam..."
-      [showClear]="true"
-      [multiple]="true"
-      styleClass="w-full"
-    />
+    <p-autoComplete [(ngModel)]="selectedAuthors" [suggestions]="authorSuggestions"
+      (completeMethod)="searchAuthors($event)" optionLabel="name" placeholder="Typ een auteursnaam..."
+      [showClear]="true" [multiple]="true" styleClass="w-full" />
   </div>
 
   <div class="filter-group">
     <h3>Reeks</h3>
-    <p-autoComplete
-      [(ngModel)]="selectedSeries"
-      [suggestions]="seriesSuggestions"
-      (completeMethod)="searchSeries($event)"
-      optionLabel="name"
-      placeholder="Typ een reeksnaam..."
-      [showClear]="true"
-      [multiple]="true"
-      styleClass="w-full"
-    />
+    <p-autoComplete [(ngModel)]="selectedSeries" [suggestions]="seriesSuggestions"
+      (completeMethod)="searchSeries($event)" optionLabel="name" placeholder="Typ een reeksnaam..." [showClear]="true"
+      [multiple]="true" styleClass="w-full" />
   </div>
 
   <div class="filter-group">
-    <h3>CLIB niveau</h3>
+    <h3>CLIB niveau
+      <i class="pi pi-info-circle" pTooltip="CLIB is een leesniveau aanduiding: A (makkelijk) tot D (moeilijk)"
+        tooltipPosition="right" style="cursor:pointer; color: var(--primary-color)"></i>
+    </h3>
     <div class="fiction-btns">
       @for (level of ['A', 'B', 'C', 'D']; track level) {
-        <button class="tag-btn" [class.active]="isClibSelected(level)" (click)="toggleClib(level)">
-          {{ level }}
-        </button>
+      <button class="tag-btn" [class.active]="isClibSelected(level)" (click)="toggleClib(level)">
+        {{ level }}
+      </button>
       }
     </div>
   </div>
@@ -114,29 +76,17 @@
   <div class="filter-group">
     <h3>Pagina's</h3>
     <div class="range-inputs">
-      <p-inputnumber
-        [(ngModel)]="pagesMin"
-        placeholder="Min"
-        [min]="0"
-        [step]="50"
-        [showButtons]="true"
-        styleClass="w-full"
-      />
+      <p-inputnumber [(ngModel)]="pagesMin" placeholder="Min" [min]="0" [step]="50" [showButtons]="true"
+        styleClass="w-full" />
       <span>—</span>
-      <p-inputnumber
-        [(ngModel)]="pagesMax"
-        placeholder="Max"
-        [min]="0"
-        [step]="50"
-        [showButtons]="true"
-        styleClass="w-full"
-      />
+      <p-inputnumber [(ngModel)]="pagesMax" placeholder="Max" [min]="0" [step]="50" [showButtons]="true"
+        styleClass="w-full" />
     </div>
     @if (errorPagesMin) {
-      <p class="error-msg">{{ errorPagesMin }}</p>
+    <p class="error-msg">{{ errorPagesMin }}</p>
     }
     @if (errorPagesMax) {
-      <p class="error-msg">{{ errorPagesMax }}</p>
+    <p class="error-msg">{{ errorPagesMax }}</p>
     }
   </div>
 
