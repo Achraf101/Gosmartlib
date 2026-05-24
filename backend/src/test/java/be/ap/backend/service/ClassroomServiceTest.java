@@ -18,9 +18,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -53,14 +55,14 @@ public class ClassroomServiceTest {
         student1 = new User();
         student1.setId(2L);
         student1.setUsername("anna");
-        student1.setRole(UserRole.STUDENT);
-        student1.setOneRosterId("sis-001"); // add this
+        student1.setRoles(new HashSet<>(Set.of(UserRole.STUDENT)));
+        student1.setOneRosterId("sis-001");
 
         student2 = new User();
         student2.setId(3L);
         student2.setUsername("ben");
-        student2.setRole(UserRole.STUDENT);
-        student2.setOneRosterId("sis-002"); // add this
+        student2.setRoles(new HashSet<>(Set.of(UserRole.STUDENT)));
+        student2.setOneRosterId("sis-002");
 
         Enrollment enrollment1 = new Enrollment();
         enrollment1.setUser(student1);
@@ -76,6 +78,7 @@ public class ClassroomServiceTest {
         classroom.getEnrollments().add(enrollment1);
         classroom.getEnrollments().add(enrollment2);
     }
+
     // ── getClassroomsForTeacher ───────────────────────────────────
 
     @Test
@@ -94,7 +97,8 @@ public class ClassroomServiceTest {
     @Test
     void getClassroomsForTeacher_lookupReturnsNull_fallsBackToEntityName() {
         when(enrollmentService.getClassroomsForTeacher(1L)).thenReturn(List.of(classroom));
-        when(lookupService.getClassroom(classroom.getSchool(), classroom.getSsId())).thenReturn(null);
+        when(lookupService.getClassroom(classroom.getSchool(), classroom.getSsId()))
+                .thenReturn(null);
 
         List<ClassroomDTO> result = classroomService.getClassroomsForTeacher(1L);
 
@@ -119,9 +123,9 @@ public class ClassroomServiceTest {
         when(enrollmentService.isTeacherOfClassroom(1L, 10L)).thenReturn(true);
         when(loanRepository.findByUserId(2L)).thenReturn(List.of());
         when(loanRepository.findByUserId(3L)).thenReturn(List.of());
-        when(lookupService.getUser(student1.getSchool(), student1.getOneRosterId(), "student"))
+        when(lookupService.getUser(student1.getSchool(), student1.getOneRosterId(), student1.getRoles()))
                 .thenReturn(Map.of("givenName", "Anna", "familyName", "Aerts"));
-        when(lookupService.getUser(student2.getSchool(), student2.getOneRosterId(), "student"))
+        when(lookupService.getUser(student2.getSchool(), student2.getOneRosterId(), student2.getRoles()))
                 .thenReturn(Map.of("givenName", "Ben", "familyName", "Bogaert"));
 
         List<StudentPreviewDTO> result = classroomService.getStudentsForClassroom(1L, 10L);
@@ -135,9 +139,9 @@ public class ClassroomServiceTest {
         when(enrollmentService.isTeacherOfClassroom(1L, 10L)).thenReturn(true);
         when(loanRepository.findByUserId(2L)).thenReturn(List.of());
         when(loanRepository.findByUserId(3L)).thenReturn(List.of());
-        when(lookupService.getUser(student1.getSchool(), student1.getOneRosterId(), "student"))
+        when(lookupService.getUser(student1.getSchool(), student1.getOneRosterId(), student1.getRoles()))
                 .thenReturn(Map.of("givenName", "Anna", "familyName", "Bogaert"));
-        when(lookupService.getUser(student2.getSchool(), student2.getOneRosterId(), "student"))
+        when(lookupService.getUser(student2.getSchool(), student2.getOneRosterId(), student2.getRoles()))
                 .thenReturn(Map.of("givenName", "Ben", "familyName", "Aerts"));
 
         List<StudentPreviewDTO> result = classroomService.getStudentsForClassroom(1L, 10L);
@@ -150,7 +154,7 @@ public class ClassroomServiceTest {
     void getStudentsForClassroom_sortedByFirstNameWhenLastNameEqual() {
         User student3 = new User();
         student3.setId(4L);
-        student3.setRole(UserRole.STUDENT);
+        student3.setRoles(new HashSet<>(Set.of(UserRole.STUDENT)));
         student3.setOneRosterId("sis-003");
 
         Enrollment enrollment3 = new Enrollment();
@@ -163,11 +167,11 @@ public class ClassroomServiceTest {
         when(loanRepository.findByUserId(2L)).thenReturn(List.of());
         when(loanRepository.findByUserId(3L)).thenReturn(List.of());
         when(loanRepository.findByUserId(4L)).thenReturn(List.of());
-        when(lookupService.getUser(student1.getSchool(), student1.getOneRosterId(), "student"))
+        when(lookupService.getUser(student1.getSchool(), student1.getOneRosterId(), student1.getRoles()))
                 .thenReturn(Map.of("givenName", "Zara", "familyName", "Aerts"));
-        when(lookupService.getUser(student2.getSchool(), student2.getOneRosterId(), "student"))
+        when(lookupService.getUser(student2.getSchool(), student2.getOneRosterId(), student2.getRoles()))
                 .thenReturn(Map.of("givenName", "Ben", "familyName", "Bogaert"));
-        when(lookupService.getUser(student3.getSchool(), student3.getOneRosterId(), "student"))
+        when(lookupService.getUser(student3.getSchool(), student3.getOneRosterId(), student3.getRoles()))
                 .thenReturn(Map.of("givenName", "Anna", "familyName", "Aerts"));
 
         List<StudentPreviewDTO> result = classroomService.getStudentsForClassroom(1L, 10L);
@@ -185,9 +189,9 @@ public class ClassroomServiceTest {
         when(enrollmentService.isTeacherOfClassroom(1L, 10L)).thenReturn(true);
         when(loanRepository.findByUserId(2L)).thenReturn(List.of(loan));
         when(loanRepository.findByUserId(3L)).thenReturn(List.of());
-        when(lookupService.getUser(student1.getSchool(), student1.getOneRosterId(), "student"))
+        when(lookupService.getUser(student1.getSchool(), student1.getOneRosterId(), student1.getRoles()))
                 .thenReturn(Map.of("givenName", "Anna", "familyName", "Aerts"));
-        when(lookupService.getUser(student2.getSchool(), student2.getOneRosterId(), "student"))
+        when(lookupService.getUser(student2.getSchool(), student2.getOneRosterId(), student2.getRoles()))
                 .thenReturn(Map.of("givenName", "Ben", "familyName", "Bogaert"));
 
         List<StudentPreviewDTO> result = classroomService.getStudentsForClassroom(1L, 10L);

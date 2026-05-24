@@ -55,6 +55,9 @@ public class School implements Serializable {
     @Column(name = "oneroster_client_secret", length = 500)
     private String oneRosterClientSecret;
 
+    @Column(name = "ss_id", length = 255)
+    private String ssId;
+
     @JsonIgnore
     @ToString.Exclude
     @OneToMany(mappedBy = "school", cascade = CascadeType.ALL)

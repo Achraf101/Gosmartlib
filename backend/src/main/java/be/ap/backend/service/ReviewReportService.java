@@ -81,8 +81,7 @@ public class ReviewReportService {
             userRepository.findById(review.getUserId())
                     .ifPresent(u -> {
                         Map<String, Object> user = lookupService.getUser(u.getSchool(), u.getOneRosterId(),
-                                u.getRole().toString());
-
+                                u.getRoles());
                         String firstName = (String) user.get("givenName");
                         String lastName = (String) user.get("familyName");
                         dto.setReviewUsername(u.getUsername() != null ? u.getUsername() : firstName + " " + lastName);
@@ -92,7 +91,7 @@ public class ReviewReportService {
         userRepository.findById(report.getReporterUserId())
                 .ifPresent(u -> {
                     Map<String, Object> user = lookupService.getUser(u.getSchool(), u.getOneRosterId(),
-                            u.getRole().toString());
+                            u.getRoles());
                     String firstName = (String) user.get("givenName");
                     String lastName = (String) user.get("familyName");
                     dto.setReporterUsername(u.getUsername() != null ? u.getUsername() : firstName + " " + lastName);

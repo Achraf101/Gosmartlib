@@ -3,6 +3,7 @@ package be.ap.backend.service;
 import java.net.URI;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -31,6 +32,7 @@ import com.nimbusds.oauth2.sdk.token.Tokens;
 
 import be.ap.backend.entity.School;
 import be.ap.backend.entity.User;
+import be.ap.backend.entity.UserRole;
 import be.ap.backend.repository.SchoolRepository;
 import be.ap.backend.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
@@ -92,8 +94,7 @@ public class OAuthService {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("School niet gevonden.");
         }
 
-        String roleEndpoint = user.getRole().name().equals("STUDENT") ? "student" : "teacher";
-        Map<String, Object> orUser = lookupService.getUser(school, user.getOneRosterId(), roleEndpoint);
+        Map<String, Object> orUser = lookupService.getUser(school, user.getOneRosterId(), user.getRoles());
 
         String firstName = orUser != null ? (String) orUser.get("givenName") : "";
         String lastName = orUser != null ? (String) orUser.get("familyName") : "";
@@ -117,7 +118,9 @@ public class OAuthService {
 
         session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, securityContext);
         session.setAttribute("userId", user.getId());
-        session.setAttribute("role", user.getRole().name());
+        session.setAttribute("roles", user.getRoles().stream()
+                .map(UserRole::name)
+                .collect(Collectors.toSet()));
         session.setAttribute("school", school.getId());
         session.setAttribute("location", locationId);
         session.setAttribute("firstName", firstName);
@@ -136,7 +139,8 @@ public class OAuthService {
                     userInfoUrl,
                     HttpMethod.GET,
                     entity,
-                    new ParameterizedTypeReference<Map<String, String>>() {});
+                    new ParameterizedTypeReference<Map<String, String>>() {
+                    });
             Map<String, String> body = res.getBody();
             return body != null ? body.get("userID") : null;
         } catch (Exception e) {

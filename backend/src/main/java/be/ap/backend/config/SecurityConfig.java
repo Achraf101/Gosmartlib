@@ -1,9 +1,13 @@
 package be.ap.backend.config;
 
 import be.ap.backend.entity.User;
+import be.ap.backend.entity.UserRole;
 import be.ap.backend.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -61,7 +65,9 @@ public class SecurityConfig {
 
                             session.setAttribute("userId", u.getId());
                             session.setAttribute("school", u.getSchool() != null ? u.getSchool().getId() : null);
-                            session.setAttribute("role", u.getRole().name());
+                            session.setAttribute("roles", u.getRoles().stream()
+                                    .map(UserRole::name)
+                                    .collect(Collectors.toSet()));
                             session.setAttribute("username", u.getUsername());
 
                             res.setStatus(HttpServletResponse.SC_OK);
