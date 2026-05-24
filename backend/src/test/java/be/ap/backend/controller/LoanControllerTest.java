@@ -270,7 +270,7 @@ public class LoanControllerTest {
         when(loanService.getOverdueLoans(eq(1L))).thenReturn(List.of());
 
         mockMvc.perform(get("/loan/overdue")
-                .sessionAttr("location", "1"))
+                .sessionAttr("school", "1"))
                 .andExpect(status().isOk());
     }
 
@@ -279,7 +279,7 @@ public class LoanControllerTest {
         when(loanService.getOverdueLoansLength(eq(1L))).thenReturn(3);
 
         mockMvc.perform(get("/loan/overdue/length")
-                .sessionAttr("location", "1"))
+                .sessionAttr("school", "1"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("3"));
     }
@@ -291,7 +291,7 @@ public class LoanControllerTest {
         when(loanService.getDueSoonLoans(eq(1L))).thenReturn(List.of());
 
         mockMvc.perform(get("/loan/due-soon")
-                .sessionAttr("location", "1"))
+                .sessionAttr("school", "1"))
                 .andExpect(status().isOk());
     }
 
@@ -300,7 +300,7 @@ public class LoanControllerTest {
         when(loanService.getDueSoonLoansLength(eq(1L))).thenReturn(7);
 
         mockMvc.perform(get("/loan/due-soon/length")
-                .sessionAttr("location", "1"))
+                .sessionAttr("school", "1"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("7"));
     }
@@ -312,7 +312,7 @@ public class LoanControllerTest {
         when(loanService.getTopBooksThisMonth(eq(1L))).thenReturn(List.of());
 
         mockMvc.perform(get("/loan/top-books")
-                .sessionAttr("location", "1"))
+                .sessionAttr("school", "1"))
                 .andExpect(status().isOk());
     }
 
@@ -323,31 +323,31 @@ public class LoanControllerTest {
         when(loanService.getTopGenresThisMonth(eq(1L))).thenReturn(List.of());
 
         mockMvc.perform(get("/loan/top-genres")
-                .sessionAttr("location", "1"))
+                .sessionAttr("school", "1"))
                 .andExpect(status().isOk());
     }
 
     // ── GET /loan/state/{state} ───────────────────────────────────
 
     @Test
-    void getByStateAndLocation_returnsLoans() throws Exception {
+    void getByStateAndSchool_returnsLoans() throws Exception {
         LoanDTO dto = new LoanDTO();
-        when(loanService.getByStateAndLocation(eq(LoanStatus.ACCEPTED), eq(1L)))
+        when(loanService.getByStateAndSchool(eq(LoanStatus.ACCEPTED), eq(1L)))
                 .thenReturn(List.of(dto));
 
         mockMvc.perform(get("/loan/state/ACCEPTED")
-                .sessionAttr("location", "1"))
+                .sessionAttr("school", "1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1));
     }
 
     @Test
-    void getByStateAndLocation_empty_returnsEmptyList() throws Exception {
-        when(loanService.getByStateAndLocation(eq(LoanStatus.ACCEPTED), eq(1L)))
+    void getByStateAndSchool_empty_returnsEmptyList() throws Exception {
+        when(loanService.getByStateAndSchool(eq(LoanStatus.ACCEPTED), eq(1L)))
                 .thenReturn(List.of());
 
         mockMvc.perform(get("/loan/state/ACCEPTED")
-                .sessionAttr("location", "1"))
+                .sessionAttr("school", "1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isEmpty());
     }

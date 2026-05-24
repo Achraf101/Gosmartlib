@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { ApiService } from './api';
 import { Observable } from 'rxjs';
 import { LocationBook } from '../models/locationBook';
-import { LocationStats } from '../models/locationBookDetail';
+import { SchoolStats } from '../models/locationBookDetail';
 
 @Injectable({
   providedIn: 'root',
@@ -29,7 +29,7 @@ export class LocationBookService {
     return this.apiService.get<LocationBook>(`${this.endpoint}/${locationId}/books/${bookId}`);
   }
 
-  getLocationStats(): Observable<LocationStats> {
-    return this.apiService.get<LocationStats>(`${this.endpoint}/stats`);
+  getSchoolStats(): Observable<SchoolStats> {
+    return this.apiService.get<SchoolStats>(`${this.endpoint}/stats`);
   }
 }

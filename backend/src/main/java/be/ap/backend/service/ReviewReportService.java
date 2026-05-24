@@ -83,8 +83,9 @@ public class ReviewReportService {
                         Map<String, Object> user = lookupService.getUser(u.getSchool(), u.getOneRosterId(),
                                 u.getRole().toString());
 
-                        String name = (String) user.get("name");
-                        dto.setReviewUsername(u.getUsername() != null ? u.getUsername() : name);
+                        String firstName = (String) user.get("givenName");
+                        String lastName = (String) user.get("familyName");
+                        dto.setReviewUsername(u.getUsername() != null ? u.getUsername() : firstName + " " + lastName);
                     });
         });
 
@@ -92,8 +93,9 @@ public class ReviewReportService {
                 .ifPresent(u -> {
                     Map<String, Object> user = lookupService.getUser(u.getSchool(), u.getOneRosterId(),
                             u.getRole().toString());
-                    String name = (String) user.get("name");
-                    dto.setReporterUsername(u.getUsername() != null ? u.getUsername() : name);
+                    String firstName = (String) user.get("givenName");
+                    String lastName = (String) user.get("familyName");
+                    dto.setReporterUsername(u.getUsername() != null ? u.getUsername() : firstName + " " + lastName);
                 });
 
         return dto;

@@ -22,8 +22,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @Entity
-@Table(name = "location_settings")
-public class LocationSettings implements Serializable {
+@Table(name = "school_settings")
+public class SchoolSettings implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id

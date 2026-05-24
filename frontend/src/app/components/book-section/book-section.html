@@ -18,7 +18,7 @@
       <p-progressSpinner />
     </div>
   }
-  @if (!isMonthlySection && isVisible(locationSettings, 'HOME', 'IN_SPOTLIGHT')) {
+  @if (!isMonthlySection && isVisible(schoolSettings, 'HOME', 'IN_SPOTLIGHT')) {
     <!-- In de kijker: grid van boeken -->
     <div
       class="books-grid"
@@ -29,7 +29,7 @@
       </div>
     </div>
   }
-  @if (isMonthlySection && isVisible(locationSettings, 'HOME', 'MONTHLY_BOOK')) {
+  @if (isMonthlySection && isVisible(schoolSettings, 'HOME', 'MONTHLY_BOOK')) {
     <div class="monthly-header">
       @if (authService.hasRole('BIBLIOTHEEKBEHEERDER')) {
         <p-select

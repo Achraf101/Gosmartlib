@@ -20,9 +20,9 @@ public interface LocationBookRepository extends JpaRepository<LocationBook, Long
 
     Optional<LocationBook> findByLocationIdAndBookId(Long locationId, Long bookId);
 
-    @Query("SELECT SUM(cb.amount) FROM LocationBook cb WHERE cb.location.id = :locationId")
-    Integer sumAmountByLocationId(@Param("locationId") Long locationId);
+    @Query("SELECT SUM(cb.amount) FROM LocationBook cb WHERE cb.location.school.id = :schoolId")
+    Integer sumAmountBySchoolId(@Param("schoolId") Long schoolId);
 
-    @Query("SELECT SUM(cb.currentAmount) FROM LocationBook cb WHERE cb.location.id = :locationId")
-    Integer sumCurrentAmountByLocationId(@Param("locationId") Long locationId);
+    @Query("SELECT SUM(cb.currentAmount) FROM LocationBook cb WHERE cb.location.school.id = :schoolId")
+    Integer sumCurrentAmountBySchoolId(@Param("schoolId") Long schoolId);
 }

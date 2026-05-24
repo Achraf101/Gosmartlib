@@ -33,10 +33,6 @@ public class User implements UserDetails {
     @JoinColumn(name = "school_id", nullable = true)
     private School school;
 
-    @ManyToOne
-    @JoinColumn(name = "location_id", nullable = true)
-    private Location location;
-
     @Column(name = "ss_id", unique = true, length = 255)
     private String ssId;
 

@@ -47,7 +47,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/login", "/auth/logout", "/oauth", "/auth/me", "/auth/current-user",
+                        .requestMatchers("/auth/login", "/auth/logout", "/oauth", "/auth/current-user",
                                 "/error")
                         .permitAll()
                         .anyRequest().authenticated())
@@ -60,7 +60,6 @@ public class SecurityConfig {
                             HttpSession session = req.getSession(true);
 
                             session.setAttribute("userId", u.getId());
-                            session.setAttribute("location", u.getLocation() != null ? u.getLocation().getId() : null);
                             session.setAttribute("school", u.getSchool() != null ? u.getSchool().getId() : null);
                             session.setAttribute("role", u.getRole().name());
                             session.setAttribute("username", u.getUsername());

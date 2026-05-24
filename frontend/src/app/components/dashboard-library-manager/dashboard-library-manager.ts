@@ -32,12 +32,12 @@ import { DatePipe } from '@angular/common';
 import { Divider } from 'primeng/divider';
 import { LocationBookService } from '../../services/locationbook';
 import { ProgressBarModule } from 'primeng/progressbar';
-import { LocationSettings } from '../../models/location-settings';
-import { LocationSettingsService } from '../../services/location-settings';
+import { SchoolSettings } from '../../models/school-settings';
+import { SchoolSettingsService } from '../../services/school-settings';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
-import { isVisible } from '../../models/location-settings';
+import { isVisible } from '../../models/school-settings';
 import { SmartschoolSyncService } from '../../services/smartschool-sync';
-import { ConfirmDialogModule, ConfirmDialog } from 'primeng/confirmdialog';
+import { ConfirmDialog } from 'primeng/confirmdialog';
 import { ConfirmationService } from 'primeng/api';
 import { AuthService } from '../../services/auth';
 
@@ -101,8 +101,8 @@ export class DashboardLibraryManager implements OnInit {
 
   topBooks: { title: string; count: number }[] = [];
   topGenres: { title: string; count: number }[] = [];
-  locationStats: { total_books: number; available_books: number } | null = null;
-  locationSettings: LocationSettings | null = null;
+  schoolStats: { total_books: number; available_books: number } | null = null;
+  schoolSettings: SchoolSettings | null = null;
 
   spotlightBooks: { [ranking: number]: BookDetail | null } = { 1: null, 2: null, 3: null, 4: null };
   spotlightSectionId: number | null = null;
@@ -115,7 +115,7 @@ export class DashboardLibraryManager implements OnInit {
     private sectionService: SectionService,
     private messageService: MessageService,
     private locationBookService: LocationBookService,
-    private locationSettingsService: LocationSettingsService,
+    private schoolSettingsService: SchoolSettingsService,
     private smartschoolSyncService: SmartschoolSyncService,
     private confirmationService: ConfirmationService,
     private authService: AuthService,
@@ -127,8 +127,8 @@ export class DashboardLibraryManager implements OnInit {
     this.loadSpotlightBooks();
     this.loadOverdueLoans();
     this.loadTopBooks();
-    this.loadLocationStats();
-    this.loadLocationSettings();
+    this.loadSchoolStats();
+    this.loadSchoolSettings();
     this.loadDueSoonLoans();
     this.loadTopGenres();
   }
@@ -328,39 +328,39 @@ export class DashboardLibraryManager implements OnInit {
     });
   }
 
-  loadLocationStats(): void {
-    this.locationBookService.getLocationStats().subscribe({
-      next: (stats) => (this.locationStats = stats),
-      error: () => (this.locationStats = null),
+  loadSchoolStats(): void {
+    this.locationBookService.getSchoolStats().subscribe({
+      next: (stats) => (this.schoolStats = stats),
+      error: () => (this.schoolStats = null),
     });
   }
 
-  loadLocationSettings(): void {
-    this.locationSettingsService.getSettings().subscribe({
-      next: (settings) => (this.locationSettings = settings),
-      error: () => (this.locationSettings = null),
+  loadSchoolSettings(): void {
+    this.schoolSettingsService.getSettings().subscribe({
+      next: (settings) => (this.schoolSettings = settings),
+      error: () => (this.schoolSettings = null),
     });
   }
 
   toggleComponent(screen: string, type: string, visible: boolean): void {
-    if (!this.locationSettings) return;
+    if (!this.schoolSettings) return;
 
-    if (!this.locationSettings.hiddenComponents) {
-      this.locationSettings.hiddenComponents = [];
+    if (!this.schoolSettings.hiddenComponents) {
+      this.schoolSettings.hiddenComponents = [];
     }
 
     if (visible) {
-      this.locationSettings.hiddenComponents = this.locationSettings.hiddenComponents.filter(
+      this.schoolSettings.hiddenComponents = this.schoolSettings.hiddenComponents.filter(
         (c) => !(c.screen === screen && c.type === type),
       );
     } else {
-      this.locationSettings.hiddenComponents = [
-        ...this.locationSettings.hiddenComponents,
+      this.schoolSettings.hiddenComponents = [
+        ...this.schoolSettings.hiddenComponents,
         { screen, type },
       ];
     }
 
-    this.locationSettingsService.updateSettings(this.locationSettings).subscribe({
+    this.schoolSettingsService.updateSettings(this.schoolSettings).subscribe({
       next: () => {
         this.messageService.add({
           severity: 'success',
