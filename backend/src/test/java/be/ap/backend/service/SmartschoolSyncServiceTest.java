@@ -101,7 +101,7 @@ class SmartschoolSyncServiceTest {
                 .findFirst()
                 .orElseThrow();
 
-        assertThat(saved.getRole()).isEqualTo(UserRole.STUDENT);
+        assertThat(saved.getRoles()).isEqualTo(new HashSet<>(Set.of(UserRole.STUDENT)));
         assertThat(saved.getSsId()).isEqualTo("legacy-1");
         assertThat(saved.getSchool()).isEqualTo(school);
     }
@@ -186,7 +186,7 @@ class SmartschoolSyncServiceTest {
                 .filter(u -> "sor-t1".equals(u.getOneRosterId()))
                 .findFirst()
                 .orElseThrow();
-        assertThat(saved.getRole()).isEqualTo(UserRole.LEERKRACHT);
+        assertThat(saved.getRoles()).isEqualTo(new HashSet<>(Set.of(UserRole.LEERKRACHT)));
     }
 
     @Test

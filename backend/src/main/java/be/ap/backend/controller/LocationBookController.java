@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 import be.ap.backend.dto.LocationBookDTO;
 import be.ap.backend.dto.LocationBookDetailDTO;
 import be.ap.backend.dto.SchoolStatsDTO;
-import be.ap.backend.entity.LocationBook;
 import be.ap.backend.service.LocationBookService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
