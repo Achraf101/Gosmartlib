@@ -45,30 +45,6 @@ public class SmartschoolLookupService {
         return (Map<String, Object>) response.get("class");
     }
 
-    // @SuppressWarnings("unchecked")
-    // public List<Map<String, Object>> getClassesForUser(School school, String
-    // ssId) {
-    // String url = "https://" + school.getSsSubdomain() +
-    // ".smartschool.be/ims/oneroster/v1p1/users/" + ssId
-    // + "/classes";
-    // Map<String, Object> response = get(school, url);
-    // if (response == null)
-    // return List.of();
-    // return (List<Map<String, Object>>) response.get("classes");
-    // }
-
-    // @SuppressWarnings("unchecked")
-    // public List<Map<String, Object>> getEnrollmentsForUser(School school, String
-    // ssId) {
-    // String url = "https://" + school.getSsSubdomain()
-    // + ".smartschool.be/ims/oneroster/v1p1/enrollments?filter=user.sourcedId='" +
-    // ssId + "'";
-    // Map<String, Object> response = get(school, url);
-    // if (response == null)
-    // return List.of();
-    // return (List<Map<String, Object>>) response.get("enrollments");
-    // }
-
     @SuppressWarnings("unchecked")
     public List<TeacherDTO> getAllTeachersForSchool(School school) {
         String url = "https://" + school.getSsSubdomain() + ".smartschool.be/ims/oneroster/v1p1/schools/"

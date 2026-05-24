@@ -45,26 +45,6 @@ public class SmartschoolLookupController {
         return ResponseEntity.ok(classroom);
     }
 
-    // @GetMapping("/{schoolId}/users/{ssId}/classes")
-    // public ResponseEntity<List<Map<String, Object>>> getClassesForUser(
-    // @PathVariable Long schoolId,
-    // @PathVariable String ssId) {
-    // School school = getSchool(schoolId);
-    // List<Map<String, Object>> classes = lookupService.getClassesForUser(school,
-    // ssId);
-    // return ResponseEntity.ok(classes);
-    // }
-
-    // @GetMapping("/{schoolId}/users/{ssId}/enrollments")
-    // public ResponseEntity<List<Map<String, Object>>> getEnrollmentsForUser(
-    // @PathVariable Long schoolId,
-    // @PathVariable String ssId) {
-    // School school = getSchool(schoolId);
-    // List<Map<String, Object>> enrollments =
-    // lookupService.getEnrollmentsForUser(school, ssId);
-    // return ResponseEntity.ok(enrollments);
-    // }
-
     @GetMapping("/{schoolId}/teachers")
     public ResponseEntity<List<TeacherDTO>> getAllTeachersForSchool(@PathVariable Long schoolId) {
         School school = getSchool(schoolId);
