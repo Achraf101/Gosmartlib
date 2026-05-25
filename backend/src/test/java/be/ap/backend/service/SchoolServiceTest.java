@@ -3,6 +3,7 @@ package be.ap.backend.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -18,8 +19,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import be.ap.backend.dto.SchoolDTO;
 import be.ap.backend.entity.School;
-import be.ap.backend.exception.ArgumentsInvalidException;
 import be.ap.backend.exception.MissingArgumentsException;
+import be.ap.backend.model.OneRosterCredentials;
+import be.ap.backend.exception.ArgumentsInvalidException;
 import be.ap.backend.repository.SchoolRepository;
 import be.ap.backend.repository.SectionRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -31,6 +33,7 @@ public class SchoolServiceTest {
     private SchoolRepository schoolRepository;
 
     @Mock
+    private EncryptionService encryptionService;
     private SectionRepository sectionRepository;
 
     private SchoolService schoolService;
@@ -38,10 +41,10 @@ public class SchoolServiceTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        schoolService = new SchoolService(schoolRepository, sectionRepository);
+        schoolService = new SchoolService(schoolRepository, encryptionService, sectionRepository);
     }
 
-    // Helper to build a valid SchoolDTO
+    // Helper to build a valid SchoolDTO (now includes OneRoster credentials)
     private SchoolDTO buildValidDTO(String name) {
         SchoolDTO dto = new SchoolDTO();
         dto.setName(name);
@@ -53,6 +56,8 @@ public class SchoolServiceTest {
         dto.setBorrowPeriod(14);
         dto.setExtendLimit(2);
         dto.setExtendPeriod(7);
+        dto.setOneRosterClientId("client-id");
+        dto.setOneRosterClientSecret("client-secret");
         return dto;
     }
 
@@ -68,6 +73,8 @@ public class SchoolServiceTest {
         school.setBorrowPeriod(14);
         school.setExtendLimit(2);
         school.setExtendPeriod(7);
+        school.setOneRosterClientId("encrypted-id");
+        school.setOneRosterClientSecret("encrypted-secret");
         school.setLocations(List.of());
         return school;
     }
@@ -77,13 +84,51 @@ public class SchoolServiceTest {
         SchoolDTO dto = buildValidDTO("AP hogeschool");
         School savedEntity = buildSchoolEntity(1L, "AP hogeschool");
 
-        // The service builds a new School internally, so match with any(School.class)
+        when(encryptionService.encrypt(anyString())).thenReturn("encrypted-value");
         when(schoolRepository.save(any(School.class))).thenReturn(savedEntity);
 
         SchoolDTO result = schoolService.addSchool(dto);
 
         assertEquals("AP hogeschool", result.getName());
         verify(schoolRepository).save(any(School.class));
+    }
+
+    @Test
+    void addSchool_shouldThrowWhenClientIdMissing() {
+        SchoolDTO dto = buildValidDTO("AP hogeschool");
+        dto.setOneRosterClientId(null);
+
+        assertThrows(MissingArgumentsException.class, () -> schoolService.addSchool(dto));
+    }
+
+    @Test
+    void addSchool_shouldThrowWhenClientSecretMissing() {
+        SchoolDTO dto = buildValidDTO("AP hogeschool");
+        dto.setOneRosterClientSecret(null);
+
+        assertThrows(MissingArgumentsException.class, () -> schoolService.addSchool(dto));
+    }
+
+    @Test
+    void getCredentials_shouldReturnDecryptedCredentials() {
+        School school = buildSchoolEntity(1L, "AP hogeschool");
+
+        when(schoolRepository.findById(1L)).thenReturn(Optional.of(school));
+        when(encryptionService.decrypt("encrypted-id")).thenReturn("client-id");
+        when(encryptionService.decrypt("encrypted-secret")).thenReturn("client-secret");
+
+        OneRosterCredentials credentials = schoolService.getCredentials(1L);
+
+        assertEquals("client-id", credentials.getClientId());
+        assertEquals("client-secret", credentials.getClientSecret());
+        verify(schoolRepository).findById(1L);
+    }
+
+    @Test
+    void getCredentials_shouldThrowWhenSchoolNotFound() {
+        when(schoolRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThrows(MissingArgumentsException.class, () -> schoolService.getCredentials(99L));
     }
 
     @Test

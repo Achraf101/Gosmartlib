@@ -9,7 +9,7 @@ export interface LocationBookDetail {
   current_amount: number;
 }
 
-export interface LocationStats {
+export interface SchoolStats {
   total_books: number;
   available_books: number;
 }

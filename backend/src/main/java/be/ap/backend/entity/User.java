@@ -6,23 +6,25 @@ import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.io.Serializable;
 import java.util.Collection;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "user")
 @Data
 @NoArgsConstructor
-public class User implements UserDetails, Serializable {
+public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "role")
     @Enumerated(EnumType.STRING)
-    @Column(name = "role", nullable = false)
-    private UserRole role;
+    private Set<UserRole> roles = new HashSet<>();
 
     @Column(name = "username", unique = true, nullable = true, length = 60)
     private String username;
@@ -34,26 +36,20 @@ public class User implements UserDetails, Serializable {
     @JoinColumn(name = "school_id", nullable = true)
     private School school;
 
-    @ManyToOne
-    @JoinColumn(name = "location_id", nullable = true)
-    private Location location;
-
-    @Column(name = "ss_name", length = 255)
-    private String ssName;
-
     @Column(name = "ss_id", unique = true, length = 255)
     private String ssId;
 
-    @Column(name = "ss_access", length = 1023)
-    private String ssAccess;
+    // bij messages terug nodig
+    // @Column(name = "ss_refresh", length = 1023)
+    // private String ssRefresh;
 
-    @Column(name = "ss_refresh", length = 1023)
-    private String ssRefresh;
+    @Column(name = "oneroster_id", unique = true, length = 255)
+    private String oneRosterId;
 
     public User(String username, String password, UserRole role) {
         this.username = username;
         this.password = password;
-        this.role = role;
+        this.roles = new HashSet<>(Set.of(role));
     }
 
     @Override
@@ -68,7 +64,7 @@ public class User implements UserDetails, Serializable {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(role);
+        return roles;
     }
 
 }

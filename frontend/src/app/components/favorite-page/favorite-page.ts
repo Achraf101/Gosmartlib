@@ -15,6 +15,7 @@ import { Divider } from 'primeng/divider';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ConfirmPopupModule } from 'primeng/confirmpopup';
 import { ToastModule } from 'primeng/toast';
+import { TooltipModule } from 'primeng/tooltip';
 
 @Component({
   selector: 'app-bookmarked',
@@ -28,6 +29,7 @@ import { ToastModule } from 'primeng/toast';
     Divider,
     ConfirmPopupModule,
     ToastModule,
+    TooltipModule
   ],
   providers: [ConfirmationService],
   templateUrl: './favorite-page.html',

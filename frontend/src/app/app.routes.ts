@@ -24,6 +24,9 @@ import { ReturnPageComponent } from './components/return-page/return-page';
 import { SchoolEditComponent } from './components/school-edit/school-edit';
 import { DashboardAdmin } from './components/dashboard-admin/dashboard-admin';
 import { adminRedirectGuard } from './guards/admin-redirect.guard';
+import { BegeleidingComponent } from './components/begeleiding/begeleiding';
+import { PromotePageComponent } from './components/promote-page/promote-page';
+import { AccountPage } from './components/account-page/account-page';
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: '', canActivate: [adminRedirectGuard], component: HomeComponent },
@@ -52,6 +55,12 @@ export const routes: Routes = [
     component: LocationDetailPageComponent,
     canActivate: [authGuard(['ADMIN', 'BIBLIOTHEEKBEHEERDER'])],
   },
+  {
+    path: 'school/leerkrachten/:schoolId',
+    component: PromotePageComponent,
+    canActivate: [authGuard(['ADMIN'])],
+  },
+  { path: 'begeleiding', component: BegeleidingComponent, canActivate: [authGuard] },
   { path: 'favorieten', component: FavoritePage, canActivate: [authGuard] },
   {
     path: 'uitleenaanvragen',
@@ -63,7 +72,7 @@ export const routes: Routes = [
   {
     path: 'dashboard/bibliotheek-beheerder',
     component: DashboardLibraryManager,
-    canActivate: [authGuard(['BIBLIOTHEEKBEHEERDER'])],
+    canActivate: [authGuard(['ADMIN', 'BIBLIOTHEEKBEHEERDER'])],
   },
   {
     path: 'dashboard/admin',
@@ -106,4 +115,5 @@ export const routes: Routes = [
     component: SchoolEditComponent,
     canActivate: [authGuard(['BIBLIOTHEEKBEHEERDER'])],
   },
+  { path: 'account', component: AccountPage, canActivate: [authGuard(['ADMIN'])] },
 ];

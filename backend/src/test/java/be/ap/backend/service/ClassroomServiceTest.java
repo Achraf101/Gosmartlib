@@ -3,6 +3,7 @@ package be.ap.backend.service;
 import be.ap.backend.dto.ClassroomDTO;
 import be.ap.backend.dto.StudentPreviewDTO;
 import be.ap.backend.entity.Classroom;
+import be.ap.backend.entity.Enrollment;
 import be.ap.backend.entity.Loan;
 import be.ap.backend.entity.User;
 import be.ap.backend.entity.UserRole;
@@ -19,6 +20,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -35,43 +37,55 @@ public class ClassroomServiceTest {
     @Mock
     private LoanRepository loanRepository;
 
+    @Mock
+    private SmartschoolLookupService lookupService;
+
+    @Mock
+    private EnrollmentService enrollmentService;
+
     @InjectMocks
     private ClassroomService classroomService;
 
-    private User teacher;
     private User student1;
     private User student2;
     private Classroom classroom;
 
     @BeforeEach
     void setUp() {
-        teacher = new User();
-        teacher.setId(1L);
-        teacher.setUsername("teacher1");
-        teacher.setRole(UserRole.LEERKRACHT);
-
         student1 = new User();
         student1.setId(2L);
         student1.setUsername("anna");
-        student1.setRole(UserRole.STUDENT);
+        student1.setRoles(new HashSet<>(Set.of(UserRole.STUDENT)));
+        student1.setOneRosterId("sis-001");
 
         student2 = new User();
         student2.setId(3L);
         student2.setUsername("ben");
-        student2.setRole(UserRole.STUDENT);
+        student2.setRoles(new HashSet<>(Set.of(UserRole.STUDENT)));
+        student2.setOneRosterId("sis-002");
+
+        Enrollment enrollment1 = new Enrollment();
+        enrollment1.setUser(student1);
+        enrollment1.setRole(UserRole.STUDENT);
+
+        Enrollment enrollment2 = new Enrollment();
+        enrollment2.setUser(student2);
+        enrollment2.setRole(UserRole.STUDENT);
 
         classroom = new Classroom();
         classroom.setId(10L);
         classroom.setName("3A");
-        classroom.setTeacher(teacher);
-        classroom.setStudents(new HashSet<>(Set.of(student1, student2)));
+        classroom.getEnrollments().add(enrollment1);
+        classroom.getEnrollments().add(enrollment2);
     }
 
     // ── getClassroomsForTeacher ───────────────────────────────────
 
     @Test
     void getClassroomsForTeacher_returnsListOfDTOs() {
-        when(classroomRepository.findByTeacherIdWithStudents(1L)).thenReturn(List.of(classroom));
+        when(enrollmentService.getClassroomsForTeacher(1L)).thenReturn(List.of(classroom));
+        when(lookupService.getClassroom(classroom.getSchool(), classroom.getSsId()))
+                .thenReturn(Map.of("title", "3A"));
 
         List<ClassroomDTO> result = classroomService.getClassroomsForTeacher(1L);
 
@@ -81,8 +95,20 @@ public class ClassroomServiceTest {
     }
 
     @Test
+    void getClassroomsForTeacher_lookupReturnsNull_fallsBackToEntityName() {
+        when(enrollmentService.getClassroomsForTeacher(1L)).thenReturn(List.of(classroom));
+        when(lookupService.getClassroom(classroom.getSchool(), classroom.getSsId()))
+                .thenReturn(null);
+
+        List<ClassroomDTO> result = classroomService.getClassroomsForTeacher(1L);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getName()).isEqualTo("3A");
+    }
+
+    @Test
     void getClassroomsForTeacher_empty_returnsEmptyList() {
-        when(classroomRepository.findByTeacherIdWithStudents(1L)).thenReturn(List.of());
+        when(enrollmentService.getClassroomsForTeacher(1L)).thenReturn(List.of());
 
         List<ClassroomDTO> result = classroomService.getClassroomsForTeacher(1L);
 
@@ -94,8 +120,13 @@ public class ClassroomServiceTest {
     @Test
     void getStudentsForClassroom_success_returnsStudents() {
         when(classroomRepository.findByIdWithStudents(10L)).thenReturn(Optional.of(classroom));
+        when(enrollmentService.isTeacherOfClassroom(1L, 10L)).thenReturn(true);
         when(loanRepository.findByUserId(2L)).thenReturn(List.of());
         when(loanRepository.findByUserId(3L)).thenReturn(List.of());
+        when(lookupService.getUser(student1.getSchool(), student1.getOneRosterId(), student1.getRoles()))
+                .thenReturn(Map.of("givenName", "Anna", "familyName", "Aerts"));
+        when(lookupService.getUser(student2.getSchool(), student2.getOneRosterId(), student2.getRoles()))
+                .thenReturn(Map.of("givenName", "Ben", "familyName", "Bogaert"));
 
         List<StudentPreviewDTO> result = classroomService.getStudentsForClassroom(1L, 10L);
 
@@ -103,28 +134,71 @@ public class ClassroomServiceTest {
     }
 
     @Test
-    void getStudentsForClassroom_sortedByName() {
+    void getStudentsForClassroom_sortedByLastNameThenFirstName() {
         when(classroomRepository.findByIdWithStudents(10L)).thenReturn(Optional.of(classroom));
+        when(enrollmentService.isTeacherOfClassroom(1L, 10L)).thenReturn(true);
         when(loanRepository.findByUserId(2L)).thenReturn(List.of());
         when(loanRepository.findByUserId(3L)).thenReturn(List.of());
+        when(lookupService.getUser(student1.getSchool(), student1.getOneRosterId(), student1.getRoles()))
+                .thenReturn(Map.of("givenName", "Anna", "familyName", "Bogaert"));
+        when(lookupService.getUser(student2.getSchool(), student2.getOneRosterId(), student2.getRoles()))
+                .thenReturn(Map.of("givenName", "Ben", "familyName", "Aerts"));
 
         List<StudentPreviewDTO> result = classroomService.getStudentsForClassroom(1L, 10L);
 
-        List<String> names = result.stream().map(StudentPreviewDTO::getName).toList();
-        assertThat(names).isSorted();
+        List<String> lastNames = result.stream().map(StudentPreviewDTO::getLastName).toList();
+        assertThat(lastNames).containsExactly("Aerts", "Bogaert");
+    }
+
+    @Test
+    void getStudentsForClassroom_sortedByFirstNameWhenLastNameEqual() {
+        User student3 = new User();
+        student3.setId(4L);
+        student3.setRoles(new HashSet<>(Set.of(UserRole.STUDENT)));
+        student3.setOneRosterId("sis-003");
+
+        Enrollment enrollment3 = new Enrollment();
+        enrollment3.setUser(student3);
+        enrollment3.setRole(UserRole.STUDENT);
+        classroom.getEnrollments().add(enrollment3);
+
+        when(classroomRepository.findByIdWithStudents(10L)).thenReturn(Optional.of(classroom));
+        when(enrollmentService.isTeacherOfClassroom(1L, 10L)).thenReturn(true);
+        when(loanRepository.findByUserId(2L)).thenReturn(List.of());
+        when(loanRepository.findByUserId(3L)).thenReturn(List.of());
+        when(loanRepository.findByUserId(4L)).thenReturn(List.of());
+        when(lookupService.getUser(student1.getSchool(), student1.getOneRosterId(), student1.getRoles()))
+                .thenReturn(Map.of("givenName", "Zara", "familyName", "Aerts"));
+        when(lookupService.getUser(student2.getSchool(), student2.getOneRosterId(), student2.getRoles()))
+                .thenReturn(Map.of("givenName", "Ben", "familyName", "Bogaert"));
+        when(lookupService.getUser(student3.getSchool(), student3.getOneRosterId(), student3.getRoles()))
+                .thenReturn(Map.of("givenName", "Anna", "familyName", "Aerts"));
+
+        List<StudentPreviewDTO> result = classroomService.getStudentsForClassroom(1L, 10L);
+
+        List<String> firstNames = result.stream().map(StudentPreviewDTO::getFirstName).toList();
+        assertThat(firstNames).containsExactly("Anna", "Zara", "Ben");
     }
 
     @Test
     void getStudentsForClassroom_lastActivityFromLatestLoan() {
         Loan loan = new Loan();
         loan.setStart(LocalDate.of(2025, 3, 10));
+
         when(classroomRepository.findByIdWithStudents(10L)).thenReturn(Optional.of(classroom));
+        when(enrollmentService.isTeacherOfClassroom(1L, 10L)).thenReturn(true);
         when(loanRepository.findByUserId(2L)).thenReturn(List.of(loan));
         when(loanRepository.findByUserId(3L)).thenReturn(List.of());
+        when(lookupService.getUser(student1.getSchool(), student1.getOneRosterId(), student1.getRoles()))
+                .thenReturn(Map.of("givenName", "Anna", "familyName", "Aerts"));
+        when(lookupService.getUser(student2.getSchool(), student2.getOneRosterId(), student2.getRoles()))
+                .thenReturn(Map.of("givenName", "Ben", "familyName", "Bogaert"));
 
         List<StudentPreviewDTO> result = classroomService.getStudentsForClassroom(1L, 10L);
 
-        StudentPreviewDTO anna = result.stream().filter(s -> s.getUsername().equals("anna")).findFirst().orElseThrow();
+        StudentPreviewDTO anna = result.stream()
+                .filter(s -> "Anna".equals(s.getFirstName()))
+                .findFirst().orElseThrow();
         assertThat(anna.getLastActivity()).isEqualTo(LocalDate.of(2025, 3, 10));
     }
 
@@ -140,6 +214,7 @@ public class ClassroomServiceTest {
     @Test
     void getStudentsForClassroom_wrongTeacher_throwsSecurityException() {
         when(classroomRepository.findByIdWithStudents(10L)).thenReturn(Optional.of(classroom));
+        when(enrollmentService.isTeacherOfClassroom(99L, 10L)).thenReturn(false);
 
         assertThatThrownBy(() -> classroomService.getStudentsForClassroom(99L, 10L))
                 .isInstanceOf(SecurityException.class)

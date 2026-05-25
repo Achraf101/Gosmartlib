@@ -12,12 +12,13 @@ import be.ap.backend.repository.ReviewRepository;
 import be.ap.backend.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -25,7 +26,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest
+@WebMvcTest(ReviewReportService.class)
 @TestPropertySource(properties = {
         "app.bcrypt-rounds=10",
         "app.smartschool.client-id=test",
@@ -45,6 +46,9 @@ public class ReviewReportServiceTest {
 
     @MockitoBean
     private UserRepository userRepository;
+
+    @MockitoBean
+    private SmartschoolLookupService lookupService;
 
     @Autowired
     private ReviewReportService reviewReportService;
@@ -139,6 +143,8 @@ public class ReviewReportServiceTest {
         when(reviewRepository.findById(1L)).thenReturn(Optional.of(review));
         when(userRepository.findById(2L)).thenReturn(Optional.of(reviewer));
         when(userRepository.findById(3L)).thenReturn(Optional.of(reporter));
+        when(lookupService.getUser(any(), any(), any()))
+                .thenReturn(Map.of("givenName", "Jan", "familyName", "Doe"));
 
         List<ReviewReportDTO> result = reviewReportService.getPendingReports();
 

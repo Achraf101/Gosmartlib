@@ -38,7 +38,6 @@ export class TeacherStudentReportPageComponent implements OnInit {
   constructor(
     private studentReportService: StudentReportService,
     private route: ActivatedRoute,
-    private router: Router,
   ) {}
 
   ngOnInit(): void {

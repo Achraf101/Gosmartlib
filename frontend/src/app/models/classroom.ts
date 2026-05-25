@@ -6,7 +6,7 @@ export interface ClassroomDTO {
 
 export interface StudentPreviewDTO {
   id: number;
-  username: string;
-  name: string;
+  firstName: string | null;
+  lastName: string | null;
   lastActivity: string | null;
 }

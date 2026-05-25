@@ -13,7 +13,6 @@ import be.ap.backend.entity.Book;
 import be.ap.backend.entity.BookType;
 import be.ap.backend.entity.Challenge;
 import be.ap.backend.entity.Location;
-import be.ap.backend.entity.Classroom;
 import be.ap.backend.entity.Genre;
 import be.ap.backend.entity.Language;
 import be.ap.backend.entity.School;
@@ -31,6 +30,7 @@ import be.ap.backend.repository.LanguageRepository;
 import be.ap.backend.repository.SchoolRepository;
 import be.ap.backend.repository.ThemeRepository;
 import be.ap.backend.repository.UserRepository;
+import be.ap.backend.service.EncryptionService;
 import be.ap.backend.service.SchoolService;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -56,7 +56,6 @@ public class DataSeeder implements CommandLineRunner {
     private final LocationRepository locationRepository;
     private final SchoolRepository schoolRepository;
     private final PasswordEncoder passwordEncoder;
-    private final ClassroomRepository classroomRepository;
     private final SchoolService schoolService;
 
     public DataSeeder(LanguageRepository languageRepository,
@@ -64,7 +63,8 @@ public class DataSeeder implements CommandLineRunner {
             BookRepository bookRepository, AuthorRepository authorRepository,
             ThemeRepository themeRepository, UserRepository userRepository, LocationRepository locationRepository,
             SchoolRepository schoolRepository, PasswordEncoder passwordEncoder,
-            ChallengeRepository challengeRepository, ClassroomRepository classroomRepository, SchoolService schoolService) {
+            ChallengeRepository challengeRepository, ClassroomRepository classroomRepository,
+            EncryptionService encryptionService, SchoolService schoolService) {
         this.languageRepository = languageRepository;
         this.bookTypeRepository = bookTypeRepository;
         this.genreRepository = genreRepository;
@@ -76,7 +76,6 @@ public class DataSeeder implements CommandLineRunner {
         this.locationRepository = locationRepository;
         this.schoolRepository = schoolRepository;
         this.passwordEncoder = passwordEncoder;
-        this.classroomRepository = classroomRepository;
         this.schoolService = schoolService;
     }
 
@@ -88,7 +87,6 @@ public class DataSeeder implements CommandLineRunner {
         seedSchoolsAndLocations();
         seedChallenges();
         seedTestUsers();
-        seedClassrooms();
         seedDatabase();
 
     }
@@ -313,61 +311,19 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     private void seedTestUsers() {
-        Location location = locationRepository.findById(1L)
-                .orElseThrow(() -> new IllegalStateException("Location 1 missing"));
         School school = schoolRepository.findById(1L).orElseThrow(() -> new IllegalStateException("School 1 missing"));
-        School imposterSchool = schoolRepository.findById(2L).orElseThrow(() -> new IllegalStateException("School 1 missing"));
-
-
-        seedUser("beheerder", "test1234", UserRole.BIBLIOTHEEKBEHEERDER, location, school);
-        seedUser("admin", "admin", UserRole.ADMIN, location, school);
-        seedUser("leerkracht1", "leerkracht1", UserRole.LEERKRACHT, location, school);
-        seedUser("leerling1", "leerling1", UserRole.STUDENT, location, school);
-        seedUser("leerling2", "leerling2", UserRole.STUDENT, location, school);
-        seedUser("leerling3", "leerling3", UserRole.STUDENT, location, school);
-        seedUser("imposter", "imposter", UserRole.STUDENT, location, imposterSchool);
-        seedUser("imposterBeheerder", "imposterBeheerder", UserRole.BIBLIOTHEEKBEHEERDER, location, imposterSchool);
-
+        seedUser("admin", "admin", UserRole.ADMIN, school);
     }
 
-    private void seedUser(String username, String password, UserRole role, Location location, School school) {
+    private void seedUser(String username, String password, UserRole role, School school) {
         User user = userRepository.findByUsername(username).orElse(new User());
         if (user.getPassword() == null) {
             user.setPassword(passwordEncoder.encode(password));
         }
         user.setUsername(username);
-        user.setRole(role);
-        user.setLocation(location);
+        user.getRoles().add(role);
         user.setSchool(school);
         userRepository.save(user);
-    }
-
-    private void seedClassrooms() {
-        if (classroomRepository.count() > 0)
-            return;
-
-        User teacher = userRepository.findByUsername("leerkracht1").orElse(null);
-        User s1 = userRepository.findByUsername("leerling1").orElse(null);
-        User s2 = userRepository.findByUsername("leerling2").orElse(null);
-        User s3 = userRepository.findByUsername("leerling3").orElse(null);
-        Location location = locationRepository.findById(1L).orElse(null);
-        School school = schoolRepository.findById(1L).orElse(null);
-
-        if (teacher == null)
-            return;
-
-        Classroom klas = new Classroom();
-        klas.setName("3A");
-        klas.setTeacher(teacher);
-        klas.setLocation(location);
-        klas.setSchool(school);
-        if (s1 != null)
-            klas.getStudents().add(s1);
-        if (s2 != null)
-            klas.getStudents().add(s2);
-        if (s3 != null)
-            klas.getStudents().add(s3);
-        classroomRepository.save(klas);
     }
 
     private void seedSchoolsAndLocations() {
@@ -376,24 +332,30 @@ public class DataSeeder implements CommandLineRunner {
 
         SchoolDTO dto1 = new SchoolDTO();
         dto1.setName("AP Hogeschool");
-        dto1.setAdres(""); dto1.setContact(""); 
+        dto1.setAdres("");
+        dto1.setContact("");
         dto1.setDescription("");
         dto1.setSsSubdomain("aphogeschool");
-        dto1.setBorrowLimit(10); 
+        dto1.setBorrowLimit(10);
         dto1.setBorrowPeriod(14);
-        dto1.setExtendLimit(3); 
+        dto1.setExtendLimit(3);
         dto1.setExtendPeriod(14);
+        dto1.setOneRosterClientId("ec58f0fb-6bd3-48d3-a165-6b73a324d5ad");
+        dto1.setOneRosterClientSecret("755b033b7096ad2abe34142df0b67fe974d0e555ab6c0d6c9475e417c2a8");
         SchoolDTO school1 = schoolService.addSchool(dto1);
 
         SchoolDTO dto2 = new SchoolDTO();
         dto2.setName("AP Universiteit");
-        dto2.setAdres(""); dto2.setContact(""); 
+        dto2.setAdres("");
+        dto2.setContact("");
         dto2.setDescription("");
         dto2.setSsSubdomain("apuniversiteit");
-        dto2.setBorrowLimit(10); 
+        dto2.setBorrowLimit(10);
         dto2.setBorrowPeriod(14);
         dto2.setExtendLimit(3);
-         dto2.setExtendPeriod(14);
+        dto2.setExtendPeriod(14);
+        dto2.setOneRosterClientId("ec58f0fb-6bd3-48d3-a165-6b73a324d5ad");
+        dto2.setOneRosterClientSecret("755b033b7096ad2abe34142df0b67fe974d0e555ab6c0d6c9475e417c2a8");
         SchoolDTO school2 = schoolService.addSchool(dto2);
 
         School savedSchool1 = schoolRepository.findById(school1.getId()).orElseThrow();

@@ -1,10 +1,9 @@
-import { Location } from './location';
-
 export interface AuthUser {
   userId: number;
-  username: string;
-  role: string;
-  location: Location[];
-  locationId: number;
-  schoolId: number;
+  roles: string[];
+  schoolId: number | null;
+  firstName: string | null;
+  lastName: string | null;
+  email: string | null;
+  username: string | null;
 }

@@ -18,34 +18,34 @@ public interface LoanRepository extends JpaRepository<Loan, Long> {
 
     List<Loan> findByUserId(@Param("userId") Long userId);
 
-    @Query("SELECT DISTINCT l FROM Loan l LEFT JOIN FETCH l.loanBooks lb LEFT JOIN FETCH lb.book WHERE l.closed = false AND l.status IN :statuses AND l.end < :today AND l.location.id = :locationId ORDER BY l.end ASC")
+    @Query("SELECT DISTINCT l FROM Loan l LEFT JOIN FETCH l.loanBooks lb LEFT JOIN FETCH lb.book WHERE l.closed = false AND l.status IN :statuses AND l.end < :today AND l.location.school.id = :schoolId ORDER BY l.end ASC")
     List<Loan> findOverdueLoans(@Param("statuses") List<LoanStatus> statuses, @Param("today") LocalDate today,
-            @Param("locationId") Long locationId);
+            @Param("schoolId") Long schoolId);
 
-    @Query("SELECT DISTINCT l FROM Loan l LEFT JOIN FETCH l.loanBooks lb LEFT JOIN FETCH lb.book WHERE l.start >= :from AND l.start <= :to AND l.status IN :statuses AND l.location.id = :locationId ORDER BY l.created DESC")
+    @Query("SELECT DISTINCT l FROM Loan l LEFT JOIN FETCH l.loanBooks lb LEFT JOIN FETCH lb.book WHERE l.start >= :from AND l.start <= :to AND l.status IN :statuses AND l.location.school.id = :schoolId ORDER BY l.created DESC")
     List<Loan> findByDateRangeWithBooks(@Param("from") LocalDate from, @Param("to") LocalDate to,
-            @Param("statuses") List<LoanStatus> statuses, @Param("locationId") Long locationId);
+            @Param("statuses") List<LoanStatus> statuses, @Param("schoolId") Long schoolId);
 
     @Query("SELECT COUNT(DISTINCT l) FROM Loan l " +
             "WHERE l.closed = false " +
             "AND l.status IN :statuses " +
             "AND l.end < :today " +
-            "AND l.location.id = :locationId")
+            "AND l.location.school.id = :schoolId")
     int countOverdueLoans(@Param("statuses") List<LoanStatus> statuses, @Param("today") LocalDate today,
-            @Param("locationId") Long locationId);
+            @Param("schoolId") Long schoolId);
 
-    @Query("SELECT DISTINCT l FROM Loan l LEFT JOIN FETCH l.loanBooks lb LEFT JOIN FETCH lb.book WHERE l.closed = false AND l.status IN :statuses AND l.end >= :today AND l.end <= :inSevenDays AND l.location.id = :locationId ORDER BY l.end ASC")
+    @Query("SELECT DISTINCT l FROM Loan l LEFT JOIN FETCH l.loanBooks lb LEFT JOIN FETCH lb.book WHERE l.closed = false AND l.status IN :statuses AND l.end >= :today AND l.end <= :inSevenDays AND l.location.school.id = :schoolId ORDER BY l.end ASC")
     List<Loan> findDueSoonLoans(@Param("statuses") List<LoanStatus> statuses, @Param("today") LocalDate today,
-            @Param("inSevenDays") LocalDate inSevenDays, @Param("locationId") Long locationId);
+            @Param("inSevenDays") LocalDate inSevenDays, @Param("schoolId") Long schoolId);
 
     @Query("SELECT COUNT(DISTINCT l) FROM Loan l " +
             "WHERE l.closed = false " +
             "AND l.status IN :statuses " +
             "AND l.end >= :today " +
             "AND l.end <= :inSevenDays " +
-            "AND l.location.id = :locationId")
+            "AND l.location.school.id = :schoolId")
     int countDueSoonLoans(@Param("statuses") List<LoanStatus> statuses, @Param("today") LocalDate today,
-            @Param("inSevenDays") LocalDate inSevenDays, @Param("locationId") Long locationId);
+            @Param("inSevenDays") LocalDate inSevenDays, @Param("schoolId") Long schoolId);
 
     @Query("SELECT g.name, COUNT(DISTINCT l) FROM Loan l " +
             "JOIN l.loanBooks lb " +
@@ -53,11 +53,11 @@ public interface LoanRepository extends JpaRepository<Loan, Long> {
             "JOIN b.genres g " +
             "WHERE l.status IN :statuses " +
             "AND l.start >= :from AND l.start <= :to " +
-            "AND l.location.id = :locationId " +
+            "AND l.location.school.id = :schoolId " +
             "GROUP BY g.name " +
             "ORDER BY COUNT(DISTINCT l) DESC")
     List<Object[]> findTopGenres(@Param("statuses") List<LoanStatus> statuses, @Param("from") LocalDate from,
-            @Param("to") LocalDate to, @Param("locationId") Long locationId);
+            @Param("to") LocalDate to, @Param("schoolId") Long schoolId);
 
     @Query("SELECT COUNT(DISTINCT l) FROM Loan l " +
             "WHERE l.user.id = :userId " +
@@ -84,6 +84,6 @@ public interface LoanRepository extends JpaRepository<Loan, Long> {
     List<Object[]> findTopGenresByUserId(@Param("userId") Long userId, @Param("statuses") List<LoanStatus> statuses,
             @Param("from") LocalDate from, @Param("to") LocalDate to);
 
-    @Query("SELECT DISTINCT l FROM Loan l LEFT JOIN FETCH l.loanBooks lb LEFT JOIN FETCH lb.book WHERE l.status = :state ORDER BY l.created ASC")
-    List<Loan> findByStateAndLocation(@Param("state") LoanStatus state, @Param("locationId") Long locationId);
+    @Query("SELECT DISTINCT l FROM Loan l LEFT JOIN FETCH l.loanBooks lb LEFT JOIN FETCH lb.book WHERE l.status = :state AND l.location.school.id = :schoolId ORDER BY l.created ASC")
+    List<Loan> findByStateAndSchool(@Param("state") LoanStatus state, @Param("schoolId") Long schoolId);
 }

@@ -10,7 +10,18 @@
       <div class="user-info">
         <app-loan-cart />
         <i class="pi pi-user hide-mobile"></i>
-        <span class="username">{{ user.username }}</span>
+        @if (user.username) {
+          @if (user.roles.includes('ADMIN')) {
+            <a class="account" (click)="op.toggle($event)">{{ user.username }}</a>
+            <p-popover #op>
+              <a class="account-link" routerLink="/account">Account</a>
+            </p-popover>
+          } @else {
+            <span class="username">{{ user.username }}</span>
+          }
+        } @else {
+          <span class="username">{{ user.firstName }} {{ user.lastName }}</span>
+        }
       </div>
       <button class="icon-btn" (click)="logout()" title="Uitloggen">
         <i class="pi pi-sign-out" style="font-size: 1.2rem"></i>
@@ -73,6 +84,15 @@
       class="nav-link"
       (click)="menuOpen = false"
       >Mijn klassen</a
+    >
+  }
+  @if (authService.hasRole('STUDENT', 'LEERKRACHT')) {
+    <a
+      routerLink="/begeleiding"
+      routerLinkActive="active"
+      class="nav-link"
+      (click)="menuOpen = false"
+      >Begeleiding</a
     >
   }
 </nav>

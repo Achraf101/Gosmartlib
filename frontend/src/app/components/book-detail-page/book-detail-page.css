@@ -47,16 +47,20 @@ app-material {
 }
 
 #book-info-image {
-  display: grid;
-  grid-template-columns: 130px 1fr;
-  grid-template-rows: auto auto;
-  gap: 0.75rem 1rem;
-  align-items: start;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 1rem;
 }
 
 #book-info-image > .img {
-  width: 130px;
-  height: 195px;
+  width: 90px;
+  height: 135px;
+  flex-shrink: 0;
+}
+
+#stars {
+  flex: 1;
 }
 
 :host ::ng-deep #book-info-image p-image img {
@@ -92,6 +96,7 @@ i.bookmark {
 .bookmark {
   display: flex;
   gap: 5px;
+  align-items: flex-start;
 }
 
 .dropdown-list {
@@ -136,15 +141,40 @@ table td {
 }
 
 #book-available {
-  border: 1px solid var(--p-menubar-border-color);
-  padding-bottom: 1.5rem;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--p-menubar-border-color);
 }
 
-#book-available table {
-  border: 1px solid var(--p-menubar-border-color);
-  border-top: none;
-  background-color: var(--p-amber-50);
-  font-size: small;
+.avail-title {
+  font-weight: 700;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--p-text-muted-color, #64748b);
+  margin: 0 0 0.5rem;
+}
+
+#book-available p {
+  display: flex;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+  margin: 0.2rem 0;
+  align-items: baseline;
+}
+
+.avail-label {
+  color: var(--p-text-muted-color, #64748b);
+  min-width: 75px;
+  flex-shrink: 0;
+}
+
+.avail-value {
+  font-weight: 500;
+}
+
+.avail-unavailable {
+  color: var(--p-red-500, #ef4444);
 }
 
 #book-detail caption {
@@ -344,7 +374,7 @@ table td {
     flex-shrink: 0;
   }
 
-  #book-info-image > p-image {
+  #book-info-image > .img {
     width: 180px;
     height: 270px;
   }
@@ -353,10 +383,6 @@ table td {
     position: absolute;
     right: 20px;
     top: 20px;
-  }
-
-  #book-available table {
-    font-size: medium;
   }
 
   .box {

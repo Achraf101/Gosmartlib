@@ -16,7 +16,7 @@ public class SessionContext {
         this.session = session;
     }
 
-    // needed fields: id, role, name, location_id
+    // needed fields: id, role, name
     public Long getUserId() {
         return (Long) session.getAttribute("userId");
     }
@@ -41,14 +41,6 @@ public class SessionContext {
 
     public void setName(String name) {
         session.setAttribute("name", name);
-    }
-
-    public Long getLocationId() {
-        return (Long) session.getAttribute("locationId");
-    }
-
-    public void setLocationId(Long id) {
-        session.setAttribute("locationId", id);
     }
 
     public Long getSchoolId() {

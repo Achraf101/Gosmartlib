@@ -5,9 +5,12 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import be.ap.backend.dto.LoanBookDTO;
@@ -27,24 +30,33 @@ import be.ap.backend.repository.LoanRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
+
+import java.util.concurrent.Executor;
 
 @Service
+@Slf4j
 public class LoanService {
     private LoanRepository loanRepository;
     private EntityManager entityManager;
     private LoanBookRepository loanBookRepository;
     private LocationBookRepository locationBookRepository;
     private LocationBookService locationBookService;
+    private SmartschoolLookupService lookupService;
+    private final Executor lookupExecutor;
 
     @Autowired
     public LoanService(LoanRepository loanRepository, EntityManager entityManager,
             LoanBookRepository loanBookRepository, LocationBookRepository locationBookRepository,
-            LocationBookService locationBookService) {
+            LocationBookService locationBookService, SmartschoolLookupService lookupService,
+            @Qualifier("lookupExecutor") Executor lookupExecutor) {
         this.loanRepository = loanRepository;
         this.entityManager = entityManager;
         this.loanBookRepository = loanBookRepository;
         this.locationBookRepository = locationBookRepository;
         this.locationBookService = locationBookService;
+        this.lookupService = lookupService;
+        this.lookupExecutor = lookupExecutor;
     }
 
     @Transactional
@@ -148,9 +160,7 @@ public class LoanService {
     }
 
     public List<LoanDTO> getRequested() {
-        return loanRepository.findByStatusWithBooks(LoanStatus.REQUESTED).stream()
-                .map(this::toDTO)
-                .toList();
+        return toDTOs(loanRepository.findByStatusWithBooks(LoanStatus.REQUESTED));
     }
 
     public LoanDTO updateNote(Long id, String note) {
@@ -180,9 +190,7 @@ public class LoanService {
     }
 
     public List<LoanDTO> getByUserId(Long userId) {
-        return loanRepository.findByUserId(userId).stream()
-                .map(this::toDTO)
-                .toList();
+        return toDTOs(loanRepository.findByUserId(userId));
     }
 
     public void deleteLoan(Long id) {
@@ -193,10 +201,8 @@ public class LoanService {
         loanRepository.deleteById(id);
     }
 
-    public List<LoanDTO> getByStateAndLocation(LoanStatus state, Long locationId) {
-        return loanRepository.findByStateAndLocation(state, locationId).stream()
-                .map(this::toDTO)
-                .toList();
+    public List<LoanDTO> getByStateAndSchool(LoanStatus state, Long schoolId) {
+        return toDTOs(loanRepository.findByStateAndSchool(state, schoolId));
     }
 
     private LoanDTO toDTO(Loan loan) {
@@ -211,7 +217,22 @@ public class LoanService {
         dto.setStatus(loan.getStatus());
         dto.setClosed(loan.getClosed());
         dto.setCreated(loan.getCreated());
-        dto.setUsername(loan.getUser().getUsername());
+
+        Map<String, Object> userInfo = lookupService.getUser(
+                loan.getUser().getSchool(),
+                loan.getUser().getOneRosterId(),
+                loan.getUser().getRoles());
+
+        String displayName;
+        if (userInfo != null) {
+            String firstName = (String) userInfo.get("givenName");
+            String lastName = (String) userInfo.get("familyName");
+            displayName = firstName + " " + lastName;
+        } else {
+            displayName = loan.getUser().getUsername();
+        }
+        dto.setUsername(displayName);
+
         dto.setGroupId(loan.getGroupId());
         dto.setExtendPeriod(loan.getLocation().getSchool().getExtendPeriod());
 
@@ -233,23 +254,41 @@ public class LoanService {
         return dto;
     }
 
-    public int getOverdueLoansLength(Long locationId) {
-        List<LoanStatus> activeStatuses = List.of(LoanStatus.RECEIVED, LoanStatus.ACCEPTED);
-        return loanRepository.countOverdueLoans(activeStatuses, LocalDate.now(), locationId);
+    private List<LoanDTO> toDTOs(List<Loan> loans) {
+        List<CompletableFuture<LoanDTO>> futures = loans.stream()
+                .map(loan -> CompletableFuture.supplyAsync(
+                        () -> toDTO(loan), lookupExecutor))
+                .toList();
+
+        return futures.stream()
+                .map(future -> {
+                    try {
+                        return future.join();
+                    } catch (CompletionException e) {
+                        log.error("Lookup mislukt voor loan: {}", e.getMessage());
+                        throw new RuntimeException("Gebruiker kon niet opgehaald worden", e.getCause());
+                    }
+                })
+                .toList();
     }
 
-    public List<LoanDTO> getOverdueLoans(Long locationId) {
+    public int getOverdueLoansLength(Long schoolId) {
         List<LoanStatus> activeStatuses = List.of(LoanStatus.RECEIVED, LoanStatus.ACCEPTED);
-        return loanRepository.findOverdueLoans(activeStatuses, LocalDate.now(), locationId)
-                .stream().map(this::toDTO).toList();
+        return loanRepository.countOverdueLoans(activeStatuses, LocalDate.now(), schoolId);
     }
 
-    public List<TopBookDTO> getTopBooksThisMonth(Long locationId) {
+    public List<LoanDTO> getOverdueLoans(Long schoolId) {
+        List<LoanStatus> activeStatuses = List.of(LoanStatus.RECEIVED, LoanStatus.ACCEPTED);
+        return toDTOs(loanRepository.findOverdueLoans(activeStatuses, LocalDate.now(), schoolId));
+
+    }
+
+    public List<TopBookDTO> getTopBooksThisMonth(Long schoolId) {
         LocalDate from = LocalDate.now().withDayOfMonth(1);
         LocalDate to = LocalDate.now();
         List<LoanStatus> statuses = List.of(LoanStatus.RECEIVED, LoanStatus.RETURNED, LoanStatus.ACCEPTED);
 
-        return loanRepository.findByDateRangeWithBooks(from, to, statuses, locationId).stream()
+        return loanRepository.findByDateRangeWithBooks(from, to, statuses, schoolId).stream()
                 .flatMap(l -> l.getLoanBooks().stream())
                 .collect(Collectors.groupingBy(
                         lb -> lb.getBook().getTitle(),
@@ -261,24 +300,25 @@ public class LoanService {
                 .toList();
     }
 
-    public List<LoanDTO> getDueSoonLoans(Long locationId) {
+    public List<LoanDTO> getDueSoonLoans(Long schoolId) {
         List<LoanStatus> activeStatuses = List.of(LoanStatus.RECEIVED, LoanStatus.ACCEPTED);
-        return loanRepository.findDueSoonLoans(activeStatuses, LocalDate.now(), LocalDate.now().plusDays(7), locationId)
-                .stream().map(this::toDTO).toList();
+        return toDTOs(loanRepository.findDueSoonLoans(activeStatuses, LocalDate.now(), LocalDate.now().plusDays(7),
+                schoolId));
+
     }
 
-    public int getDueSoonLoansLength(Long locationId) {
+    public int getDueSoonLoansLength(Long schoolId) {
         List<LoanStatus> activeStatuses = List.of(LoanStatus.RECEIVED, LoanStatus.ACCEPTED);
         return loanRepository.countDueSoonLoans(activeStatuses, LocalDate.now(), LocalDate.now().plusDays(7),
-                locationId);
+                schoolId);
     }
 
-    public List<TopBookDTO> getTopGenresThisMonth(Long locationId) {
+    public List<TopBookDTO> getTopGenresThisMonth(Long schoolId) {
         LocalDate from = LocalDate.now().withDayOfMonth(1);
         LocalDate to = LocalDate.now();
         List<LoanStatus> statuses = List.of(LoanStatus.RECEIVED, LoanStatus.RETURNED, LoanStatus.ACCEPTED);
 
-        return loanRepository.findTopGenres(statuses, from, to, locationId).stream()
+        return loanRepository.findTopGenres(statuses, from, to, schoolId).stream()
                 .limit(5)
                 .map(row -> new TopBookDTO((String) row[0], ((Long) row[1]).intValue()))
                 .toList();

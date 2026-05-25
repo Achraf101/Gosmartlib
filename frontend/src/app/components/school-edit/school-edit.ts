@@ -28,12 +28,10 @@ import { ToastModule } from 'primeng/toast';
     NavBarComponent,
     ToastModule,
   ],
-  providers: [MessageService],
   templateUrl: './school-edit.html',
   styleUrl: './school-edit.css',
 })
 export class SchoolEditComponent implements OnInit {
-  schoolId!: number;
   loading = false;
   loadingData = true;
 
@@ -72,8 +70,6 @@ export class SchoolEditComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.schoolId = this.authService.currentUser!.schoolId;
-
     this.schoolService.getById(this.schoolId).subscribe({
       next: (school) => {
         this.form.patchValue({
@@ -142,5 +138,9 @@ export class SchoolEditComponent implements OnInit {
       },
       complete: () => (this.loading = false),
     });
+  }
+
+  private get schoolId(): number {
+    return this.authService.currentUser?.schoolId ?? 0;
   }
 }

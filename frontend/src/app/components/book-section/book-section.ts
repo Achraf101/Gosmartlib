@@ -13,9 +13,9 @@ import { FormsModule } from '@angular/forms';
 import { BookCardComponent } from '../misc/book-card/book-card';
 import { BookResult } from '../misc/book-result/book-result';
 import { DelayedLoader } from '../../utils/delayed-loader';
-import { LocationSettings } from '../../models/location-settings';
-import { LocationSettingsService } from '../../services/location-settings';
-import { isVisible } from '../../models/location-settings';
+import { SchoolSettings } from '../../models/school-settings';
+import { SchoolSettingsService } from '../../services/school-settings';
+import { isVisible } from '../../models/school-settings';
 import { AuthService } from '../../services/auth';
 
 @Component({
@@ -43,9 +43,8 @@ export class BookSectionComponent implements OnInit {
   selectedGrade: number = 1;
   monthlyBook: BookDetail | null = null;
   loading = new DelayedLoader();
-  locationSettings: LocationSettings | null = null;
+  schoolSettings: SchoolSettings | null = null;
   isVisible = isVisible;
-  schoolId = 0;
 
   grades = [
     { label: 'Graad 1', value: 1 },
@@ -57,15 +56,12 @@ export class BookSectionComponent implements OnInit {
     private sectionService: SectionService,
     private messageService: MessageService,
     private router: Router,
-    private locationSettingsService: LocationSettingsService,
+    private schoolSettingsService: SchoolSettingsService,
     public authService: AuthService,
   ) {}
 
   ngOnInit(): void {
     this.loading.start();
-    if (this.authService.currentUser) {
-      this.schoolId = this.authService.currentUser?.schoolId;
-    }
 
     this.sectionService.getAll(this.schoolId).subscribe({
       next: (sections) => {
@@ -87,9 +83,9 @@ export class BookSectionComponent implements OnInit {
       },
     });
 
-    this.locationSettingsService.getSettings().subscribe({
+    this.schoolSettingsService.getSettings().subscribe({
       next: (settings) => {
-        this.locationSettings = settings;
+        this.schoolSettings = settings;
         if (
           this.visibleSections.length > 0 &&
           !this.visibleSections.includes(this.activeSection!)
@@ -97,8 +93,12 @@ export class BookSectionComponent implements OnInit {
           this.selectSection(this.visibleSections[0]);
         }
       },
-      error: () => (this.locationSettings = null),
+      error: () => (this.schoolSettings = null),
     });
+  }
+
+  private get schoolId(): number {
+    return this.authService.currentUser?.schoolId ?? 0;
   }
 
   get isMonthlySection(): boolean {
@@ -108,13 +108,9 @@ export class BookSectionComponent implements OnInit {
   get visibleSections(): Section[] {
     return this.sections.filter((s) => {
       if (s.title === 'Boek van de maand')
-        return this.locationSettings
-          ? isVisible(this.locationSettings, 'HOME', 'MONTHLY_BOOK')
-          : true;
+        return this.schoolSettings ? isVisible(this.schoolSettings, 'HOME', 'MONTHLY_BOOK') : true;
       if (s.title === 'In de kijker')
-        return this.locationSettings
-          ? isVisible(this.locationSettings, 'HOME', 'IN_SPOTLIGHT')
-          : true;
+        return this.schoolSettings ? isVisible(this.schoolSettings, 'HOME', 'IN_SPOTLIGHT') : true;
       return true;
     });
   }

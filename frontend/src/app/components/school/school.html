@@ -7,8 +7,19 @@
       @for (location of school.locations; track location.id) {
         <p>- {{ location.name }}</p>
       }
-      <p-button [routerLink]="['/locatie/toevoegen', school.id]">Locatie toevoegen</p-button>
+      <div class="btns">
+        <p-button [routerLink]="['/locatie/toevoegen', school.id]">Locatie toevoegen</p-button>
+        <p-button [routerLink]="['/school/leerkrachten/', school.id]">Leerkrachten</p-button>
+      </div>
     </div>
+    <p-button
+      label="Synchroniseren"
+      icon="pi pi-refresh"
+      severity="secondary"
+      size="small"
+      [loading]="syncLoading"
+      (onClick)="confirmSync(school.id)"
+    />
   }
 
   <div class="nav-buttons">
@@ -18,3 +29,4 @@
     <p-button routerLink="/locatie">Locaties detail pagina</p-button>
   </div>
 </div>
+<p-confirmDialog></p-confirmDialog>

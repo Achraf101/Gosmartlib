@@ -25,9 +25,6 @@ public class Review {
     @Column(name = "content", length = 500)
     private String content;
 
-    @Column(name = "location_id")
-    private Long locationId;
-
     @Column(name = "hidden")
     private boolean hidden = false;
 

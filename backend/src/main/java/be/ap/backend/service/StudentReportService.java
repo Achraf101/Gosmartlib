@@ -4,6 +4,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
@@ -31,12 +32,14 @@ public class StudentReportService {
     private final LoanRepository loanRepository;
     private final ReviewRepository reviewRepository;
     private final UserRepository userRepository;
+    private final SmartschoolLookupService lookupService;
 
     public StudentReportService(LoanRepository loanRepository, ReviewRepository reviewRepository,
-            UserRepository userRepository) {
+            UserRepository userRepository, SmartschoolLookupService lookupService) {
         this.loanRepository = loanRepository;
         this.reviewRepository = reviewRepository;
         this.userRepository = userRepository;
+        this.lookupService = lookupService;
     }
 
     public StudentReportDTO buildReport(Long studentId) {
@@ -47,9 +50,11 @@ public class StudentReportService {
 
         BorrowCountsDTO counts = new BorrowCountsDTO(
                 loanRepository.countByUserIdAndStartBetween(studentId, COUNTED_STATUSES, startOfWeek(today), today),
-                loanRepository.countByUserIdAndStartBetween(studentId, COUNTED_STATUSES, today.withDayOfMonth(1), today),
+                loanRepository.countByUserIdAndStartBetween(studentId, COUNTED_STATUSES, today.withDayOfMonth(1),
+                        today),
                 loanRepository.countByUserIdAndStartBetween(studentId, COUNTED_STATUSES, semesterStart(today), today),
-                loanRepository.countByUserIdAndStartBetween(studentId, COUNTED_STATUSES, schoolYearStart(today), today));
+                loanRepository.countByUserIdAndStartBetween(studentId, COUNTED_STATUSES, schoolYearStart(today),
+                        today));
 
         List<BorrowedBookPreviewDTO> preview = loanRepository
                 .findByUserIdWithBooks(studentId, COUNTED_STATUSES).stream()
@@ -63,14 +68,16 @@ public class StudentReportService {
 
         StudentReportStatsDTO stats = buildStats(studentId, today);
 
-        String displayName = student.getSsName() != null && !student.getSsName().isBlank()
-                ? student.getSsName()
-                : student.getUsername();
+        Map<String, Object> user = lookupService.getUser(student.getSchool(), student.getOneRosterId(),
+                student.getRoles());
+
+        String firstName = (String) user.get("givenName");
+        String lastName = (String) user.get("familyName");
 
         return new StudentReportDTO(
                 student.getId(),
-                displayName,
-                student.getUsername(),
+                firstName,
+                lastName,
                 counts,
                 preview,
                 reviews,
@@ -96,9 +103,11 @@ public class StudentReportService {
     }
 
     private boolean isOnTime(Loan loan) {
-        if (loan.getEnd() == null) return true;
+        if (loan.getEnd() == null)
+            return true;
         LocalDate returned = loan.getReturnedAt();
-        if (returned == null) return true;
+        if (returned == null)
+            return true;
         return !returned.isAfter(loan.getEnd());
     }
 
