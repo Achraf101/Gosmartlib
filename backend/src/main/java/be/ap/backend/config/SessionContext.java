@@ -26,7 +26,9 @@ public class SessionContext {
     }
 
     public UserRole getRole() {
-        return (UserRole) session.getAttribute("role");
+        String role = (String) session.getAttribute("role");
+        if (role == null) return null;
+        return UserRole.valueOf(role);
     }
 
     public void setRole(UserRole role) {
@@ -50,8 +52,10 @@ public class SessionContext {
     }
 
     public Long getSchoolId() {
-        return (Long) session.getAttribute("schoolId");
-    }
+        Object schoolId = session.getAttribute("school");
+        if (schoolId == null) return null;
+        return Long.parseLong(schoolId.toString());
+   }
 
     public void setSchoolId(Long id) {
         session.setAttribute("schoolId", id);
