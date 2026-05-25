@@ -8,14 +8,17 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import be.ap.backend.dto.GenreProjection;
 import be.ap.backend.dto.ThemeDTO;
 import be.ap.backend.dto.ThemeProjectionDTO;
 import be.ap.backend.dto.UpdateBookDTO;
+import be.ap.backend.config.SessionContext;
 import be.ap.backend.dto.BookCardDTO;
 import be.ap.backend.dto.BookResultDTO;
 import be.ap.backend.dto.CreateBookDTO;
@@ -24,6 +27,7 @@ import be.ap.backend.entity.Author;
 import be.ap.backend.entity.Publisher;
 import be.ap.backend.entity.Series;
 import be.ap.backend.entity.Theme;
+import be.ap.backend.entity.UserRole;
 import be.ap.backend.exception.ArgumentsInvalidException;
 import be.ap.backend.entity.Book;
 import be.ap.backend.entity.BookContributor;
@@ -32,6 +36,7 @@ import be.ap.backend.entity.Clib;
 import be.ap.backend.entity.Genre;
 import be.ap.backend.entity.Language;
 import be.ap.backend.repository.BookRepository;
+import be.ap.backend.repository.LocationRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpSession;
@@ -45,6 +50,8 @@ public class BookService {
     private final EntityManager entityManager;
     private final UploadService uploadService;
     private final OpenLibraryService openLibraryService;
+    private final SessionContext sessionContext;
+    private final LocationRepository locationRepository;
 
     public Book saveBook(CreateBookDTO dto) {
         Book book = new Book();
@@ -244,20 +251,23 @@ public class BookService {
         return bookRepository.save(book);
     }
 
-    public Page<Book> getAll(HttpSession session, Boolean full, Long location, Pageable pageable) {
-        List<Long> ids = getLocationIds(session);
-        if (Boolean.TRUE.equals(full)) {
-            return bookRepository.findAll(pageable);
-        } else if (location == null || ids.contains(location)) {
-            return bookRepository.findAllByLocation(ids, pageable);
-        } else {
-            return Page.empty(pageable);
-        }
-    }
-
     public Book getById(Long id) {
-        return bookRepository.findById(id)
+        UserRole role = sessionContext.getRole();
+
+        if (role == UserRole.ADMIN) {
+            return bookRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Boek niet gevonden met id: " + id));
+        }
+
+        Book book = bookRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("Boek niet gevonden met id: " + id));
+
+        Long schoolId = sessionContext.getSchoolId();
+        List<Long> locationIds = locationRepository.findIdsBySchoolId(schoolId);
+        boolean hasAccess = bookRepository.existsByIdAndLocationId(id, locationIds);
+        if (!hasAccess) throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+
+        return book;
     }
 
     public Page<Book> search(HttpSession session, String query, Pageable pageable) {
@@ -285,5 +295,30 @@ public class BookService {
         if (raw == null)
             return List.of();
         return List.of((Long) raw);
+    }
+
+    public Page<Book> getAll(Long location, Boolean full, Pageable pageable) {
+        UserRole role = sessionContext.getRole();
+
+        if (role == UserRole.ADMIN) {
+            if (Boolean.TRUE.equals(full)) {
+                return bookRepository.findAll(pageable);
+            } else if (location == null) {
+                return bookRepository.findAll(pageable);
+            } else {
+                return bookRepository.findAllByLocation(List.of(location), pageable);
+            }
+        }
+
+        Long schoolId = sessionContext.getSchoolId();
+        List<Long> ids = locationRepository.findIdsBySchoolId(schoolId);
+
+        if (Boolean.TRUE.equals(full)) {
+            return bookRepository.findAll(pageable);
+        } else if (location == null || ids.contains(location)) {
+            return bookRepository.findAllByLocation(ids, pageable);
+        } else {
+            return Page.empty(pageable);
+        }
     }
 }

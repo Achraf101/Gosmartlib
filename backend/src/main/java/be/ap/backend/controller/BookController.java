@@ -20,7 +20,6 @@ import be.ap.backend.dto.CreateBookDTO;
 import be.ap.backend.dto.UpdateBookDTO;
 import be.ap.backend.entity.Book;
 import be.ap.backend.entity.Clib;
-import be.ap.backend.repository.BookRepository;
 import be.ap.backend.repository.LocationRepository;
 import be.ap.backend.service.BookService;
 import be.ap.backend.service.IsbnLookupService;
@@ -28,10 +27,8 @@ import be.ap.backend.service.IsbnLookupService;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 @Validated
@@ -43,7 +40,6 @@ public class BookController {
     private final BookService bookService;
     private final IsbnLookupService isbnLookupService;
     private final LocationRepository locationRepository;
-    private final BookRepository bookRepository;
 
     @GetMapping
     public ResponseEntity<Page<Book>> getAll(
@@ -52,42 +48,12 @@ public class BookController {
             @RequestParam(required = false) Long location,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size) {
-
-        Pageable pageable = PageRequest.of(page, size);
-        String role = (String) session.getAttribute("role");
-
-        if ("ADMIN".equals(role)) {
-            return ResponseEntity.ok(bookRepository.findAll(pageable));
-        }
-
-        List<Long> ids = getLocationIds(session);
-
-        if (full == true) {
-            return ResponseEntity.ok(bookRepository.findAll(pageable));
-        } else if (ids.contains(location) || location == null) {
-            return ResponseEntity.ok(bookRepository.findAllByLocation(ids, pageable));
-        } else {
-            return ResponseEntity.ok(Page.empty(pageable));
-        }
+        return ResponseEntity.ok(bookService.getAll(location, full, PageRequest.of(page, size)));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Book> getById(HttpSession session, @PathVariable Long id) {
-        String role = (String) session.getAttribute("role");
-
-        if ("ADMIN".equals(role)) {
-            return ResponseEntity.ok(bookRepository.findById(id).orElse(null));
-        }
-        
-        Book book = bookRepository.findById(id).orElse(null);
-        if (book == null) return ResponseEntity.notFound().build();
-
-        List<Long> locationId = getLocationIds(session);
-        boolean hasAccess = bookRepository.existsByIdAndLocationId(id, locationId);
-        
-        if (!hasAccess) return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        
-        return ResponseEntity.ok(book);
+    public ResponseEntity<Book> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(bookService.getById(id));
     }
 
     @GetMapping("/search/{query}")
