@@ -1,6 +1,7 @@
 package be.ap.backend.config;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.annotation.RequestScope;
@@ -27,15 +28,26 @@ public class SessionContext {
         session.setAttribute("userId", id);
     }
 
-    public UserRole getRole() {
+    public Set<UserRole> getRoles() {
         @SuppressWarnings("unchecked")
-        Set<String> roles = (Set<String>) session.getAttribute("roles");
-        if (roles == null || roles.isEmpty()) return null;
-        return UserRole.valueOf(roles.iterator().next());
+        Set<String> roleStrings = (Set<String>) session.getAttribute("roles");
+        if (roleStrings == null || roleStrings.isEmpty()) {
+            return Set.of();
+        }
+        return roleStrings.stream()
+                .map(UserRole::valueOf)
+                .collect(Collectors.toSet());
     }
 
-    public void setRole(UserRole role) {
-        session.setAttribute("role", role);
+    public boolean hasRole(UserRole role) {
+        return getRoles().contains(role);
+    }
+
+    public void setRole(Set<UserRole> roles) {
+        Set<String> roleStrings = roles.stream()
+                .map(UserRole::name)
+                .collect(Collectors.toSet());
+        session.setAttribute("roles", roleStrings);
     }
 
     public String getName() {
