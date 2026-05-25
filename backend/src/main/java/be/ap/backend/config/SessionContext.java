@@ -1,5 +1,7 @@
 package be.ap.backend.config;
 
+import java.util.Set;
+
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.annotation.RequestScope;
 
@@ -26,9 +28,10 @@ public class SessionContext {
     }
 
     public UserRole getRole() {
-        String role = (String) session.getAttribute("role");
-        if (role == null) return null;
-        return UserRole.valueOf(role);
+        @SuppressWarnings("unchecked")
+        Set<String> roles = (Set<String>) session.getAttribute("roles");
+        if (roles == null || roles.isEmpty()) return null;
+        return UserRole.valueOf(roles.iterator().next());
     }
 
     public void setRole(UserRole role) {
@@ -50,6 +53,6 @@ public class SessionContext {
    }
 
     public void setSchoolId(Long id) {
-        session.setAttribute("schoolId", id);
+        session.setAttribute("school", id);
     }
 }
