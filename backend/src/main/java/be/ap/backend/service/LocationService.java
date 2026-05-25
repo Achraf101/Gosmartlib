@@ -63,7 +63,7 @@ public class LocationService {
 
     public List<LocationDTO> getLocationsBySchool(Long schoolId) {
         School school = schoolRepository.findById(schoolId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "School not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "School niet gevonden"));
 
         return locationRepository.findBySchool(school)
                 .stream()
