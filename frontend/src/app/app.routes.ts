@@ -23,6 +23,7 @@ import { PickUpPageComponent } from './components/pick-up-page/pick-up-page';
 import { ReturnPageComponent } from './components/return-page/return-page';
 import { SchoolEditComponent } from './components/school-edit/school-edit';
 import { PromotePageComponent } from './components/promote-page/promote-page';
+import { AccountPage } from './components/account-page/account-page';
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: '', redirectTo: 'startpagina', pathMatch: 'full' },
@@ -81,6 +82,7 @@ export const routes: Routes = [
     component: SchoolEditComponent,
     canActivate: [authGuard(['BIBLIOTHEEKBEHEERDER'])],
   },
+  { path: 'account', component: AccountPage, canActivate: [authGuard(['ADMIN'])] },
 
   // {
   //   path: 'boek',
