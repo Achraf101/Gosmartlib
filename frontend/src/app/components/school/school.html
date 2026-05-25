@@ -7,7 +7,10 @@
       @for (location of school.locations; track location.id) {
         <p>- {{ location.name }}</p>
       }
-      <p-button [routerLink]="['/locatie/toevoegen', school.id]">Locatie toevoegen</p-button>
+      <div class="btns">
+        <p-button [routerLink]="['/locatie/toevoegen', school.id]">Locatie toevoegen</p-button>
+        <p-button [routerLink]="['/school/leerkrachten/', school.id]">Leerkrachten</p-button>
+      </div>
     </div>
     <p-button
       label="Synchroniseren"

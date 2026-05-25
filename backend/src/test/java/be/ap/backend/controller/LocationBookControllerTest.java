@@ -2,7 +2,6 @@ package be.ap.backend.controller;
 
 import be.ap.backend.dto.LocationBookDTO;
 import be.ap.backend.dto.LocationBookDetailDTO;
-import be.ap.backend.entity.LocationBook;
 import be.ap.backend.exception.ArgumentsInvalidException;
 import be.ap.backend.exception.BookAlreadyInLocationException;
 import be.ap.backend.exception.MissingArgumentsException;

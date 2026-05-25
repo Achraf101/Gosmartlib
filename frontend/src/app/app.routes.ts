@@ -23,11 +23,18 @@ import { PickUpPageComponent } from './components/pick-up-page/pick-up-page';
 import { ReturnPageComponent } from './components/return-page/return-page';
 import { SchoolEditComponent } from './components/school-edit/school-edit';
 import { BegeleidingComponent } from './components/begeleiding/begeleiding';
+import { PromotePageComponent } from './components/promote-page/promote-page';
+import { AccountPage } from './components/account-page/account-page';
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: '', redirectTo: 'startpagina', pathMatch: 'full' },
   { path: '', component: HomeComponent, canActivate: [authGuard] },
   { path: 'school', component: SchoolComponent, canActivate: [authGuard(['ADMIN', 'LEERKRACHT'])] },
+  {
+    path: 'school/leerkrachten/:schoolId',
+    component: PromotePageComponent,
+    canActivate: [authGuard(['ADMIN'])],
+  },
   { path: 'school/toevoegen', component: SchoolAddComponent, canActivate: [authGuard] },
   { path: 'locatie/toevoegen/:schoolId', component: LocationComponent, canActivate: [authGuard] },
   { path: 'boek/toevoegen', component: BookformComponent, canActivate: [authGuard] },
@@ -47,7 +54,7 @@ export const routes: Routes = [
   {
     path: 'dashboard/bibliotheek-beheerder',
     component: DashboardLibraryManager,
-    canActivate: [authGuard(['BIBLIOTHEEKBEHEERDER'])],
+    canActivate: [authGuard(['ADMIN', 'BIBLIOTHEEKBEHEERDER'])],
   },
   {
     path: 'reviews/moderatie',
@@ -72,8 +79,12 @@ export const routes: Routes = [
   { path: 'boek/:id/bewerken', component: BookEdit },
   { path: 'ophalen', component: PickUpPageComponent },
   { path: 'terugbrengen', component: ReturnPageComponent },
-  { path: 'school/instellingen', component: SchoolEditComponent, canActivate: [authGuard(['BIBLIOTHEEKBEHEERDER'])] },
-
+  {
+    path: 'school/instellingen',
+    component: SchoolEditComponent,
+    canActivate: [authGuard(['BIBLIOTHEEKBEHEERDER'])],
+  },
+  { path: 'account', component: AccountPage, canActivate: [authGuard(['ADMIN'])] },
 
   // {
   //   path: 'boek',

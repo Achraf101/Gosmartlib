@@ -1,21 +1,26 @@
 import { Component, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { AsyncPipe,CommonModule } from '@angular/common';
+import { AsyncPipe, CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth';
 import { LoanCartComponent } from '../loan-cart/loan-cart';
 import { GamificationService } from '../../services/gamification.service';
+import { PopoverModule } from 'primeng/popover';
+import { ButtonModule } from 'primeng/button';
 
 @Component({
   selector: 'app-nav-bar',
   standalone: true,
-  imports: [RouterModule, AsyncPipe, LoanCartComponent,CommonModule],
+  imports: [RouterModule, AsyncPipe, LoanCartComponent, CommonModule, PopoverModule, ButtonModule],
   templateUrl: './nav-bar.html',
   styleUrl: './nav-bar.css',
 })
 export class NavBarComponent implements OnInit {
   menuOpen = false;
 
-  constructor(public authService: AuthService, public gamificationService: GamificationService) {}
+  constructor(
+    public authService: AuthService,
+    public gamificationService: GamificationService,
+  ) {}
 
   ngOnInit(): void {
     this.gamificationService.load();

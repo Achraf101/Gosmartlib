@@ -1,5 +1,7 @@
 package be.ap.backend.dto;
 
+import java.util.Set;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Data;
@@ -8,7 +10,7 @@ import lombok.Data;
 public class CurrentUserDTO {
     @JsonProperty("userId")
     private Long userId;
-    private String role;
+    private Set<String> roles;
     @JsonProperty("schoolId")
     private Long schoolId;
     @JsonProperty("firstName")

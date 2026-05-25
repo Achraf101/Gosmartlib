@@ -73,8 +73,205 @@
         (medeauteur)
         }
       </h3>
-      <p>
-        {{ book.language.name }}
+      <div id="book-info-image">
+        <div class="img">
+          <b-cover [bookCard]="book"></b-cover>
+        </div>
+        <div id="stars">
+          <div class="rating-display">
+            <div class="custom-stars">
+              @for (i of [1, 2, 3, 4, 5]; track i) {
+                <div class="star-wrapper">
+                  <i class="pi pi-star star-empty"></i>
+                  <div class="star-fill" [style.width]="getStarFill(i) + '%'">
+                    <i class="pi pi-star-fill"></i>
+                  </div>
+                </div>
+              }
+            </div>
+            <span class="rating-number">{{ ratingValue > 0 ? ratingValue : 0 }} / 5</span>
+            <span class="rating-sub"
+              >gebaseerd op {{ book.rating_count }}
+              {{ book.rating_count === 1 ? 'recensie' : 'recensies' }}</span
+            >
+          </div>
+        </div>
+        <div class="bookmark">
+          <div class="dropdown-list">
+            <p-button
+              label="voeg toe aan lijst"
+              fluid
+              severity="secondary"
+              text
+              size="small"
+              icon="pi pi-plus"
+              (click)="toggleDropdown()"
+            />
+
+            @if (showDropdown) {
+              <div>
+                @for (list of lists; track $index) {
+                  <p (click)="addToList(list.id)">{{ list.name }}</p>
+                }
+              </div>
+            }
+          </div>
+          <i
+            (click)="toggleFavorite()"
+            class="bookmark pi"
+            [class.pi-bookmark]="!isBookmarked"
+            [class.pi-bookmark-fill]="isBookmarked"
+          ></i>
+        </div>
+      </div>
+      <div id="book-info-text">
+        <h2 class="show-desktop">{{ book.title }}</h2>
+        <h3 class="show-desktop">
+          @if (book.author != null) {
+            {{ book.author.name }} (auteur)
+          }
+          @for (contributor of book.contributors; track $index) {
+            , {{ contributor }}
+          }
+          @if (book.contributors && book.contributors.length > 0) {
+            (medeauteur)
+          }
+        </h3>
+        <p>
+          {{ book.language.name }}
+          @if (book.published != null) {
+            | {{ book.published }}
+          }
+        </p>
+        <p-accordion class="show-mobile">
+          <p-accordion-panel value="0">
+            <p-accordion-header class="description">Beschrijving</p-accordion-header>
+            <p-accordion-content>{{ book.description }}</p-accordion-content>
+          </p-accordion-panel>
+        </p-accordion>
+        <p class="show-desktop">{{ book.description }}</p>
+        <div class="btns">
+          <p-button
+            class="btn"
+            label="Nu Ontlenen"
+            severity="primary"
+            (onClick)="loanFormVisible = true"
+          />
+          <p-button
+            class="btn"
+            label="Toevoegen aan ontlening"
+            severity="primary"
+            (onClick)="cartDialogVisible = true"
+          />
+          @if (iaId) {
+            <p-button
+              class="btn"
+              label="Boekpreview"
+              severity="secondary"
+              icon="pi pi-book"
+              (onClick)="openPreview()"
+            />
+          }
+        </div>
+        <div id="book-available">
+          <p class="avail-title">Beschikbaarheid</p>
+          @if (locationBook) {
+            <p>
+              <span class="avail-label">Status</span>
+              <span class="avail-value" [class.avail-unavailable]="locationBook.current_amount === 0">
+                {{ locationBook.current_amount > 0 ? 'beschikbaar' : 'niet beschikbaar' }}
+              </span>
+            </p>
+            <p>
+              <span class="avail-label">Exemplaren</span>
+              <span class="avail-value">{{ locationBook.current_amount }} / {{ locationBook.amount }} beschikbaar</span>
+            </p>
+          } @else {
+            <p class="avail-value avail-unavailable">Niet beschikbaar op uw locatie.</p>
+          }
+        </div>
+      </div>
+    </div>
+    <!-- TODO check if user is teacher -->
+    @if (auth.hasRole('LEERKRACHT')) {
+      <div class="material box">
+        <div>
+          <h2>Lesmateriaal</h2>
+          <p-fileupload
+            #fileuploader
+            mode="basic"
+            name="file"
+            chooseIcon="pi pi-upload"
+            maxFileSize="8000000"
+            (onSelect)="onFileSelect($event)"
+            [customUpload]="true"
+            [auto]="false"
+          />
+        </div>
+        <p-accordion (click)="getMaterial()">
+          <p-accordion-panel value="0">
+            <p-accordion-header></p-accordion-header>
+            <p-accordion-content>
+              @if (materialFetched === true && materials !== null) {
+                @for (material of materials; track material.id) {
+                  <app-material [material]="material" />
+                }
+              }
+            </p-accordion-content>
+          </p-accordion-panel>
+        </p-accordion>
+      </div>
+    }
+    <div id="book-detail" class="box">
+      <table>
+        <caption>
+          <h2>Details</h2>
+          @if (authService.hasRole('BIBLIOTHEEKBEHEERDER')) {
+            <p-button label="Bewerken" icon="pi pi-pencil" (onClick)="editBook()" />
+          }
+        </caption>
+        @if (book.title != null) {
+          <tr>
+            <td>Titel</td>
+            <td>{{ book.title }}</td>
+          </tr>
+        }
+        @if (book.book_type != null) {
+          <tr>
+            <td>Boektype</td>
+            <td>{{ book.book_type.name }}</td>
+          </tr>
+        }
+        @if (genresString != '') {
+          <tr>
+            <td>Genre</td>
+            <td>{{ genresString }}</td>
+          </tr>
+        }
+        @if (themesString) {
+          <tr>
+            <td>Thema</td>
+            <td>{{ themesString }}</td>
+          </tr>
+        }
+        @if (book.author != null) {
+          <tr>
+            <td>Auteur</td>
+            <td>{{ book.author.name }}</td>
+          </tr>
+        }
+        @if (book.language != null) {
+          <tr>
+            <td>Taal</td>
+            <td>{{ book.language.name }}</td>
+          </tr>
+        }
+        @if (book.publisher != null) {
+          <tr>
+            <td>Uitgever</td>
+            <td>{{ book.publisher.name }}</td>
+          </tr>
+        }
         @if (book.published != null) {
         | {{ book.published }}
         }

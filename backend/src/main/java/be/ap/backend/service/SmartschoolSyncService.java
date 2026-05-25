@@ -7,6 +7,7 @@ import be.ap.backend.entity.User;
 import be.ap.backend.entity.UserRole;
 import be.ap.backend.repository.ClassroomRepository;
 import be.ap.backend.repository.EnrollmentRepository;
+import be.ap.backend.repository.SchoolRepository;
 import be.ap.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +33,7 @@ public class SmartschoolSyncService {
     private final ClassroomRepository classroomRepository;
     private final RestTemplate restTemplate;
     private final EnrollmentRepository enrollmentRepository;
+    private final SchoolRepository schoolRepository;
 
     private static final int PAGE_SIZE = 100;
 
@@ -39,6 +41,7 @@ public class SmartschoolSyncService {
         log.info("Starting sync for school: {}", school.getSsSubdomain());
         try {
             String baseUrl = "https://" + school.getSsSubdomain() + ".smartschool.be/ims/oneroster/v1p1";
+            resolveAndStoreSsId(school, baseUrl);
             syncUsers(school, baseUrl);
             syncClassrooms(school, baseUrl);
             syncEnrollments(school, baseUrl);
@@ -87,7 +90,7 @@ public class SmartschoolSyncService {
                         : new User();
                 user.setOneRosterId(oneRosterId);
                 user.setSsId(legacyId);
-                user.setRole(role);
+                user.getRoles().add(role);
                 user.setSchool(school);
                 userRepository.save(user);
                 synced++;
@@ -217,6 +220,26 @@ public class SmartschoolSyncService {
         } catch (Exception e) {
             log.error("GET {} failed: {}", url, e.getMessage());
             return null;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void resolveAndStoreSsId(School school, String baseUrl) {
+        if (school.getSsId() != null)
+            return;
+        Map<String, Object> response = get(school, baseUrl + "/schools");
+        if (response == null)
+            return;
+
+        List<Map<String, Object>> orgs = (List<Map<String, Object>>) response.get("orgs");
+        if (orgs == null || orgs.isEmpty())
+            return;
+
+        String sourcedId = (String) orgs.get(0).get("sourcedId");
+        if (sourcedId != null) {
+            school.setSsId(sourcedId);
+            schoolRepository.save(school);
+            log.info("Resolved ssId {} for school {}", sourcedId, school.getSsSubdomain());
         }
     }
 }

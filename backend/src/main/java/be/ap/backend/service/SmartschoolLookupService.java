@@ -1,6 +1,10 @@
 package be.ap.backend.service;
 
+import be.ap.backend.entity.User;
+import be.ap.backend.dto.TeacherDTO;
 import be.ap.backend.entity.School;
+import be.ap.backend.entity.UserRole;
+import be.ap.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
@@ -9,6 +13,8 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -17,10 +23,11 @@ public class SmartschoolLookupService {
 
     private final SmartschoolTokenService tokenService;
     private final RestTemplate restTemplate;
+    private final UserRepository userRepository;
 
     @SuppressWarnings("unchecked")
-    public Map<String, Object> getUser(School school, String oneRosterId, String role) {
-        String endpoint = "student".equals(role) ? "students" : "teachers";
+    public Map<String, Object> getUser(School school, String oneRosterId, Set<UserRole> roles) {
+        String endpoint = roles.contains(UserRole.STUDENT) ? "students" : "teachers";
         String url = "https://" + school.getSsSubdomain() + ".smartschool.be/ims/oneroster/v1p1/" + endpoint + "/"
                 + oneRosterId;
         Map<String, Object> response = get(school, url);
@@ -38,29 +45,28 @@ public class SmartschoolLookupService {
         return (Map<String, Object>) response.get("class");
     }
 
-    // @SuppressWarnings("unchecked")
-    // public List<Map<String, Object>> getClassesForUser(School school, String
-    // ssId) {
-    // String url = "https://" + school.getSsSubdomain() +
-    // ".smartschool.be/ims/oneroster/v1p1/users/" + ssId
-    // + "/classes";
-    // Map<String, Object> response = get(school, url);
-    // if (response == null)
-    // return List.of();
-    // return (List<Map<String, Object>>) response.get("classes");
-    // }
-
-    // @SuppressWarnings("unchecked")
-    // public List<Map<String, Object>> getEnrollmentsForUser(School school, String
-    // ssId) {
-    // String url = "https://" + school.getSsSubdomain()
-    // + ".smartschool.be/ims/oneroster/v1p1/enrollments?filter=user.sourcedId='" +
-    // ssId + "'";
-    // Map<String, Object> response = get(school, url);
-    // if (response == null)
-    // return List.of();
-    // return (List<Map<String, Object>>) response.get("enrollments");
-    // }
+    @SuppressWarnings("unchecked")
+    public List<TeacherDTO> getAllTeachersForSchool(School school) {
+        String url = "https://" + school.getSsSubdomain() + ".smartschool.be/ims/oneroster/v1p1/schools/"
+                + school.getSsId() + "/teachers";
+        Map<String, Object> response = get(school, url);
+        if (response == null)
+            return List.of();
+        List<Map<String, Object>> users = (List<Map<String, Object>>) response.get("users");
+        return users.stream()
+                .map(user -> {
+                    String sourcedId = (String) user.get("sourcedId");
+                    User dbUser = userRepository.findByOneRosterId(sourcedId).orElse(null);
+                    if (dbUser == null)
+                        return null;
+                    return new TeacherDTO(
+                            dbUser.getId(),
+                            (String) user.get("givenName"),
+                            (String) user.get("familyName"));
+                })
+                .filter(t -> t != null)
+                .collect(Collectors.toList());
+    }
 
     @SuppressWarnings("unchecked")
     private Map<String, Object> get(School school, String url) {

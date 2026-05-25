@@ -71,7 +71,8 @@ public class ClassroomService {
                 .filter(d -> d != null)
                 .max(Comparator.naturalOrder());
 
-        Map<String, Object> user = lookupService.getUser(student.getSchool(), student.getOneRosterId(), "student");
+        Map<String, Object> user = lookupService.getUser(student.getSchool(), student.getOneRosterId(),
+                student.getRoles());
 
         String firstName = (String) user.get("givenName");
         String lastName = (String) user.get("familyName");

@@ -290,6 +290,7 @@ export class BookDetailPage implements OnInit {
         });
         this.loanForm.reset();
         this.loanFormVisible = false;
+        this.loadLocationData();
       },
       error: () => {
         this.messageService.add({

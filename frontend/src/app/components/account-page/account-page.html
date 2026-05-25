@@ -1,0 +1,49 @@
+<app-nav-bar></app-nav-bar>
+<div class="main2">
+  <h1>Account</h1>
+
+  <h3>Wachtwoord veranderen</h3>
+  <div class="main">
+    @if (error_msg !== '') {
+      <p-message severity="error">{{ error_msg }}</p-message>
+    }
+    <form [formGroup]="passwordForm">
+      <div>
+        <label class="label" for="current">Huidig wachtwoord</label><br />
+        <p-password
+          maxLength="50"
+          inputId="current"
+          [feedback]="false"
+          [toggleMask]="true"
+          autocomplete="off"
+          formControlName="current_password"
+        />
+      </div>
+      <div>
+        <label class="label" for="new">Nieuw wachtwoord</label><br />
+        <p-password
+          maxLength="50"
+          inputId="new"
+          [feedback]="false"
+          [toggleMask]="true"
+          autocomplete="off"
+          formControlName="new_password"
+          [invalid]="new_state"
+        />
+      </div>
+      <div>
+        <label class="label" for="verify">Herhaal nieuw wachtwoord</label><br />
+        <p-password
+          maxLength="50"
+          inputId="verify"
+          [feedback]="false"
+          [toggleMask]="true"
+          autocomplete="off"
+          formControlName="verify_password"
+          [invalid]="verify_state"
+        />
+      </div>
+      <p-button label="Opslaan" (click)="changePassword()" />
+    </form>
+  </div>
+</div>

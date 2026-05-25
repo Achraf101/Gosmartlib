@@ -48,10 +48,6 @@ public class SmartschoolTokenService {
 
         OneRosterCredentials credentials = schoolService.getCredentials(school.getId());
 
-        log.info("#############################clientId={} secret-length={}",
-                credentials.getClientId(),
-                credentials.getClientSecret() != null ? credentials.getClientSecret().length() : "null");
-
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
