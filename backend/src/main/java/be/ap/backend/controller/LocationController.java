@@ -32,16 +32,13 @@ public class LocationController {
 
     @GetMapping
     public List<LocationDTO> getAll() {
-        UserRole role = sessionContext.getRole();
-        Long schoolId;
-
-        if(role == UserRole.ADMIN)
+        if (sessionContext.hasRole(UserRole.ADMIN)) {
             return locationService.findAll();
-        else if (role == UserRole.BIBLIOTHEEKBEHEERDER){
-            schoolId = sessionContext.getSchoolId();
+        } else if (sessionContext.hasRole(UserRole.BIBLIOTHEEKBEHEERDER)) {
+            Long schoolId = sessionContext.getSchoolId();
             return locationService.getLocationsBySchool(schoolId);
         }
-        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not allowed");
+        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Niet toegelaten");
     }
 
     @GetMapping("/{id}")

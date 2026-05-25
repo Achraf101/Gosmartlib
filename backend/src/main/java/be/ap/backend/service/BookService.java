@@ -252,9 +252,7 @@ public class BookService {
     }
 
     public Book getById(Long id) {
-        UserRole role = sessionContext.getRole();
-
-        if (role == UserRole.ADMIN) {
+        if (sessionContext.hasRole(UserRole.ADMIN)) {
             return bookRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Boek niet gevonden met id: " + id));
         }
@@ -298,9 +296,7 @@ public class BookService {
     }
 
     public Page<Book> getAll(Long location, Boolean full, Pageable pageable) {
-        UserRole role = sessionContext.getRole();
-
-        if (role == UserRole.ADMIN) {
+        if (sessionContext.hasRole(UserRole.ADMIN)) {
             if (Boolean.TRUE.equals(full)) {
                 return bookRepository.findAll(pageable);
             } else if (location == null) {
