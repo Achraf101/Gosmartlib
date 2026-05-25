@@ -22,6 +22,7 @@ import { ReviewModerationPageComponent } from './components/review-moderation-pa
 import { PickUpPageComponent } from './components/pick-up-page/pick-up-page';
 import { ReturnPageComponent } from './components/return-page/return-page';
 import { SchoolEditComponent } from './components/school-edit/school-edit';
+import { AccountPage } from './components/account-page/account-page';
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: '', redirectTo: 'startpagina', pathMatch: 'full' },
@@ -70,8 +71,12 @@ export const routes: Routes = [
   { path: 'boek/:id/bewerken', component: BookEdit },
   { path: 'ophalen', component: PickUpPageComponent },
   { path: 'terugbrengen', component: ReturnPageComponent },
-  { path: 'school/instellingen', component: SchoolEditComponent, canActivate: [authGuard(['BIBLIOTHEEKBEHEERDER'])] },
-
+  {
+    path: 'school/instellingen',
+    component: SchoolEditComponent,
+    canActivate: [authGuard(['BIBLIOTHEEKBEHEERDER'])],
+  },
+  { path: 'account', component: AccountPage, canActivate: [authGuard(['ADMIN'])] },
 
   // {
   //   path: 'boek',

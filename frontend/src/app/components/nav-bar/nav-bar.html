@@ -11,7 +11,14 @@
         <app-loan-cart />
         <i class="pi pi-user hide-mobile"></i>
         @if (user.username) {
-          <span class="username">{{ user.username }}</span>
+          @if (user.role === 'ADMIN') {
+            <a class="account" (click)="op.toggle($event)">{{ user.username }}</a>
+            <p-popover #op>
+              <a class="account-link" routerLink="/account">Account</a>
+            </p-popover>
+          } @else {
+            <span class="username">{{ user.username }}</span>
+          }
         } @else {
           <span class="username">{{ user.firstName }} {{ user.lastName }}</span>
         }
