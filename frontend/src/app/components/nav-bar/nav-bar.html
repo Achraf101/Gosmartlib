@@ -11,7 +11,7 @@
         <app-loan-cart />
         <i class="pi pi-user hide-mobile"></i>
         @if (user.username) {
-          @if (user.role === 'ADMIN') {
+          @if (user.roles.includes('ADMIN')) {
             <a class="account" (click)="op.toggle($event)">{{ user.username }}</a>
             <p-popover #op>
               <a class="account-link" routerLink="/account">Account</a>
