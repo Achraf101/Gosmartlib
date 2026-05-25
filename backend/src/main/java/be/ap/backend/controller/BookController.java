@@ -58,6 +58,11 @@ public class BookController {
             @RequestParam(defaultValue = "5") int size) {
 
         Pageable pageable = PageRequest.of(page, size);
+        String role = (String) session.getAttribute("role");
+
+        if ("ADMIN".equals(role)) {
+            return bookRepository.findAll(pageable);
+        }
 
         List<Long> ids = getLocationIds(session);
 
@@ -72,8 +77,22 @@ public class BookController {
     }
 
     @GetMapping("/{id}")
-    public Book getById(@PathVariable Long id) {
-        return bookRepository.findById(id).orElse(null);
+    public ResponseEntity<Book> getById(HttpSession session, @PathVariable Long id) {
+        String role = (String) session.getAttribute("role");
+
+        if ("ADMIN".equals(role)) {
+            return ResponseEntity.ok(bookRepository.findById(id).orElse(null));
+        }
+        
+        Book book = bookRepository.findById(id).orElse(null);
+        if (book == null) return ResponseEntity.notFound().build();
+
+        List<Long> locationId = getLocationIds(session);
+        boolean hasAccess = bookRepository.existsByIdAndLocationId(id, locationId);
+        
+        if (!hasAccess) return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        
+        return ResponseEntity.ok(book);
     }
 
     @GetMapping("/search/{query}")
