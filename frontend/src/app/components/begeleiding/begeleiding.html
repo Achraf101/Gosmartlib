@@ -7,7 +7,7 @@
   </div>
 
   <div class="faq-container">
-    @if (role === 'STUDENT') {
+    @if (roles.includes('STUDENT')) {
     <h2 class="role-title">Vragen voor leerlingen</h2>
     <p-accordion [multiple]="true">
       @for (item of studentFaq; track item.question) {
@@ -21,7 +21,7 @@
     </p-accordion>
     }
 
-    @if (role === 'LEERKRACHT') {
+    @if (roles.includes('LEERKRACHT')) {
     <h2 class="role-title">Vragen voor leerkrachten</h2>
     <p-accordion [multiple]="true">
       @for (item of teacherFaq; track item.question) {
@@ -35,7 +35,7 @@
     </p-accordion>
     }
 
-    @if (role !== 'STUDENT' && role !== 'LEERKRACHT') {
+    @if (!roles.includes('STUDENT') && !roles.includes('LEERKRACHT')) {
     <div class="no-faq">
       <p>Er is geen begeleiding beschikbaar voor jouw rol.</p>
     </div>

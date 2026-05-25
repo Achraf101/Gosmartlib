@@ -17,7 +17,7 @@ interface FaqItem {
   styleUrl: './begeleiding.css',
 })
 export class BegeleidingComponent implements OnInit {
-  role: string | null = null;
+  roles: string[] = [];
 
   studentFaq: FaqItem[] = [
     {
@@ -93,6 +93,8 @@ export class BegeleidingComponent implements OnInit {
   constructor(private authService: AuthService) {}
 
   ngOnInit(): void {
-    this.role = this.authService.currentUser?.role ?? null;
-  }
+  this.authService.currentUser$.subscribe(user => {
+    this.roles = user?.roles ?? [];
+  });
+}
 }
