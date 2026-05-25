@@ -104,14 +104,16 @@
             class="btn"
             label="Nu Ontlenen"
             severity="primary"
-            (onClick)="loanFormVisible = true"
+            (onClick)="openLoanDialog()"
           />
-          <p-button
-            class="btn"
-            label="Toevoegen aan ontlening"
-            severity="primary"
-            (onClick)="cartDialogVisible = true"
-          />
+          @if (!authService.hasRole('LEERKRACHT')) {
+            <p-button
+              class="btn"
+              label="Toevoegen aan ontlening"
+              severity="primary"
+              (onClick)="openCartDialog()"
+            />
+          }
           @if (iaId) {
             <p-button
               class="btn"
@@ -339,28 +341,31 @@
               }
             </span>
           </div>
-          <div>
-            <p-ifta-label>
-              <p-inputNumber
-                inputId="requestedAmount"
-                formControlName="requestedAmount"
-                [showButtons]="true"
-                [min]="0"
-                [max]="locationBook?.current_amount ?? 100"
-                [useGrouping]="false"
-              />
-              <label for="requestedAmount">Aantal</label>
-            </p-ifta-label>
-            @if (
-              loanForm.controls.requestedAmount.invalid && loanForm.controls.requestedAmount.touched
-            ) {
-              <small class="p-error">
-                <p-message severity="error" size="small" variant="simple"
-                  >Geef een geldig aantal in.</p-message
-                >
-              </small>
-            }
-          </div>
+          @if (!authService.hasRole('STUDENT')) {
+            <div>
+              <p-ifta-label>
+                <p-inputNumber
+                  inputId="requestedAmount"
+                  formControlName="requestedAmount"
+                  [showButtons]="true"
+                  [min]="0"
+                  [max]="locationBook?.current_amount ?? 100"
+                  [useGrouping]="false"
+                />
+                <label for="requestedAmount">Aantal</label>
+              </p-ifta-label>
+              @if (
+                loanForm.controls.requestedAmount.invalid &&
+                loanForm.controls.requestedAmount.touched
+              ) {
+                <small class="p-error">
+                  <p-message severity="error" size="small" variant="simple"
+                    >Geef een geldig aantal in.</p-message
+                  >
+                </small>
+              }
+            </div>
+          }
           <div class="btns">
             <p-button class="btn" label="Annuleer" severity="secondary" (click)="cancelLoan()" />
             <p-button
@@ -375,28 +380,30 @@
     </p-dialog>
 
     <p-dialog header="Voeg toe aan ontlening" [(visible)]="cartDialogVisible" [modal]="true">
-      <form [formGroup]="cartForm" class="flex flex-col gap-3">
-        <p-ifta-label>
-          <p-inputnumber
-            formControlName="requestedAmount"
-            inputId="cartAmount"
-            [min]="0"
-            [max]="locationBook?.current_amount ?? 100"
-            [showButtons]="true"
-            [useGrouping]="false"
-          />
-          <label for="cartAmount">Aantal exemplaren</label>
-        </p-ifta-label>
-        @if (
-          cartForm.controls.requestedAmount.invalid && cartForm.controls.requestedAmount.touched
-        ) {
-          <small class="p-error">
-            <p-message severity="error" size="small" variant="simple"
-              >Geef een geldig aantal in.</p-message
-            >
-          </small>
-        }
-      </form>
+      @if (!authService.hasRole('STUDENT')) {
+        <form [formGroup]="cartForm" class="flex flex-col gap-3">
+          <p-ifta-label>
+            <p-inputnumber
+              formControlName="requestedAmount"
+              inputId="cartAmount"
+              [min]="0"
+              [max]="locationBook?.current_amount ?? 100"
+              [showButtons]="true"
+              [useGrouping]="false"
+            />
+            <label for="cartAmount">Aantal exemplaren</label>
+          </p-ifta-label>
+          @if (
+            cartForm.controls.requestedAmount.invalid && cartForm.controls.requestedAmount.touched
+          ) {
+            <small class="p-error">
+              <p-message severity="error" size="small" variant="simple"
+                >Geef een geldig aantal in.</p-message
+              >
+            </small>
+          }
+        </form>
+      }
       <ng-template pTemplate="footer">
         <p-button label="Annuleren" severity="secondary" (onClick)="cancelCart()" />
         <p-button
