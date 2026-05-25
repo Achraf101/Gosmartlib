@@ -16,6 +16,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,6 +37,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import be.ap.backend.config.SessionContext;
 import be.ap.backend.dto.BookCardDTO;
 import be.ap.backend.dto.BookLookupDTO;
 import be.ap.backend.dto.BookResultDTO;
@@ -44,6 +46,7 @@ import be.ap.backend.dto.UpdateBookDTO;
 import be.ap.backend.entity.Author;
 import be.ap.backend.entity.Book;
 import be.ap.backend.entity.Clib;
+import be.ap.backend.entity.UserRole;
 import be.ap.backend.exception.ArgumentsInvalidException;
 import be.ap.backend.repository.LocationRepository;
 import be.ap.backend.service.BookService;
@@ -69,6 +72,9 @@ public class BookControllerTest {
     @Mock
     private LocationRepository locationRepository;
 
+    @Mock
+    private SessionContext sessionContext;
+
     @InjectMocks
     private BookController controller;
 
@@ -79,9 +85,11 @@ public class BookControllerTest {
     @BeforeEach
     void setUp() {
         session = mock(HttpSession.class);
-        lenient().when(session.getAttribute("location")).thenReturn(1L);
         lenient().when(session.getAttribute("school")).thenReturn(1L);
         lenient().when(locationRepository.findIdsBySchoolId(1L)).thenReturn(List.of(1L));
+        lenient().when(sessionContext.hasRole(UserRole.ADMIN)).thenReturn(true);
+        lenient().when(sessionContext.getRoles()).thenReturn(Set.of(UserRole.ADMIN));
+        lenient().when(sessionContext.getSchoolId()).thenReturn(1L);
         mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
     }
 
