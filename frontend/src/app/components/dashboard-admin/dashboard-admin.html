@@ -1,0 +1,207 @@
+<app-nav-bar></app-nav-bar>
+
+<div class="dashboard-grid">
+  <p-card class="nav-card" (click)="goToBooks()">
+    <div class="card-content">
+      <i class="pi pi-book card-icon"></i>
+      <span class="card-title">Boeken</span>
+      <span class="card-desc">Bekijk en beheer alle boeken</span>
+    </div>
+  </p-card>
+
+  <p-card class="nav-card" (click)="goToSchools()">
+    <div class="card-content">
+      <i class="pi pi-building card-icon"></i>
+      <span class="card-title">Scholen</span>
+      <span class="card-desc">Bekijk alle scholen</span>
+    </div>
+  </p-card>
+
+  <p-card class="nav-card" (click)="goToAddSchool()">
+    <div class="card-content">
+      <i class="pi pi-plus-circle card-icon"></i>
+      <span class="card-title">School toevoegen</span>
+      <span class="card-desc">Voeg een nieuwe school toe</span>
+    </div>
+  </p-card>
+
+  <p-card class="nav-card" (click)="goToLocations()">
+    <div class="card-content">
+      <i class="pi pi-map-marker card-icon"></i>
+      <span class="card-title">Locaties</span>
+      <span class="card-desc">Bekijk alle locaties</span>
+    </div>
+  </p-card>
+
+  <p-card class="nav-card">
+    <div class="card-content">
+      <i class="pi pi-users card-icon"></i>
+      <span class="card-title">Auteurs &amp; uitgevers</span>
+      <span class="card-desc">Voeg nieuwe auteurs of uitgevers toe</span>
+    </div>
+    <div class="card-actions">
+      <p-button
+        label="Nieuwe auteur"
+        icon="pi pi-plus"
+        severity="secondary"
+        size="small"
+        (onClick)="authorFormVisible = true"
+      />
+      <p-button
+        label="Nieuwe uitgever"
+        icon="pi pi-plus"
+        severity="secondary"
+        size="small"
+        (onClick)="publisherFormVisible = true"
+      />
+    </div>
+  </p-card>
+
+  <p-card class="nav-card">
+    <div class="card-content">
+      <i class="pi pi-tag card-icon"></i>
+      <span class="card-title">Genres &amp; thema's</span>
+      <span class="card-desc">Voeg nieuwe genres of thema's toe</span>
+    </div>
+    <div class="card-actions">
+      <p-button
+        label="Nieuw genre"
+        icon="pi pi-plus"
+        severity="secondary"
+        size="small"
+        (onClick)="genreFormVisible = true"
+      />
+      <p-button
+        label="Nieuw thema"
+        icon="pi pi-plus"
+        severity="secondary"
+        size="small"
+        (onClick)="themeFormVisible = true"
+      />
+    </div>
+  </p-card>
+</div>
+
+<p-dialog
+  header="Nieuwe auteur"
+  [(visible)]="authorFormVisible"
+  [modal]="true"
+  [style]="{ width: '400px' }"
+  (onHide)="authorForm.reset()"
+>
+  <form [formGroup]="authorForm">
+    <div class="dialog-field">
+      <label for="author-name">Naam*</label>
+      <input pInputText id="author-name" formControlName="name" placeholder="Naam auteur" />
+      @if (authorForm.controls.name.invalid && authorForm.controls.name.touched) {
+        <p-message severity="error" size="small" variant="simple">Naam is verplicht!</p-message>
+      }
+    </div>
+    <div class="dialog-field">
+      <label for="author-desc">Beschrijving</label>
+      <textarea
+        pTextarea
+        id="author-desc"
+        formControlName="description"
+        placeholder="Beschrijving (optioneel)"
+        rows="3"
+      ></textarea>
+    </div>
+  </form>
+  <ng-template #footer>
+    <p-button
+      label="Annuleren"
+      severity="secondary"
+      (onClick)="authorFormVisible = false; authorForm.reset()"
+    />
+    <p-button label="Opslaan" icon="pi pi-check" (onClick)="addAuthor()" />
+  </ng-template>
+</p-dialog>
+
+<p-dialog
+  header="Nieuwe uitgever"
+  [(visible)]="publisherFormVisible"
+  [modal]="true"
+  [style]="{ width: '400px' }"
+  (onHide)="publisherForm.reset()"
+>
+  <form [formGroup]="publisherForm">
+    <div class="dialog-field">
+      <label for="publisher-name">Naam*</label>
+      <input pInputText id="publisher-name" formControlName="name" placeholder="Naam uitgever" />
+      @if (publisherForm.controls.name.invalid && publisherForm.controls.name.touched) {
+        <p-message severity="error" size="small" variant="simple">Naam is verplicht!</p-message>
+      }
+    </div>
+    <div class="dialog-field">
+      <label for="publisher-desc">Beschrijving</label>
+      <textarea
+        pTextarea
+        id="publisher-desc"
+        formControlName="description"
+        placeholder="Beschrijving (optioneel)"
+        rows="3"
+      ></textarea>
+    </div>
+  </form>
+  <ng-template #footer>
+    <p-button
+      label="Annuleren"
+      severity="secondary"
+      (onClick)="publisherFormVisible = false; publisherForm.reset()"
+    />
+    <p-button label="Opslaan" icon="pi pi-check" (onClick)="addPublisher()" />
+  </ng-template>
+</p-dialog>
+
+<p-dialog
+  header="Nieuw genre"
+  [(visible)]="genreFormVisible"
+  [modal]="true"
+  [style]="{ width: '400px' }"
+  (onHide)="genreForm.reset()"
+>
+  <form [formGroup]="genreForm">
+    <div class="dialog-field">
+      <label for="genre-name">Naam*</label>
+      <input pInputText id="genre-name" formControlName="name" placeholder="Naam genre" />
+      @if (genreForm.controls.name.invalid && genreForm.controls.name.touched) {
+        <p-message severity="error" size="small" variant="simple">Naam is verplicht!</p-message>
+      }
+    </div>
+  </form>
+  <ng-template #footer>
+    <p-button
+      label="Annuleren"
+      severity="secondary"
+      (onClick)="genreFormVisible = false; genreForm.reset()"
+    />
+    <p-button label="Opslaan" icon="pi pi-check" (onClick)="addGenre()" />
+  </ng-template>
+</p-dialog>
+
+<p-dialog
+  header="Nieuw thema"
+  [(visible)]="themeFormVisible"
+  [modal]="true"
+  [style]="{ width: '400px' }"
+  (onHide)="themeForm.reset()"
+>
+  <form [formGroup]="themeForm">
+    <div class="dialog-field">
+      <label for="theme-name">Naam*</label>
+      <input pInputText id="theme-name" formControlName="name" placeholder="Naam thema" />
+      @if (themeForm.controls.name.invalid && themeForm.controls.name.touched) {
+        <p-message severity="error" size="small" variant="simple">Naam is verplicht!</p-message>
+      }
+    </div>
+  </form>
+  <ng-template #footer>
+    <p-button
+      label="Annuleren"
+      severity="secondary"
+      (onClick)="themeFormVisible = false; themeForm.reset()"
+    />
+    <p-button label="Opslaan" icon="pi pi-check" (onClick)="addTheme()" />
+  </ng-template>
+</p-dialog>
