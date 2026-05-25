@@ -58,7 +58,7 @@ export const routes: Routes = [
   {
     path: 'school/leerkrachten/:schoolId',
     component: PromotePageComponent,
-    canActivate: [authGuard(['ADMIN'])],
+    canActivate: [authGuard(['ADMIN', 'BIBLIOTHEEKBEHEERDER'])],
   },
   { path: 'begeleiding', component: BegeleidingComponent, canActivate: [authGuard] },
   { path: 'favorieten', component: FavoritePage, canActivate: [authGuard] },
