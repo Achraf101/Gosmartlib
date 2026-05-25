@@ -45,6 +45,7 @@ import be.ap.backend.entity.Author;
 import be.ap.backend.entity.Book;
 import be.ap.backend.entity.Clib;
 import be.ap.backend.exception.ArgumentsInvalidException;
+import be.ap.backend.repository.LocationRepository;
 import be.ap.backend.service.BookService;
 import be.ap.backend.service.IsbnLookupService;
 import be.ap.backend.service.OpenLibraryService;
@@ -65,6 +66,9 @@ public class BookControllerTest {
     @Mock
     private OpenLibraryService openLibraryService;
 
+    @Mock
+    private LocationRepository locationRepository;
+
     @InjectMocks
     private BookController controller;
 
@@ -76,6 +80,8 @@ public class BookControllerTest {
     void setUp() {
         session = mock(HttpSession.class);
         lenient().when(session.getAttribute("location")).thenReturn(1L);
+        lenient().when(session.getAttribute("school")).thenReturn(1L);
+        lenient().when(locationRepository.findIdsBySchoolId(1L)).thenReturn(List.of(1L));
         mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
     }
 
@@ -109,14 +115,16 @@ public class BookControllerTest {
         book2.setTitle("Book 2");
 
         Page<Book> page = new PageImpl<>(List.of(book1, book2));
-        when(service.getAll(any(), any(), any(), any(Pageable.class))).thenReturn(page);
+        
+        when(service.getAll(isNull(), eq(false), any(Pageable.class))).thenReturn(page);
 
         Page<Book> result = controller.getAll(session, false, null, 0, 5).getBody();
 
         assertEquals(2, result.getContent().size());
         assertEquals("Book 1", result.getContent().get(0).getTitle());
         assertEquals("Book 2", result.getContent().get(1).getTitle());
-        verify(service, times(1)).getAll(any(), any(), any(), any(Pageable.class));
+        
+        verify(service, times(1)).getAll(isNull(), eq(false), any(Pageable.class));
     }
 
     @Test
@@ -133,12 +141,16 @@ public class BookControllerTest {
         assertEquals("Test Book", result.getTitle());
         verify(service, times(1)).getById(1L);
     }
-
+    
     @Test
     void givenMissingId_whenGetById_thenThrowEntityNotFoundException() {
-        when(service.getById(99L)).thenThrow(new EntityNotFoundException("Boek niet gevonden met id: 99"));
+        when(service.getById(99L))
+            .thenThrow(new EntityNotFoundException("Boek niet gevonden met id: 99"));
 
-        assertThrows(EntityNotFoundException.class, () -> controller.getById(99L));
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, 
+            () -> controller.getById(99L));
+        
+        assertEquals("Boek niet gevonden met id: 99", exception.getMessage());
         verify(service, times(1)).getById(99L);
     }
 
@@ -249,8 +261,11 @@ public class BookControllerTest {
 
     @Test
     void givenPagesMinGreaterThanMax_whenFilter_thenThrow400() {
+        when(service.filter(any(), any(), any(), any(), any(), any(), eq(500), eq(100), any(), any(), any(), any()))
+                .thenThrow(new ArgumentsInvalidException("pagesMin moet kleiner zijn dan pagesMax"));
+        
         assertThrows(ArgumentsInvalidException.class,
-                () -> controller.filter(session, null, null, null, null, null, null, 500, 100, null, null, null, 0, 5));
+                () -> controller.filter(session, 1L, null, null, null, null, null, 500, 100, null, null, null, 0, 5));
     }
 
     @Test
