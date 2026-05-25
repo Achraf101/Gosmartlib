@@ -10,5 +10,11 @@
       <p-button [routerLink]="['/locatie/toevoegen', school.id]">Locatie toevoegen</p-button>
     </div>
   }
-  <p-button routerLink="/school/toevoegen">School toevoegen</p-button>
+
+  <div class="nav-buttons">
+    @if (authService.hasRole('ADMIN')) {
+      <p-button routerLink="/school/toevoegen">School toevoegen</p-button>
+    }
+    <p-button routerLink="/locatie">Locaties detail pagina</p-button>
+  </div>
 </div>
