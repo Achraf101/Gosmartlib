@@ -1,0 +1,44 @@
+<app-nav-bar></app-nav-bar>
+
+<div class="begeleiding-page">
+  <div class="header">
+    <h1>Begeleiding</h1>
+    <p class="subtitle">Hier vind je antwoorden op de meest gestelde vragen.</p>
+  </div>
+
+  <div class="faq-container">
+    @if (roles.includes('STUDENT')) {
+    <h2 class="role-title">Vragen voor leerlingen</h2>
+    <p-accordion [multiple]="true">
+      @for (item of studentFaq; track item.question) {
+      <p-accordion-panel [value]="item.question">
+        <p-accordion-header>{{ item.question }}</p-accordion-header>
+        <p-accordion-content>
+          <p>{{ item.answer }}</p>
+        </p-accordion-content>
+      </p-accordion-panel>
+      }
+    </p-accordion>
+    }
+
+    @if (roles.includes('LEERKRACHT')) {
+    <h2 class="role-title">Vragen voor leerkrachten</h2>
+    <p-accordion [multiple]="true">
+      @for (item of teacherFaq; track item.question) {
+      <p-accordion-panel [value]="item.question">
+        <p-accordion-header>{{ item.question }}</p-accordion-header>
+        <p-accordion-content>
+          <p>{{ item.answer }}</p>
+        </p-accordion-content>
+      </p-accordion-panel>
+      }
+    </p-accordion>
+    }
+
+    @if (!roles.includes('STUDENT') && !roles.includes('LEERKRACHT')) {
+    <div class="no-faq">
+      <p>Er is geen begeleiding beschikbaar voor jouw rol.</p>
+    </div>
+    }
+  </div>
+</div>

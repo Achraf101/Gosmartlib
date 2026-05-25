@@ -74,4 +74,13 @@
       >Mijn klassen</a
     >
   }
+  @if (authService.hasRole('STUDENT', 'LEERKRACHT')) {
+    <a
+      routerLink="/begeleiding"
+      routerLinkActive="active"
+      class="nav-link"
+      (click)="menuOpen = false"
+      >Begeleiding</a
+    >
+  }
 </nav>
