@@ -11,6 +11,15 @@
   cursor: pointer;
 }
 
+.account {
+  cursor: pointer;
+}
+
+.account-link {
+  text-decoration: none;
+  color: black;
+}
+
 .header-right {
   display: flex;
   align-items: center;
