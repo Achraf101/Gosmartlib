@@ -22,23 +22,41 @@ import { ReviewModerationPageComponent } from './components/review-moderation-pa
 import { PickUpPageComponent } from './components/pick-up-page/pick-up-page';
 import { ReturnPageComponent } from './components/return-page/return-page';
 import { SchoolEditComponent } from './components/school-edit/school-edit';
+import { DashboardAdmin } from './components/dashboard-admin/dashboard-admin';
+import { adminRedirectGuard } from './guards/admin-redirect.guard';
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
-  { path: '', redirectTo: 'startpagina', pathMatch: 'full' },
-  { path: '', component: HomeComponent, canActivate: [authGuard] },
-  { path: 'school', component: SchoolComponent, canActivate: [authGuard(['ADMIN', 'LEERKRACHT'])] },
-  { path: 'school/toevoegen', component: SchoolAddComponent, canActivate: [authGuard] },
-  { path: 'locatie/toevoegen/:schoolId', component: LocationComponent, canActivate: [authGuard] },
-  { path: 'boek/toevoegen', component: BookformComponent, canActivate: [authGuard] },
+  { path: '', canActivate: [adminRedirectGuard], component: HomeComponent },
+
+  {
+    path: 'school',
+    component: SchoolComponent,
+    canActivate: [authGuard(['ADMIN', 'BIBLIOTHEEKBEHEERDER'])],
+  },
+  { path: 'school/toevoegen', component: SchoolAddComponent, canActivate: [authGuard(['ADMIN'])] },
+  {
+    path: 'locatie/toevoegen/:schoolId',
+    component: LocationComponent,
+    canActivate: [authGuard(['ADMIN', 'BIBLIOTHEEKBEHEERDER'])],
+  },
+  {
+    path: 'boek/toevoegen',
+    component: BookformComponent,
+    canActivate: [authGuard(['ADMIN', 'BIBLIOTHEEKBEHEERDER'])],
+  },
   { path: 'catalogus/filter', component: FilterPage, canActivate: [authGuard] },
   { path: 'catalogus', component: CatalogueComponent, canActivate: [authGuard] },
   { path: 'boek/:id', component: BookDetailPage, canActivate: [authGuard] },
-  { path: 'locatie', component: LocationDetailPageComponent, canActivate: [authGuard] },
+  {
+    path: 'locatie',
+    component: LocationDetailPageComponent,
+    canActivate: [authGuard(['ADMIN', 'BIBLIOTHEEKBEHEERDER'])],
+  },
   { path: 'favorieten', component: FavoritePage, canActivate: [authGuard] },
   {
     path: 'uitleenaanvragen',
     component: AcceptDeclineReservationsPageComponent,
-    canActivate: [authGuard],
+    canActivate: [authGuard(['BIBLIOTHEEKBEHEERDER'])],
   },
   { path: 'lijst/:token/delen', component: FavoritePage, canActivate: [authGuard] },
   { path: 'uitleningen', component: UserLoansPageComponent, canActivate: [authGuard] },
@@ -46,6 +64,11 @@ export const routes: Routes = [
     path: 'dashboard/bibliotheek-beheerder',
     component: DashboardLibraryManager,
     canActivate: [authGuard(['BIBLIOTHEEKBEHEERDER'])],
+  },
+  {
+    path: 'dashboard/admin',
+    component: DashboardAdmin,
+    canActivate: [authGuard(['ADMIN'])],
   },
   {
     path: 'reviews/moderatie',
@@ -67,24 +90,20 @@ export const routes: Routes = [
     component: TeacherStudentReportPageComponent,
     canActivate: [authGuard(['LEERKRACHT'])],
   },
-  { path: 'boek/:id/bewerken', component: BookEdit },
-  { path: 'ophalen', component: PickUpPageComponent },
+  {
+    path: 'boek/:id/bewerken',
+    component: BookEdit,
+    canActivate: [authGuard(['BIBLIOTHEEKBEHEERDER'])],
+  },
+  {
+    path: 'ophalen',
+    component: PickUpPageComponent,
+    canActivate: [authGuard(['BIBLIOTHEEKBEHEERDER'])],
+  },
   { path: 'terugbrengen', component: ReturnPageComponent },
-  { path: 'school/instellingen', component: SchoolEditComponent, canActivate: [authGuard(['BIBLIOTHEEKBEHEERDER'])] },
-
-
-  // {
-  //   path: 'boek',
-  //   component: BookformComponent,
-  //   children: [
-  //     {
-  //       path: ':id',
-  //       component: BookDetailPage,
-  //     },
-  //     {
-  //       path: 'toevoegen',
-  //       component: BookformComponent,
-  //     },
-  //   ],
-  // },
+  {
+    path: 'school/instellingen',
+    component: SchoolEditComponent,
+    canActivate: [authGuard(['BIBLIOTHEEKBEHEERDER'])],
+  },
 ];
