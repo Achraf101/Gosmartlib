@@ -129,16 +129,21 @@
           @if (locationBook) {
             <p>
               <span class="avail-label">Status</span>
-              <span class="avail-value" [class.avail-unavailable]="locationBook.current_amount === 0">
+              <span
+                class="avail-value"
+                [class.avail-unavailable]="locationBook.current_amount === 0"
+              >
                 {{ locationBook.current_amount > 0 ? 'beschikbaar' : 'niet beschikbaar' }}
               </span>
             </p>
             <p>
               <span class="avail-label">Exemplaren</span>
-              <span class="avail-value">{{ locationBook.current_amount }} / {{ locationBook.amount }} beschikbaar</span>
+              <span class="avail-value"
+                >{{ locationBook.current_amount }} / {{ locationBook.amount }} beschikbaar</span
+              >
             </p>
           } @else {
-            <p class="avail-value avail-unavailable">Niet beschikbaar op jouw locatie.</p>
+            <p class="avail-value avail-unavailable">Niet beschikbaar op jouw locatie</p>
           }
         </div>
       </div>
