@@ -34,16 +34,43 @@
 </header>
 
 <nav class="nav" [class.open]="menuOpen">
-  <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="nav-link"
-    (click)="menuOpen = false">Startpagina</a>
-  <a routerLink="/catalogus" routerLinkActive="active" class="nav-link" (click)="menuOpen = false">Catalogus</a>
-  <a routerLink="/uitleningen" routerLinkActive="active" class="nav-link" (click)="menuOpen = false">Mijn
-    ontleningen</a>
-  <a routerLink="/favorieten" routerLinkActive="active" class="nav-link" (click)="menuOpen = false">Mijn leeslijst en
-    favorieten</a>
-  @if (authService.hasRole('BIBLIOTHEEKBEHEERDER')) {
-  <a routerLink="/dashboard/bibliotheek-beheerder" routerLinkActive="active" class="nav-link"
-    (click)="menuOpen = false">Dashboard</a>
+  @if (!authService.hasRole('ADMIN')) {
+    <a
+      routerLink="/"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: true }"
+      class="nav-link"
+      (click)="menuOpen = false"
+      >Startpagina</a
+    >
+    <a routerLink="/catalogus" routerLinkActive="active" class="nav-link" (click)="menuOpen = false"
+      >Catalogus</a
+    >
+    <a
+      routerLink="/uitleningen"
+      routerLinkActive="active"
+      class="nav-link"
+      (click)="menuOpen = false"
+      >Mijn ontleningen</a
+    >
+    <a
+      routerLink="/favorieten"
+      routerLinkActive="active"
+      class="nav-link"
+      (click)="menuOpen = false"
+      >Mijn leeslijst en favorieten</a
+    >
+  }
+  @if (authService.hasRole('BIBLIOTHEEKBEHEERDER') || authService.hasRole('ADMIN')) {
+    <a
+      routerLink="{{
+        authService.hasRole('ADMIN') ? '/dashboard/admin' : '/dashboard/bibliotheek-beheerder'
+      }}"
+      routerLinkActive="active"
+      class="nav-link"
+      (click)="menuOpen = false"
+      >Dashboard</a
+    >
   }
   @if (authService.hasRole('LEERKRACHT')) {
   <a routerLink="/leerkracht/klassen" routerLinkActive="active" class="nav-link" (click)="menuOpen = false">Mijn

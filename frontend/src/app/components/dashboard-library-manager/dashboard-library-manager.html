@@ -20,14 +20,39 @@
   <p-card class="nav-card">
     <div class="card-content">
       <i class="pi pi-users card-icon"></i>
-      <span class="card-title">Auteurs en uitgevers</span>
-      <span class="card-desc">Voeg nieuwe auteurs of uitgevers toe</span>
+      <span class="card-title">Auteurs, uitgevers en thema’s</span>
+      <span class="card-desc">Voeg nieuwe auteurs, uitgevers of thema’s toe</span>
     </div>
     <div class="card-actions">
-      <p-button label="Nieuwe auteur" icon="pi pi-plus" severity="secondary" size="small"
-        (onClick)="authorFormVisible = true" />
-      <p-button label="Nieuwe uitgever" icon="pi pi-plus" severity="secondary" size="small"
-        (onClick)="publisherFormVisible = true" />
+      <p-button
+        label="Nieuwe auteur"
+        icon="pi pi-plus"
+        severity="secondary"
+        size="small"
+        (onClick)="authorFormVisible = true"
+      />
+      <p-button
+        label="Nieuwe uitgever"
+        icon="pi pi-plus"
+        severity="secondary"
+        size="small"
+        (onClick)="publisherFormVisible = true"
+      />
+      <p-button
+        label="Nieuw thema"
+        icon="pi pi-plus"
+        severity="secondary"
+        size="small"
+        (onClick)="themeFormVisible = true"
+      />
+    </div>
+  </p-card>
+
+  <p-card class="nav-card" (click)="goToSchools()">
+    <div class="card-content">
+      <i class="pi pi-building card-icon"></i>
+      <span class="card-title">Scholen</span>
+      <span class="card-desc">Bekijk alle scholen</span>
     </div>
   </p-card>
 
@@ -47,7 +72,7 @@
         <span class="loan-badge">{{ pendingLoanCount }}</span>
         }
       </div>
-      <span class="card-title">Uitleenaanvragen</span>
+      <span class="card-title">Ontleenaanvragen</span>
       @if (pendingLoanCount > 0) {
       <span class="card-desc pending">
         {{ pendingLoanCount }} leerling{{ pendingLoanCount === 1 ? '' : 'en' }} wacht{{
@@ -88,14 +113,6 @@
       <i class="pi pi-inbox card-icon"></i>
       <span class="card-title">Terug in te leveren boeken</span>
       <span class="card-desc">Hier staan alle boeken die teruggebracht moeten worden</span>
-    </div>
-  </p-card>
-
-  <p-card class="nav-card">
-    <div class="card-content">
-      <i class="pi pi-star card-icon"></i>
-      <span class="card-title">Recensies</span>
-      <span class="card-desc">Bekijk wat leerlingen schrijven</span>
     </div>
   </p-card>
 
@@ -446,4 +463,31 @@
     <p-button label="Opslaan" icon="pi pi-check" (onClick)="addPublisher()" />
   </ng-template>
 </p-dialog>
+
+<p-dialog
+  header="Nieuw thema"
+  [(visible)]="themeFormVisible"
+  [modal]="true"
+  [style]="{ width: '400px' }"
+  (onHide)="themeForm.reset()"
+>
+  <form [formGroup]="themeForm">
+    <div class="dialog-field">
+      <label for="theme-name">Naam*</label>
+      <input pInputText id="theme-name" formControlName="name" placeholder="Naam thema" />
+      @if (themeForm.controls.name.invalid && themeForm.controls.name.touched) {
+        <p-message severity="error" size="small" variant="simple">Naam is verplicht!</p-message>
+      }
+    </div>
+  </form>
+  <ng-template #footer>
+    <p-button
+      label="Annuleren"
+      severity="secondary"
+      (onClick)="themeFormVisible = false; themeForm.reset()"
+    />
+    <p-button label="Opslaan" icon="pi pi-check" (onClick)="addTheme()" />
+  </ng-template>
+</p-dialog>
+
 <p-confirmDialog></p-confirmDialog>
