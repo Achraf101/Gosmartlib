@@ -24,6 +24,7 @@ public class UserService implements UserDetailsService {
 
         // TEMPORARY — remove after diagnosis
         System.out.println("DEBUG stored hash: " + user.getPassword());
+        System.out.println("DEBUG auth [" + username + "] stored=[" + user.getPassword() + "]");
 
         return user;
     }
