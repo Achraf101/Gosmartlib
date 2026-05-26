@@ -145,7 +145,7 @@ export class FavoritePage implements OnInit {
         this.messageService.add({
           severity: 'success',
           summary: 'Succes',
-          detail: 'Lijst succesvol verwijderD',
+          detail: 'Lijst succesvol verwijderd',
           life: 3000,
         });
       },
@@ -253,7 +253,7 @@ export class FavoritePage implements OnInit {
         this.messageService.add({
           severity: 'success',
           summary: 'Succes',
-          detail: 'Lijst succesvol verwijderc',
+          detail: 'Lijst succesvol verwijderd',
           life: 3000,
         });
       },
