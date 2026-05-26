@@ -102,7 +102,7 @@ export const routes: Routes = [
   {
     path: 'boek/:id/bewerken',
     component: BookEdit,
-    canActivate: [authGuard(['BIBLIOTHEEKBEHEERDER'])],
+    canActivate: [authGuard(['BIBLIOTHEEKBEHEERDER', 'ADMIN'])],
   },
   {
     path: 'ophalen',

@@ -372,19 +372,16 @@ export class BookDetailPage implements OnInit {
         this.locationBook = locationBook;
         this.setAmountValidators(locationBook.current_amount);
       },
-      error: () =>
-        this.messageService.add({
-          severity: 'info',
-          summary: '',
-          detail: 'Uw locatie heeft dit boek niet of het is niet meer beschikbaar.',
-          life: 3000,
-        }),
-    });
-  }
-
-  private loadSchoolData(): void {
-    this.schoolService.getById(this.schoolId).subscribe({
-      next: (school) => (this.school = school),
+      error: () => {
+        if (!this.authService.hasRole('ADMIN')) {
+          this.messageService.add({
+            severity: 'info',
+            summary: '',
+            detail: 'Uw locatie heeft dit boek niet of het is niet meer beschikbaar.',
+            life: 3000,
+          });
+        }
+      },
     });
   }
 
