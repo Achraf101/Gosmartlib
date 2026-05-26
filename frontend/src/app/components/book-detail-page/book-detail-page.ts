@@ -311,6 +311,16 @@ export class BookDetailPage implements OnInit {
   addToCart(): void {
     if (this.cartForm.invalid || !this.book) return;
 
+    if (!this.locationBook || this.locationBook.current_amount < 1) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Niet beschikbaar',
+        detail: 'Dit boek is momenteel niet beschikbaar op uw locatie.',
+        life: 3000,
+      });
+      return;
+    }
+
     const book: CartBook = {
       id: this.bookId,
       bookId: this.bookId,
@@ -453,6 +463,24 @@ export class BookDetailPage implements OnInit {
       `https://archive.org/embed/${this.iaId}`,
     );
     this.previewDialogVisible = true;
+  }
+
+  openCartDialog(): void {
+    if (this.authService.hasRole('STUDENT')) {
+      this.cartForm.patchValue({ requestedAmount: 1 });
+      this.cartForm.controls.requestedAmount.clearValidators();
+      this.cartForm.controls.requestedAmount.updateValueAndValidity();
+    }
+    this.cartDialogVisible = true;
+  }
+
+  openLoanDialog(): void {
+    if (this.authService.hasRole('STUDENT')) {
+      this.loanForm.patchValue({ requestedAmount: 1 });
+      this.loanForm.controls.requestedAmount.clearValidators();
+      this.loanForm.controls.requestedAmount.updateValueAndValidity();
+    }
+    this.loanFormVisible = true;
   }
 
   getStarFill(position: number): number {

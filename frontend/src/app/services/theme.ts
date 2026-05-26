@@ -14,4 +14,8 @@ export class ThemeService {
   getAll(): Observable<Theme[]> {
     return this.apiService.get<Theme[]>(this.endpoint);
   }
+
+  addTheme(theme: { name: string }) {
+    return this.apiService.post(this.endpoint, theme);
+  }
 }

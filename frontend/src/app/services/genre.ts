@@ -23,7 +23,7 @@ export class GenreService {
     return this.apiService.get<Genre[]>(`${this.endpoint}/search/${query}`);
   }
 
-  addAuthor(genre: Omit<Genre, 'id'>): Observable<Genre> {
-    return this.apiService.post<Genre>(`${this.endpoint}`, genre);
+  addGenre(genre: { name: string }): Observable<Genre> {
+    return this.apiService.post<Genre>(this.endpoint, genre);
   }
 }

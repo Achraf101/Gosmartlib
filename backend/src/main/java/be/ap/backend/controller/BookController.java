@@ -48,7 +48,7 @@ public class BookController {
             @RequestParam(required = false) Long location,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size) {
-        return ResponseEntity.ok(bookService.getAll(session, full, location, PageRequest.of(page, size)));
+        return ResponseEntity.ok(bookService.getAll(location, full, PageRequest.of(page, size)));
     }
 
     @GetMapping("/{id}")
