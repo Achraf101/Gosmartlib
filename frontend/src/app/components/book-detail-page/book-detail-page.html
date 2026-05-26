@@ -102,16 +102,18 @@
         <div class="btns">
           <p-button
             class="btn"
-            label="Nu Ontlenen"
+            label="Nu ontlenen"
             severity="primary"
-            (onClick)="loanFormVisible = true"
+            (onClick)="openLoanDialog()"
           />
-          <p-button
-            class="btn"
-            label="Toevoegen aan ontlening"
-            severity="primary"
-            (onClick)="cartDialogVisible = true"
-          />
+          @if (!authService.hasRole('LEERKRACHT')) {
+            <p-button
+              class="btn"
+              label="Toevoegen aan ontlening"
+              severity="primary"
+              (onClick)="openCartDialog()"
+            />
+          }
           @if (iaId) {
             <p-button
               class="btn"
@@ -136,7 +138,7 @@
               <span class="avail-value">{{ locationBook.current_amount }} / {{ locationBook.amount }} beschikbaar</span>
             </p>
           } @else {
-            <p class="avail-value avail-unavailable">Niet beschikbaar op uw locatie.</p>
+            <p class="avail-value avail-unavailable">Niet beschikbaar op jouw locatie.</p>
           }
         </div>
       </div>
@@ -229,7 +231,7 @@
         }
         @if (book.clib) {
           <tr>
-            <td>CLIB niveau</td>
+            <td>Leesniveau</td>
             <td>{{ book.clib }}</td>
           </tr>
         }
@@ -268,7 +270,7 @@
 
     @if (relatedBooks?.length != 0) {
       <div id="related-books" class="box">
-        <h2>Meer van dit:</h2>
+        <h2>Meer van dit</h2>
         <div class="related-scroll">
           @for (bookCard of relatedBooks ?? []; track bookCard.id) {
             <b-card [bookCard]="bookCard"></b-card>
@@ -278,7 +280,7 @@
     }
 
     <p-dialog
-      header="Ontleen aanvraag"
+      header="Ontleenaanvraag"
       [modal]="true"
       [(visible)]="loanFormVisible"
       resizable="false"
@@ -309,34 +311,37 @@
               @if (loanForm.controls.end.value) {
                 {{ loanForm.controls.end.value | date: 'dd/MM/yyyy' }}
               } @else {
-                (selecteer een start datum)
+                (selecteer een startdatum)
               }
             </span>
           </div>
-          <div>
-            <p-ifta-label>
-              <p-inputNumber
-                inputId="requestedAmount"
-                formControlName="requestedAmount"
-                [showButtons]="true"
-                [min]="0"
-                [max]="locationBook?.current_amount ?? 100"
-                [useGrouping]="false"
-              />
-              <label for="requestedAmount">Aantal</label>
-            </p-ifta-label>
-            @if (
-              loanForm.controls.requestedAmount.invalid && loanForm.controls.requestedAmount.touched
-            ) {
-              <small class="p-error">
-                <p-message severity="error" size="small" variant="simple"
-                  >Geef een geldig aantal in.</p-message
-                >
-              </small>
-            }
-          </div>
+          @if (!authService.hasRole('STUDENT')) {
+            <div>
+              <p-ifta-label>
+                <p-inputNumber
+                  inputId="requestedAmount"
+                  formControlName="requestedAmount"
+                  [showButtons]="true"
+                  [min]="0"
+                  [max]="locationBook?.current_amount ?? 100"
+                  [useGrouping]="false"
+                />
+                <label for="requestedAmount">Aantal</label>
+              </p-ifta-label>
+              @if (
+                loanForm.controls.requestedAmount.invalid &&
+                loanForm.controls.requestedAmount.touched
+              ) {
+                <small class="p-error">
+                  <p-message severity="error" size="small" variant="simple"
+                    >Geef een geldig aantal in.</p-message
+                  >
+                </small>
+              }
+            </div>
+          }
           <div class="btns">
-            <p-button class="btn" label="Annuleer" severity="secondary" (click)="cancelLoan()" />
+            <p-button class="btn" label="Annuleren" severity="secondary" (click)="cancelLoan()" />
             <p-button
               class="btn"
               label="Opslaan"
@@ -349,28 +354,30 @@
     </p-dialog>
 
     <p-dialog header="Voeg toe aan ontlening" [(visible)]="cartDialogVisible" [modal]="true">
-      <form [formGroup]="cartForm" class="flex flex-col gap-3">
-        <p-ifta-label>
-          <p-inputnumber
-            formControlName="requestedAmount"
-            inputId="cartAmount"
-            [min]="0"
-            [max]="locationBook?.current_amount ?? 100"
-            [showButtons]="true"
-            [useGrouping]="false"
-          />
-          <label for="cartAmount">Aantal exemplaren</label>
-        </p-ifta-label>
-        @if (
-          cartForm.controls.requestedAmount.invalid && cartForm.controls.requestedAmount.touched
-        ) {
-          <small class="p-error">
-            <p-message severity="error" size="small" variant="simple"
-              >Geef een geldig aantal in.</p-message
-            >
-          </small>
-        }
-      </form>
+      @if (!authService.hasRole('STUDENT')) {
+        <form [formGroup]="cartForm" class="flex flex-col gap-3">
+          <p-ifta-label>
+            <p-inputnumber
+              formControlName="requestedAmount"
+              inputId="cartAmount"
+              [min]="0"
+              [max]="locationBook?.current_amount ?? 100"
+              [showButtons]="true"
+              [useGrouping]="false"
+            />
+            <label for="cartAmount">Aantal exemplaren</label>
+          </p-ifta-label>
+          @if (
+            cartForm.controls.requestedAmount.invalid && cartForm.controls.requestedAmount.touched
+          ) {
+            <small class="p-error">
+              <p-message severity="error" size="small" variant="simple"
+                >Geef een geldig aantal in.</p-message
+              >
+            </small>
+          }
+        </form>
+      }
       <ng-template pTemplate="footer">
         <p-button label="Annuleren" severity="secondary" (onClick)="cancelCart()" />
         <p-button

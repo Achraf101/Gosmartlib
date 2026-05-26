@@ -31,7 +31,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -53,12 +52,9 @@ public class LoanServiceTest {
     @Mock
     private LocationBookService locationBookService;
 
-    // Required by LoanService constructor — used in toDTO() via toDTOs()
     @Mock
     private SmartschoolLookupService lookupService;
 
-    // Required by LoanService constructor — drives the CompletableFuture pool in
-    // toDTOs()
     @Mock
     private Executor lookupExecutor;
 
@@ -82,7 +78,7 @@ public class LoanServiceTest {
         user = new User();
         user.setId(1L);
         user.setSchool(school);
-        user.setRole(UserRole.STUDENT);
+        user.setRoles(new HashSet<>(Set.of(UserRole.STUDENT)));
 
         location = new Location();
         location.setId(1L);
@@ -108,13 +104,12 @@ public class LoanServiceTest {
         loan.setStatus(LoanStatus.REQUESTED);
         loan.setLoanBooks(new HashSet<>());
 
-        // Default stub: lookupService returns a display name so toDTO() never NPEs.
-        // Individual tests that don't reach toDTO() can leave this unused (lenient).
-        lenient().when(lookupService.getUser(any(), any(), anyString()))
+        // FIX: third argument is Set<UserRole>, not String — use any() instead of
+        // anyString().
+        lenient().when(lookupService.getUser(any(), any(), any()))
                 .thenReturn(Map.of("givenName", "Jan", "familyName", "Peeters"));
 
-        // Default stub: execute the Runnable inline so CompletableFuture in toDTOs()
-        // completes synchronously in the test thread.
+        // Execute Runnables inline so CompletableFuture completes synchronously.
         lenient().doAnswer(inv -> {
             ((Runnable) inv.getArgument(0)).run();
             return null;
@@ -417,9 +412,10 @@ public class LoanServiceTest {
         when(loanRepository.findById(1L)).thenReturn(Optional.of(loan));
         when(loanRepository.save(loan)).thenReturn(loan);
 
-        loanService.updateNote(1L, "Nieuwe opmerking");
+        LoanDTO result = loanService.updateNote(1L, "Nieuwe opmerking");
 
         assertThat(loan.getNote()).isEqualTo("Nieuwe opmerking");
+        assertThat(result).isNotNull();
         verify(loanRepository).save(loan);
     }
 
@@ -553,8 +549,6 @@ public class LoanServiceTest {
     }
 
     // ── getByStateAndSchool ───────────────────────────────────────
-    // NOTE: The service method is getByStateAndSchool(state, schoolId),
-    // not getByStateAndLocation. Tests updated accordingly.
 
     @Test
     void getByStateAndSchool_returnsMatchingLoans() {
@@ -890,6 +884,7 @@ public class LoanServiceTest {
         dto.setLocationId(1L);
         dto.setStart(LocalDate.now().plusDays(1));
         dto.setEnd(LocalDate.now().plusDays(15));
+        dto.setStatus(LoanStatus.REQUESTED);
         dto.setBooks(new LoanBookDTO[] { loanBookDTO });
         return dto;
     }

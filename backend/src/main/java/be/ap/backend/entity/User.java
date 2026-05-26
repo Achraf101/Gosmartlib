@@ -7,7 +7,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "user")
@@ -19,9 +20,11 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "role")
     @Enumerated(EnumType.STRING)
-    @Column(name = "role", nullable = false)
-    private UserRole role;
+    private Set<UserRole> roles = new HashSet<>();
 
     @Column(name = "username", unique = true, nullable = true, length = 60)
     private String username;
@@ -46,7 +49,7 @@ public class User implements UserDetails {
     public User(String username, String password, UserRole role) {
         this.username = username;
         this.password = password;
-        this.role = role;
+        this.roles = new HashSet<>(Set.of(role));
     }
 
     @Override
@@ -61,7 +64,7 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(role);
+        return roles;
     }
 
 }

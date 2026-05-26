@@ -1,5 +1,7 @@
 package be.ap.backend.controller.auth;
 
+import java.util.Set;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,6 +17,7 @@ import jakarta.servlet.http.HttpSession;
 public class CurrentUserController {
 
     @GetMapping("/current-user")
+    @SuppressWarnings("unchecked")
     public ResponseEntity<CurrentUserDTO> getCurrentUser(HttpSession session) {
         Object userRaw = session.getAttribute("userId");
         if (userRaw == null) {
@@ -22,7 +25,7 @@ public class CurrentUserController {
         }
         CurrentUserDTO currentUser = new CurrentUserDTO();
         currentUser.setUserId(toLong(session.getAttribute("userId")));
-        currentUser.setRole((String) session.getAttribute("role"));
+        currentUser.setRoles((Set<String>) session.getAttribute("roles"));
         currentUser.setSchoolId(toLong(session.getAttribute("school")));
         currentUser.setFirstName((String) session.getAttribute("firstName"));
         currentUser.setLastName((String) session.getAttribute("lastName"));

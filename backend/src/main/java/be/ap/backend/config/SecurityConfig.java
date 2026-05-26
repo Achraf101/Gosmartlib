@@ -1,15 +1,19 @@
 package be.ap.backend.config;
 
 import be.ap.backend.entity.User;
+import be.ap.backend.entity.UserRole;
 import be.ap.backend.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -26,11 +30,6 @@ public class SecurityConfig {
     private int strength;
 
     private final UserService userService;
-
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-        return config.getAuthenticationManager();
-    }
 
     @Bean
     public HttpSessionEventPublisher httpSessionEventPublisher() {
@@ -61,7 +60,9 @@ public class SecurityConfig {
 
                             session.setAttribute("userId", u.getId());
                             session.setAttribute("school", u.getSchool() != null ? u.getSchool().getId() : null);
-                            session.setAttribute("role", u.getRole().name());
+                            session.setAttribute("roles", u.getRoles().stream()
+                                    .map(UserRole::name)
+                                    .collect(Collectors.toSet()));
                             session.setAttribute("username", u.getUsername());
 
                             res.setStatus(HttpServletResponse.SC_OK);

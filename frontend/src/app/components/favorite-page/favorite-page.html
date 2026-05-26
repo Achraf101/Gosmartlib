@@ -27,7 +27,7 @@
       }
       <div class="popup-buttons">
         <p-button (click)="confirmSave()">Toevoegen</p-button>
-        <p-button (click)="cancelSave()">Anuleren</p-button>
+        <p-button (click)="cancelSave()">Annuleren</p-button>
       </div>
     </div>
   </div>
@@ -49,6 +49,8 @@
             (click)="toggleBookmarked(book.book_id); $event.stopPropagation()"
             class="bookmark pi"
             [class.pi-bookmark-fill]="true"
+            pTooltip="Verwijder uit favorieten"
+            tooltipPosition="top"
           ></i>
         </div>
       </ng-template>
@@ -58,7 +60,7 @@
   <h1>Je hebt nog geen favorieten</h1>
 }
 
-<p-divider align="center">eigen lijsten</p-divider>
+<p-divider align="center">Eigen lijsten</p-divider>
 @if (lists.length > 0) {
   @for (list of lists; track $index) {
     <div class="list-header">
@@ -77,9 +79,11 @@
           (click)="startEditing(); $event.stopPropagation()"
           class="bookmark pi"
           [class.pi-pen-to-square]="true"
+          pTooltip="Lijst hernoemen"
+          tooltipPosition="top"
         ></i>
         <p-button
-          label="Voeg boek toe"
+          label="Boek toevoegen"
           icon="pi pi-pencil"
           severity="secondary"
           size="small"
@@ -93,17 +97,23 @@
             (click)="confirmStopSharing($event, list)"
             class="bookmark pi"
             [class.pi-minus-circle]="true"
+            pTooltip="Stop met delen"
+            tooltipPosition="top"
           ></i>
         }
         <i
           (click)="confirmShareList($event, list); $event.stopPropagation()"
           class="bookmark pi"
           [class.pi-share-alt]="true"
+          pTooltip="Deel deze lijst via een link"
+          tooltipPosition="top"
         ></i>
         <i
           (click)="confirmDeleteList($event, list.id, list.name)"
           class="bookmark pi"
           [class.pi-times]="true"
+          pTooltip="Lijst verwijderen"
+          tooltipPosition="top"
         ></i>
       </div>
     </div>
@@ -125,6 +135,8 @@
                 "
                 class="bookmark pi"
                 [class.pi-times]="true"
+                pTooltip="Verwijder uit lijst"
+                tooltipPosition="top"
               ></i>
             </div>
           </ng-template>
@@ -136,11 +148,13 @@
   }
 }
 <div class="add-list">
-  <input [(ngModel)]="listName" placeholder="Lijst naam" />
+  <input [(ngModel)]="listName" placeholder="Lijstnaam" />
   <i
     (click)="submitList(); $event.stopPropagation()"
     class="bookmark pi"
     [class.pi-plus]="true"
+    pTooltip="Nieuwe lijst aanmaken"
+    tooltipPosition="top"
   ></i>
 </div>
 
@@ -155,6 +169,8 @@
           (click)="confirmDeleteSavedList($event, saved.list.id, saved.list.name)"
           class="bookmark pi"
           [class.pi-times]="true"
+          pTooltip="Gedeelde lijst verwijderen"
+          tooltipPosition="top"
         ></i>
       </div>
       <div class="book-card-list">

@@ -46,7 +46,6 @@ import { LocationBookService } from '../../services/locationbook';
 import { Location } from '../../models/location';
 import { SchoolService } from '../../services/school';
 import { School } from '../../models/school';
-import { Textarea } from 'primeng/textarea';
 import { BookCover } from '../misc/book-cover/book-cover';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
@@ -312,6 +311,16 @@ export class BookDetailPage implements OnInit {
   addToCart(): void {
     if (this.cartForm.invalid || !this.book) return;
 
+    if (!this.locationBook || this.locationBook.current_amount < 1) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Niet beschikbaar',
+        detail: 'Dit boek is momenteel niet beschikbaar op uw locatie.',
+        life: 3000,
+      });
+      return;
+    }
+
     const book: CartBook = {
       id: this.bookId,
       bookId: this.bookId,
@@ -336,8 +345,8 @@ export class BookDetailPage implements OnInit {
     } catch (e) {
       const message =
         e instanceof Error && e.message === 'BORROW_LIMIT_REACHED'
-          ? 'U heeft het maximum aantal boeken bereikt.'
-          : 'Dit boek staat al in uw ontleenlijst.';
+          ? 'Je hebt het maximale aantal boeken bereikt.'
+          : 'Dit boek staat al in je ontleenlijst.';
       this.messageService.add({
         severity: 'error',
         summary: 'Fout',
@@ -454,6 +463,24 @@ export class BookDetailPage implements OnInit {
       `https://archive.org/embed/${this.iaId}`,
     );
     this.previewDialogVisible = true;
+  }
+
+  openCartDialog(): void {
+    if (this.authService.hasRole('STUDENT')) {
+      this.cartForm.patchValue({ requestedAmount: 1 });
+      this.cartForm.controls.requestedAmount.clearValidators();
+      this.cartForm.controls.requestedAmount.updateValueAndValidity();
+    }
+    this.cartDialogVisible = true;
+  }
+
+  openLoanDialog(): void {
+    if (this.authService.hasRole('STUDENT')) {
+      this.loanForm.patchValue({ requestedAmount: 1 });
+      this.loanForm.controls.requestedAmount.clearValidators();
+      this.loanForm.controls.requestedAmount.updateValueAndValidity();
+    }
+    this.loanFormVisible = true;
   }
 
   getStarFill(position: number): number {

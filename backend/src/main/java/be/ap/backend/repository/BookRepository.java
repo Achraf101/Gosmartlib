@@ -152,4 +152,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     @Transactional
     @Query("UPDATE Book b SET b.cover = :filename WHERE b.id = :id")
     int updateCover(@Param("id") Long id, @Param("filename") String filename);
+
+    @Query("SELECT COUNT(lb) > 0 FROM LocationBook lb WHERE lb.book.id = :bookId AND lb.location.id IN :locationIds")
+    boolean existsByIdAndLocationId(@Param("bookId") Long bookId, @Param("locationIds") List<Long> locationIds);
 }

@@ -1,5 +1,8 @@
 package be.ap.backend.config;
 
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.annotation.RequestScope;
 
@@ -25,12 +28,26 @@ public class SessionContext {
         session.setAttribute("userId", id);
     }
 
-    public UserRole getRole() {
-        return (UserRole) session.getAttribute("role");
+    public Set<UserRole> getRoles() {
+        @SuppressWarnings("unchecked")
+        Set<String> roleStrings = (Set<String>) session.getAttribute("roles");
+        if (roleStrings == null || roleStrings.isEmpty()) {
+            return Set.of();
+        }
+        return roleStrings.stream()
+                .map(UserRole::valueOf)
+                .collect(Collectors.toSet());
     }
 
-    public void setRole(UserRole role) {
-        session.setAttribute("role", role);
+    public boolean hasRole(UserRole role) {
+        return getRoles().contains(role);
+    }
+
+    public void setRole(Set<UserRole> roles) {
+        Set<String> roleStrings = roles.stream()
+                .map(UserRole::name)
+                .collect(Collectors.toSet());
+        session.setAttribute("roles", roleStrings);
     }
 
     public String getName() {
@@ -42,10 +59,12 @@ public class SessionContext {
     }
 
     public Long getSchoolId() {
-        return (Long) session.getAttribute("schoolId");
-    }
+        Object schoolId = session.getAttribute("school");
+        if (schoolId == null) return null;
+        return Long.parseLong(schoolId.toString());
+   }
 
     public void setSchoolId(Long id) {
-        session.setAttribute("schoolId", id);
+        session.setAttribute("school", id);
     }
 }

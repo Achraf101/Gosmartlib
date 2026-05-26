@@ -221,7 +221,7 @@ public class LoanService {
         Map<String, Object> userInfo = lookupService.getUser(
                 loan.getUser().getSchool(),
                 loan.getUser().getOneRosterId(),
-                loan.getUser().getRole().toString().toLowerCase());
+                loan.getUser().getRoles());
 
         String displayName;
         if (userInfo != null) {

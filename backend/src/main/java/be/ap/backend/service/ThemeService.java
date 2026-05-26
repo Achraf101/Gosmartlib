@@ -21,11 +21,14 @@ public class ThemeService {
                 .collect(Collectors.toList());
     }
 
-    private ThemeDTO convertToDTO(Theme theme) {
+    public ThemeDTO convertToDTO(Theme theme) {
         ThemeDTO dto = new ThemeDTO();
         dto.setId(theme.getId());
         dto.setName(theme.getName());
         return dto;
     }
 
+    public Theme add(Theme theme) {
+        return themeRepository.save(theme);
+    }
 }

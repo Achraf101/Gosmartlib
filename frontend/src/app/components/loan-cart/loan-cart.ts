@@ -26,6 +26,7 @@ import { TableModule } from 'primeng/table';
 import { Message } from 'primeng/message';
 import { SchoolService } from '../../services/school';
 import { School } from '../../models/school';
+import { TooltipModule } from 'primeng/tooltip';
 
 @Component({
   selector: 'app-loan-cart',
@@ -42,6 +43,7 @@ import { School } from '../../models/school';
     BookCardComponent,
     TableModule,
     Message,
+    TooltipModule
   ],
   templateUrl: './loan-cart.html',
   styleUrl: './loan-cart.css',
@@ -138,7 +140,7 @@ export class LoanCartComponent {
       this.messageService.add({
         severity: 'warn',
         summary: 'Limiet overschreden',
-        detail: `U mag maximaal ${this.school.borrowLimit} verschillende boeken per ontlening aanvragen.`,
+        detail: `Je mag maximaal ${this.school.borrowLimit} verschillende boeken per ontlening aanvragen.`,
         life: 4000,
       });
       return;

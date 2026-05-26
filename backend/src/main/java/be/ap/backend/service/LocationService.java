@@ -2,13 +2,16 @@ package be.ap.backend.service;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import be.ap.backend.dto.LocationDTO;
 import be.ap.backend.entity.Location;
 import be.ap.backend.entity.School;
 import be.ap.backend.exception.MissingArgumentsException;
 import be.ap.backend.repository.LocationRepository;
+import be.ap.backend.repository.SchoolRepository;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 
@@ -16,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class LocationService {
     private final LocationRepository locationRepository;
+    private final SchoolRepository schoolRepository;
 
     private final EntityManager entityManager;
 
@@ -55,5 +59,15 @@ public class LocationService {
             dto.setSchoolId(location.getSchool().getId());
         }
         return dto;
+    }
+
+    public List<LocationDTO> getLocationsBySchool(Long schoolId) {
+        School school = schoolRepository.findById(schoolId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "School niet gevonden"));
+
+        return locationRepository.findBySchool(school)
+                .stream()
+                .map(this::toDTO)
+                .toList();
     }
 }

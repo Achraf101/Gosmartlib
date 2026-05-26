@@ -7,12 +7,13 @@ import { ApiService } from '../../services/api';
 import { Author } from '../../models/author';
 import { Genre } from '../../models/genre';
 import { Language } from '../../models/language';
-import { Series } from '../../models/series'; // voeg dit model toe
+import { Series } from '../../models/series'; 
 import { AutoCompleteModule, AutoCompleteCompleteEvent } from 'primeng/autocomplete';
 import { SelectModule } from 'primeng/select';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { Theme } from '../../models/theme';
 import { ThemeService } from '../../services/theme';
+import { TooltipModule } from 'primeng/tooltip';
 
 @Component({
   selector: 'app-filter-page',
@@ -24,6 +25,7 @@ import { ThemeService } from '../../services/theme';
     AutoCompleteModule,
     SelectModule,
     InputNumberModule,
+    TooltipModule
   ],
   templateUrl: './filter-page.html',
   styleUrl: './filter-page.css',
@@ -166,7 +168,7 @@ export class FilterPage implements OnInit {
       return false;
     }
     if (this.pagesMin !== null && this.pagesMax !== null && this.pagesMin > this.pagesMax) {
-      this.errorPagesMin = 'Min moet kleiner zijn dan max.';
+      this.errorPagesMin = 'Min. moet kleiner zijn dan max.';
       return false;
     }
     return true;

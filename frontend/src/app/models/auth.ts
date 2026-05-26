@@ -1,6 +1,6 @@
 export interface AuthUser {
   userId: number;
-  role: string;
+  roles: string[];
   schoolId: number | null;
   firstName: string | null;
   lastName: string | null;

@@ -15,6 +15,7 @@ import { Divider } from 'primeng/divider';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ConfirmPopupModule } from 'primeng/confirmpopup';
 import { ToastModule } from 'primeng/toast';
+import { TooltipModule } from 'primeng/tooltip';
 
 @Component({
   selector: 'app-bookmarked',
@@ -28,6 +29,7 @@ import { ToastModule } from 'primeng/toast';
     Divider,
     ConfirmPopupModule,
     ToastModule,
+    TooltipModule
   ],
   providers: [ConfirmationService],
   templateUrl: './favorite-page.html',
@@ -129,7 +131,7 @@ export class FavoritePage implements OnInit {
         this.messageService.add({
           severity: 'success',
           summary: 'Succes',
-          detail: 'Boek succesvol verwijdert',
+          detail: 'Boek succesvol verwijderd',
           life: 3000,
         });
       },
@@ -143,7 +145,7 @@ export class FavoritePage implements OnInit {
         this.messageService.add({
           severity: 'success',
           summary: 'Succes',
-          detail: 'Lijst succesvol verwijdert',
+          detail: 'Lijst succesvol verwijderd',
           life: 3000,
         });
       },
@@ -190,7 +192,7 @@ export class FavoritePage implements OnInit {
     this.messageService.add({
       severity: 'success',
       summary: 'Succes',
-      detail: 'link gecopiëerd',
+      detail: 'link gekopieerd',
       life: 3000,
     });
   }
@@ -251,7 +253,7 @@ export class FavoritePage implements OnInit {
         this.messageService.add({
           severity: 'success',
           summary: 'Succes',
-          detail: 'Lijst succesvol verwijdert',
+          detail: 'Lijst succesvol verwijderd',
           life: 3000,
         });
       },

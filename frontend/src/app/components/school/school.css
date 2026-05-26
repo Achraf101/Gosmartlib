@@ -26,3 +26,26 @@
 .school-list p {
   color: #444;
 }
+
+.school-list > .nav-buttons {
+  padding: 0;
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  border: none;
+  box-shadow: none;
+}
+
+.btns {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+@media (max-width: 576px) {
+  .btns {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+}

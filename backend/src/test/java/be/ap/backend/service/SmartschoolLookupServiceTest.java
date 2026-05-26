@@ -1,6 +1,10 @@
 package be.ap.backend.service;
 
+import be.ap.backend.dto.TeacherDTO;
 import be.ap.backend.entity.School;
+import be.ap.backend.entity.User;
+import be.ap.backend.entity.UserRole;
+import be.ap.backend.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,7 +15,10 @@ import org.springframework.http.*;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.*;
@@ -26,6 +33,9 @@ class SmartschoolLookupServiceTest {
     @Mock
     private RestTemplate restTemplate;
 
+    @Mock
+    private UserRepository userRepository;
+
     @InjectMocks
     private SmartschoolLookupService service;
 
@@ -35,6 +45,7 @@ class SmartschoolLookupServiceTest {
     void setUp() {
         school = new School();
         school.setSsSubdomain("testschool");
+        school.setSsId("school-ss-id");
     }
 
     // -------------------------------------------------------------------------
@@ -42,51 +53,65 @@ class SmartschoolLookupServiceTest {
     // -------------------------------------------------------------------------
 
     @Test
-    void getUser_student_returnsUserBlock() {
-        String token = "tok-student";
+    void getUser_student_usesStudentsEndpoint() {
         Map<String, Object> innerUser = Map.of("sourcedId", "s1", "givenName", "Alice");
         Map<String, Object> body = Map.of("user", innerUser);
 
-        when(tokenService.getAccessToken(school)).thenReturn(token);
+        when(tokenService.getAccessToken(school)).thenReturn("tok-student");
         when(restTemplate.exchange(
                 eq("https://testschool.smartschool.be/ims/oneroster/v1p1/students/s1"),
                 eq(HttpMethod.GET),
                 any(HttpEntity.class),
                 eq(Map.class))).thenReturn(ResponseEntity.ok(body));
 
-        Map<String, Object> result = service.getUser(school, "s1", "student");
+        Map<String, Object> result = service.getUser(school, "s1", Set.of(UserRole.STUDENT));
 
         assertThat(result).isEqualTo(innerUser);
     }
 
     @Test
     void getUser_teacher_usesTeachersEndpoint() {
-        String token = "tok-teacher";
         Map<String, Object> innerUser = Map.of("sourcedId", "t1", "givenName", "Bob");
         Map<String, Object> body = Map.of("user", innerUser);
 
-        when(tokenService.getAccessToken(school)).thenReturn(token);
+        when(tokenService.getAccessToken(school)).thenReturn("tok-teacher");
         when(restTemplate.exchange(
                 eq("https://testschool.smartschool.be/ims/oneroster/v1p1/teachers/t1"),
                 eq(HttpMethod.GET),
                 any(HttpEntity.class),
                 eq(Map.class))).thenReturn(ResponseEntity.ok(body));
 
-        Map<String, Object> result = service.getUser(school, "t1", "teacher");
+        Map<String, Object> result = service.getUser(school, "t1", Set.of(UserRole.LEERKRACHT));
 
         assertThat(result).isEqualTo(innerUser);
     }
 
     @Test
+    void getUser_mixedRolesContainingStudent_usesStudentsEndpoint() {
+        // STUDENT takes precedence when present alongside other roles
+        Map<String, Object> body = Map.of("user", Map.of("sourcedId", "s2"));
+
+        when(tokenService.getAccessToken(school)).thenReturn("tok");
+        when(restTemplate.exchange(
+                eq("https://testschool.smartschool.be/ims/oneroster/v1p1/students/s2"),
+                eq(HttpMethod.GET),
+                any(HttpEntity.class),
+                eq(Map.class))).thenReturn(ResponseEntity.ok(body));
+
+        Map<String, Object> result = service.getUser(school, "s2", Set.of(UserRole.STUDENT, UserRole.LEERKRACHT));
+
+        assertThat(result).isEqualTo(Map.of("sourcedId", "s2"));
+    }
+
+    @Test
     void getUser_noUserKey_returnsFlatBody() {
-        // When the response has no "user" key, getOrDefault falls back to the whole map
-        Map<String, Object> body = Map.of("sourcedId", "s2", "givenName", "Carol");
+        Map<String, Object> body = Map.of("sourcedId", "s3", "givenName", "Carol");
 
         when(tokenService.getAccessToken(school)).thenReturn("tok");
         when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(Map.class)))
                 .thenReturn(ResponseEntity.ok(body));
 
-        Map<String, Object> result = service.getUser(school, "s2", "student");
+        Map<String, Object> result = service.getUser(school, "s3", Set.of(UserRole.STUDENT));
 
         assertThat(result).isEqualTo(body);
     }
@@ -97,7 +122,7 @@ class SmartschoolLookupServiceTest {
         when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(Map.class)))
                 .thenThrow(new RestClientException("connection refused"));
 
-        Map<String, Object> result = service.getUser(school, "s3", "student");
+        Map<String, Object> result = service.getUser(school, "s4", Set.of(UserRole.STUDENT));
 
         assertThat(result).isNull();
     }
@@ -108,7 +133,7 @@ class SmartschoolLookupServiceTest {
         when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(Map.class)))
                 .thenReturn(ResponseEntity.ok(null));
 
-        Map<String, Object> result = service.getUser(school, "s4", "student");
+        Map<String, Object> result = service.getUser(school, "s5", Set.of(UserRole.STUDENT));
 
         assertThat(result).isNull();
     }
@@ -136,12 +161,9 @@ class SmartschoolLookupServiceTest {
 
     @Test
     void getClassroom_noClassKey_returnsNull() {
-        // Body exists but has no "class" key → Map.get returns null
-        Map<String, Object> body = Map.of("something", "else");
-
         when(tokenService.getAccessToken(school)).thenReturn("tok");
         when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(Map.class)))
-                .thenReturn(ResponseEntity.ok(body));
+                .thenReturn(ResponseEntity.ok(Map.of("something", "else")));
 
         Map<String, Object> result = service.getClassroom(school, "cls2");
 
@@ -171,6 +193,90 @@ class SmartschoolLookupServiceTest {
     }
 
     // -------------------------------------------------------------------------
+    // getAllTeachersForSchool
+    // -------------------------------------------------------------------------
+
+    @Test
+    void getAllTeachersForSchool_returnsMappedDTOs() {
+        Map<String, Object> u1 = Map.of("sourcedId", "t1", "givenName", "Alice", "familyName", "Smith");
+        Map<String, Object> u2 = Map.of("sourcedId", "t2", "givenName", "Bob", "familyName", "Jones");
+        Map<String, Object> body = Map.of("users", List.of(u1, u2));
+
+        User dbUser1 = new User();
+        dbUser1.setId(10L);
+        User dbUser2 = new User();
+        dbUser2.setId(20L);
+
+        when(tokenService.getAccessToken(school)).thenReturn("tok");
+        when(restTemplate.exchange(
+                eq("https://testschool.smartschool.be/ims/oneroster/v1p1/schools/school-ss-id/teachers"),
+                eq(HttpMethod.GET),
+                any(HttpEntity.class),
+                eq(Map.class))).thenReturn(ResponseEntity.ok(body));
+        when(userRepository.findByOneRosterId("t1")).thenReturn(Optional.of(dbUser1));
+        when(userRepository.findByOneRosterId("t2")).thenReturn(Optional.of(dbUser2));
+
+        List<TeacherDTO> result = service.getAllTeachersForSchool(school);
+
+        assertThat(result).containsExactly(
+                new TeacherDTO(10L, "Alice", "Smith"),
+                new TeacherDTO(20L, "Bob", "Jones"));
+    }
+
+    @Test
+    void getAllTeachersForSchool_unknownUserIsSkipped() {
+        Map<String, Object> u1 = Map.of("sourcedId", "t1", "givenName", "Alice", "familyName", "Smith");
+        Map<String, Object> u2 = Map.of("sourcedId", "t-unknown", "givenName", "Ghost", "familyName", "User");
+        Map<String, Object> body = Map.of("users", List.of(u1, u2));
+
+        User dbUser1 = new User();
+        dbUser1.setId(10L);
+
+        when(tokenService.getAccessToken(school)).thenReturn("tok");
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(Map.class)))
+                .thenReturn(ResponseEntity.ok(body));
+        when(userRepository.findByOneRosterId("t1")).thenReturn(Optional.of(dbUser1));
+        when(userRepository.findByOneRosterId("t-unknown")).thenReturn(Optional.empty());
+
+        List<TeacherDTO> result = service.getAllTeachersForSchool(school);
+
+        assertThat(result).containsExactly(new TeacherDTO(10L, "Alice", "Smith"));
+    }
+
+    @Test
+    void getAllTeachersForSchool_emptyUsersList_returnsEmptyList() {
+        when(tokenService.getAccessToken(school)).thenReturn("tok");
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(Map.class)))
+                .thenReturn(ResponseEntity.ok(Map.of("users", List.of())));
+
+        List<TeacherDTO> result = service.getAllTeachersForSchool(school);
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void getAllTeachersForSchool_restTemplateThrows_returnsEmptyList() {
+        when(tokenService.getAccessToken(school)).thenReturn("tok");
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(Map.class)))
+                .thenThrow(new RestClientException("network error"));
+
+        List<TeacherDTO> result = service.getAllTeachersForSchool(school);
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void getAllTeachersForSchool_nullBody_returnsEmptyList() {
+        when(tokenService.getAccessToken(school)).thenReturn("tok");
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(Map.class)))
+                .thenReturn(ResponseEntity.ok(null));
+
+        List<TeacherDTO> result = service.getAllTeachersForSchool(school);
+
+        assertThat(result).isEmpty();
+    }
+
+    // -------------------------------------------------------------------------
     // Request construction — Bearer token is forwarded correctly
     // -------------------------------------------------------------------------
 
@@ -185,7 +291,7 @@ class SmartschoolLookupServiceTest {
                     return ResponseEntity.ok(Map.of());
                 });
 
-        service.getUser(school, "s5", "student");
+        service.getUser(school, "s6", Set.of(UserRole.STUDENT));
 
         verify(tokenService).getAccessToken(school);
     }
