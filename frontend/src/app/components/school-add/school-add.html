@@ -6,128 +6,227 @@
       <input id="schoolname" pInputText formControlName="name" />
     </p-iftaLabel>
     @if (form.controls.name.invalid && form.controls.name.touched) {
-    <small class="p-error">
-      <p-message severity="error" size="small" variant="simple">Naam is verplicht!</p-message>
-    </small>
+      <small class="p-error">
+        <p-message severity="error" size="small" variant="simple">Naam is verplicht!</p-message>
+      </small>
     }
   </div>
   <div class="field">
     <p-iftaLabel>
       <label for="adres">Adres (optioneel)</label>
-      <textarea id="adres" rows="5" cols="30" pTooltip="Geef volledig adres, openingsuren, ..." tooltipPosition="right"
-        tooltipEvent="focus" pTextarea formControlName="adres" [autoResize]="true" maxlength="500"></textarea>
+      <textarea
+        id="adres"
+        rows="5"
+        cols="30"
+        pTooltip="Geef volledig adres, openingsuren, ..."
+        tooltipPosition="right"
+        tooltipEvent="focus"
+        pTextarea
+        formControlName="adres"
+        [autoResize]="true"
+        maxlength="500"
+      ></textarea>
       <app-char-counter [text]="form.get('adres')?.value ?? ''" [maxLength]="500">
       </app-char-counter>
     </p-iftaLabel>
     @if (form.controls.adres.invalid && form.controls.adres.touched) {
-    <small class="p-error">
-      <p-message severity="error" size="small" variant="simple">Maximum 500 tekens</p-message>
-    </small>
+      <small class="p-error">
+        <p-message severity="error" size="small" variant="simple">Maximum 500 tekens</p-message>
+      </small>
     }
   </div>
   <div class="field">
     <p-iftaLabel>
       <label for="contact">Contact (optioneel)</label>
-      <textarea id="contact" rows="5" cols="30" pTextarea formControlName="contact" [autoResize]="true"
-        maxlength="500"></textarea>
-      <app-char-counter [text]="form.get('contact')?.value ?? ''" [maxLength]="500"></app-char-counter>
+      <textarea
+        id="contact"
+        rows="5"
+        cols="30"
+        pTextarea
+        formControlName="contact"
+        [autoResize]="true"
+        maxlength="500"
+      ></textarea>
+      <app-char-counter
+        [text]="form.get('contact')?.value ?? ''"
+        [maxLength]="500"
+      ></app-char-counter>
     </p-iftaLabel>
     @if (form.controls.contact.invalid && form.controls.contact.touched) {
-    <small class="p-error"><p-message severity="error" size="small" variant="simple">Maximum 500
-        tekens</p-message></small>
+      <small class="p-error"
+        ><p-message severity="error" size="small" variant="simple"
+          >Maximum 500 tekens</p-message
+        ></small
+      >
     }
   </div>
   <div class="field">
     <p-iftaLabel>
       <label for="description">Beschrijving (optioneel)</label>
-      <textarea id="description" rows="5" cols="30" pTextarea formControlName="description" [autoResize]="true"
-        maxlength="1000"></textarea>
-      <app-char-counter [text]="form.get('description')?.value ?? ''" [maxLength]="1000"></app-char-counter>
+      <textarea
+        id="description"
+        rows="5"
+        cols="30"
+        pTextarea
+        formControlName="description"
+        [autoResize]="true"
+        maxlength="1000"
+      ></textarea>
+      <app-char-counter
+        [text]="form.get('description')?.value ?? ''"
+        [maxLength]="1000"
+      ></app-char-counter>
     </p-iftaLabel>
     <p-iftaLabel>
-      <label for="schoolDomain">Smartschool-url*</label>
-      <input id="schoolDomain" pTooltip="bijv.: https://school.smartschool.be/" pInputText
-        formControlName="subdomain" />
+      <label for="schoolDomain">Smartschool-subdomein*</label>
+      <input
+        id="schoolDomain"
+        pTooltip="Het subdomein is het unieke gedeelte van de Smartschool-URL van jouw school.
+Voorbeeld: voor 'hetgroteinstituut.smartschool.be' is het subdomein 'hetgroteinstituut'."
+        pInputText
+        formControlName="subdomain"
+      />
     </p-iftaLabel>
     @if (form.controls.description.invalid && form.controls.description.touched) {
-    <small class="p-error"><p-message severity="error" size="small" variant="simple">Maximum 1000
-        tekens</p-message></small>
+      <small class="p-error"
+        ><p-message severity="error" size="small" variant="simple"
+          >Maximum 1000 tekens</p-message
+        ></small
+      >
     }
   </div>
   <div class="field">
     <p-iftaLabel>
       <label for="borrowLimit">Uitleenbeperking*</label>
-      <input type="number" id="borrowLimit" pTooltip="Hoeveel boeken mag je maximum per keer ontlenen?"
-        tooltipPosition="right" tooltipEvent="focus" pInputText formControlName="borrowLimit" />
+      <input
+        type="number"
+        id="borrowLimit"
+        pTooltip="Hoeveel boeken mag je maximum per keer ontlenen?"
+        tooltipPosition="right"
+        tooltipEvent="focus"
+        pInputText
+        formControlName="borrowLimit"
+      />
     </p-iftaLabel>
     @if (form.controls.borrowLimit.invalid && form.controls.borrowLimit.touched) {
-    <small class="p-error">
-      <p-message severity="error" size="small" variant="simple">Alleen positieve getallen toegestaan! (Max.
-        999)</p-message>
-    </small>
+      <small class="p-error">
+        <p-message severity="error" size="small" variant="simple"
+          >Alleen positieve getallen toegestaan! (Max. 999)</p-message
+        >
+      </small>
     }
   </div>
   <div class="field">
     <p-iftalabel>
       <label for="amount">Uitleentermijn*</label>
-      <input id="amount" type="number" pInputText formControlName="borrowPeriod"
-        pTooltip="Hoelang mag een boek ontleend blijven? (dagen)" tooltipPosition="right" tooltipEvent="focus" />
+      <input
+        id="amount"
+        type="number"
+        pInputText
+        formControlName="borrowPeriod"
+        pTooltip="Hoelang mag een boek ontleend blijven? (dagen)"
+        tooltipPosition="right"
+        tooltipEvent="focus"
+      />
     </p-iftalabel>
     @if (form.controls.borrowPeriod.invalid && form.controls.borrowPeriod.touched) {
-    <small class="p-error">
-      <p-message severity="error" size="small" variant="simple">Alleen positieve getallen toegestaan! (Max.
-        999)</p-message>
-    </small>
+      <small class="p-error">
+        <p-message severity="error" size="small" variant="simple"
+          >Alleen positieve getallen toegestaan! (Max. 999)</p-message
+        >
+      </small>
     }
   </div>
   <div class="field">
     <p-iftalabel>
       <label for="amount">Verlengtermijn*</label>
-      <input id="amount" type="number" pInputText formControlName="extendPeriod"
-        pTooltip="Hoelang mag een boek verlengd worden? (in dagen)" tooltipPosition="right" tooltipEvent="focus" />
+      <input
+        id="amount"
+        type="number"
+        pInputText
+        formControlName="extendPeriod"
+        pTooltip="Hoelang mag een boek verlengd worden? (in dagen)"
+        tooltipPosition="right"
+        tooltipEvent="focus"
+      />
     </p-iftalabel>
     @if (form.controls.extendPeriod.invalid && form.controls.extendPeriod.touched) {
-    <small class="p-error">
-      <p-message severity="error" size="small" variant="simple">Alleen positieve getallen toegestaan! (Max.
-        999)</p-message>
-    </small>
+      <small class="p-error">
+        <p-message severity="error" size="small" variant="simple"
+          >Alleen positieve getallen toegestaan! (Max. 999)</p-message
+        >
+      </small>
     }
   </div>
   <div class="field">
     <p-iftalabel>
       <label for="amount">Maximaal aantal verlengingen*</label>
-      <input id="amount" type="number" pInputText formControlName="extendLimit"
-        pTooltip="Hoeveel keer mag een boek verlengd worden?" tooltipPosition="right" tooltipEvent="focus" />
+      <input
+        id="amount"
+        type="number"
+        pInputText
+        formControlName="extendLimit"
+        pTooltip="Hoeveel keer mag een boek verlengd worden?"
+        tooltipPosition="right"
+        tooltipEvent="focus"
+      />
     </p-iftalabel>
     @if (form.controls.extendLimit.invalid && form.controls.extendLimit.touched) {
-    <small class="p-error">
-      <p-message severity="error" size="small" variant="simple">Alleen positieve getallen toegestaan! (Max.
-        10)</p-message>
-    </small>
+      <small class="p-error">
+        <p-message severity="error" size="small" variant="simple"
+          >Alleen positieve getallen toegestaan! (Max. 10)</p-message
+        >
+      </small>
     }
   </div>
   <div class="field">
     <p-iftaLabel>
       <label for="clientId">Client ID voor OneRoster</label>
-      <textarea id="clientId" rows="5" cols="30" pTextarea formControlName="clientId" [autoResize]="true"
-        maxlength="255"></textarea>
-      <app-char-counter [text]="form.get('clientId')?.value ?? ''" [maxLength]="255"></app-char-counter>
+      <textarea
+        id="clientId"
+        rows="5"
+        cols="30"
+        pTextarea
+        formControlName="clientId"
+        [autoResize]="true"
+        maxlength="255"
+      ></textarea>
+      <app-char-counter
+        [text]="form.get('clientId')?.value ?? ''"
+        [maxLength]="255"
+      ></app-char-counter>
     </p-iftaLabel>
     @if (form.controls.clientId.invalid && form.controls.clientId.touched) {
-    <small class="p-error"><p-message severity="error" size="small" variant="simple">Client ID is verplicht! (Max. 255
-        tekens)</p-message></small>
+      <small class="p-error"
+        ><p-message severity="error" size="small" variant="simple"
+          >Client ID is verplicht! (Max. 255 tekens)</p-message
+        ></small
+      >
     }
   </div>
   <div class="field">
     <p-iftaLabel>
       <label for="clientSecret">Client Secret voor OneRoster</label>
-      <textarea id="clientSecret" rows="5" cols="30" pTextarea formControlName="clientSecret" [autoResize]="true"
-        maxlength="255"></textarea>
-      <app-char-counter [text]="form.get('clientSecret')?.value ?? ''" [maxLength]="255"></app-char-counter>
+      <textarea
+        id="clientSecret"
+        rows="5"
+        cols="30"
+        pTextarea
+        formControlName="clientSecret"
+        [autoResize]="true"
+        maxlength="255"
+      ></textarea>
+      <app-char-counter
+        [text]="form.get('clientSecret')?.value ?? ''"
+        [maxLength]="255"
+      ></app-char-counter>
     </p-iftaLabel>
     @if (form.controls.clientSecret.invalid && form.controls.clientSecret.touched) {
-    <small class="p-error"><p-message severity="error" size="small" variant="simple">Client Secret is verplicht! (Max.
-        255 tekens)</p-message></small>
+      <small class="p-error"
+        ><p-message severity="error" size="small" variant="simple"
+          >Client Secret is verplicht! (Max. 255 tekens)</p-message
+        ></small
+      >
     }
   </div>
   <div class="btn">
