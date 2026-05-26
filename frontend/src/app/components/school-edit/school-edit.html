@@ -37,7 +37,7 @@
       </p-iftaLabel>
       @if (form.controls.adres.invalid && form.controls.adres.touched) {
         <small class="p-error">
-          <p-message severity="error" size="small" variant="simple">Maximum 500 tekens!</p-message>
+          <p-message severity="error" size="small" variant="simple">Maximum 500 tekens</p-message>
         </small>
       }
     </div>
@@ -61,7 +61,7 @@
       @if (form.controls.contact.invalid && form.controls.contact.touched) {
         <small class="p-error"
           ><p-message severity="error" size="small" variant="simple"
-            >Maximum 500 tekens!</p-message
+            >Maximum 500 tekens</p-message
           ></small
         >
       }
@@ -84,10 +84,10 @@
         ></app-char-counter>
       </p-iftaLabel>
       <p-iftaLabel>
-        <label for="schoolDomain">Smartschool url*</label>
+        <label for="schoolDomain">Smartschool-url*</label>
         <input
           id="schoolDomain"
-          pTooltip="bvb: https://school.smartschool.be/"
+          pTooltip="bijv.: https://school.smartschool.be/"
           pInputText
           formControlName="subdomain"
         />
@@ -95,14 +95,14 @@
       @if (form.controls.description.invalid && form.controls.description.touched) {
         <small class="p-error"
           ><p-message severity="error" size="small" variant="simple"
-            >Maximum 1000 tekens!</p-message
+            >Maximum 1000 tekens</p-message
           ></small
         >
       }
     </div>
     <div class="field">
       <p-iftaLabel>
-        <label for="borrowLimit">Uitleenbeperking*</label>
+        <label for="borrowLimit">Ontleenbeperking*</label>
         <input
           type="number"
           id="borrowLimit"
@@ -123,7 +123,7 @@
     </div>
     <div class="field">
       <p-iftalabel>
-        <label for="amount">Uitleentermijn*</label>
+        <label for="amount">Ontleentermijn*</label>
         <input
           id="amount"
           type="number"
@@ -150,7 +150,7 @@
           type="number"
           pInputText
           formControlName="extendPeriod"
-          pTooltip="Hoelang mag een boek verlengd worden? (In dagen)"
+          pTooltip="Hoelang mag een boek verlengd worden? (in dagen)"
           tooltipPosition="right"
           tooltipEvent="focus"
         />

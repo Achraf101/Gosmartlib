@@ -339,7 +339,7 @@ export class BookformComponent implements OnInit {
         this.router.navigate(['/boek', this.newBookId]);
         fileUploader.clear();
       },
-      error: () => this.showError('Probleem hij het uploaden van cover.'),
+      error: () => this.showError('Probleem bij het uploaden van de cover.'),
     });
   }
 

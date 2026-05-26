@@ -166,7 +166,7 @@
                   <div class="inputitem field-clib">
                     <p-iftalabel>
                       <p-select fluid [options]="cLIBS" formControlName="clib" id="clib" [showClear]="true" />
-                      <label for="clib">CLIB (optioneel)</label>
+                      <label for="clib">Leesniveau (optioneel)</label>
                     </p-iftalabel>
                   </div>
                 </div>
@@ -271,7 +271,7 @@
                 </div>
                 } @else {
                 <div class="btns btns-center">
-                  <p-button label="Naar boek pagina" icon="pi pi-arrow-right" (onClick)="goToBookPage()" />
+                  <p-button label="Naar boekpagina" icon="pi pi-arrow-right" (onClick)="goToBookPage()" />
                 </div>
                 }
               </ng-template>
@@ -293,7 +293,7 @@
         <textarea rows="5" formControlName="description" class="w-full" pTextarea></textarea>
       </p-iftalabel>
       <div class="btns mt-3">
-        <p-button label="Annuleer" severity="secondary" (click)="authorFormVisible = false" />
+        <p-button label="Annuleren" severity="secondary" (click)="authorFormVisible = false" />
         <p-button label="Opslaan" [disabled]="authorForm.invalid" (click)="addAuthor()" />
       </div>
     </p-dialog>
@@ -310,7 +310,7 @@
         <textarea rows="5" formControlName="description" class="w-full" pTextarea></textarea>
       </p-iftalabel>
       <div class="btns mt-3">
-        <p-button label="Annuleer" severity="secondary" (click)="publisherFormVisible = false" />
+        <p-button label="Annuleren" severity="secondary" (click)="publisherFormVisible = false" />
         <p-button label="Opslaan" [disabled]="publisherForm.invalid" (click)="addPublisher()" />
       </div>
     </p-dialog>
@@ -334,7 +334,7 @@
         </div>
 
         <div class="btns">
-          <p-button label="Annuleer" severity="secondary" (click)="seriesFormVisible = false" />
+          <p-button label="Annuleren" severity="secondary" (click)="seriesFormVisible = false" />
           <p-button label="Opslaan" [disabled]="seriesForm.invalid" (click)="addSeries()" />
         </div>
       </form>

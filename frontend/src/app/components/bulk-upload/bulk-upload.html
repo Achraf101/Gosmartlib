@@ -32,7 +32,7 @@
 
         @if (!selectedFile) {
           <ng-container>
-            <p>Sleep uw bestand hierheen, of <strong>klik om te bladeren</strong>.</p>
+            <p>Sleep je bestand hierheen, of <strong>klik om te bladeren</strong>.</p>
           </ng-container>
         }
 
@@ -113,7 +113,7 @@
         </table>
       } @else {
         <p class="hint">
-          Geen ISBN's gevonden in dit bestand. U kan toch importeren — verplichte velden moeten dan
+          Geen ISBN's gevonden in dit bestand. Je kan toch importeren — verplichte velden moeten dan
           in de template staan.
         </p>
       }
@@ -194,7 +194,7 @@
 
       @if (result.incomplete.length > 0) {
         <div class="incomplete-section">
-          <h4>vul de ontbrekende velden in</h4>
+          <h4>Vul de ontbrekende velden in</h4>
 
           @for (book of result.incomplete; track $index) {
             <p-card class="incomplete-card">
@@ -335,7 +335,7 @@
                 </div>
 
                 <div class="field">
-                  <label>leesniveau (optioneel, A/B/C/D)</label>
+                  <label>Leesniveau (optioneel, A/B/C/D)</label>
                   <input
                     pInputText
                     [(ngModel)]="completions[getCompletionKey(book)].clib"

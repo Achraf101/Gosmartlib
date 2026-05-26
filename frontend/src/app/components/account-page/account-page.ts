@@ -74,7 +74,7 @@ export class AccountPage {
         error: (e) => {
           this.messageService.add({
             severity: 'error',
-            summary: 'Probleem met wachtwoord op te slagen',
+            summary: 'Probleem bij het opslaan van het wachtwoord',
             life: 3000,
           });
         },

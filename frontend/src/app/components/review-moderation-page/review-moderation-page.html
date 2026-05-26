@@ -4,7 +4,7 @@
   <p-card>
     <ng-template pTemplate="header">
       <div class="card-header">
-        <h2>Recensie moderatie</h2>
+        <h2>Recensiemoderatie</h2>
         <span class="subtitle">Openstaande rapportages</span>
       </div>
     </ng-template>
@@ -66,7 +66,7 @@
         <tr>
           <td colspan="5" class="empty-state">
             <i class="pi pi-check-circle"></i>
-            <span>Geen openstaande rapportages.</span>
+            <span>Geen openstaande rapportages</span>
           </td>
         </tr>
       </ng-template>
@@ -75,7 +75,7 @@
 </div>
 
 <p-dialog
-  header="Rapportage details"
+  header="Rapportagedetails"
   [(visible)]="detailDialogVisible"
   [modal]="true"
   [draggable]="false"
@@ -94,7 +94,7 @@
           <i class="pi pi-star"></i>
         }
       </div>
-      <p class="detail-review-content">{{ selectedReport.review_content || 'Geen inhoud.' }}</p>
+      <p class="detail-review-content">{{ selectedReport.review_content || 'Geen inhoud' }}</p>
       <p class="detail-meta">Door <strong>{{ selectedReport.review_username }}</strong> op {{ selectedReport.review_added | date: 'dd/MM/yyyy' }}</p>
     </section>
 

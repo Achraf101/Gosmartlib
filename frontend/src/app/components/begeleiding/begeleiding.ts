@@ -23,7 +23,7 @@ export class BegeleidingComponent implements OnInit {
     {
       question: 'Hoe leen ik een boek uit?',
       answer:
-        'Ga naar het boek dat je wil uitlenen en klik op "Nu Ontlenen" of "Toevoegen aan ontlening". Bij "Toevoegen aan ontlening" kan je meerdere boeken tegelijk aanvragen. Ga daarna naar je winkelmandje, kies een startdatum en bevestig je aanvraag. De bibliotheekbeheerder behandelt je aanvraag.',
+        'Ga naar het boek dat je wil uitlenen en klik op "Nu ontlenen" of "Toevoegen aan ontlening". Bij "Toevoegen aan ontlening" kan je meerdere boeken tegelijk aanvragen. Ga daarna naar je winkelmandje, kies een startdatum en bevestig je aanvraag. De bibliotheekbeheerder behandelt je aanvraag.',
     },
     {
       question: 'Hoe verleng ik een uitlening?',
@@ -48,12 +48,12 @@ export class BegeleidingComponent implements OnInit {
     {
       question: 'Wat doe ik als een boek niet beschikbaar is?',
       answer:
-        'Als een boek niet beschikbaar is op jouw locatie, zie je de melding "Uw locatie heeft dit boek niet of het is niet meer beschikbaar." Neem contact op met de bibliotheekbeheerder als je het boek toch wil uitlenen.',
+        'Als een boek niet beschikbaar is op jouw locatie, zie je de melding "Jouw locatie heeft dit boek niet of het is niet meer beschikbaar." Neem contact op met de bibliotheekbeheerder als je het boek toch wil uitlenen.',
     },
     {
       question: 'Hoe weet ik wanneer ik mijn boek moet terugbrengen?',
       answer:
-        'Ga naar "Mijn uitleningen" via de navigatiebalk. Daar zie je per uitlening de einddatum. Als de datum rood gekleurd is, is de terugbrengdatum overschreden.',
+        'Ga naar "Mijn uitleningen" via de navigatiebalk. Daar zie je per uitlening de einddatum. Als de datum rood gekleurd is, is de teruggavedatum overschreden.',
     },
     {
       question: 'Wat zijn challenges en hoe werken ze?',
