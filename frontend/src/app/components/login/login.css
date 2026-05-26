@@ -11,21 +11,11 @@
   max-width: 400px;
 }
 
-.ss-btn {
-  display: flex;
-  justify-content: center;
-  padding: 0.25rem;
-  border-radius: var(--p-button-border-radius);
-  background-color: #ff4f0a;
-  margin-bottom: 1rem;
-}
-
-.divider {
-  margin: 1.5rem 0;
-}
-
-.ss-btn svg {
-  height: 2rem;
+.ss-btn img {
+  width: 100%;
+  max-width: 290px;
+  display: block;
+  margin: 0 auto 1rem;
 }
 
 .login-header {
