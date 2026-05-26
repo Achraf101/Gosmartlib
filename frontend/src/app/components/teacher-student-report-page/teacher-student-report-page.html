@@ -40,14 +40,8 @@
         <p>{{ report.stats.favoriteGenre || 'Onbekend' }}</p>
       </p-card>
       <p-card>
-        <h3>Gemiddelde beoordeling</h3>
-        <p>
-          {{
-            report.stats.averageRating !== null
-              ? report.stats.averageRating + ' / 5'
-              : 'Geen recensies'
-          }}
-        </p>
+        <h3>Aantal recensies</h3>
+        <p>{{ report.reviews.length }}</p>
       </p-card>
       <p-card>
         <h3>Punctualiteit</h3>
