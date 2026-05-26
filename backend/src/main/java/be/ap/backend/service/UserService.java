@@ -19,8 +19,13 @@ public class UserService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return userRepository.findByUsername(username)
+        User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+
+        // TEMPORARY — remove after diagnosis
+        System.out.println("DEBUG stored hash: " + user.getPassword());
+
+        return user;
     }
 
     public void addRole(Long userId, UserRole role) {
