@@ -126,7 +126,7 @@ export class AcceptDeclineReservationsPageComponent implements OnInit {
       this.messageService.add({
         severity: 'success',
         summary: 'Succes',
-        detail: 'Uitlening geaccepteerd!',
+        detail: 'Ontlening geaccepteerd!',
         life: 3000,
       });
       this.selectedGroupLoans = this.selectedGroupLoans.filter(l => l.id !== loan.id);
@@ -139,7 +139,7 @@ export class AcceptDeclineReservationsPageComponent implements OnInit {
       this.messageService.add({
         severity: 'error',
         summary: 'Fout',
-        detail: 'Accepteren van deze uitlening is mislukt, probeer opnieuw.',
+        detail: 'Accepteren van deze ontlening is mislukt, probeer opnieuw.',
         life: 3000,
       });
     },
@@ -153,7 +153,7 @@ declineLoan(loan: LoanDTO) {
       this.messageService.add({
         severity: 'success',
         summary: 'Succes',
-        detail: 'Uitlening geweigerd!',
+        detail: 'Ontlening geweigerd!',
         life: 3000,
       });
       this.selectedGroupLoans = this.selectedGroupLoans.filter(l => l.id !== loan.id);
@@ -166,7 +166,7 @@ declineLoan(loan: LoanDTO) {
       this.messageService.add({
         severity: 'error',
         summary: 'Fout',
-        detail: 'Weigeren van deze uitlening is mislukt, probeer opnieuw.',
+        detail: 'Weigeren van deze ontlening is mislukt, probeer opnieuw.',
         life: 3000,
       });
     },
@@ -183,7 +183,7 @@ declineLoan(loan: LoanDTO) {
             this.messageService.add({
               severity: 'success',
               summary: 'Succes',
-              detail: 'Alle uitleningen geaccepteerd!',
+              detail: 'Alle ontleningen geaccepteerd!',
               life: 3000,
             });
             this.groupInfoDialogVisible = false;
@@ -212,7 +212,7 @@ declineLoan(loan: LoanDTO) {
             this.messageService.add({
               severity: 'success',
               summary: 'Succes',
-              detail: 'Alle uitleningen geweigerd!',
+              detail: 'Alle ontleningen geweigerd!',
               life: 3000,
             });
             this.groupInfoDialogVisible = false;

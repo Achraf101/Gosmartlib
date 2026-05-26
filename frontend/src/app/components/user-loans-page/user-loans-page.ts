@@ -156,7 +156,7 @@ export class UserLoansPageComponent implements OnInit {
         this.messageService.add({
           severity: 'success',
           summary: 'Succes',
-          detail: 'Uitleenverzoek succesvol verwijderd',
+          detail: 'Ontleenverzoek succesvol verwijderd',
           life: 3000,
         });
         this.getRecords();
@@ -165,7 +165,7 @@ export class UserLoansPageComponent implements OnInit {
         this.messageService.add({
           severity: 'error',
           summary: 'Fout',
-          detail: 'Uitleenverzoek niet succesvol verwijderd',
+          detail: 'Ontleenverzoek niet succesvol verwijderd',
           life: 3000,
         }),
     });
@@ -186,7 +186,7 @@ export class UserLoansPageComponent implements OnInit {
         this.messageService.add({
           severity: 'error',
           summary: 'Fout',
-          detail: err.error ?? 'Verlengen mislukt, probeer opnieuw.',
+          detail: err.error ?? 'Ontlening mislukt, probeer opnieuw.',
           life: 3000,
         });
       },

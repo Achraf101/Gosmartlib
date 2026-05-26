@@ -27,7 +27,7 @@
       }
       <div class="popup-buttons">
         <p-button (click)="confirmSave()">Toevoegen</p-button>
-        <p-button (click)="cancelSave()">Anuleren</p-button>
+        <p-button (click)="cancelSave()">Annuleren</p-button>
       </div>
     </div>
   </div>
@@ -60,7 +60,7 @@
   <h1>Je hebt nog geen favorieten</h1>
 }
 
-<p-divider align="center">eigen lijsten</p-divider>
+<p-divider align="center">Eigen lijsten</p-divider>
 @if (lists.length > 0) {
   @for (list of lists; track $index) {
     <div class="list-header">
@@ -83,7 +83,7 @@
           tooltipPosition="top"
         ></i>
         <p-button
-          label="Voeg boek toe"
+          label="Boek toevoegen"
           icon="pi pi-pencil"
           severity="secondary"
           size="small"
@@ -148,7 +148,7 @@
   }
 }
 <div class="add-list">
-  <input [(ngModel)]="listName" placeholder="Lijst naam" />
+  <input [(ngModel)]="listName" placeholder="Lijstnaam" />
   <i
     (click)="submitList(); $event.stopPropagation()"
     class="bookmark pi"

@@ -140,7 +140,7 @@ export class LoanCartComponent {
       this.messageService.add({
         severity: 'warn',
         summary: 'Limiet overschreden',
-        detail: `U mag maximaal ${this.school.borrowLimit} verschillende boeken per ontlening aanvragen.`,
+        detail: `Je mag maximaal ${this.school.borrowLimit} verschillende boeken per ontlening aanvragen.`,
         life: 4000,
       });
       return;

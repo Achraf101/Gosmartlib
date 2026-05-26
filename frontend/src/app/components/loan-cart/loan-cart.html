@@ -1,12 +1,12 @@
 <div>
-  <p-button icon="pi pi-receipt" pTooltip="Bekijk uw ontleenlijst" tooltipPosition="bottom" [rounded]="true"
+  <p-button icon="pi pi-receipt" pTooltip="Bekijk je ontleenlijst" tooltipPosition="bottom" [rounded]="true"
     (onClick)="visible = true; loadMaxAmounts()" [disabled]="cartService.isEmpty()" pBadge [outlined]="true" />
 </div>
 
-<p-dialog header="Uw ontleenlijst" [(visible)]="visible" [modal]="true" [draggable]="false">
+<p-dialog header="Je ontleenlijst" [(visible)]="visible" [modal]="true" [draggable]="false">
   <div>
     @if (cartService.isEmpty()) {
-    <p>Uw ontleenlijst is leeg.</p>
+    <p>Je ontleenlijst is leeg</p>
     } @else {
     <div>
       <p-table [value]="cartService.items()" sortField="start" [sortOrder]="-1" stripedRows>

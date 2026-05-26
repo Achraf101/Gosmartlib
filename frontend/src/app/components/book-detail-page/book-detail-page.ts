@@ -345,8 +345,8 @@ export class BookDetailPage implements OnInit {
     } catch (e) {
       const message =
         e instanceof Error && e.message === 'BORROW_LIMIT_REACHED'
-          ? 'U heeft het maximum aantal boeken bereikt.'
-          : 'Dit boek staat al in uw ontleenlijst.';
+          ? 'Je hebt het maximale aantal boeken bereikt.'
+          : 'Dit boek staat al in je ontleenlijst.';
       this.messageService.add({
         severity: 'error',
         summary: 'Fout',

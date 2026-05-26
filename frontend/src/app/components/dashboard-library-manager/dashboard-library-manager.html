@@ -12,7 +12,7 @@
   <p-card class="nav-card" (click)="goToReviewModeration()">
     <div class="card-content">
       <i class="pi pi-flag card-icon"></i>
-      <span class="card-title">Recensie moderatie</span>
+      <span class="card-title">Recensiemoderatie</span>
       <span class="card-desc">Bekijk en beheer gerapporteerde recensies</span>
     </div>
   </p-card>
@@ -20,7 +20,7 @@
   <p-card class="nav-card">
     <div class="card-content">
       <i class="pi pi-users card-icon"></i>
-      <span class="card-title">Auteurs, uitgevers &amp; thema’s</span>
+      <span class="card-title">Auteurs, uitgevers en thema’s</span>
       <span class="card-desc">Voeg nieuwe auteurs, uitgevers of thema’s toe</span>
     </div>
     <div class="card-actions">
@@ -69,19 +69,19 @@
       <div class="loan-icon-wrap">
         <i class="pi pi-inbox card-icon"></i>
         @if (pendingLoanCount > 0) {
-          <span class="loan-badge">{{ pendingLoanCount }}</span>
+        <span class="loan-badge">{{ pendingLoanCount }}</span>
         }
       </div>
-      <span class="card-title">Uitleen aanvragen</span>
+      <span class="card-title">Ontleenaanvragen</span>
       @if (pendingLoanCount > 0) {
-        <span class="card-desc pending">
-          {{ pendingLoanCount }} leerling{{ pendingLoanCount === 1 ? '' : 'en' }} wacht{{
-            pendingLoanCount === 1 ? '' : 'en'
-          }}
-          op jou
-        </span>
+      <span class="card-desc pending">
+        {{ pendingLoanCount }} leerling{{ pendingLoanCount === 1 ? '' : 'en' }} wacht{{
+        pendingLoanCount === 1 ? '' : 'en'
+        }}
+        op jou
+      </span>
       } @else {
-        <span class="card-desc">Geen openstaande aanvragen</span>
+      <span class="card-desc">Geen openstaande aanvragen</span>
       }
     </div>
   </p-card>
@@ -91,16 +91,11 @@
       <i class="pi pi-search card-icon"></i>
       <span class="card-title">Catalogus</span>
       @if (schoolStats) {
-        <span class="card-desc"
-          >{{ schoolStats.available_books }}/{{ schoolStats.total_books }} boeken beschikbaar</span
-        >
-        <p-progressbar
-          [value]="(schoolStats.available_books / schoolStats.total_books) * 100"
-          [showValue]="false"
-          style="width: 100%; height: 6px"
-        />
+      <span class="card-desc">{{ schoolStats.available_books }}/{{ schoolStats.total_books }} boeken beschikbaar</span>
+      <p-progressbar [value]="(schoolStats.available_books / schoolStats.total_books) * 100" [showValue]="false"
+        style="width: 100%; height: 6px" />
       } @else {
-        <span class="card-desc">Bekijk alle boeken</span>
+      <span class="card-desc">Bekijk alle boeken</span>
       }
     </div>
   </p-card>
@@ -116,26 +111,20 @@
   <p-card class="nav-card" (click)="goToReturn()">
     <div class="card-content">
       <i class="pi pi-inbox card-icon"></i>
-      <span class="card-title">Terug te brengen boeken</span>
-      <span class="card-desc">Hier staan alle boeken die teruggebracht moeten worden.</span>
+      <span class="card-title">Terug in te leveren boeken</span>
+      <span class="card-desc">Hier staan alle boeken die teruggebracht moeten worden</span>
     </div>
   </p-card>
 
   <p-card class="nav-card">
     <div class="card-content">
       <i class="pi pi-refresh card-icon"></i>
-      <span class="card-title">Smartschool sync</span>
+      <span class="card-title">Smartschool-synchronisatie</span>
       <span class="card-desc">Synchroniseer gebruikers en klassen</span>
     </div>
     <div class="card-actions">
-      <p-button
-        label="Synchroniseren"
-        icon="pi pi-refresh"
-        severity="secondary"
-        size="small"
-        [loading]="syncLoading"
-        (onClick)="confirmSync()"
-      />
+      <p-button label="Synchroniseren" icon="pi pi-refresh" severity="secondary" size="small" [loading]="syncLoading"
+        (onClick)="confirmSync()" />
     </div>
   </p-card>
   <p-card class="nav-card" (click)="goToSchoolSettings()">
@@ -149,398 +138,328 @@
     <div class="card-content">
       <i class="pi pi-cog card-icon"></i>
       <span class="card-title">Maak andere leerkrachten beheerders</span>
-      <span class="card-desc"
-        >Hier kan je andere leerkrachten medebeheerders maken zodat je niet alles in je eentje moet
-        doen.</span
-      >
+      <span class="card-desc">Hier kan je andere leerkrachten medebeheerders maken zodat je niet alles in je eentje moet
+        doen.</span>
     </div>
   </p-card>
 
   <div class="stats-grid">
     @if (isVisible(schoolSettings, 'DASHBOARD', 'TOP_BOOKS')) {
-      <p-card class="stats-card">
-        <div class="overdue-header">
-          <div class="overdue-title-wrap">
-            <i class="pi pi-chart-bar"></i>
-            <span class="card-title">Meest ontleende boeken</span>
-            <span class="card-desc">deze maand</span>
-          </div>
+    <p-card class="stats-card">
+      <div class="overdue-header">
+        <div class="overdue-title-wrap">
+          <i class="pi pi-chart-bar"></i>
+          <span class="card-title">Meest ontleende boeken</span>
+          <span class="card-desc">deze maand</span>
         </div>
-        @if (topBooks.length === 0) {
-          <div class="no-overdue">
-            <i class="pi pi-info-circle"></i>
-            <span>Geen data beschikbaar</span>
-          </div>
-        } @else {
-          <div class="top-books-list">
-            @for (book of topBooks; track book.title; let i = $index) {
-              <div class="top-book-item">
-                <span class="top-book-rank">#{{ i + 1 }}</span>
-                <span class="top-book-title">{{ book.title }}</span>
-                <span class="top-book-count">
-                  <i class="pi pi-bookmark"></i>
-                  {{ book.count }}x
-                </span>
-              </div>
-            }
-          </div>
+      </div>
+      @if (topBooks.length === 0) {
+      <div class="no-overdue">
+        <i class="pi pi-info-circle"></i>
+        <span>Geen data beschikbaar</span>
+      </div>
+      } @else {
+      <div class="top-books-list">
+        @for (book of topBooks; track book.title; let i = $index) {
+        <div class="top-book-item">
+          <span class="top-book-rank">#{{ i + 1 }}</span>
+          <span class="top-book-title">{{ book.title }}</span>
+          <span class="top-book-count">
+            <i class="pi pi-bookmark"></i>
+            {{ book.count }}x
+          </span>
+        </div>
         }
-      </p-card>
+      </div>
+      }
+    </p-card>
     }
     @if (isVisible(schoolSettings, 'DASHBOARD', 'TOP_GENRES')) {
-      <p-card class="stats-card">
-        <div class="overdue-header">
-          <div class="overdue-title-wrap">
-            <i class="pi pi-tags"></i>
-            <span class="card-title">Populairste genres</span>
-            <span class="card-desc">deze maand</span>
-          </div>
+    <p-card class="stats-card">
+      <div class="overdue-header">
+        <div class="overdue-title-wrap">
+          <i class="pi pi-tags"></i>
+          <span class="card-title">Populairste genres</span>
+          <span class="card-desc">deze maand</span>
         </div>
-        @if (topGenres.length === 0) {
-          <div class="no-overdue">
-            <i class="pi pi-info-circle"></i>
-            <span>Geen data beschikbaar</span>
-          </div>
-        } @else {
-          <div class="top-books-list">
-            @for (genre of topGenres; track genre.title; let i = $index) {
-              <div class="top-book-item">
-                <span class="top-book-rank">#{{ i + 1 }}</span>
-                <span class="top-book-title">{{ genre.title }}</span>
-                <span class="top-book-count">
-                  <i class="pi pi-bookmark"></i>
-                  {{ genre.count }}x
-                </span>
-              </div>
-            }
-          </div>
+      </div>
+      @if (topGenres.length === 0) {
+      <div class="no-overdue">
+        <i class="pi pi-info-circle"></i>
+        <span>Geen data beschikbaar</span>
+      </div>
+      } @else {
+      <div class="top-books-list">
+        @for (genre of topGenres; track genre.title; let i = $index) {
+        <div class="top-book-item">
+          <span class="top-book-rank">#{{ i + 1 }}</span>
+          <span class="top-book-title">{{ genre.title }}</span>
+          <span class="top-book-count">
+            <i class="pi pi-bookmark"></i>
+            {{ genre.count }}x
+          </span>
+        </div>
         }
-      </p-card>
+      </div>
+      }
+    </p-card>
     }
     @if (isVisible(schoolSettings, 'DASHBOARD', 'OVERDUE_LOANS')) {
-      <p-card class="stats-card">
-        <div class="overdue-header">
-          <div class="overdue-title-wrap">
-            <i class="pi pi-clock"></i>
-            <span class="card-title">Te laat teruggeven</span>
-            @if (overdueLoansLength > 0) {
-              <p-badge [value]="overdueLoansLength.toString()" severity="warn" />
-            }
-          </div>
+    <p-card class="stats-card">
+      <div class="overdue-header">
+        <div class="overdue-title-wrap">
+          <i class="pi pi-clock"></i>
+          <span class="card-title">Te laat teruggeven</span>
+          @if (overdueLoansLength > 0) {
+          <p-badge [value]="overdueLoansLength.toString()" severity="warn" />
+          }
         </div>
-        @if (overdueLoansLength === 0) {
-          <div class="no-overdue">
-            <i class="pi pi-check-circle"></i>
-            <span>Geen te late boeken!</span>
+      </div>
+      @if (overdueLoansLength === 0) {
+      <div class="no-overdue">
+        <i class="pi pi-check-circle"></i>
+        <span>Geen te late boeken!</span>
+      </div>
+      } @else {
+      <div class="overdue-list">
+        @for (loan of overdueLoans; track loan.id) {
+        <div class="overdue-item">
+          <div class="overdue-item-info">
+            <span class="overdue-username">{{ loan.username }}</span>
+            <span class="overdue-books">
+              {{ loan.books[0].bookTitle }}
+              @if (loan.books.length > 1) {
+              <span class="overdue-more">+{{ loan.books.length - 1 }}</span>
+              }
+            </span>
+            <span class="overdue-date">
+              <i class="pi pi-calendar"></i>
+              Moest ingeleverd zijn op {{ loan.end | date: 'd/MM/yyyy' }}
+            </span>
           </div>
-        } @else {
-          <div class="overdue-list">
-            @for (loan of overdueLoans; track loan.id) {
-              <div class="overdue-item">
-                <div class="overdue-item-info">
-                  <span class="overdue-username">{{ loan.username }}</span>
-                  <span class="overdue-books">
-                    {{ loan.books[0].bookTitle }}
-                    @if (loan.books.length > 1) {
-                      <span class="overdue-more">+{{ loan.books.length - 1 }}</span>
-                    }
-                  </span>
-                  <span class="overdue-date">
-                    <i class="pi pi-calendar"></i>
-                    Moest ingeleverd zijn op {{ loan.end | date: 'd/MM/yyyy' }}
-                  </span>
-                </div>
-                <p-button
-                  icon="pi pi-bell"
-                  severity="warn"
-                  [rounded]="true"
-                  [text]="true"
-                  pTooltip="Herinner leerling"
-                  tooltipPosition="left"
-                />
-              </div>
-            }
-          </div>
+          <p-button icon="pi pi-bell" severity="warn" [rounded]="true" [text]="true" pTooltip="Herinner de leerling"
+            tooltipPosition="left" />
+        </div>
         }
-      </p-card>
+      </div>
+      }
+    </p-card>
     }
     @if (isVisible(schoolSettings, 'DASHBOARD', 'DUE_SOON')) {
-      <p-card class="stats-card">
-        <div class="overdue-header">
-          <div class="overdue-title-wrap">
-            <i class="pi pi-hourglass"></i>
-            <span class="card-title">Bijna te laat</span>
-            @if (dueSoonLoansLength > 0) {
-              <p-badge [value]="dueSoonLoansLength.toString()" severity="warn" />
-            }
-          </div>
+    <p-card class="stats-card">
+      <div class="overdue-header">
+        <div class="overdue-title-wrap">
+          <i class="pi pi-hourglass"></i>
+          <span class="card-title">Bijna te laat</span>
+          @if (dueSoonLoansLength > 0) {
+          <p-badge [value]="dueSoonLoansLength.toString()" severity="warn" />
+          }
         </div>
-        @if (dueSoonLoansLength === 0) {
-          <div class="no-overdue">
-            <i class="pi pi-check-circle"></i>
-            <span>Niemand is bijna te laat!</span>
+      </div>
+      @if (dueSoonLoansLength === 0) {
+      <div class="no-overdue">
+        <i class="pi pi-check-circle"></i>
+        <span>Niemand is bijna te laat!</span>
+      </div>
+      } @else {
+      <div class="overdue-list">
+        @for (loan of dueSoonLoans; track loan.id) {
+        <div class="overdue-item">
+          <div class="overdue-item-info">
+            <span class="overdue-username">{{ loan.username }}</span>
+            <span class="overdue-books">
+              {{ loan.books[0].bookTitle }}
+              @if (loan.books.length > 1) {
+              <span class="overdue-more">+{{ loan.books.length - 1 }}</span>
+              }
+            </span>
+            <span class="overdue-date">
+              <i class="pi pi-calendar"></i>
+              Moet ingeleverd zijn op {{ loan.end | date: 'd/MM/yyyy' }}
+            </span>
           </div>
-        } @else {
-          <div class="overdue-list">
-            @for (loan of dueSoonLoans; track loan.id) {
-              <div class="overdue-item">
-                <div class="overdue-item-info">
-                  <span class="overdue-username">{{ loan.username }}</span>
-                  <span class="overdue-books">
-                    {{ loan.books[0].bookTitle }}
-                    @if (loan.books.length > 1) {
-                      <span class="overdue-more">+{{ loan.books.length - 1 }}</span>
-                    }
-                  </span>
-                  <span class="overdue-date">
-                    <i class="pi pi-calendar"></i>
-                    Moet ingeleverd zijn op {{ loan.end | date: 'd/MM/yyyy' }}
-                  </span>
-                </div>
-                <p-button
-                  icon="pi pi-bell"
-                  severity="warn"
-                  [rounded]="true"
-                  [text]="true"
-                  pTooltip="Herinner leerling"
-                  tooltipPosition="left"
-                />
-              </div>
-            }
-          </div>
+          <p-button icon="pi pi-bell" severity="warn" [rounded]="true" [text]="true" pTooltip="Herinner leerling"
+            tooltipPosition="left" />
+        </div>
         }
-      </p-card>
+      </div>
+      }
+    </p-card>
     }
   </div>
   @if (isVisible(schoolSettings, 'DASHBOARD', 'IN_SPOTLIGHT')) {
-    <p-card class="monthly-card">
-      <div class="monthly-header">
-        <div class="overdue-title-wrap">
-          <i class="pi pi-star card-icon-small"></i>
-          <span class="card-title">Uitgelichte boeken</span>
+  <p-card class="monthly-card">
+    <div class="monthly-header">
+      <div class="overdue-title-wrap">
+        <i class="pi pi-star card-icon-small"></i>
+        <span class="card-title">Uitgelichte boeken</span>
+      </div>
+      <span class="card-desc">4 uitgelichte boeken instellen</span>
+    </div>
+    <div class="grades-row spotlight-row">
+      @for (ranking of [1, 2, 3, 4]; track ranking) {
+      <div class="grade-col">
+        <span class="grade-label">Spot {{ ranking }}</span>
+        <p-divider />
+        @if (spotlightBooks[ranking]) {
+        <b-card [bookCard]="getBookAsCard(spotlightBooks[ranking]!)" />
+        } @else {
+        <div class="no-book">
+          <i class="pi pi-question-circle"></i>
+          <span>Niet ingesteld</span>
         </div>
-        <span class="card-desc">4 uitgelichte boeken instellen</span>
-      </div>
-      <div class="grades-row spotlight-row">
-        @for (ranking of [1, 2, 3, 4]; track ranking) {
-          <div class="grade-col">
-            <span class="grade-label">Spot {{ ranking }}</span>
-            <p-divider />
-            @if (spotlightBooks[ranking]) {
-              <b-card [bookCard]="getBookAsCard(spotlightBooks[ranking]!)" />
-            } @else {
-              <div class="no-book">
-                <i class="pi pi-question-circle"></i>
-                <span>Niet ingesteld</span>
-              </div>
-            }
-            <p-button
-              label="Wijzig"
-              icon="pi pi-pencil"
-              severity="secondary"
-              size="small"
-              fluid
-              (onClick)="changeSpotlightBook(ranking)"
-            />
-          </div>
         }
+        <p-button label="Wijzig" icon="pi pi-pencil" severity="secondary" size="small" fluid
+          (onClick)="changeSpotlightBook(ranking)" />
       </div>
-    </p-card>
+      }
+    </div>
+  </p-card>
   }
   @if (isVisible(schoolSettings, 'DASHBOARD', 'MONTHLY_BOOK')) {
-    <p-card class="monthly-card">
-      <div class="monthly-header">
-        <div class="overdue-title-wrap">
-          <i class="pi pi-star card-icon-small"></i>
-          <span class="card-title">Boek van de maand</span>
-        </div>
-        <span class="card-desc">Kies per graad het uitgelichte boek</span>
+  <p-card class="monthly-card">
+    <div class="monthly-header">
+      <div class="overdue-title-wrap">
+        <i class="pi pi-star card-icon-small"></i>
+        <span class="card-title">Boek van de maand</span>
       </div>
-      @if (monthlyBooksLoading) {
-        <div class="grades-row">
-          @for (grade of grades; track grade.value) {
-            <p-skeleton height="260px" borderRadius="12px" />
-          }
-        </div>
-      } @else {
-        <div class="grades-row">
-          @for (grade of grades; track grade.value) {
-            <div class="grade-col">
-              <span class="grade-label">{{ grade.label }}</span>
-              <p-divider />
-              @if (monthlyBooks[grade.value]) {
-                <b-card [bookCard]="getBookAsCard(monthlyBooks[grade.value]!)" />
-              } @else {
-                <div class="no-book">
-                  <i class="pi pi-question-circle"></i>
-                  <span>Nog niet ingesteld</span>
-                </div>
-              }
-              <p-button
-                label="Wijzig boek"
-                icon="pi pi-pencil"
-                severity="secondary"
-                size="small"
-                fluid
-                (onClick)="changeBookOfMonth(grade.value)"
-              />
-            </div>
-          }
-        </div>
+      <span class="card-desc">Kies per graad het uitgelichte boek</span>
+    </div>
+    @if (monthlyBooksLoading) {
+    <div class="grades-row">
+      @for (grade of grades; track grade.value) {
+      <p-skeleton height="260px" borderRadius="12px" />
       }
-    </p-card>
+    </div>
+    } @else {
+    <div class="grades-row">
+      @for (grade of grades; track grade.value) {
+      <div class="grade-col">
+        <span class="grade-label">{{ grade.label }}</span>
+        <p-divider />
+        @if (monthlyBooks[grade.value]) {
+        <b-card [bookCard]="getBookAsCard(monthlyBooks[grade.value]!)" />
+        } @else {
+        <div class="no-book">
+          <i class="pi pi-question-circle"></i>
+          <span>Nog niet ingesteld</span>
+        </div>
+        }
+        <p-button label="Wijzig boek" icon="pi pi-pencil" severity="secondary" size="small" fluid
+          (onClick)="changeBookOfMonth(grade.value)" />
+      </div>
+      }
+    </div>
+    }
+  </p-card>
   }
   <p-card class="wide-card">
     <div class="overdue-header">
       <div class="overdue-title-wrap">
         <i class="pi pi-eye"></i>
-        <span class="card-title">Startpagina &amp; dashboard instellingen</span>
+        <span class="card-title">Startpagina en dashboardinstellingen</span>
       </div>
     </div>
     @if (schoolSettings) {
-      <div class="personolized-title">
-        <span class="grade-label">Startpagina</span>
+    <div class="personolized-title">
+      <span class="grade-label">Startpagina</span>
+    </div>
+    <div class="overdue-list personolized-title">
+      <div class="overdue-item">
+        <span class="overdue-username">Uitgelichte boeken</span>
+        <p-toggleswitch [ngModel]="isVisible(schoolSettings, 'HOME', 'IN_SPOTLIGHT')"
+          (onChange)="toggleComponent('HOME', 'IN_SPOTLIGHT', $event.checked)" />
       </div>
-      <div class="overdue-list personolized-title">
-        <div class="overdue-item">
-          <span class="overdue-username">Uitgelichte boeken</span>
-          <p-toggleswitch
-            [ngModel]="isVisible(schoolSettings, 'HOME', 'IN_SPOTLIGHT')"
-            (onChange)="toggleComponent('HOME', 'IN_SPOTLIGHT', $event.checked)"
-          />
-        </div>
-        <div class="overdue-item">
-          <span class="overdue-username">Boek van de maand</span>
-          <p-toggleswitch
-            [ngModel]="isVisible(schoolSettings, 'HOME', 'MONTHLY_BOOK')"
-            (onChange)="toggleComponent('HOME', 'MONTHLY_BOOK', $event.checked)"
-          />
-        </div>
+      <div class="overdue-item">
+        <span class="overdue-username">Boek van de maand</span>
+        <p-toggleswitch [ngModel]="isVisible(schoolSettings, 'HOME', 'MONTHLY_BOOK')"
+          (onChange)="toggleComponent('HOME', 'MONTHLY_BOOK', $event.checked)" />
       </div>
-      <div class="personolized-title">
-        <span class="grade-label">Dashboard</span>
+    </div>
+    <div class="personolized-title">
+      <span class="grade-label">Dashboard</span>
+    </div>
+    <div class="overdue-list">
+      <div class="overdue-item">
+        <span class="overdue-username">Te laat teruggeven</span>
+        <p-toggleswitch [ngModel]="isVisible(schoolSettings, 'DASHBOARD', 'OVERDUE_LOANS')"
+          (onChange)="toggleComponent('DASHBOARD', 'OVERDUE_LOANS', $event.checked)" />
       </div>
-      <div class="overdue-list">
-        <div class="overdue-item">
-          <span class="overdue-username">Te laat teruggeven</span>
-          <p-toggleswitch
-            [ngModel]="isVisible(schoolSettings, 'DASHBOARD', 'OVERDUE_LOANS')"
-            (onChange)="toggleComponent('DASHBOARD', 'OVERDUE_LOANS', $event.checked)"
-          />
-        </div>
-        <div class="overdue-item">
-          <span class="overdue-username">Bijna te laat</span>
-          <p-toggleswitch
-            [ngModel]="isVisible(schoolSettings, 'DASHBOARD', 'DUE_SOON')"
-            (onChange)="toggleComponent('DASHBOARD', 'DUE_SOON', $event.checked)"
-          />
-        </div>
-        <div class="overdue-item">
-          <span class="overdue-username">Meest ontleende boeken</span>
-          <p-toggleswitch
-            [ngModel]="isVisible(schoolSettings, 'DASHBOARD', 'TOP_BOOKS')"
-            (onChange)="toggleComponent('DASHBOARD', 'TOP_BOOKS', $event.checked)"
-          />
-        </div>
-        <div class="overdue-item">
-          <span class="overdue-username">Populairste genres</span>
-          <p-toggleswitch
-            [ngModel]="isVisible(schoolSettings, 'DASHBOARD', 'TOP_GENRES')"
-            (onChange)="toggleComponent('DASHBOARD', 'TOP_GENRES', $event.checked)"
-          />
-        </div>
-        <div class="overdue-item">
-          <span class="overdue-username">Uitgelichte boeken</span>
-          <p-toggleswitch
-            [ngModel]="isVisible(schoolSettings, 'DASHBOARD', 'IN_SPOTLIGHT')"
-            (onChange)="toggleComponent('DASHBOARD', 'IN_SPOTLIGHT', $event.checked)"
-          />
-        </div>
-        <div class="overdue-item">
-          <span class="overdue-username">Boek van de maand</span>
-          <p-toggleswitch
-            [ngModel]="isVisible(schoolSettings, 'DASHBOARD', 'MONTHLY_BOOK')"
-            (onChange)="toggleComponent('DASHBOARD', 'MONTHLY_BOOK', $event.checked)"
-          />
-        </div>
+      <div class="overdue-item">
+        <span class="overdue-username">Bijna te laat</span>
+        <p-toggleswitch [ngModel]="isVisible(schoolSettings, 'DASHBOARD', 'DUE_SOON')"
+          (onChange)="toggleComponent('DASHBOARD', 'DUE_SOON', $event.checked)" />
       </div>
+      <div class="overdue-item">
+        <span class="overdue-username">Meest ontleende boeken</span>
+        <p-toggleswitch [ngModel]="isVisible(schoolSettings, 'DASHBOARD', 'TOP_BOOKS')"
+          (onChange)="toggleComponent('DASHBOARD', 'TOP_BOOKS', $event.checked)" />
+      </div>
+      <div class="overdue-item">
+        <span class="overdue-username">Populairste genres</span>
+        <p-toggleswitch [ngModel]="isVisible(schoolSettings, 'DASHBOARD', 'TOP_GENRES')"
+          (onChange)="toggleComponent('DASHBOARD', 'TOP_GENRES', $event.checked)" />
+      </div>
+      <div class="overdue-item">
+        <span class="overdue-username">Uitgelichte boeken</span>
+        <p-toggleswitch [ngModel]="isVisible(schoolSettings, 'DASHBOARD', 'IN_SPOTLIGHT')"
+          (onChange)="toggleComponent('DASHBOARD', 'IN_SPOTLIGHT', $event.checked)" />
+      </div>
+      <div class="overdue-item">
+        <span class="overdue-username">Boek van de maand</span>
+        <p-toggleswitch [ngModel]="isVisible(schoolSettings, 'DASHBOARD', 'MONTHLY_BOOK')"
+          (onChange)="toggleComponent('DASHBOARD', 'MONTHLY_BOOK', $event.checked)" />
+      </div>
+    </div>
     } @else {
-      <div class="no-overdue">
-        <i class="pi pi-info-circle"></i>
-        <span>Instellingen niet beschikbaar</span>
-      </div>
+    <div class="no-overdue">
+      <i class="pi pi-info-circle"></i>
+      <span>Instellingen niet beschikbaar</span>
+    </div>
     }
   </p-card>
 </div>
 
-<p-dialog
-  header="Nieuwe auteur"
-  [(visible)]="authorFormVisible"
-  [modal]="true"
-  [style]="{ width: '400px' }"
-  (onHide)="authorForm.reset()"
->
+<p-dialog header="Nieuwe auteur" [(visible)]="authorFormVisible" [modal]="true" [style]="{ width: '400px' }"
+  (onHide)="authorForm.reset()">
   <form [formGroup]="authorForm">
     <div class="dialog-field">
       <label for="author-name">Naam*</label>
       <input pInputText id="author-name" formControlName="name" placeholder="Naam auteur" />
       @if (authorForm.controls.name.invalid && authorForm.controls.name.touched) {
-        <p-message severity="error" size="small" variant="simple">Naam is verplicht!</p-message>
+      <p-message severity="error" size="small" variant="simple">Naam is verplicht!</p-message>
       }
     </div>
     <div class="dialog-field">
       <label for="author-desc">Beschrijving</label>
-      <textarea
-        pTextarea
-        id="author-desc"
-        formControlName="description"
-        placeholder="Beschrijving (optioneel)"
-        rows="3"
-      ></textarea>
+      <textarea pTextarea id="author-desc" formControlName="description" placeholder="Beschrijving (optioneel)"
+        rows="3"></textarea>
     </div>
   </form>
   <ng-template #footer>
-    <p-button
-      label="Annuleren"
-      severity="secondary"
-      (onClick)="authorFormVisible = false; authorForm.reset()"
-    />
+    <p-button label="Annuleren" severity="secondary" (onClick)="authorFormVisible = false; authorForm.reset()" />
     <p-button label="Opslaan" icon="pi pi-check" (onClick)="addAuthor()" />
   </ng-template>
 </p-dialog>
 
-<p-dialog
-  header="Nieuwe uitgever"
-  [(visible)]="publisherFormVisible"
-  [modal]="true"
-  [style]="{ width: '400px' }"
-  (onHide)="publisherForm.reset()"
->
+<p-dialog header="Nieuwe uitgever" [(visible)]="publisherFormVisible" [modal]="true" [style]="{ width: '400px' }"
+  (onHide)="publisherForm.reset()">
   <form [formGroup]="publisherForm">
     <div class="dialog-field">
       <label for="publisher-name">Naam*</label>
       <input pInputText id="publisher-name" formControlName="name" placeholder="Naam uitgever" />
       @if (publisherForm.controls.name.invalid && publisherForm.controls.name.touched) {
-        <p-message severity="error" size="small" variant="simple">Naam is verplicht!</p-message>
+      <p-message severity="error" size="small" variant="simple">Naam is verplicht!</p-message>
       }
     </div>
     <div class="dialog-field">
       <label for="publisher-desc">Beschrijving</label>
-      <textarea
-        pTextarea
-        id="publisher-desc"
-        formControlName="description"
-        placeholder="Beschrijving (optioneel)"
-        rows="3"
-      ></textarea>
+      <textarea pTextarea id="publisher-desc" formControlName="description" placeholder="Beschrijving (optioneel)"
+        rows="3"></textarea>
     </div>
   </form>
   <ng-template #footer>
-    <p-button
-      label="Annuleren"
-      severity="secondary"
-      (onClick)="publisherFormVisible = false; publisherForm.reset()"
-    />
+    <p-button label="Annuleren" severity="secondary" (onClick)="publisherFormVisible = false; publisherForm.reset()" />
     <p-button label="Opslaan" icon="pi pi-check" (onClick)="addPublisher()" />
   </ng-template>
 </p-dialog>
