@@ -313,6 +313,8 @@ public class DataSeeder implements CommandLineRunner {
     private void seedTestUsers() {
         School school = schoolRepository.findById(1L).orElseThrow(() -> new IllegalStateException("School 1 missing"));
         seedUser("admin", "admin", UserRole.ADMIN, school);
+        seedUser("beheerder", "beheerder", UserRole.BIBLIOTHEEKBEHEERDER, school);
+
     }
 
     private void seedUser(String username, String password, UserRole role, School school) {

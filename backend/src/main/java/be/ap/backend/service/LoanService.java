@@ -177,7 +177,7 @@ public class LoanService {
         Loan loan = loanRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Loan niet gevonden met id: " + id));
         loan.setStatus(status);
-        if (status == LoanStatus.DECLINED) {
+        if (status == LoanStatus.DECLINED || status == LoanStatus.RETURNED) {
             loan.getLoanBooks().forEach(lb -> {
                 LocationBook locationBook = locationBookRepository
                         .findByLocationIdAndBookId(loan.getLocation().getId(), lb.getBook().getId())
