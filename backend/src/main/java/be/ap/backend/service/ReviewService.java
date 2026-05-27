@@ -5,6 +5,7 @@ import be.ap.backend.entity.Book;
 import be.ap.backend.entity.Review;
 import be.ap.backend.repository.BookRepository;
 import be.ap.backend.repository.ReviewRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -27,7 +28,8 @@ public class ReviewService {
 
     public ReviewDTO addReview(Long bookId, ReviewDTO dto, Long userId) {
         Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new RuntimeException("Boek niet gevonden"));
+                .orElseThrow(() -> new EntityNotFoundException("Boek niet gevonden"));
+
 
         Review review = new Review();
         review.setBook(book);

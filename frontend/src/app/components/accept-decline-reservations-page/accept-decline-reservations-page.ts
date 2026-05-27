@@ -47,11 +47,6 @@ export class AcceptDeclineReservationsPageComponent implements OnInit {
         this.loading = false;
       },
       error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fout',
-          detail: 'Ontleenverzoeken konden niet worden geladen.',
-        });
         this.loading = false;
       },
     });
@@ -109,69 +104,48 @@ export class AcceptDeclineReservationsPageComponent implements OnInit {
         this.loading = false;
       },
       error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fout',
-          detail: 'Aanpassen van de notitie is mislukt.',
-        });
         this.loading = false;
       },
     });
   }
 
   acceptLoan(loan: LoanDTO) {
-  if (!loan) return;
-  this.loanService.changeStatus(loan.id, LoanStatus.ACCEPTED).subscribe({
-    next: () => {
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Succes',
-        detail: 'Ontlening geaccepteerd!',
-        life: 3000,
-      });
-      this.selectedGroupLoans = this.selectedGroupLoans.filter(l => l.id !== loan.id);
-      if (this.selectedGroupLoans.length === 0) {
-        this.groupInfoDialogVisible = false;
-      }
-      this.loadPending();
-    },
-    error: () => {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Fout',
-        detail: 'Accepteren van deze ontlening is mislukt, probeer opnieuw.',
-        life: 3000,
-      });
-    },
-  });
-}
+    if (!loan) return;
+    this.loanService.changeStatus(loan.id, LoanStatus.ACCEPTED).subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Succes',
+          detail: 'Uitlening geaccepteerd!',
+          life: 3000,
+        });
+        this.selectedGroupLoans = this.selectedGroupLoans.filter(l => l.id !== loan.id);
+        if (this.selectedGroupLoans.length === 0) {
+          this.groupInfoDialogVisible = false;
+        }
+        this.loadPending();
+      },
+    });
+  }
 
-declineLoan(loan: LoanDTO) {
-  if (!loan) return;
-  this.loanService.changeStatus(loan.id, LoanStatus.DECLINED).subscribe({
-    next: () => {
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Succes',
-        detail: 'Ontlening geweigerd!',
-        life: 3000,
-      });
-      this.selectedGroupLoans = this.selectedGroupLoans.filter(l => l.id !== loan.id);
-      if (this.selectedGroupLoans.length === 0) {
-        this.groupInfoDialogVisible = false;
-      }
-      this.loadPending();
-    },
-    error: () => {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Fout',
-        detail: 'Weigeren van deze ontlening is mislukt, probeer opnieuw.',
-        life: 3000,
-      });
-    },
-  });
-}
+  declineLoan(loan: LoanDTO) {
+    if (!loan) return;
+    this.loanService.changeStatus(loan.id, LoanStatus.DECLINED).subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Succes',
+          detail: 'Uitlening geweigerd!',
+          life: 3000,
+        });
+        this.selectedGroupLoans = this.selectedGroupLoans.filter(l => l.id !== loan.id);
+        if (this.selectedGroupLoans.length === 0) {
+          this.groupInfoDialogVisible = false;
+        }
+        this.loadPending();
+      },
+    });
+  }
 
   acceptGroup(group: LoanDTO[]): void {
     let completed = 0;
@@ -189,14 +163,6 @@ declineLoan(loan: LoanDTO) {
             this.groupInfoDialogVisible = false;
             this.loadPending();
           }
-        },
-        error: () => {
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Fout',
-            detail: 'Accepteren mislukt, probeer opnieuw.',
-            life: 3000,
-          });
         },
       });
     }
@@ -218,14 +184,6 @@ declineLoan(loan: LoanDTO) {
             this.groupInfoDialogVisible = false;
             this.loadPending();
           }
-        },
-        error: () => {
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Fout',
-            detail: 'Weigeren mislukt, probeer opnieuw.',
-            life: 3000,
-          });
         },
       });
     }

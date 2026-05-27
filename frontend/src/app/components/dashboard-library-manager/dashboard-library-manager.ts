@@ -293,12 +293,6 @@ export class DashboardLibraryManager implements OnInit {
             detail: 'De auteur is succesvol opgeslagen.',
           });
         },
-        error: () =>
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Fout',
-            detail: 'Fout bij opslaan auteur.',
-          }),
       });
     }
   }
@@ -315,12 +309,6 @@ export class DashboardLibraryManager implements OnInit {
             detail: 'De uitgever is succesvol opgeslagen.',
           });
         },
-        error: () =>
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Fout',
-            detail: 'Fout bij opslaan uitgever.',
-          }),
       });
     }
   }
@@ -333,8 +321,6 @@ export class DashboardLibraryManager implements OnInit {
           this.themeForm.reset();
           this.messageService.add({ severity: 'success', summary: 'Thema toegevoegd' });
         },
-        error: () =>
-          this.messageService.add({ severity: 'error', summary: 'Fout bij opslaan thema' }),
       });
     }
   }
@@ -397,12 +383,6 @@ export class DashboardLibraryManager implements OnInit {
           detail: 'Instellingen bijgewerkt.',
         });
       },
-      error: () =>
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fout',
-          detail: 'Kon instellingen niet opslaan.',
-        }),
     });
   }
 
@@ -437,11 +417,6 @@ export class DashboardLibraryManager implements OnInit {
       },
       error: () => {
         this.syncLoading = false;
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fout',
-          detail: 'Synchronisatie mislukt.',
-        });
       },
     });
   }

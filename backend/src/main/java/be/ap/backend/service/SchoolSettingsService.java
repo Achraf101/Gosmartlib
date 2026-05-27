@@ -13,6 +13,7 @@ import be.ap.backend.entity.HiddenComponent;
 import be.ap.backend.enums.ComponentScreen;
 import be.ap.backend.enums.ComponentType;
 import be.ap.backend.repository.SchoolSettingsRepository;
+import jakarta.persistence.EntityNotFoundException;
 import be.ap.backend.repository.SchoolRepository;
 
 @Service
@@ -38,7 +39,8 @@ public class SchoolSettingsService {
     }
 
     public SchoolSettingsDTO updateSettings(Long schoolId, SchoolSettingsDTO dto) {
-        School school = schoolRepository.findById(schoolId).orElseThrow();
+        School school = schoolRepository.findById(schoolId)
+            .orElseThrow(() -> new EntityNotFoundException("School niet gevonden met id: " + schoolId));
         SchoolSettings settings = schoolSettingsRepository.findBySchoolId(schoolId)
                 .orElse(new SchoolSettings());
         settings.setSchool(school);

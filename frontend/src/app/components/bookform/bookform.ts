@@ -71,7 +71,6 @@ import { BookCover } from '../misc/book-cover/book-cover';
     NavBarComponent,
     Message,
     InputNumberModule,
-    ToastModule,
     MessageModule,
     BulkUpload,
     BookCardComponent,
@@ -79,7 +78,7 @@ import { BookCover } from '../misc/book-cover/book-cover';
   ],
   templateUrl: './bookform.html',
   styleUrl: './bookform.css',
-  providers: [MessageService],
+  providers: [],
 })
 export class BookformComponent implements OnInit {
   bookForm = new FormGroup({
@@ -218,7 +217,6 @@ export class BookformComponent implements OnInit {
           this.coverDisabled = false;
           activateCallback(3);
         },
-        error: () => this.showError('Fout bij bijwerken boek.'),
       });
     } else {
       const book: CreateBook = {
@@ -237,7 +235,6 @@ export class BookformComponent implements OnInit {
           this.newBookId = savedBook.id;
           activateCallback(3);
         },
-        error: () => this.showError('Fout bij opslaan boek.'),
       });
     }
   }
@@ -284,7 +281,6 @@ export class BookformComponent implements OnInit {
           this.authorFormVisible = false;
           this.authorForm.reset();
         },
-        error: () => this.showError('Fout bij opslaan auteur.'),
       });
     }
   }
@@ -297,7 +293,6 @@ export class BookformComponent implements OnInit {
           this.publisherFormVisible = false;
           this.publisherForm.reset();
         },
-        error: () => this.showError('Fout bij opslaan uitgever.'),
       });
     }
   }
@@ -317,7 +312,6 @@ export class BookformComponent implements OnInit {
           this.bookForm.patchValue({ series: s.id });
           this.seriesForm.reset();
         },
-        error: () => this.showError('Fout bij opslaan serie.'),
       });
     }
   }
@@ -339,7 +333,6 @@ export class BookformComponent implements OnInit {
         this.router.navigate(['/boek', this.newBookId]);
         fileUploader.clear();
       },
-      error: () => this.showError('Probleem bij het uploaden van de cover.'),
     });
   }
 
@@ -378,10 +371,9 @@ export class BookformComponent implements OnInit {
         };
         this.isLookingUp = false;
       },
-      // error: () => {
-      //   this.showError('ISBN niet gevonden. Probeer het opnieuw of vul het boek manueel in.');
-      //   this.isLookingUp = false;
-      // },
+      error: () => {
+        this.isLookingUp = false;
+      },
     });
   }
 
@@ -438,7 +430,6 @@ export class BookformComponent implements OnInit {
             this.bookForm.patchValue({ author: a.id });
             this.matchContributors(data);
           },
-          error: () => this.showError('Auteur niet automatisch aangemaakt.'),
         });
       }
     }

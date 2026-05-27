@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import be.ap.backend.dto.SchoolSettingsDTO;
+import be.ap.backend.exception.MissingSessionException;
 import be.ap.backend.service.SchoolSettingsService;
 import jakarta.servlet.http.HttpSession;
 
@@ -23,14 +24,18 @@ public class SchoolSettingsController {
 
     @GetMapping
     public ResponseEntity<SchoolSettingsDTO> getSettings(HttpSession session) {
-        Long schoolId = Long.valueOf(session.getAttribute("school").toString());
+        Object raw = session.getAttribute("school");
+        if (raw == null) throw new MissingSessionException("Niet ingelogd");
+        Long schoolId = Long.valueOf(raw.toString());
         return ResponseEntity.ok(schoolSettingsService.getSettings(schoolId));
     }
 
     @PutMapping
     public ResponseEntity<SchoolSettingsDTO> updateSettings(@RequestBody SchoolSettingsDTO dto,
             HttpSession session) {
-        Long schoolId = Long.valueOf(session.getAttribute("school").toString());
+        Object raw = session.getAttribute("school");
+        if (raw == null) throw new MissingSessionException("Niet ingelogd");
+        Long schoolId = Long.valueOf(raw.toString());
         return ResponseEntity.ok(schoolSettingsService.updateSettings(schoolId, dto));
     }
 }
