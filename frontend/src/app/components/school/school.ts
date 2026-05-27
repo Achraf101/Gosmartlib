@@ -34,24 +34,13 @@ export class SchoolComponent {
     if (user?.roles.includes('ADMIN')) {
       this.schoolService.getAll().subscribe({
         next: (schools) => (this.schools = schools),
-        error: () => this.showError(),
       });
     }
     if (user?.roles.includes('BIBLIOTHEEKBEHEERDER')) {
       this.schoolService.getById(user.schoolId!).subscribe({
         next: (school) => (this.schools = [school]),
-        error: () => this.showError(),
       });
     }
-  }
-
-  private showError(): void {
-    this.messageService.add({
-      severity: 'error',
-      summary: 'Fout',
-      detail: 'Fout bij laden van de scholen.',
-      life: 3000,
-    });
   }
 
   syncSmartschool(schoolId: number): void {
@@ -63,14 +52,6 @@ export class SchoolComponent {
           severity: 'success',
           summary: 'Sync voltooid',
           detail: 'Smartschool data is gesynchroniseerd.',
-        });
-      },
-      error: () => {
-        this.syncLoading = false;
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fout',
-          detail: 'Synchronisatie mislukt.',
         });
       },
     });

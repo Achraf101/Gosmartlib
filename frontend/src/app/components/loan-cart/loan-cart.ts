@@ -170,15 +170,6 @@ export class LoanCartComponent {
         this.checkoutForm.reset();
         this.visible = false;
       },
-      error: (err) => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fout',
-          detail: 'Er is iets misgegaan, probeer opnieuw.',
-          life: 3000,
-        });
-        console.error(err);
-      },
     });
   }
   private formatDate(d: Date): string {

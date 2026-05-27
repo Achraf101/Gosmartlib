@@ -90,7 +90,7 @@ export class UserLoansPageComponent implements OnInit {
     const date = new Date(this.loanToExtend.end);
     date.setDate(date.getDate() + this.loanToExtend.extendPeriod);
     return date;
-}
+  }
 
   isOverdue(endDate: string | Date): boolean {
     const end = new Date(endDate);
@@ -161,13 +161,6 @@ export class UserLoansPageComponent implements OnInit {
         });
         this.getRecords();
       },
-      error: () =>
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fout',
-          detail: 'Uitleenverzoek niet succesvol verwijderd',
-          life: 3000,
-        }),
     });
   }
 
@@ -181,14 +174,6 @@ export class UserLoansPageComponent implements OnInit {
           life: 3000,
         });
         this.getRecords();
-      },
-      error: (err) => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fout',
-          detail: err.error ?? 'Verlengen mislukt, probeer opnieuw.',
-          life: 3000,
-        });
       },
     });
   }

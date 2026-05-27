@@ -452,14 +452,6 @@ export class BulkUpload {
               life: 3000,
             });
           },
-          error: (err) => {
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Fout bij opslaan',
-              detail: err.error?.message ?? 'Onbekende fout opgetreden',
-              life: 5000,
-            });
-          },
         });
       },
       error: (err) => {

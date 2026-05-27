@@ -66,13 +66,6 @@ export class LocationDetailPageComponent implements OnInit {
   ngOnInit(): void {
     this.locationService.getAll().subscribe({
       next: (locations) => (this.locations = locations),
-      error: () =>
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fout',
-          detail: 'Probleem met het laden van locaties.',
-          life: 3000,
-        }),
     });
     this.loadBooks();
   }
@@ -123,12 +116,6 @@ export class LocationDetailPageComponent implements OnInit {
       },
       error: () => {
         this.addedBooks.delete(book.id!);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fout',
-          detail: 'Probleem met toevoegen van boek aan locatie.',
-          life: 3000,
-        });
       },
     });
   }
@@ -152,12 +139,6 @@ export class LocationDetailPageComponent implements OnInit {
       },
       error: () => {
         this.loading.stop();
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fout',
-          detail: 'Probleem met het laden van boeken.',
-          life: 3000,
-        });
       },
     });
   }
@@ -192,13 +173,6 @@ export class LocationDetailPageComponent implements OnInit {
           this.locationBooks = page.content;
           this.locationTotalRecords = page.total_elements;
         },
-        error: () =>
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Fout',
-            detail: 'Probleem met het laden van de boeken in deze locatie.',
-            life: 3000,
-          }),
       });
   }
   onLocationPageChange(event: PaginatorState): void {
