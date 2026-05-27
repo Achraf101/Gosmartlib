@@ -15,13 +15,14 @@ import { routes } from './app.routes';
 import { MessageService } from 'primeng/api';
 import { AuthService } from './services/auth';
 import { authInterceptor } from './interceptors/auth.interceptor';
+import { errorInterceptor } from './interceptors/error.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
-    provideHttpClient(withInterceptors([authInterceptor])),
+    provideHttpClient(withInterceptors([authInterceptor, errorInterceptor])),
     providePrimeNG({ translation: nl, theme: { preset: Aura, options: { darkModeSelector: '' } } }),
     MessageService,
     provideAppInitializer(() => inject(AuthService).loadCurrentUser()),
