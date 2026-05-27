@@ -3,22 +3,22 @@
   <h1>Mijn klassen</h1>
 
   @if (loading) {
-    @for (i of [1, 2, 3]; track i) {
-      <p-skeleton height="4rem" styleClass="class-skeleton" />
-    }
+  @for (i of [1, 2, 3]; track i) {
+  <p-skeleton height="4rem" styleClass="class-skeleton" />
+  }
   } @else if (error) {
-    <p-message severity="error" text="Klassen konden niet geladen worden."></p-message>
+  <p-message severity="error" text="Klassen konden niet geladen worden."></p-message>
   } @else if (classrooms.length === 0) {
-    <p-message severity="info" text="Je hebt nog geen klassen toegewezen."></p-message>
+  <p-message severity="info" text="Je hebt nog geen klassen toegewezen."></p-message>
   } @else {
-    <div class="classes-grid">
-      @for (c of classrooms; track c.id) {
-        <p-card class="class-card" (click)="openClassroom(c.id)">
-          <h2>{{ c.name }}</h2>
-          <p>{{ c.studentCount }} leerlingen</p>
-          <p-button label="Bekijk leerlingen" icon="pi pi-arrow-right" iconPos="right" />
-        </p-card>
-      }
-    </div>
+  <div class="classes-grid">
+    @for (c of classrooms; track c.id) {
+    <p-card class="class-card" (click)="openClassroom(c.id)">
+      <h2>{{ c.name }}</h2>
+      <p>{{ c.studentCount }} leerlingen</p>
+      <p-button label="Leerlingen bekijken" icon="pi pi-arrow-right" iconPos="right" />
+    </p-card>
+    }
+  </div>
   }
 </div>

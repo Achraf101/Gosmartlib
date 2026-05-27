@@ -102,7 +102,7 @@
         <div class="btns">
           <p-button
             class="btn"
-            label="Nu Ontlenen"
+            label="Nu ontlenen"
             severity="primary"
             (onClick)="openLoanDialog()"
           />
@@ -129,16 +129,21 @@
           @if (locationBook) {
             <p>
               <span class="avail-label">Status</span>
-              <span class="avail-value" [class.avail-unavailable]="locationBook.current_amount === 0">
+              <span
+                class="avail-value"
+                [class.avail-unavailable]="locationBook.current_amount === 0"
+              >
                 {{ locationBook.current_amount > 0 ? 'beschikbaar' : 'niet beschikbaar' }}
               </span>
             </p>
             <p>
               <span class="avail-label">Exemplaren</span>
-              <span class="avail-value">{{ locationBook.current_amount }} / {{ locationBook.amount }} beschikbaar</span>
+              <span class="avail-value"
+                >{{ locationBook.current_amount }} / {{ locationBook.amount }} beschikbaar</span
+              >
             </p>
           } @else {
-            <p class="avail-value avail-unavailable">Niet beschikbaar op uw locatie.</p>
+            <p class="avail-value avail-unavailable">Niet beschikbaar op jouw locatie</p>
           }
         </div>
       </div>
@@ -231,7 +236,7 @@
         }
         @if (book.clib) {
           <tr>
-            <td>CLIB niveau</td>
+            <td>Leesniveau</td>
             <td>{{ book.clib }}</td>
           </tr>
         }
@@ -270,7 +275,7 @@
 
     @if (relatedBooks?.length != 0) {
       <div id="related-books" class="box">
-        <h2>Meer van dit:</h2>
+        <h2>Meer van dit</h2>
         <div class="related-scroll">
           @for (bookCard of relatedBooks ?? []; track bookCard.id) {
             <b-card [bookCard]="bookCard"></b-card>
@@ -280,7 +285,7 @@
     }
 
     <p-dialog
-      header="Ontleen aanvraag"
+      header="Ontleenaanvraag"
       [modal]="true"
       [(visible)]="loanFormVisible"
       resizable="false"
@@ -311,7 +316,7 @@
               @if (loanForm.controls.end.value) {
                 {{ loanForm.controls.end.value | date: 'dd/MM/yyyy' }}
               } @else {
-                (selecteer een start datum)
+                (selecteer een startdatum)
               }
             </span>
           </div>
@@ -341,7 +346,7 @@
             </div>
           }
           <div class="btns">
-            <p-button class="btn" label="Annuleer" severity="secondary" (click)="cancelLoan()" />
+            <p-button class="btn" label="Annuleren" severity="secondary" (click)="cancelLoan()" />
             <p-button
               class="btn"
               label="Opslaan"

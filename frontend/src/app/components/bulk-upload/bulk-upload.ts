@@ -155,7 +155,7 @@ export class BulkUpload {
 
   private setFile(file: File): void {
     if (!file.name.endsWith('.xlsx')) {
-      this.uploadError = 'Only .xlsx files are accepted.';
+      this.uploadError = 'Alleen .xlsx-bestanden zijn toegestaan.';
       return;
     }
     this.selectedFile = file;
@@ -237,7 +237,7 @@ export class BulkUpload {
           this.uploadError =
             err?.name === 'TimeoutError'
               ? 'Import duurde te lang. Probeer opnieuw.'
-              : (err?.error?.message ?? 'Upload failed. Please try again.');
+              : (err?.error?.message ?? 'Uploaden mislukt. Probeer opnieuw.');
           this.isUploading = false;
         },
       });

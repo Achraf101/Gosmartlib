@@ -168,7 +168,7 @@ export class FilterPage implements OnInit {
       return false;
     }
     if (this.pagesMin !== null && this.pagesMax !== null && this.pagesMin > this.pagesMax) {
-      this.errorPagesMin = 'Min moet kleiner zijn dan max.';
+      this.errorPagesMin = 'Min. moet kleiner zijn dan max.';
       return false;
     }
     return true;

@@ -31,7 +31,7 @@
       <p>Adres: {{ selectedLocation.adres }}</p>
     </div>
 
-    <h3>Boek toevoegen:</h3>
+    <h3>Boek toevoegen</h3>
     <s-bar (search)="onSearch($event)" />
     @if (loading.visible) {
       <div class="loading-container">
@@ -101,7 +101,7 @@
       (onPageChange)="onPageChange($event)"
     />
     <div class="location-books">
-      <h3>Boeken in deze locatie:</h3>
+      <h3>Boeken in deze locatie</h3>
       @if (locationBooks.length > 0) {
         <div class="book-list">
           @for (locationBook of locationBooks; track locationBook.id) {

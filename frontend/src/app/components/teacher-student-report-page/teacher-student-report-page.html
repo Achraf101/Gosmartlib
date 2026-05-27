@@ -40,14 +40,8 @@
         <p>{{ report.stats.favoriteGenre || 'Onbekend' }}</p>
       </p-card>
       <p-card>
-        <h3>Gemiddelde beoordeling</h3>
-        <p>
-          {{
-            report.stats.averageRating !== null
-              ? report.stats.averageRating + ' / 5'
-              : 'Geen recensies'
-          }}
-        </p>
+        <h3>Aantal recensies</h3>
+        <p>{{ report.reviews.length }}</p>
       </p-card>
       <p-card>
         <h3>Punctualiteit</h3>
@@ -57,7 +51,7 @@
 
     <p-divider></p-divider>
 
-    <h2>Recente uitleningen</h2>
+    <h2>Recente ontleningen</h2>
     @if (report.borrowedBooksPreview.length === 0) {
       <p-message severity="info" text="Nog geen uitleningen."></p-message>
     } @else {

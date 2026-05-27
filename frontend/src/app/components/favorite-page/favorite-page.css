@@ -76,7 +76,10 @@ h1 {
 }
 
 .list-header .list-name {
+  display: flex;
   align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
 }
 
 .list-name input,
@@ -89,11 +92,17 @@ h1 {
   padding: 0;
   margin: 0;
   font-family: inherit;
+  flex: 1;
+  min-width: 0;
+}
+
+.add-list i {
+  flex-shrink: 0;
 }
 
 .list-header div {
   display: flex;
-  gap: 2rem;
+  gap: 1.5rem;
 }
 
 i {
@@ -138,11 +147,26 @@ i {
     padding: 1.25rem;
   }
 
+  h1 {
+    font-size: 1.4rem;
+    margin: 1rem;
+  }
+
   .list-header {
     width: 100%;
     margin-left: 0;
     padding: 0 1rem;
     box-sizing: border-box;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .list-header div {
+    gap: 1rem;
+  }
+
+  .list-header .list-name {
+    flex: 1 1 100%;
   }
 
   .add-list {
@@ -150,5 +174,13 @@ i {
     margin-left: 0;
     padding: 0 1rem;
     box-sizing: border-box;
+  }
+
+  i {
+    font-size: 20px;
+  }
+
+  .book-card-list {
+    margin: 0.5rem 0;
   }
 }

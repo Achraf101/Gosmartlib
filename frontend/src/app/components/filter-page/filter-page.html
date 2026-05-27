@@ -60,8 +60,8 @@
   </div>
 
   <div class="filter-group">
-    <h3>CLIB niveau
-      <i class="pi pi-info-circle" pTooltip="CLIB is een leesniveau aanduiding: A (makkelijk) tot D (moeilijk)"
+    <h3>Leesniveau
+      <i class="pi pi-info-circle" pTooltip="Leesniveau: A (makkelijk) tot D (moeilijk)"
         tooltipPosition="right" style="cursor:pointer; color: var(--primary-color)"></i>
     </h3>
     <div class="fiction-btns">
@@ -76,10 +76,10 @@
   <div class="filter-group">
     <h3>Pagina's</h3>
     <div class="range-inputs">
-      <p-inputnumber [(ngModel)]="pagesMin" placeholder="Min" [min]="0" [step]="50" [showButtons]="true"
+      <p-inputnumber [(ngModel)]="pagesMin" placeholder="Min." [min]="0" [step]="50" [showButtons]="true"
         styleClass="w-full" />
       <span>—</span>
-      <p-inputnumber [(ngModel)]="pagesMax" placeholder="Max" [min]="0" [step]="50" [showButtons]="true"
+      <p-inputnumber [(ngModel)]="pagesMax" placeholder="Max." [min]="0" [step]="50" [showButtons]="true"
         styleClass="w-full" />
     </div>
     @if (errorPagesMin) {

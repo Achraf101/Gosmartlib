@@ -157,7 +157,7 @@ export class AcceptDeclineReservationsPageComponent implements OnInit {
             this.messageService.add({
               severity: 'success',
               summary: 'Succes',
-              detail: 'Alle uitleningen geaccepteerd!',
+              detail: 'Alle ontleningen geaccepteerd!',
               life: 3000,
             });
             this.groupInfoDialogVisible = false;
@@ -178,7 +178,7 @@ export class AcceptDeclineReservationsPageComponent implements OnInit {
             this.messageService.add({
               severity: 'success',
               summary: 'Succes',
-              detail: 'Alle uitleningen geweigerd!',
+              detail: 'Alle ontleningen geweigerd!',
               life: 3000,
             });
             this.groupInfoDialogVisible = false;
