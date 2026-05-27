@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import java.util.regex.Pattern;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,13 +30,13 @@ public class FilterService {
         String lower = text.toLowerCase();
         return badWords.stream().anyMatch(badWord -> {
             String pattern = "(?<![a-zà-ÿ])" + java.util.regex.Pattern.quote(badWord) + "(?![a-zà-ÿ])";
-            return java.util.regex.Pattern.compile(pattern).matcher(lower).find();
+            return Pattern.compile(pattern).matcher(lower).find();
         });
     }
 
-    private static final java.util.regex.Pattern URL_PATTERN = java.util.regex.Pattern.compile(
+    private static final Pattern URL_PATTERN = Pattern.compile(
             "((https?|ftp)://|www\\.)[^\\s]{2,}",
-            java.util.regex.Pattern.CASE_INSENSITIVE);
+            Pattern.CASE_INSENSITIVE);
 
     public boolean containsUrl(String text) {
         if (text == null || text.isBlank())

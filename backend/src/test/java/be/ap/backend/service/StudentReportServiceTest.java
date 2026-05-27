@@ -2,10 +2,10 @@ package be.ap.backend.service;
 
 import be.ap.backend.dto.StudentReportDTO;
 import be.ap.backend.entity.Loan;
-import be.ap.backend.entity.LoanStatus;
 import be.ap.backend.entity.School;
 import be.ap.backend.entity.User;
 import be.ap.backend.entity.UserRole;
+import be.ap.backend.enums.LoanStatus;
 import be.ap.backend.repository.LoanRepository;
 import be.ap.backend.repository.ReviewRepository;
 import be.ap.backend.repository.UserRepository;

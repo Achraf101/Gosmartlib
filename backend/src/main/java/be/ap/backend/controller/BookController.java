@@ -20,7 +20,7 @@ import be.ap.backend.dto.BookResultDTO;
 import be.ap.backend.dto.CreateBookDTO;
 import be.ap.backend.dto.UpdateBookDTO;
 import be.ap.backend.entity.Book;
-import be.ap.backend.entity.Clib;
+import be.ap.backend.enums.Clib;
 import be.ap.backend.repository.LocationRepository;
 import be.ap.backend.service.BookService;
 import be.ap.backend.service.IsbnLookupService;

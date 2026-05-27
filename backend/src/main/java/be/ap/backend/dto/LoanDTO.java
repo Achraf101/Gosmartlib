@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import be.ap.backend.entity.LoanStatus;
+import be.ap.backend.enums.LoanStatus;
 import lombok.Data;
 
 @Data

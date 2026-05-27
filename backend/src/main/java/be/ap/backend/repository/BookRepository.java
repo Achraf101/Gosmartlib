@@ -11,18 +11,18 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import be.ap.backend.dto.BookCardDTO;
-import be.ap.backend.dto.GenreProjection;
+import be.ap.backend.dto.GenreProjectionDTO;
 import be.ap.backend.dto.ThemeProjectionDTO;
 import be.ap.backend.dto.BookResultDTO;
 import be.ap.backend.entity.Book;
-import be.ap.backend.entity.Clib;
+import be.ap.backend.enums.Clib;
 import jakarta.transaction.Transactional;
 
 public interface BookRepository extends JpaRepository<Book, Long> {
 
     Page<Book> findAll(Pageable pageable);
 
-    // get all with the locations
+    
     @Query("SELECT DISTINCT lb.book FROM LocationBook lb WHERE lb.location.id IN :locationIds")
     Page<Book> findAllByLocation(@Param("locationIds") List<Long> locationIds, Pageable pageable);
 
@@ -104,7 +104,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
             JOIN b.genres g
             WHERE b.id IN :bookIds
             """)
-    List<GenreProjection> findGenresForBooks(@Param("bookIds") List<Long> bookIds);
+    List<GenreProjectionDTO> findGenresForBooks(@Param("bookIds") List<Long> bookIds);
 
     @Query("""
             SELECT b.id as bookId, t.id as themeId, t.name as themeName

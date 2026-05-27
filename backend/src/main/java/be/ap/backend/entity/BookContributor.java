@@ -1,5 +1,6 @@
 package be.ap.backend.entity;
 
+import be.ap.backend.enums.ContributorType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

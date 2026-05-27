@@ -25,7 +25,7 @@ public class AccountController {
     @PutMapping("password")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> updatePassword(HttpSession session, @RequestBody PasswordDTO dto) {
-        // get your user from session here
+        
         Long userId = (Long) session.getAttribute("userId");
         User user = userRepository.findById(userId).orElse(null);
 

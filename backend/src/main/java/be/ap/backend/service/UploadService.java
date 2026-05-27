@@ -116,7 +116,7 @@ public class UploadService {
     material.setFileName(file.getOriginalFilename());
     material.setFileId(fileId);
     material.setSize(file.getSize());
-    material.setComment(note); // ← dit toevoegen
+    material.setComment(note); 
 
     Material m = materialRepository.save(material);
 
