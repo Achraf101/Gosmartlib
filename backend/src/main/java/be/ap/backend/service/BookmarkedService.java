@@ -7,6 +7,7 @@ import be.ap.backend.entity.User;
 import be.ap.backend.repository.BookRepository;
 import be.ap.backend.repository.BookmarkedRepository;
 import be.ap.backend.repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
@@ -46,9 +47,9 @@ public class BookmarkedService {
         }
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Gebruiker niet gevonden met id: " + userId));
         Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new IllegalArgumentException("Book not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Boek niet gevonden met id: " + bookId));
 
         Bookmarked bookmarked = new Bookmarked();
         bookmarked.setUser(user);
