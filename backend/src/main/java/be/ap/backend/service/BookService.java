@@ -14,7 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import be.ap.backend.dto.GenreProjection;
+import be.ap.backend.dto.GenreProjectionDTO;
 import be.ap.backend.dto.ThemeDTO;
 import be.ap.backend.dto.ThemeProjectionDTO;
 import be.ap.backend.dto.UpdateBookDTO;
@@ -28,11 +28,11 @@ import be.ap.backend.entity.Publisher;
 import be.ap.backend.entity.Series;
 import be.ap.backend.entity.Theme;
 import be.ap.backend.entity.UserRole;
+import be.ap.backend.enums.Clib;
 import be.ap.backend.exception.ArgumentsInvalidException;
 import be.ap.backend.entity.Book;
 import be.ap.backend.entity.BookContributor;
 import be.ap.backend.entity.BookType;
-import be.ap.backend.entity.Clib;
 import be.ap.backend.entity.Genre;
 import be.ap.backend.entity.Language;
 import be.ap.backend.repository.BookRepository;
@@ -176,10 +176,10 @@ public class BookService {
             return page;
         }
 
-        List<GenreProjection> results = bookRepository.findGenresForBooks(bookIds);
+        List<GenreProjectionDTO> results = bookRepository.findGenresForBooks(bookIds);
 
         Map<Long, Set<GenreDTO>> genreMap = new HashMap<>();
-        for (GenreProjection row : results) {
+        for (GenreProjectionDTO row : results) {
             genreMap.computeIfAbsent(row.getBookId(), k -> new HashSet<>())
                     .add(new GenreDTO(row.getGenreId(), row.getGenreName()));
         }

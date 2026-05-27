@@ -19,7 +19,7 @@ public class SessionContext {
         this.session = session;
     }
 
-    // needed fields: id, role, name
+    
     public Long getUserId() {
         return (Long) session.getAttribute("userId");
     }

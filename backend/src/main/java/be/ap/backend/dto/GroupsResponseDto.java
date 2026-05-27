@@ -4,6 +4,6 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class GroupsResponseDto {
+public class GroupsResponseDTO {
     private List<GroupDTO> parentGroups;
 }

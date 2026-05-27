@@ -319,8 +319,6 @@ public class DataSeeder implements CommandLineRunner {
         if (userRepository.findByUsername(username).isPresent())
             return;
         User user = new User();
-        String encoded = passwordEncoder.encode(password);
-        System.out.println("DEBUG seeding [" + username + "] raw=[" + password + "] encoded=[" + encoded + "]");
         user.setPassword(passwordEncoder.encode(password));
         user.setUsername(username);
         user.getRoles().add(role);

@@ -2,7 +2,8 @@ package be.ap.backend.dto;
 
 import be.ap.backend.entity.BookType;
 import be.ap.backend.entity.Language;
-import be.ap.backend.entity.Clib;
+import be.ap.backend.enums.Clib;
+
 import java.time.Year;
 import java.util.HashSet;
 import java.util.Set;

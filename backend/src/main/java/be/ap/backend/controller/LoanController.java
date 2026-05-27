@@ -16,7 +16,7 @@ import be.ap.backend.dto.LoanDTO;
 import be.ap.backend.dto.TopBookDTO;
 import be.ap.backend.dto.UpdateNoteDTO;
 import be.ap.backend.dto.UpdateStatusDTO;
-import be.ap.backend.entity.LoanStatus;
+import be.ap.backend.enums.LoanStatus;
 import be.ap.backend.service.LoanService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpSession;

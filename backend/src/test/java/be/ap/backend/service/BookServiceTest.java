@@ -19,6 +19,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import be.ap.backend.dto.*;
 import be.ap.backend.entity.*;
+import be.ap.backend.enums.Clib;
+import be.ap.backend.enums.FontSize;
 import be.ap.backend.repository.BookRepository;
 import jakarta.persistence.EntityManager;
 
@@ -44,7 +46,7 @@ class BookServiceTest {
         Page<BookResultDTO> mockPage = new PageImpl<>(List.of(book));
         when(bookRepository.getAllBookResults(any())).thenReturn(mockPage);
 
-        GenreProjection projection = mock(GenreProjection.class);
+        GenreProjectionDTO projection = mock(GenreProjectionDTO.class);
         when(projection.getBookId()).thenReturn(1L);
         when(projection.getGenreId()).thenReturn(10L);
         when(projection.getGenreName()).thenReturn("Fantasy");

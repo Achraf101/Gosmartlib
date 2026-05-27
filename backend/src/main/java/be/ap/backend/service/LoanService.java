@@ -22,8 +22,8 @@ import be.ap.backend.entity.LocationBook;
 import be.ap.backend.entity.School;
 import be.ap.backend.entity.Loan;
 import be.ap.backend.entity.LoanBook;
-import be.ap.backend.entity.LoanStatus;
 import be.ap.backend.entity.User;
+import be.ap.backend.enums.LoanStatus;
 import be.ap.backend.repository.LocationBookRepository;
 import be.ap.backend.repository.LoanBookRepository;
 import be.ap.backend.repository.LoanRepository;
@@ -37,12 +37,12 @@ import java.util.concurrent.Executor;
 @Service
 @Slf4j
 public class LoanService {
-    private LoanRepository loanRepository;
-    private EntityManager entityManager;
-    private LoanBookRepository loanBookRepository;
-    private LocationBookRepository locationBookRepository;
-    private LocationBookService locationBookService;
-    private SmartschoolLookupService lookupService;
+    private final LoanRepository loanRepository;
+    private final EntityManager entityManager;
+    private final LoanBookRepository loanBookRepository;
+    private final LocationBookRepository locationBookRepository;
+    private final LocationBookService locationBookService;
+    private final SmartschoolLookupService lookupService;
     private final Executor lookupExecutor;
 
     @Autowired
