@@ -31,12 +31,12 @@ import be.ap.backend.dto.IncompleteBookDTO;
 import be.ap.backend.entity.Author;
 import be.ap.backend.entity.Book;
 import be.ap.backend.entity.BookType;
-import be.ap.backend.entity.Clib;
-import be.ap.backend.entity.FontSize;
 import be.ap.backend.entity.Genre;
 import be.ap.backend.entity.Language;
 import be.ap.backend.entity.Publisher;
 import be.ap.backend.entity.Theme;
+import be.ap.backend.enums.Clib;
+import be.ap.backend.enums.FontSize;
 import be.ap.backend.repository.AuthorRepository;
 import be.ap.backend.repository.BookRepository;
 import be.ap.backend.repository.BookTypeRepository;
@@ -44,7 +44,9 @@ import be.ap.backend.repository.GenreRepository;
 import be.ap.backend.repository.LanguageRepository;
 import be.ap.backend.repository.PublisherRepository;
 import be.ap.backend.repository.ThemeRepository;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 public class BookBulkUploadService {
 
@@ -384,7 +386,7 @@ public class BookBulkUploadService {
             if (saved != null) {
                 book.setCover(saved);
             } else {
-                System.out.println("Row " + rowNum + ": cover URL kon niet worden gedownload: " + cover);
+                log.warn("Row {}: cover URL kon niet worden gedownload: {}", rowNum, cover);
             }
         }
 

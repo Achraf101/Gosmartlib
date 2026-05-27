@@ -47,7 +47,6 @@ export class LocationComponent {
   ngOnInit() {
     this.schoolService.getById(this.schoolId).subscribe({
       next: (school) => (this.school = school),
-      error: (err) => console.log(err),
     });
   }
 
@@ -84,16 +83,6 @@ export class LocationComponent {
         });
 
         this.form.reset();
-      },
-      error: (err) => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fout',
-          detail: 'Fout bij opslaan van de locatie.',
-          life: 3000,
-        });
-
-        console.error(err);
       },
       complete: () => (this.loading = false),
     });

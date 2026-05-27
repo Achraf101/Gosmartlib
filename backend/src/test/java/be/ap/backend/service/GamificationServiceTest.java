@@ -1,6 +1,7 @@
 package be.ap.backend.service;
 
 import be.ap.backend.entity.*;
+import be.ap.backend.enums.LoanStatus;
 import be.ap.backend.repository.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

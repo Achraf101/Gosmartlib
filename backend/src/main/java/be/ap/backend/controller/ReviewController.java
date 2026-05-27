@@ -5,16 +5,15 @@ import be.ap.backend.dto.CreateReportDTO;
 import be.ap.backend.dto.ReviewDTO;
 import be.ap.backend.dto.ReviewReportDTO;
 import be.ap.backend.entity.UserRole;
+import be.ap.backend.exception.MissingSessionException;
+import be.ap.backend.exception.UnauthorizedAccessException;
 import be.ap.backend.service.ReviewReportService;
 import be.ap.backend.service.ReviewService;
-import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -76,14 +75,14 @@ public class ReviewController {
     private Long requireUserId() {
         Long userId = sessionContext.getUserId();
         if (userId == null) {
-            // throw new MissingSessionException("Niet ingelogd.");
+            throw new MissingSessionException("Niet ingelogd.");
         }
         return userId;
     }
 
     private void requireRole(UserRole role) {
         if (!sessionContext.hasRole(role)) {
-            // throw new MissingSessionException("Toegang geweigerd.");
+            throw new UnauthorizedAccessException("Toegang geweigerd.");
         }
     }
 }

@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.validation.annotation.Validated;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +20,7 @@ import be.ap.backend.dto.BookResultDTO;
 import be.ap.backend.dto.CreateBookDTO;
 import be.ap.backend.dto.UpdateBookDTO;
 import be.ap.backend.entity.Book;
-import be.ap.backend.entity.Clib;
+import be.ap.backend.enums.Clib;
 import be.ap.backend.repository.LocationRepository;
 import be.ap.backend.service.BookService;
 import be.ap.backend.service.IsbnLookupService;
@@ -104,7 +105,7 @@ public class BookController {
     public ResponseEntity<BookLookupDTO> lookupByIsbn(@PathVariable String isbn) {
         return isbnLookupService.lookup(isbn)
                 .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                .orElseThrow(() -> new EntityNotFoundException("Geen boek gevonden met ISBN: " + isbn));
     }
 
     @GetMapping("/{id}/ia-preview")

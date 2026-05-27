@@ -91,8 +91,6 @@ export class DashboardAdmin {
           this.authorForm.reset();
           this.messageService.add({ severity: 'success', summary: 'Auteur toegevoegd' });
         },
-        error: () =>
-          this.messageService.add({ severity: 'error', summary: 'Fout bij opslaan auteur' }),
       });
     }
   }
@@ -105,8 +103,6 @@ export class DashboardAdmin {
           this.publisherForm.reset();
           this.messageService.add({ severity: 'success', summary: 'Uitgever toegevoegd' });
         },
-        error: () =>
-          this.messageService.add({ severity: 'error', summary: 'Fout bij opslaan uitgever' }),
       });
     }
   }
@@ -119,8 +115,6 @@ export class DashboardAdmin {
           this.genreForm.reset();
           this.messageService.add({ severity: 'success', summary: 'Genre toegevoegd' });
         },
-        error: () =>
-          this.messageService.add({ severity: 'error', summary: 'Fout bij opslaan genre' }),
       });
     }
   }
@@ -133,8 +127,6 @@ export class DashboardAdmin {
           this.themeForm.reset();
           this.messageService.add({ severity: 'success', summary: 'Thema toegevoegd' });
         },
-        error: () =>
-          this.messageService.add({ severity: 'error', summary: 'Fout bij opslaan thema' }),
       });
     }
   }

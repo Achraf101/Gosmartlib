@@ -19,6 +19,7 @@ import be.ap.backend.repository.BookListItemRepository;
 import be.ap.backend.repository.BookListRepository;
 import be.ap.backend.repository.SavedListRepository;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 
@@ -89,7 +90,7 @@ public class BookListService {
 
     public BookList renameList(Long listId, String newName) {
         BookList list = bookListRepository.findById(listId)
-                .orElseThrow(() -> new RuntimeException("List not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Lijst niet gevonden met id: " + listId));
         list.setName(newName);
         return bookListRepository.save(list);
     }

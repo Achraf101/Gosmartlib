@@ -10,6 +10,7 @@
           [value]="listItems.get(pendingList.list.id) ?? []"
           [numVisible]="4"
           [numScroll]="2"
+          [responsiveOptions]="carouselResponsiveOptions"
         >
           <ng-template pTemplate="item" let-book>
             <div class="book-card">
@@ -179,6 +180,7 @@
             [value]="savedListItems.get(saved.list.id) ?? []"
             [numVisible]="4"
             [numScroll]="2"
+            [responsiveOptions]="carouselResponsiveOptions"
           >
             <ng-template pTemplate="item" let-book>
               <div class="book-card">

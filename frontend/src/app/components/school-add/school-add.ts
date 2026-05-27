@@ -105,16 +105,6 @@ export class SchoolAddComponent {
         this.router.navigate(['/locatie/toevoegen', school.id]);
         this.form.reset();
       },
-      error: (err) => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fout',
-          detail: 'Fout bij opslaan van de school.',
-          life: 3000,
-        });
-
-        console.error(err);
-      },
       complete: () => (this.loading = false),
     });
   }

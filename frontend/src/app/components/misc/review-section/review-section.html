@@ -2,58 +2,61 @@
   <h2>Recensies</h2>
 
   @if (!submitted) {
-  <div class="review-form">
-    <h3>Schrijf een recensie</h3>
-    <p-rating [(ngModel)]="newRating" />
-    @if (error) {
-    <p class="error">{{ error }}</p>
-    }
-    <textarea [(ngModel)]="newContent" placeholder="Schrijf hier je recensie... (optioneel)"
-      maxlength="1000"></textarea>
-    <span class="char-count">{{ newContent.length }}/1000</span>
-    <button class="submit-btn" (click)="submitReview()">Plaatsen</button>
-  </div>
+    <div class="review-form">
+      <h3>Schrijf een recensie</h3>
+      <p-rating [(ngModel)]="newRating" />
+      @if (error) {
+        <p class="error">{{ error }}</p>
+      }
+      <textarea
+        [(ngModel)]="newContent"
+        placeholder="Schrijf hier je recensie... (optioneel)"
+        maxlength="1000"
+      ></textarea>
+      <span class="char-count">{{ newContent.length }}/1000</span>
+      <button class="submit-btn" (click)="submitReview()">Plaatsen</button>
+    </div>
   } @else {
-  <div class="review-thanks">
-    <p>Bedankt voor je recensie!</p>
-  </div>
+    <div class="review-thanks">
+      <p>Bedankt voor je recensie!</p>
+    </div>
   }
 
   <p-confirmDialog />
 
   <div class="reviews-list">
     @if (reviews.length === 0) {
-    <p class="no-reviews">Nog geen recensies voor dit boek.</p>
+      <p class="no-reviews">Nog geen recensies voor dit boek</p>
     }
     @for (review of reviews; track review.id) {
-    <div class="review-card">
-      <div class="review-user">
-        <div class="avatar">
-          <i class="pi pi-user"></i>
+      <div class="review-card">
+        <div class="review-user">
+          <div class="avatar">
+            <i class="pi pi-user"></i>
+          </div>
+          <span class="username">Anoniem</span>
         </div>
-        <span class="username">Anoniem</span>
+        <div class="review-header">
+          <div class="review-stars">
+            @for (s of getStars(review.rating); track $index) {
+              <i class="pi pi-star-fill"></i>
+            }
+            @for (s of getEmptyStars(review.rating); track $index) {
+              <i class="pi pi-star"></i>
+            }
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.5rem">
+            <span class="review-date">{{ review.added | date: 'dd/MM/yyyy' }}</span>
+            <button class="menu-btn" (click)="onMenuShow(review); menu.toggle($event)">
+              <i class="pi pi-ellipsis-v"></i>
+            </button>
+            <p-menu #menu [model]="menuItems" [popup]="true" appendTo="body" />
+          </div>
+        </div>
+        @if (review.content) {
+          <p class="review-content">{{ review.content }}</p>
+        }
       </div>
-      <div class="review-header">
-        <div class="review-stars">
-          @for (s of getStars(review.rating); track $index) {
-          <i class="pi pi-star-fill"></i>
-          }
-          @for (s of getEmptyStars(review.rating); track $index) {
-          <i class="pi pi-star"></i>
-          }
-        </div>
-        <div style="display:flex; align-items:center; gap: 0.5rem;">
-          <span class="review-date">{{ review.added | date: 'dd/MM/yyyy' }}</span>
-          <button class="menu-btn" (click)="onMenuShow(review); menu.toggle($event)">
-            <i class="pi pi-ellipsis-v"></i>
-          </button>
-          <p-menu #menu [model]="menuItems" [popup]="true" appendTo="body" />
-        </div>
-      </div>
-      @if (review.content) {
-      <p class="review-content">{{ review.content }}</p>
-      }
-    </div>
     }
   </div>
 </div>
@@ -76,7 +79,7 @@
   ></textarea>
   <span class="char-count">{{ reportNote.length }}/500</span>
   @if (reportError) {
-  <p class="error">{{ reportError }}</p>
+    <p class="error">{{ reportError }}</p>
   }
   <div class="report-actions">
     <p-button label="Annuleren" severity="secondary" (onClick)="reportDialogVisible = false" />

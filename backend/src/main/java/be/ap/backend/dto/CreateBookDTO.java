@@ -2,8 +2,9 @@ package be.ap.backend.dto;
 
 import java.time.Year;
 import java.util.List;
-import be.ap.backend.entity.FontSize;
-import be.ap.backend.entity.Clib;
+
+import be.ap.backend.enums.Clib;
+import be.ap.backend.enums.FontSize;
 import lombok.Data;
 
 @Data

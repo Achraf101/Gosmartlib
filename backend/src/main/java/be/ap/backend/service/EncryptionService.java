@@ -1,6 +1,8 @@
 package be.ap.backend.service;
 
 import be.ap.backend.config.EncryptionProperties;
+import be.ap.backend.exception.EncryptionException;
+
 import org.springframework.stereotype.Service;
 import javax.crypto.Cipher;
 import javax.crypto.spec.GCMParameterSpec;
@@ -43,7 +45,7 @@ public class EncryptionService {
 
             return Base64.getEncoder().encodeToString(combined);
         } catch (GeneralSecurityException e) {
-            throw new RuntimeException("Encryption failed", e);
+            throw new EncryptionException("Versleuteling mislukt", e);
         }
     }
 
@@ -58,7 +60,7 @@ public class EncryptionService {
 
             return new String(cipher.doFinal(ciphertext), StandardCharsets.UTF_8);
         } catch (GeneralSecurityException e) {
-            throw new RuntimeException("Decryption failed", e);
+            throw new EncryptionException("Ontsleuteling mislukt", e);
         }
     }
 }

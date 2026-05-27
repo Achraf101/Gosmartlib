@@ -37,14 +37,6 @@ export class PromotePageComponent implements OnInit {
         this.teachers = data;
         this.loading = false;
       },
-      error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fout',
-          detail: 'Fout bij laden van de leerkrachten voor deze school.',
-          life: 3000,
-        });
-      },
     });
   }
 
@@ -64,12 +56,6 @@ export class PromotePageComponent implements OnInit {
       },
       error: () => {
         this.promotingIds.delete(teacherId);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fout',
-          detail: 'Fout bij toevoegen van de rol.',
-          life: 3000,
-        });
       },
     });
   }

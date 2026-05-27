@@ -178,20 +178,11 @@ export class BookDetailPage implements OnInit {
 
         this.bookService.getRelated(this.bookId).subscribe({
           next: (relatedBooks) => (this.relatedBooks = relatedBooks),
-          error: () => {
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Fout',
-              detail: 'Probleem met het zoeken van gelijkaardige boeken.',
-              life: 3750,
-            });
-          },
         });
 
         if (book.isbn) {
           this.bookService.getIaPreview(this.bookId).subscribe({
             next: (data) => (this.iaId = data.ia_id),
-            error: () => {},
           });
         }
 
@@ -200,12 +191,6 @@ export class BookDetailPage implements OnInit {
       error: () => {
         this.error = 'Boek niet gevonden.';
         this.loading.stop();
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fout',
-          detail: 'Boek niet gevonden.',
-          life: 3000,
-        });
       },
     });
   }
@@ -291,14 +276,6 @@ export class BookDetailPage implements OnInit {
         this.loanForm.reset();
         this.loanFormVisible = false;
         this.loadLocationData();
-      },
-      error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fout',
-          detail: 'Er is iets misgegaan bij het versturen van dit ontleenverzoek, probeer opnieuw.',
-          life: 3000,
-        });
       },
     });
   }
@@ -421,13 +398,6 @@ export class BookDetailPage implements OnInit {
         this.materialFetched = false;
         this.getMaterial();
       },
-      error: () =>
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fout',
-          detail: 'Probleem met het uploaden van lesmateriaal.',
-          life: 3200,
-        }),
     });
   }
 
