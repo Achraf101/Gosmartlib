@@ -86,12 +86,6 @@ export class SchoolEditComponent implements OnInit {
         this.loadingData = false;
       },
       error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fout',
-          detail: 'Kon schoolgegevens niet laden.',
-          life: 3000,
-        });
         this.loadingData = false;
       },
     });
@@ -125,14 +119,6 @@ export class SchoolEditComponent implements OnInit {
           severity: 'success',
           summary: 'Succes',
           detail: 'Schoolgegevens succesvol bijgewerkt!',
-          life: 3000,
-        });
-      },
-      error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fout',
-          detail: 'Fout bij opslaan van de schoolgegevens.',
           life: 3000,
         });
       },

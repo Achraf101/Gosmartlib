@@ -17,6 +17,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import be.ap.backend.entity.Book;
 import be.ap.backend.entity.BookList;
 import be.ap.backend.entity.BookListItem;
+import be.ap.backend.exception.MissingSessionException;
 import be.ap.backend.service.BookListService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -37,14 +38,18 @@ public class BookListController {
 
     @PostMapping
     public ResponseEntity<BookList> createList(HttpSession session, @RequestBody CreateListRequest request) {
-        Long userId = Long.valueOf(session.getAttribute("userId").toString());
+        Object raw = session.getAttribute("userId");
+        if (raw == null) throw new MissingSessionException("Niet ingelogd");
+        Long userId = Long.valueOf(raw.toString());
         BookList list = bookListService.createList(userId, request.getName());
         return ResponseEntity.ok(list);
     }
 
     @GetMapping
     public ResponseEntity<List<BookList>> getMyLists(HttpSession session) {
-        Long userId = Long.valueOf(session.getAttribute("userId").toString());
+        Object raw = session.getAttribute("userId");
+        if (raw == null) throw new MissingSessionException("Niet ingelogd");
+        Long userId = Long.valueOf(raw.toString());
         return ResponseEntity.ok(bookListService.getListsByOwner(userId));
     }
 
@@ -84,20 +89,26 @@ public class BookListController {
 
     @GetMapping("/exclude-book/{bookId}")
     public ResponseEntity<List<BookList>> getListsWithoutBook(HttpSession session, @PathVariable Long bookId) {
-        Long userId = Long.valueOf(session.getAttribute("userId").toString());
+        Object raw = session.getAttribute("userId");
+        if (raw == null) throw new MissingSessionException("Niet ingelogd");
+        Long userId = Long.valueOf(raw.toString());
         return ResponseEntity.ok(bookListService.getListsWithoutBook(userId, bookId));
     }
 
     @PostMapping("/{listId}/share")
     public ResponseEntity<BookList> generateShareToken(HttpSession session, @PathVariable Long listId) {
-        Long userId = Long.valueOf(session.getAttribute("userId").toString());
+        Object raw = session.getAttribute("userId");
+        if (raw == null) throw new MissingSessionException("Niet ingelogd");
+        Long userId = Long.valueOf(raw.toString());
         BookList list = bookListService.generateShareToken(userId, listId);
         return ResponseEntity.ok(list);
     }
 
     @DeleteMapping("/{listId}/share")
     public ResponseEntity<BookList> removeShareToken(HttpSession session, @PathVariable Long listId) {
-        Long userId = Long.valueOf(session.getAttribute("userId").toString());
+        Object raw = session.getAttribute("userId");
+        if (raw == null) throw new MissingSessionException("Niet ingelogd");
+        Long userId = Long.valueOf(raw.toString());
         return ResponseEntity.ok(bookListService.removeShareToken(userId, listId));
     }
 

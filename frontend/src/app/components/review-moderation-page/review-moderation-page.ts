@@ -40,11 +40,6 @@ export class ReviewModerationPageComponent implements OnInit {
         this.loading = false;
       },
       error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fout',
-          detail: 'Rapportages konden niet worden geladen.',
-        });
         this.loading = false;
       },
     });
@@ -67,13 +62,6 @@ export class ReviewModerationPageComponent implements OnInit {
         this.detailDialogVisible = false;
         this.loadReports();
       },
-      error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fout',
-          detail: 'Verwijderen mislukt.',
-        });
-      },
     });
   }
 
@@ -88,13 +76,6 @@ export class ReviewModerationPageComponent implements OnInit {
         });
         this.detailDialogVisible = false;
         this.loadReports();
-      },
-      error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fout',
-          detail: 'Weigeren mislukt.',
-        });
       },
     });
   }

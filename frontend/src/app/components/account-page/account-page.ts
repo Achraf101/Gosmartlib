@@ -63,20 +63,13 @@ export class AccountPage {
       const { verify_password, ...payload } = this.passwordForm.value;
       // save password
       this.accountService.updatePassword(payload as Password).subscribe({
-        next: (a) => {
+        next: () => {
           this.messageService.add({
             severity: 'success',
             summary: 'Wachtwoord opgeslagen',
             life: 3000,
           });
           this.passwordForm.reset();
-        },
-        error: (e) => {
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Probleem bij het opslaan van het wachtwoord',
-            life: 3000,
-          });
         },
       });
     }

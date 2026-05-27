@@ -64,13 +64,7 @@ export class ReturnPageComponent {
         this.loading = false;
       },
       error: () => {
-        (this.messageService.add({
-          severity: 'error',
-          summary: 'Fout',
-          detail: 'Fout bij laden van de ontleningen',
-          life: 3000,
-        }),
-          (this.loading = false));
+        this.loading = false;
       },
     });
   }
@@ -87,12 +81,6 @@ export class ReturnPageComponent {
         });
       },
       error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fout',
-          detail: 'Probeer opnieuw',
-          life: 3000,
-        });
         this.loading = false;
       },
     });

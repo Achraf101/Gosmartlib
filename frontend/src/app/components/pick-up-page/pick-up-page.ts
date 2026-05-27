@@ -47,13 +47,7 @@ export class PickUpPageComponent implements OnInit {
         this.loading = false;
       },
       error: () => {
-        (this.messageService.add({
-          severity: 'error',
-          summary: 'Fout',
-          detail: 'Fout bij laden van de ontleenverzoeken',
-          life: 3000,
-        }),
-          (this.loading = false));
+        this.loading = false;
       },
     });
   }
@@ -70,12 +64,6 @@ export class PickUpPageComponent implements OnInit {
         });
       },
       error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fout',
-          detail: 'Probeer opnieuw',
-          life: 3000,
-        });
         this.loading = false;
       },
     });

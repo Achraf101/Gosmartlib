@@ -61,7 +61,7 @@ public class SmartschoolTokenService {
         ResponseEntity<?> response = restTemplate.postForEntity(tokenUrl, request, Map.class);
 
         if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
-            throw new RuntimeException("Failed to obtain token for school: " + school.getSsSubdomain());
+            throw new RuntimeException("Token ophalen mislukt voor school: " + school.getSsSubdomain());
         }
 
         Map<String, Object> responseBody = (Map<String, Object>) response.getBody();

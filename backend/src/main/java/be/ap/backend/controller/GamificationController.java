@@ -1,6 +1,7 @@
 package be.ap.backend.controller;
 
 import be.ap.backend.dto.GamificationDTO;
+import be.ap.backend.exception.MissingSessionException;
 import be.ap.backend.service.GamificationService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +18,9 @@ public class GamificationController {
 
     @GetMapping
     public ResponseEntity<GamificationDTO> getGamification(HttpSession session) {
-        Long userId = Long.valueOf(session.getAttribute("userId").toString());
+        Object raw = session.getAttribute("userId");
+        if (raw == null) throw new MissingSessionException("Niet ingelogd");
+        Long userId = Long.valueOf(raw.toString());
         return ResponseEntity.ok(gamificationService.getGamification(userId));
     }
 }

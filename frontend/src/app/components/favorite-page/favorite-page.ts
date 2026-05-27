@@ -75,13 +75,6 @@ export class FavoritePage implements OnInit {
           this.pendingList = data;
           this.showConfirmPopup = true;
         },
-        error: () =>
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Fout',
-            detail: 'Lijst niet gevonden',
-            life: 3000,
-          }),
       });
     }
 
@@ -172,7 +165,6 @@ export class FavoritePage implements OnInit {
         this.lists.push(list);
         this.listName = '';
       },
-      error: (err) => console.error(err),
     });
   }
 
@@ -227,12 +219,6 @@ export class FavoritePage implements OnInit {
       },
       error: (err) => {
         if (err.status === 409) {
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Fout',
-            detail: 'Je hebt deze lijst al in je gedeelde lijsten staan!',
-            life: 3000,
-          });
           this.router.navigate(['/favorieten']);
         }
       },

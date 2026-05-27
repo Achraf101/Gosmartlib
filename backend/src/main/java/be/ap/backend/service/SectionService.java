@@ -7,11 +7,10 @@ import be.ap.backend.entity.SectionBook;
 import be.ap.backend.repository.BookRepository;
 import be.ap.backend.repository.SectionBookRepository;
 import be.ap.backend.repository.SectionRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -43,10 +42,10 @@ public class SectionService {
 
     public Book setBookOfMonth(Long sectionId, Long bookId, Byte grade) {
         Section section = sectionRepository.findById(sectionId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Sectie niet gevonden"));
+                .orElseThrow(() -> new EntityNotFoundException("Sectie niet gevonden"));
 
         Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Boek niet gevonden"));
+                .orElseThrow(() -> new EntityNotFoundException("Boek niet gevonden"));
 
         sectionBookRepository.findBySectionIdAndGrade(sectionId, grade)
                 .ifPresent(sectionBookRepository::delete);
@@ -63,17 +62,17 @@ public class SectionService {
 
     public Book setSpotlightBook(Long sectionId, Long bookId, Short ranking) {
         Section section = sectionRepository.findById(sectionId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Sectie niet gevonden"));
+                .orElseThrow(() -> new EntityNotFoundException("Sectie niet gevonden"));
 
         Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Boek niet gevonden"));
+                .orElseThrow(() -> new EntityNotFoundException("Boek niet gevonden"));
 
         boolean alreadyExists = sectionBookRepository.findBySectionIdAndGradeIsNullOrderByRankingAsc(sectionId)
                 .stream()
                 .anyMatch(sb -> sb.getBook().getId().equals(bookId));
 
         if (alreadyExists) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Dit boek staat al in de kijker");
+            throw new IllegalArgumentException("Dit boek staat al in de kijker");
         }
 
         sectionBookRepository.findBySectionIdAndRanking(sectionId, ranking)

@@ -284,15 +284,8 @@ export class CatalogueComponent implements OnInit {
           this.showDialog = false;
           this.router.navigate(['/dashboard/bibliotheek-beheerder']);
         },
-        error: (err) => {
+        error: () => {
           this.showDialog = false;
-          if (err.status === 409) {
-            this.messageService.add({
-              severity: 'warn',
-              summary: 'Al in de kijker',
-              detail: 'Dit boek staat al in de kijker.',
-            });
-          }
         },
       });
   }
@@ -390,21 +383,6 @@ export class CatalogueComponent implements OnInit {
       next: () => {
         this.showDialog = false;
         this.router.navigate(['/boekenlijst', this.listId]);
-      },
-      error: (err) => {
-        if (err.status === 500 || err.status === 409) {
-          this.messageService.add({
-            severity: 'warn',
-            summary: 'Al in lijst',
-            detail: `"${this.selectedBook!.title}" staat al in deze lijst.`,
-          });
-        } else {
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Fout',
-            detail: 'Er is een fout opgetreden.',
-          });
-        }
       },
     });
   }
