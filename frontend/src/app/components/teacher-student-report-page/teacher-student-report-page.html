@@ -3,109 +3,106 @@
   <p-button label="Terug" icon="pi pi-arrow-left" severity="secondary" (onClick)="back()" />
 
   @if (loading) {
-  <p-skeleton height="3rem" styleClass="title-skel" />
-  @for (i of [1, 2, 3]; track i) {
-  <p-skeleton height="6rem" styleClass="block-skel" />
-  }
+    <p-skeleton height="3rem" styleClass="title-skel" />
+    @for (i of [1, 2, 3]; track i) {
+      <p-skeleton height="6rem" styleClass="block-skel" />
+    }
   } @else if (error || !report) {
-  <p-message severity="error" text="Rapport kon niet geladen worden."></p-message>
+    <p-message severity="error" text="Rapport kon niet geladen worden."></p-message>
   } @else {
-  <h1>{{ report.firstName }} {{ report.lastName }}</h1>
+    <h1>{{ report.firstName }} {{ report.lastName }}</h1>
 
-  <div class="counts-grid">
-    <p-card class="count-card">
-      <h3>Deze week</h3>
-      <p class="count">{{ report.borrowCounts.week }}</p>
-    </p-card>
-    <p-card class="count-card">
-      <h3>Deze maand</h3>
-      <p class="count">{{ report.borrowCounts.month }}</p>
-    </p-card>
-    <p-card class="count-card">
-      <h3>Dit semester</h3>
-      <p class="count">{{ report.borrowCounts.semester }}</p>
-    </p-card>
-    <p-card class="count-card">
-      <h3>Dit schooljaar</h3>
-      <p class="count">{{ report.borrowCounts.schoolYear }}</p>
-    </p-card>
-  </div>
+    <div class="counts-grid">
+      <p-card class="count-card">
+        <h3>Deze week</h3>
+        <p class="count">{{ report.borrowCounts.week }}</p>
+      </p-card>
+      <p-card class="count-card">
+        <h3>Deze maand</h3>
+        <p class="count">{{ report.borrowCounts.month }}</p>
+      </p-card>
+      <p-card class="count-card">
+        <h3>Dit semester</h3>
+        <p class="count">{{ report.borrowCounts.semester }}</p>
+      </p-card>
+      <p-card class="count-card">
+        <h3>Dit schooljaar</h3>
+        <p class="count">{{ report.borrowCounts.schoolYear }}</p>
+      </p-card>
+    </div>
 
-  <p-divider></p-divider>
+    <p-divider></p-divider>
 
-  <h2>Statistieken</h2>
-  <div class="stats-grid">
-    <p-card>
-      <h3>Favoriete genre</h3>
-      <p>{{ report.stats.favoriteGenre || 'Onbekend' }}</p>
-    </p-card>
-    <p-card>
-      <h3>Gemiddelde beoordeling</h3>
-      <p>
-        {{
-        report.stats.averageRating !== null
-        ? report.stats.averageRating + ' / 5'
-        : 'Geen recensies'
-        }}
-      </p>
-    </p-card>
-    <p-card>
-      <h3>Punctualiteit</h3>
-      <p>{{ punctualityLabel() }}</p>
-    </p-card>
-  </div>
+    <h2>Statistieken</h2>
+    <div class="stats-grid">
+      <p-card>
+        <h3>Favoriete genre</h3>
+        <p>{{ report.stats.favoriteGenre || 'Onbekend' }}</p>
+      </p-card>
+      <p-card>
+        <h3>Aantal recensies</h3>
+        <p>{{ report.reviews.length }}</p>
+      </p-card>
+      <p-card>
+        <h3>Punctualiteit</h3>
+        <p>{{ punctualityLabel() }}</p>
+      </p-card>
+    </div>
 
-  <p-divider></p-divider>
+    <p-divider></p-divider>
 
-  <h2>Recente ontleningen</h2>
-  @if (report.borrowedBooksPreview.length === 0) {
-  <p-message severity="info" text="Nog geen uitleningen."></p-message>
-  } @else {
-  <div class="books-grid">
-    @for (b of report.borrowedBooksPreview; track b.bookId) {
-    <p-card class="book-card">
-      @if (b.cover) {
-      <img class="cover" [src]="b.cover" [alt]="b.title" />
-      }
-      <h3>{{ b.title }}</h3>
-      @if (b.author) {
-      <p class="author">{{ b.author }}</p>
-      }
-      <p class="dates">
-        {{ b.start | date: 'dd/MM/yyyy' }} - {{ b.end | date: 'dd/MM/yyyy' }}
-      </p>
-      @if (b.returned) {
-      <p-tag severity="success" value="Teruggebracht"></p-tag>
-      } @else if (b.overdue) {
-      <p-tag severity="danger" value="Te laat"></p-tag>
-      } @else {
-      <p-tag severity="info" value="Actief"></p-tag>
-      }
-    </p-card>
-    }
-  </div>
-  }
-
-  <p-divider></p-divider>
-
-  <h2>Recensies</h2>
-  @if (report.reviews.length === 0) {
-  <p-message severity="info" text="Deze leerling heeft nog geen recensies geschreven."></p-message>
-  } @else {
-  <div class="reviews-list">
-    @for (r of report.reviews; track r.id) {
-    <p-card class="review-card">
-      <div class="review-header">
-        <strong>{{ r.bookTitle }}</strong>
-        <span class="rating">{{ r.rating }} / 5</span>
+    <h2>Recente ontleningen</h2>
+    @if (report.borrowedBooksPreview.length === 0) {
+      <p-message severity="info" text="Nog geen uitleningen."></p-message>
+    } @else {
+      <div class="books-grid">
+        @for (b of report.borrowedBooksPreview; track b.bookId) {
+          <p-card class="book-card">
+            @if (b.cover) {
+              <img class="cover" [src]="b.cover" [alt]="b.title" />
+            }
+            <h3>{{ b.title }}</h3>
+            @if (b.author) {
+              <p class="author">{{ b.author }}</p>
+            }
+            <p class="dates">
+              {{ b.start | date: 'dd/MM/yyyy' }} - {{ b.end | date: 'dd/MM/yyyy' }}
+            </p>
+            @if (b.returned) {
+              <p-tag severity="success" value="Teruggebracht"></p-tag>
+            } @else if (b.overdue) {
+              <p-tag severity="danger" value="Te laat"></p-tag>
+            } @else {
+              <p-tag severity="info" value="Actief"></p-tag>
+            }
+          </p-card>
+        }
       </div>
-      @if (r.content) {
-      <p class="content">{{ r.content }}</p>
-      }
-      <p class="added">{{ r.added | date: 'dd/MM/yyyy' }}</p>
-    </p-card>
     }
-  </div>
-  }
+
+    <p-divider></p-divider>
+
+    <h2>Recensies</h2>
+    @if (report.reviews.length === 0) {
+      <p-message
+        severity="info"
+        text="Deze leerling heeft nog geen recensies geschreven."
+      ></p-message>
+    } @else {
+      <div class="reviews-list">
+        @for (r of report.reviews; track r.id) {
+          <p-card class="review-card">
+            <div class="review-header">
+              <strong>{{ r.bookTitle }}</strong>
+              <span class="rating">{{ r.rating }} / 5</span>
+            </div>
+            @if (r.content) {
+              <p class="content">{{ r.content }}</p>
+            }
+            <p class="added">{{ r.added | date: 'dd/MM/yyyy' }}</p>
+          </p-card>
+        }
+      </div>
+    }
   }
 </div>
