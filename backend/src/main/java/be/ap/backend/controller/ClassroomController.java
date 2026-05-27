@@ -1,6 +1,7 @@
 package be.ap.backend.controller;
 
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,31 +11,34 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import be.ap.backend.config.SessionContext;
 import be.ap.backend.dto.ClassroomDTO;
 import be.ap.backend.dto.StudentPreviewDTO;
 import be.ap.backend.entity.UserRole;
 import be.ap.backend.service.ClassroomService;
-import jakarta.servlet.http.HttpSession;
 
 @RestController
 @RequestMapping("classrooms")
 public class ClassroomController {
 
     private final ClassroomService classroomService;
+    private final SessionContext sessionContext;
 
-    public ClassroomController(ClassroomService classroomService) {
+    public ClassroomController(ClassroomService classroomService, SessionContext sessionContext) {
         this.classroomService = classroomService;
+        this.sessionContext = sessionContext;
+
     }
 
     @GetMapping
-    public ResponseEntity<List<ClassroomDTO>> getMyClassrooms(HttpSession session) {
-        Long teacherId = requireTeacher(session);
+    public ResponseEntity<List<ClassroomDTO>> getMyClassrooms() {
+        Long teacherId = requireTeacher();
         return ResponseEntity.ok(classroomService.getClassroomsForTeacher(teacherId));
     }
 
     @GetMapping("/{id}/students")
-    public ResponseEntity<List<StudentPreviewDTO>> getStudents(@PathVariable Long id, HttpSession session) {
-        Long teacherId = requireTeacher(session);
+    public ResponseEntity<List<StudentPreviewDTO>> getStudents(@PathVariable Long id) {
+        Long teacherId = requireTeacher();
         try {
             return ResponseEntity.ok(classroomService.getStudentsForClassroom(teacherId, id));
         } catch (SecurityException e) {
@@ -42,15 +46,14 @@ public class ClassroomController {
         }
     }
 
-    private Long requireTeacher(HttpSession session) {
-        Object roleRaw = session.getAttribute("role");
-        Object userRaw = session.getAttribute("userId");
-        if (roleRaw == null || userRaw == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Niet ingelogd.");
-        }
-        if (!UserRole.LEERKRACHT.name().equals(roleRaw.toString())) {
+    private Long requireTeacher() {
+        if (!sessionContext.hasRole(UserRole.LEERKRACHT)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Alleen leerkrachten hebben toegang.");
         }
-        return Long.valueOf(userRaw.toString());
+        Long userId = sessionContext.getUserId();
+        if (userId == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Geen gebruiker in sessie.");
+        }
+        return userId;
     }
 }

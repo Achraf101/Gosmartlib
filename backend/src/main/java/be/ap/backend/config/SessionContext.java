@@ -19,9 +19,11 @@ public class SessionContext {
         this.session = session;
     }
 
-    // needed fields: id, role, name
     public Long getUserId() {
-        return (Long) session.getAttribute("userId");
+        Object raw = session.getAttribute("userId");
+        if (!(raw instanceof Long))
+            return null;
+        return (Long) raw;
     }
 
     public void setUserId(Long id) {
@@ -29,14 +31,16 @@ public class SessionContext {
     }
 
     public Set<UserRole> getRoles() {
-        @SuppressWarnings("unchecked")
-        Set<String> roleStrings = (Set<String>) session.getAttribute("roles");
-        if (roleStrings == null || roleStrings.isEmpty()) {
+        Object raw = session.getAttribute("roles");
+        if (!(raw instanceof Set<?>)) {
             return Set.of();
         }
-        return roleStrings.stream()
+        return ((Set<?>) raw).stream()
+                .filter(String.class::isInstance)
+                .map(String.class::cast)
                 .map(UserRole::valueOf)
                 .collect(Collectors.toSet());
+
     }
 
     public boolean hasRole(UserRole role) {
@@ -60,11 +64,44 @@ public class SessionContext {
 
     public Long getSchoolId() {
         Object schoolId = session.getAttribute("school");
-        if (schoolId == null) return null;
+        if (schoolId == null)
+            return null;
         return Long.parseLong(schoolId.toString());
-   }
+    }
 
     public void setSchoolId(Long id) {
         session.setAttribute("school", id);
+    }
+
+    public String getFirstName() {
+        return (String) session.getAttribute("firstName");
+    }
+
+    public void setFirstName(String v) {
+        session.setAttribute("firstName", v);
+    }
+
+    public String getLastName() {
+        return (String) session.getAttribute("lastName");
+    }
+
+    public void setLastName(String v) {
+        session.setAttribute("lastName", v);
+    }
+
+    public String getEmail() {
+        return (String) session.getAttribute("email");
+    }
+
+    public void setEmail(String v) {
+        session.setAttribute("email", v);
+    }
+
+    public String getUsername() {
+        return (String) session.getAttribute("username");
+    }
+
+    public void setUsername(String v) {
+        session.setAttribute("username", v);
     }
 }

@@ -109,14 +109,12 @@
               severity="primary"
               (onClick)="openLoanDialog()"
             />
-            @if (!authService.hasRole('LEERKRACHT')) {
-              <p-button
-                class="btn"
-                label="Toevoegen aan ontlening"
-                severity="primary"
-                (onClick)="openCartDialog()"
-              />
-            }
+            <p-button
+              class="btn"
+              label="Toevoegen aan ontlening"
+              severity="primary"
+              (onClick)="openCartDialog()"
+            />
             @if (iaId) {
               <p-button
                 class="btn"
