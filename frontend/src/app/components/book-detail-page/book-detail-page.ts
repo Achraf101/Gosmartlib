@@ -48,6 +48,7 @@ import { SchoolService } from '../../services/school';
 import { School } from '../../models/school';
 import { BookCover } from '../misc/book-cover/book-cover';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { LocationStateService } from '../../services/location-state';
 
 @Component({
   selector: 'app-book-detail-page',
@@ -126,6 +127,7 @@ export class BookDetailPage implements OnInit {
     private router: Router,
     public authService: AuthService,
     private readonly schoolService: SchoolService,
+    private locationState: LocationStateService,
   ) {}
 
   private get userId(): number {
@@ -139,28 +141,42 @@ export class BookDetailPage implements OnInit {
   ngOnInit(): void {
     this.route.paramMap.subscribe((params) => {
       this.bookId = Number(params.get('id'));
+      this.showDropdown = false;
 
       const locationParam = this.route.snapshot.queryParamMap.get('location');
       if (locationParam) {
         this.locationId = Number(locationParam);
+        this.locationState.set(this.locationId);
         this.loadLocationData();
-      } else {
-        this.schoolService.getById(this.schoolId).subscribe({
-          next: (school) => {
-            this.school = school;
-            if (school.locations?.length === 1) {
-              this.locationId = school.locations[0].id;
-              this.loadLocationData();
-            }
-          },
+        this.loadBook();
+        this.bookListService.getListsWithoutBook(this.bookId).subscribe((lists) => {
+          this.lists = lists;
         });
+      } else {
+        this.locationId = this.locationState.locationId;
+        if (this.locationId) {
+          this.loadLocationData();
+          this.loadBook();
+          this.bookListService.getListsWithoutBook(this.bookId).subscribe((lists) => {
+            this.lists = lists;
+          });
+        } else {
+          this.schoolService.getById(this.schoolId).subscribe({
+            next: (school) => {
+              this.school = school;
+              if (school.locations?.length === 1) {
+                this.locationId = school.locations[0].id;
+                this.locationState.set(this.locationId);
+                this.loadLocationData();
+              }
+            },
+          });
+          this.loadBook();
+          this.bookListService.getListsWithoutBook(this.bookId).subscribe((lists) => {
+            this.lists = lists;
+          });
+        }
       }
-
-      this.loadBook();
-      this.showDropdown = false;
-      this.bookListService.getListsWithoutBook(this.bookId).subscribe((lists) => {
-        this.lists = lists;
-      });
     });
   }
 

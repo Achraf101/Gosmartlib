@@ -32,6 +32,7 @@ import { BookListService } from '../../services/book-list';
 import { MessageService } from 'primeng/api';
 import { SchoolService } from '../../services/school';
 import { School } from '../../models/school';
+import { LocationStateService } from '../../services/location-state';
 
 @Component({
   selector: 'app-catalogue',
@@ -104,6 +105,7 @@ export class CatalogueComponent implements OnInit {
     public bookListService: BookListService,
     public messageService: MessageService,
     public schoolService: SchoolService,
+    private locationState: LocationStateService,
   ) {}
 
   ngOnInit(): void {
@@ -121,6 +123,7 @@ export class CatalogueComponent implements OnInit {
         } else if (this.school.locations?.length === 1) {
           this.oneLocation = true;
           this.sidebarLocation = this.school.locations[0].id;
+          this.locationState.set(this.sidebarLocation);
           if (this.activeFilters) {
             this.activeFilters.location = this.sidebarLocation;
           } else {
@@ -140,6 +143,7 @@ export class CatalogueComponent implements OnInit {
       this.listId = params['listId'] ? Number(params['listId']) : null;
 
       this.sidebarLocation = params['location'] ? Number(params['location']) : null;
+      this.locationState.set(this.sidebarLocation);
       this.sidebarGenres = params['genres'] ? params['genres'].split(',').map(Number) : [];
       this.sidebarThemes = params['themes'] ? params['themes'].split(',').map(Number) : [];
       this.sidebarLanguage = params['language'] ? Number(params['language']) : null;
@@ -189,6 +193,7 @@ export class CatalogueComponent implements OnInit {
   }
 
   applyFilters(): void {
+    this.locationState.set(this.sidebarLocation);
     const params: any = { ...this.route.snapshot.queryParams };
     if (this.sidebarGenres.length > 0) {
       params['genres'] = this.sidebarGenres.join(',');
@@ -233,10 +238,13 @@ export class CatalogueComponent implements OnInit {
     this.sidebarGenres = [];
     this.sidebarThemes = [];
     this.sidebarDidactic = null;
-    if (!this.oneLocation) this.sidebarLocation = null;
     this.sidebarLanguage = null;
     this.sidebarPagesMin = null;
     this.sidebarPagesMax = null;
+    if (!this.oneLocation) {
+      this.sidebarLocation = null;
+      this.locationState.set(null);
+    }
     const params: any = { ...this.route.snapshot.queryParams };
     delete params['genres'];
     delete params['themes'];
@@ -244,7 +252,7 @@ export class CatalogueComponent implements OnInit {
     delete params['pagesMin'];
     delete params['pagesMax'];
     delete params['didactic'];
-    delete params['location'];
+    if (!this.oneLocation) delete params['location'];
     params['pagina'] = 1;
     this.router.navigate([], { relativeTo: this.route, queryParams: params });
   }
