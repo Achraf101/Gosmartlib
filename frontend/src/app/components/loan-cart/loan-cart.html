@@ -1,17 +1,23 @@
 <div>
-  <p-button
-    icon="pi pi-shopping-cart"
+  <button
+    (click)="visible = true; loadMaxAmounts()"
+    [disabled]="cartService.isEmpty()"
     pTooltip="Bekijk je ontleenlijst"
     tooltipPosition="bottom"
-    [rounded]="true"
-    (onClick)="visible = true; loadMaxAmounts()"
-    [disabled]="cartService.isEmpty()"
     pBadge
-    [outlined]="true"
-  />
+    class="icon-btn"
+  >
+    <i class="pi pi-shopping-cart"></i>
+  </button>
 </div>
 
-<p-dialog header="Je ontleenlijst" [(visible)]="visible" [modal]="true" [draggable]="false">
+<p-dialog
+  header="Je ontleenlijst"
+  [(visible)]="visible"
+  [modal]="true"
+  [draggable]="false"
+  appendTo="body"
+>
   <div>
     @if (cartService.isEmpty()) {
       <p>Je ontleenlijst is leeg</p>

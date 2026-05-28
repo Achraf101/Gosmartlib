@@ -3,14 +3,11 @@
     <img src="assets/logo.png" alt="GO! Antwerpen" class="logo" routerLink="/" />
   </div>
   <div class="header-right">
-    <button class="icon-btn hide-mobile">
-      <i class="pi pi-bell" style="font-size: 1.2rem"></i>
-    </button>
+    @if (!authService.hasRole('ADMIN')) {
+      <app-loan-cart style="font-size: 1.2rem" />
+    }
     @if (authService.currentUser$ | async; as user) {
       <div class="user-info">
-        @if (!authService.hasRole('ADMIN')) {
-          <app-loan-cart />
-        }
         <i class="pi pi-user hide-mobile"></i>
         @if (user.username) {
           @if (user.roles.includes('ADMIN')) {
