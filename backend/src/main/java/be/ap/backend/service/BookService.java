@@ -139,6 +139,7 @@ public class BookService {
             List<Clib> clibs,
             List<Long> themes,
             Boolean didactic,
+            String query,
             Pageable pageable) {
 
         if (!sessionContext.hasRole(UserRole.LEERKRACHT)) {
@@ -154,6 +155,10 @@ public class BookService {
             clibs = null;
         if (themes != null && themes.isEmpty())
             themes = null;
+        if (query != null && query.isBlank())
+            query = null;
+        if (locationIds != null && locationIds.isEmpty())
+            locationIds = null;
 
         if (pagesMin != null && pagesMax != null && pagesMin > pagesMax) {
             throw new ArgumentsInvalidException("pagesMin moet kleiner zijn dan pagesMax");
@@ -171,6 +176,7 @@ public class BookService {
                 clibs,
                 themes,
                 didactic,
+                query,
                 pageable);
     }
 

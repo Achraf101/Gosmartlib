@@ -21,6 +21,7 @@ import be.ap.backend.dto.BookResultDTO;
 import be.ap.backend.dto.CreateBookDTO;
 import be.ap.backend.dto.UpdateBookDTO;
 import be.ap.backend.entity.Book;
+import be.ap.backend.entity.UserRole;
 import be.ap.backend.enums.Clib;
 import be.ap.backend.repository.LocationRepository;
 import be.ap.backend.service.BookService;
@@ -77,6 +78,7 @@ public class BookController {
     @GetMapping("/filter")
     public ResponseEntity<Page<Book>> filter(
             HttpSession session,
+            @RequestParam(required = false) String query,
             @RequestParam(required = false) Long location,
             @RequestParam(required = false) List<Long> genres,
             @RequestParam(required = false) Long language,
@@ -90,15 +92,23 @@ public class BookController {
             @RequestParam(required = false) Boolean didactic,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size) {
+        List<Long> effectiveLocations;
 
-        List<Long> ids = getLocationIds();
-        if (location != null && !ids.contains(location)) {
-            return ResponseEntity.ok(Page.empty(PageRequest.of(page, size)));
+        if (sessionContext.hasRole(UserRole.ADMIN)) {
+            effectiveLocations = location != null
+                    ? List.of(location)
+                    : null;
+        } else {
+            List<Long> ids = getLocationIds();
+            if (location != null && !ids.contains(location)) {
+                return ResponseEntity.ok(Page.empty(PageRequest.of(page, size)));
+            }
+            effectiveLocations = (location != null) ? List.of(location) : ids;
         }
-        List<Long> effectiveLocations = (location != null) ? List.of(location) : ids;
-        return ResponseEntity
-                .ok(bookService.filter(effectiveLocations, genres, language, fiction, authorIds, seriesIds, pagesMin,
-                        pagesMax, clibs, themes, didactic, PageRequest.of(page, size)));
+
+        return ResponseEntity.ok(bookService.filter(effectiveLocations, genres, language, fiction,
+                authorIds, seriesIds, pagesMin, pagesMax, clibs, themes, didactic, query,
+                PageRequest.of(page, size)));
     }
 
     @PostMapping

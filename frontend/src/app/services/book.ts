@@ -69,6 +69,7 @@ export class BookService {
   filter(filters: BookFilter, page: number = 0, size: number = 5): Observable<Page<BookResult>> {
     let params = new HttpParams().set('page', page.toString()).set('size', size.toString());
 
+    if (filters.query?.trim()) params = params.set('query', filters.query.trim());
     if (filters.genre)
       filters.genre.forEach((g) => (params = params.append('genres', g.toString())));
 

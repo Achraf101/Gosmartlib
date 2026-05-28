@@ -294,11 +294,17 @@ export class CatalogueComponent implements OnInit {
 
   loadBooks(): void {
     this.loading.start();
-    const request = this.activeFilters
-      ? this.bookService.filter(this.activeFilters, this.currentPage, this.rows)
-      : this.searchQuery.trim()
-        ? this.bookService.search(this.searchQuery.trim(), this.currentPage, this.rows)
-        : this.bookService.getAll(this.currentPage, this.rows);
+
+    const filters: BookFilter = {
+      ...(this.activeFilters ?? {}),
+      query: this.searchQuery.trim() || undefined,
+    };
+
+    const hasAnything = this.activeFilters || this.searchQuery.trim();
+
+    const request = hasAnything
+      ? this.bookService.filter(filters, this.currentPage, this.rows)
+      : this.bookService.getAll(this.currentPage, this.rows);
 
     request.subscribe({
       next: (page) => {
