@@ -43,7 +43,7 @@ import { TooltipModule } from 'primeng/tooltip';
     BookCardComponent,
     TableModule,
     Message,
-    TooltipModule
+    TooltipModule,
   ],
   templateUrl: './loan-cart.html',
   styleUrl: './loan-cart.css',
@@ -52,9 +52,8 @@ export class LoanCartComponent {
   constructor(
     private readonly loanService: LoanService,
     private readonly messageService: MessageService,
-    private readonly locationService: LocationService,
     private readonly locationBookService: LocationBookService,
-    private readonly authService: AuthService,
+    public authService: AuthService,
     private readonly schoolService: SchoolService,
   ) {}
 

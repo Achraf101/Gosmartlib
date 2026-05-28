@@ -125,8 +125,6 @@ export class BookDetailPage implements OnInit {
     private readonly locationBookService: LocationBookService,
     private readonly materialService: MaterialService,
     private readonly uploadService: UploadService,
-    private readonly schoolService: SchoolService,
-    public auth: AuthService,
     private readonly sanitizer: DomSanitizer,
     private router: Router,
     public authService: AuthService,
