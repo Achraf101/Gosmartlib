@@ -265,7 +265,7 @@ public class LoanServiceTest {
 
         assertThatThrownBy(() -> loanService.createLoan(dto))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("uitleen limiet");
+                .hasMessageContaining("Ontleenlimiet");
     }
 
     @Test

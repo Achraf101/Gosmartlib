@@ -258,7 +258,7 @@ export class DashboardLibraryManager implements OnInit {
   }
 
   goToLoanRequests(): void {
-    this.router.navigate(['/uitleenaanvragen']);
+    this.router.navigate(['/ontleenaanvragen']);
   }
 
   goToReviewModeration(): void {

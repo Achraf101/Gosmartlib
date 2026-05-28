@@ -63,7 +63,7 @@ export const routes: Routes = [
   { path: 'begeleiding', component: BegeleidingComponent, canActivate: [authGuard] },
   { path: 'favorieten', component: FavoritePage, canActivate: [authGuard] },
   {
-    path: 'uitleenaanvragen',
+    path: 'ontleenaanvragen',
     component: AcceptDeclineReservationsPageComponent,
     canActivate: [authGuard(['BIBLIOTHEEKBEHEERDER'])],
   },

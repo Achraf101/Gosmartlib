@@ -43,7 +43,7 @@ public class SchoolService {
         }
         if (dto.getBorrowLimit() > 999 || dto.getBorrowPeriod() > 999 || dto.getExtendPeriod() > 999) {
             throw new ArgumentsInvalidException(
-                    "Uitleenlimiet, uitleenperiode en verlengperiode mogen niet groter zijn dan 999!");
+                    "Ontleenlimiet, ontleenperiode en verlengperiode mogen niet groter zijn dan 999!");
         }
         if (dto.getExtendLimit() > 10) {
             throw new ArgumentsInvalidException("Maximaal aantal verlengingen mag niet meer zijn dan 10!");
@@ -149,7 +149,7 @@ public class SchoolService {
         }
         if (dto.getBorrowLimit() > 999 || dto.getBorrowPeriod() > 999 || dto.getExtendPeriod() > 999) {
             throw new ArgumentsInvalidException(
-                    "Uitleenlimiet, uitleenperiode en verlengperiode mogen niet groter zijn dan 999!");
+                    "Ontleenlimiet, ontleenperiode en verlengperiode mogen niet groter zijn dan 999!");
         }
         if (dto.getExtendLimit() > 10) {
             throw new ArgumentsInvalidException("Maximaal aantal verlengingen mag niet meer zijn dan 10!");
