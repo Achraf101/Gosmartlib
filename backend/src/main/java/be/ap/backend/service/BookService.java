@@ -141,6 +141,9 @@ public class BookService {
             Boolean didactic,
             Pageable pageable) {
 
+        if (!sessionContext.hasRole(UserRole.LEERKRACHT)) {
+            didactic = false;
+        }
         if (genres != null && genres.isEmpty())
             genres = null;
         if (authorIds != null && authorIds.isEmpty())
@@ -277,7 +280,8 @@ public class BookService {
 
     public Page<Book> search(String query, Pageable pageable) {
         List<Long> ids = getLocationIds();
-        return bookRepository.search(ids, query, pageable);
+        Boolean didactic = sessionContext.hasRole(UserRole.LEERKRACHT) ? null : false;
+        return bookRepository.search(ids, query, didactic, pageable);
     }
 
     public List<BookCardDTO> getRelated(Long id) {
@@ -301,13 +305,12 @@ public class BookService {
     }
 
     public Page<Book> getAll(Long location, Boolean full, Pageable pageable) {
+        Boolean didacticFilter = sessionContext.hasRole(UserRole.LEERKRACHT) ? null : false;
         if (sessionContext.hasRole(UserRole.ADMIN)) {
-            if (Boolean.TRUE.equals(full)) {
-                return bookRepository.findAll(pageable);
-            } else if (location == null) {
+            if (Boolean.TRUE.equals(full) || location == null) {
                 return bookRepository.findAll(pageable);
             } else {
-                return bookRepository.findAllByLocation(List.of(location), pageable);
+                return bookRepository.findAllByLocationAndDidactic(List.of(location), null, pageable);
             }
         }
 
@@ -317,7 +320,8 @@ public class BookService {
         if (Boolean.TRUE.equals(full)) {
             return bookRepository.findAll(pageable);
         } else if (location == null || ids.contains(location)) {
-            return bookRepository.findAllByLocation(ids, pageable);
+            List<Long> effectiveIds = (location != null) ? List.of(location) : ids;
+            return bookRepository.findAllByLocationAndDidactic(effectiveIds, didacticFilter, pageable);
         } else {
             return Page.empty(pageable);
         }

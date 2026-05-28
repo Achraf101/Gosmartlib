@@ -76,7 +76,7 @@ export class CatalogueComponent implements OnInit {
   sidebarLocation: number | null = null;
   sidebarGenres: number[] = [];
   sidebarThemes: number[] = [];
-  sidebarDidactic: boolean = false;
+  sidebarDidactic: boolean | null = null;
   sidebarLanguage: number | null = null;
   sidebarPagesMin: number | null = null;
   sidebarPagesMax: number | null = null;
@@ -146,6 +146,8 @@ export class CatalogueComponent implements OnInit {
       this.sidebarLanguage = params['language'] ? Number(params['language']) : null;
       this.sidebarPagesMin = params['pagesMin'] ? Number(params['pagesMin']) : null;
       this.sidebarPagesMax = params['pagesMax'] ? Number(params['pagesMax']) : null;
+      this.sidebarDidactic =
+        params['didactic'] !== undefined ? params['didactic'] === 'true' : null;
 
       const hasFilters =
         params['genres'] ||
@@ -214,8 +216,8 @@ export class CatalogueComponent implements OnInit {
     } else {
       delete params['pagesMax'];
     }
-    if (this.sidebarDidactic === true) {
-      params['didactic'] = true;
+    if (this.sidebarDidactic !== null) {
+      params['didactic'] = this.sidebarDidactic;
     } else {
       delete params['didactic'];
     }
@@ -231,7 +233,7 @@ export class CatalogueComponent implements OnInit {
   clearSidebarFilters(): void {
     this.sidebarGenres = [];
     this.sidebarThemes = [];
-    this.sidebarDidactic = false;
+    this.sidebarDidactic = null;
     this.sidebarLocation = null;
     this.sidebarLanguage = null;
     this.sidebarPagesMin = null;
