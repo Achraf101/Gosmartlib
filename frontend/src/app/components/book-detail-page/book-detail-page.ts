@@ -106,6 +106,7 @@ export class BookDetailPage implements OnInit {
   school?: School;
   location?: Location;
   locationBook?: LocationBook;
+  protected locationId: number | null = null;
 
   readonly placeholder = '/assets/no-cover.svg';
 
@@ -124,6 +125,7 @@ export class BookDetailPage implements OnInit {
     private readonly sanitizer: DomSanitizer,
     private router: Router,
     public authService: AuthService,
+    private readonly schoolService: SchoolService,
   ) {}
 
   private get userId(): number {
@@ -137,12 +139,28 @@ export class BookDetailPage implements OnInit {
   ngOnInit(): void {
     this.route.paramMap.subscribe((params) => {
       this.bookId = Number(params.get('id'));
+
+      const locationParam = this.route.snapshot.queryParamMap.get('location');
+      if (locationParam) {
+        this.locationId = Number(locationParam);
+        this.loadLocationData();
+      } else {
+        this.schoolService.getById(this.schoolId).subscribe({
+          next: (school) => {
+            this.school = school;
+            if (school.locations?.length === 1) {
+              this.locationId = school.locations[0].id;
+              this.loadLocationData();
+            }
+          },
+        });
+      }
+
       this.loadBook();
       this.showDropdown = false;
       this.bookListService.getListsWithoutBook(this.bookId).subscribe((lists) => {
         this.lists = lists;
       });
-      this.loadLocationData();
     });
   }
 
@@ -257,7 +275,7 @@ export class BookDetailPage implements OnInit {
 
     const loan: CreateLoanDTO = {
       userId: this.userId,
-      locationId: this.schoolId,
+      locationId: this.locationId ?? this.schoolId,
       extended: 0,
       start: this.formatDate(rawValue.start ?? new Date()),
       end: this.formatDate(rawValue.end ?? new Date()),
@@ -341,12 +359,15 @@ export class BookDetailPage implements OnInit {
   }
 
   private loadLocationData(): void {
-    this.locationService.getById(this.schoolId).subscribe({
+    if (!this.locationId) return;
+
+    this.locationService.getById(this.locationId).subscribe({
       next: (location) => {
         this.location = location;
       },
     });
-    this.locationBookService.getLocationBook(this.schoolId, this.bookId).subscribe({
+
+    this.locationBookService.getLocationBook(this.locationId, this.bookId).subscribe({
       next: (locationBook) => {
         this.locationBook = locationBook;
         this.setAmountValidators(locationBook.current_amount);

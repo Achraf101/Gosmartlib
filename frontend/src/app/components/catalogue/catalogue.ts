@@ -126,7 +126,6 @@ export class CatalogueComponent implements OnInit {
           } else {
             this.activeFilters = { location: this.sidebarLocation };
           }
-          this.loadBooks();
         }
       },
     });
@@ -234,7 +233,7 @@ export class CatalogueComponent implements OnInit {
     this.sidebarGenres = [];
     this.sidebarThemes = [];
     this.sidebarDidactic = null;
-    this.sidebarLocation = null;
+    if (!this.oneLocation) this.sidebarLocation = null;
     this.sidebarLanguage = null;
     this.sidebarPagesMin = null;
     this.sidebarPagesMax = null;
@@ -255,7 +254,9 @@ export class CatalogueComponent implements OnInit {
       this.selectedBook = book;
       this.showDialog = true;
     } else {
-      this.router.navigate(['/boek', book.id]);
+      this.router.navigate(['/boek', book.id], {
+        queryParams: this.sidebarLocation ? { location: this.sidebarLocation } : {},
+      });
     }
   }
 
@@ -300,7 +301,12 @@ export class CatalogueComponent implements OnInit {
       query: this.searchQuery.trim() || undefined,
     };
 
-    const hasAnything = this.activeFilters || this.searchQuery.trim();
+    if (this.oneLocation && this.sidebarLocation) {
+      filters.location = this.sidebarLocation;
+    }
+
+    const hasAnything =
+      this.activeFilters || this.searchQuery.trim() || (this.oneLocation && this.sidebarLocation);
 
     const request = hasAnything
       ? this.bookService.filter(filters, this.currentPage, this.rows)
