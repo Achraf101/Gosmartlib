@@ -34,8 +34,9 @@ public class LocationController {
     public List<LocationDTO> getAll() {
         if (sessionContext.hasRole(UserRole.ADMIN)) {
             return locationService.findAll();
-        } else if (sessionContext.hasRole(UserRole.BIBLIOTHEEKBEHEERDER)) {
-            Long schoolId = sessionContext.getSchoolId();
+        }
+        Long schoolId = sessionContext.getSchoolId();
+        if (schoolId != null) {
             return locationService.getLocationsBySchool(schoolId);
         }
         throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Niet toegelaten");

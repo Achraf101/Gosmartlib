@@ -322,6 +322,27 @@ public class LoanService {
                 .toList();
     }
 
+    /**
+     * Find the first active loan that contains the book identified by the given
+     * barcode value (ISBN or "LB{locationBookId}") and matches the expected status,
+     * scoped to the given school.
+     *
+     * Used by the pick-up page (status=ACCEPTED) and the return page (status=RECEIVED)
+     * so the librarian can scan a book's barcode to instantly locate the right loan.
+     */
+    public LoanDTO findByBarcode(String barcode, LoanStatus status, Long schoolId) {
+        // Resolve barcode → bookId via LocationBookService
+        LocationBook locationBook = locationBookService.findByBarcode(barcode);
+        Long bookId = locationBook.getBook().getId();
+
+        List<Loan> matches = loanRepository.findByBookIdAndStatusAndSchool(bookId, status, schoolId);
+        if (matches.isEmpty()) {
+            throw new jakarta.persistence.EntityNotFoundException(
+                    "Geen actieve uitlening gevonden voor dit boek (status: " + status + ")");
+        }
+        return toDTO(matches.get(0));
+    }
+
     public LoanDTO extendLoan(Long id) {
         Loan loan = loanRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Lening niet gevonden met id: " + id));

@@ -7,6 +7,8 @@ export interface LocationBookDetail {
   book_cover: string;
   amount: number;
   current_amount: number;
+  /** ISBN (EAN-13) when the book has one; otherwise "LB{id}" (Code 128 label). */
+  barcode: string;
 }
 
 export interface SchoolStats {

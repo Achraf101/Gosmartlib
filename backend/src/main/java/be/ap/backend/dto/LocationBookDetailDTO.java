@@ -12,4 +12,7 @@ public class LocationBookDetailDTO {
     private String bookCover;
     private Integer amount;
     private Integer currentAmount;
+    /** ISBN if the book has one (EAN-13, already printed on the physical book),
+     *  otherwise "LB{id}" — used as the scannable barcode identifier. */
+    private String barcode;
 }

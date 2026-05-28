@@ -152,6 +152,25 @@ h3 {
   text-align: right;
 }
 
+/* ── Barcode chip in inventory list ── */
+.barcode-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.75rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: var(--p-neutral-100, #f3f4f6);
+  color: var(--p-neutral-600, #4b5563);
+  white-space: nowrap;
+  margin-left: auto;
+}
+
+.barcode-chip code {
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.03em;
+}
+
 .loading-container {
   display: flex;
   justify-content: center;

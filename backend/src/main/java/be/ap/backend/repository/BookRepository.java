@@ -1,6 +1,7 @@
 package be.ap.backend.repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.data.domain.Page;
@@ -27,6 +28,8 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     Page<Book> findAllByLocation(@Param("locationIds") List<Long> locationIds, Pageable pageable);
 
     boolean existsByIsbn(String isbn);
+
+    Optional<Book> findByIsbn(String isbn);
 
     @Query("SELECT b.isbn FROM Book b WHERE b.isbn IS NOT NULL")
     Set<String> findAllIsbns();

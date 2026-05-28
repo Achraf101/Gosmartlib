@@ -61,6 +61,20 @@
 
   @if (!cartService.isEmpty()) {
     <div class="dates">
+      @if (locations.length > 1) {
+        <p-ifta-label>
+          <p-select
+            inputId="cartLocation"
+            [options]="locations"
+            [(ngModel)]="selectedLocation"
+            optionLabel="name"
+            placeholder="Kies een locatie"
+            appendTo="body"
+            (onChange)="loadMaxAmounts()"
+          />
+          <label for="cartLocation">Locatie</label>
+        </p-ifta-label>
+      }
       <form [formGroup]="checkoutForm">
         <p-ifta-label>
           <p-datepicker
@@ -101,7 +115,7 @@
       <p-button
         label="Ontlening aanvragen"
         icon="pi pi-check"
-        [disabled]="checkoutForm.invalid || cartService.isEmpty()"
+        [disabled]="checkoutForm.invalid || cartService.isEmpty() || !selectedLocation"
         (onClick)="submitLoan()"
       />
     </div>

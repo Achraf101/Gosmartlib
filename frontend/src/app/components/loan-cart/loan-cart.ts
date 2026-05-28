@@ -27,6 +27,7 @@ import { Message } from 'primeng/message';
 import { SchoolService } from '../../services/school';
 import { School } from '../../models/school';
 import { TooltipModule } from 'primeng/tooltip';
+import { SelectModule } from 'primeng/select';
 
 @Component({
   selector: 'app-loan-cart',
@@ -43,7 +44,8 @@ import { TooltipModule } from 'primeng/tooltip';
     BookCardComponent,
     TableModule,
     Message,
-    TooltipModule
+    TooltipModule,
+    SelectModule,
   ],
   templateUrl: './loan-cart.html',
   styleUrl: './loan-cart.css',
@@ -65,38 +67,37 @@ export class LoanCartComponent {
   items = this.cartService.items();
   maxAmounts: Map<number, number> = new Map();
 
-  location?: Location;
+  locations: Location[] = [];
+  selectedLocation?: Location;
   school?: School;
 
   private get userId(): number {
     return this.authService.currentUser?.userId ?? 0;
   }
 
-  // private get locationId(): number {
-  //   return this.authService.currentUser?.locationId ?? 0;
-  // }
-
   private get schoolId(): number {
     return this.authService.currentUser?.schoolId ?? 0;
   }
 
   ngOnInit(): void {
-    // this.locationService.getById(this.locationId).subscribe({
-    //   next: (location) => {
-    //     this.location = location;
-    //   },
-    // });
     this.schoolService.getById(this.schoolId).subscribe({
       next: (school) => {
-        ((this.school = school), this.cartService.setBorrowLimit(school.borrowLimit));
+        this.school = school;
+        this.cartService.setBorrowLimit(school.borrowLimit);
+      },
+    });
+    this.locationService.getAll().subscribe({
+      next: (locs) => {
+        this.locations = locs;
+        if (locs.length === 1) this.selectedLocation = locs[0];
       },
     });
   }
 
-  //TODO: locatie terug zetten (waar 1) maar via school
   loadMaxAmounts(): void {
+    if (!this.selectedLocation) return;
     for (const item of this.cartService.items()) {
-      this.locationBookService.getLocationBook(1, item.bookId).subscribe({
+      this.locationBookService.getLocationBook(this.selectedLocation.id, item.bookId).subscribe({
         next: (locationBook: LocationBook) => {
           this.maxAmounts.set(item.bookId, locationBook.current_amount);
         },
@@ -134,7 +135,7 @@ export class LoanCartComponent {
   }
 
   submitLoan(): void {
-    if (this.checkoutForm.invalid || this.cartService.isEmpty() || !this.calculatedEnd) return;
+    if (this.checkoutForm.invalid || this.cartService.isEmpty() || !this.calculatedEnd || !this.selectedLocation) return;
 
     if (this.school && this.cartService.items().length > this.school.borrowLimit) {
       this.messageService.add({
@@ -148,7 +149,7 @@ export class LoanCartComponent {
 
     const loan: CreateLoanDTO = {
       userId: this.userId,
-      locationId: 1, //this.locationId
+      locationId: this.selectedLocation.id,
       extended: 0,
       start: this.formatDate(this.checkoutForm.value.start!),
       end: this.formatDate(this.calculatedEnd ?? new Date()),

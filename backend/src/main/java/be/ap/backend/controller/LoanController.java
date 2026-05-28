@@ -19,7 +19,9 @@ import be.ap.backend.dto.UpdateStatusDTO;
 import be.ap.backend.enums.LoanStatus;
 import be.ap.backend.exception.MissingSessionException;
 import be.ap.backend.service.LoanService;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("loan")
@@ -136,6 +138,30 @@ public class LoanController {
             throw new MissingSessionException("Niet ingelogd");
         Long schoolId = Long.valueOf(raw.toString());
         return ResponseEntity.ok(loanService.getByStateAndSchool(state, schoolId));
+    }
+
+    /**
+     * Look up the active loan that contains the scanned book.
+     *
+     * @param barcode ISBN (EAN-13) or "LB{locationBookId}" for books without an ISBN
+     * @param status  expected loan status — ACCEPTED (pick-up page) or RECEIVED (return page)
+     */
+    @GetMapping("/by-barcode")
+    public ResponseEntity<?> findByBarcode(
+            @RequestParam String barcode,
+            @RequestParam LoanStatus status,
+            HttpSession session) {
+        Object raw = session.getAttribute("school");
+        if (raw == null)
+            throw new MissingSessionException("Niet ingelogd");
+        Long schoolId = Long.valueOf(raw.toString());
+        try {
+            return ResponseEntity.ok(loanService.findByBarcode(barcode, status, schoolId));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
 }

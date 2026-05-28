@@ -91,12 +91,43 @@ public class LocationBookService {
         dto.setBookCover(locationBook.getBook().getCover());
         dto.setAmount(locationBook.getAmount());
         dto.setCurrentAmount(locationBook.getCurrentAmount());
+
+        // Barcode: use the ISBN (EAN-13, already printed on the book) when available;
+        // fall back to "LB{id}" (Code 128) for books without an ISBN so the
+        // librarian can still print a custom label.
+        String isbn = locationBook.getBook().getIsbn();
+        dto.setBarcode((isbn != null && !isbn.isBlank()) ? isbn : "LB" + locationBook.getId());
+
         return dto;
     }
 
+    /**
+     * Resolves a scanned barcode value to a LocationBook.
+     * Accepts either an ISBN (looks up by book.isbn) or an "LB{id}" custom barcode
+     * (looks up directly by LocationBook id).
+     */
+    public LocationBook findByBarcode(String barcode) {
+        if (barcode == null || barcode.isBlank()) {
+            throw new IllegalArgumentException("Barcode mag niet leeg zijn");
+        }
+        if (barcode.startsWith("LB")) {
+            Long locationBookId;
+            try {
+                locationBookId = Long.parseLong(barcode.substring(2));
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("Ongeldige barcode: " + barcode);
+            }
+            return locationBookRepository.findById(locationBookId)
+                    .orElseThrow(() -> new EntityNotFoundException("Geen locatieboek gevonden voor barcode: " + barcode));
+        }
+        // treat as ISBN — find any LocationBook whose book.isbn matches
+        return locationBookRepository.findByBookIsbn(barcode)
+                .orElseThrow(() -> new EntityNotFoundException("Geen locatieboek gevonden voor ISBN: " + barcode));
+    }
+
     public SchoolStatsDTO getStatsForSchool(Long schoolId) {
-        int total = locationBookRepository.sumAmountBySchoolId(schoolId);
-        int available = locationBookRepository.sumCurrentAmountBySchoolId(schoolId);
-        return new SchoolStatsDTO(total, available);
+        Integer total = locationBookRepository.sumAmountBySchoolId(schoolId);
+        Integer available = locationBookRepository.sumCurrentAmountBySchoolId(schoolId);
+        return new SchoolStatsDTO(total != null ? total : 0, available != null ? available : 0);
     }
 }

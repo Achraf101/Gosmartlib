@@ -86,4 +86,16 @@ public interface LoanRepository extends JpaRepository<Loan, Long> {
 
     @Query("SELECT DISTINCT l FROM Loan l LEFT JOIN FETCH l.loanBooks lb LEFT JOIN FETCH lb.book WHERE l.status = :state AND l.location.school.id = :schoolId ORDER BY l.created ASC")
     List<Loan> findByStateAndSchool(@Param("state") LoanStatus state, @Param("schoolId") Long schoolId);
+
+    /**
+     * Find loans that contain a specific book (by bookId), have the given status,
+     * and belong to the given school. Used for barcode-based pick-up / return.
+     */
+    @Query("SELECT DISTINCT l FROM Loan l LEFT JOIN FETCH l.loanBooks lb LEFT JOIN FETCH lb.book b " +
+            "WHERE b.id = :bookId AND l.status = :status AND l.location.school.id = :schoolId " +
+            "ORDER BY l.created ASC")
+    List<Loan> findByBookIdAndStatusAndSchool(
+            @Param("bookId") Long bookId,
+            @Param("status") LoanStatus status,
+            @Param("schoolId") Long schoolId);
 }

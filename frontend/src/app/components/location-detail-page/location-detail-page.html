@@ -107,9 +107,7 @@
           @for (locationBook of locationBooks; track locationBook.id) {
             <div class="book-card">
               <img
-                [src]="
-                  locationBook.book_cover ? '/static/cover/' + locationBook.book_cover : placeholder
-                "
+                [src]="locationBook.book_cover ? '/static/cover/' + locationBook.book_cover : placeholder"
                 [alt]="locationBook.book_title"
                 class="book-cover"
               />
@@ -118,6 +116,10 @@
                 @if (locationBook.author_name) {
                   <span class="book-author">{{ locationBook.author_name }}</span>
                 }
+                <span class="barcode-chip">
+                  <i class="pi pi-qrcode"></i>
+                  <code>{{ locationBook.barcode }}</code>
+                </span>
               </div>
               <div class="book-amounts">
                 <span>{{ locationBook.current_amount }}/{{ locationBook.amount }}</span>

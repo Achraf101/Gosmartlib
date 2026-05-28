@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { HttpParams } from '@angular/common/http';
 import { ApiService } from './api';
 import { Observable } from 'rxjs';
 import { CreateLoanDTO, LoanDTO, LoanStatus } from '../models/loan';
@@ -66,5 +67,15 @@ export class LoanService {
   }
   extend(id: number): Observable<LoanDTO> {
     return this.apiService.put<LoanDTO>(`${this.endpoint}/${id}/extend`, {});
+  }
+
+  /**
+   * Find the active loan containing the scanned book.
+   * @param barcode  ISBN (EAN-13) or "LB{locationBookId}" for books without ISBN
+   * @param status   ACCEPTED (pick-up) or RECEIVED (return)
+   */
+  findByBarcode(barcode: string, status: LoanStatus): Observable<LoanDTO> {
+    const params = new HttpParams().set('barcode', barcode).set('status', status);
+    return this.apiService.get<LoanDTO>(`${this.endpoint}/by-barcode`, params);
   }
 }

@@ -2,6 +2,44 @@
 <div class="loans-page">
   <h1>Op te halen</h1>
 
+  <!-- Barcode scanner input -->
+  <div class="barcode-section">
+    <div class="barcode-label">
+      <i class="pi pi-qrcode"></i>
+      <span>Scan een barcode</span>
+    </div>
+    <form class="barcode-bar" (submit)="$event.preventDefault(); onBarcodeScan()">
+      <input
+        #barcodeField
+        type="text"
+        class="barcode-input"
+        placeholder="Scan of typ barcode en druk op Enter…"
+        [(ngModel)]="barcodeInput"
+        name="barcode"
+        autocomplete="off"
+        [disabled]="barcodeScanning"
+      />
+      @if (barcodeInput) {
+        <button type="button" class="search-btn" (click)="clearBarcodeScan()" pTooltip="Wissen">
+          <i class="pi pi-times"></i>
+        </button>
+      }
+      <button
+        type="submit"
+        class="search-btn barcode-submit"
+        [disabled]="barcodeScanning || !barcodeInput"
+        pTooltip="Zoek op barcode"
+      >
+        @if (barcodeScanning) {
+          <i class="pi pi-spin pi-spinner"></i>
+        } @else {
+          <i class="pi pi-search"></i>
+        }
+      </button>
+    </form>
+  </div>
+
+  <!-- Name search -->
   <form class="search-bar" (submit)="$event.preventDefault()">
     <input
       type="text"
@@ -43,7 +81,7 @@
         </tr>
       </ng-template>
       <ng-template pTemplate="body" let-loan>
-        <tr>
+        <tr [class.scanned-highlight]="isHighlighted(loan.id)">
           <td>
             <span>{{ loan.username }}</span>
           </td>

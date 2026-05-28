@@ -20,6 +20,9 @@ public interface LocationBookRepository extends JpaRepository<LocationBook, Long
 
     Optional<LocationBook> findByLocationIdAndBookId(Long locationId, Long bookId);
 
+    /** Find any LocationBook whose book has this ISBN (used for barcode lookup). */
+    Optional<LocationBook> findByBookIsbn(String isbn);
+
     @Query("SELECT SUM(cb.amount) FROM LocationBook cb WHERE cb.location.school.id = :schoolId")
     Integer sumAmountBySchoolId(@Param("schoolId") Long schoolId);
 
