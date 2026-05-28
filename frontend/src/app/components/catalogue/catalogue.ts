@@ -219,7 +219,7 @@ export class CatalogueComponent implements OnInit {
     } else {
       delete params['didactic'];
     }
-    if (this.sidebarLocation !== undefined) {
+    if (this.sidebarLocation !== null) {
       params['location'] = this.sidebarLocation;
     } else {
       delete params['location'];

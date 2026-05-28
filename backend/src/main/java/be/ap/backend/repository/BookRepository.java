@@ -22,7 +22,6 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
     Page<Book> findAll(Pageable pageable);
 
-    
     @Query("SELECT DISTINCT lb.book FROM LocationBook lb WHERE lb.location.id IN :locationIds")
     Page<Book> findAllByLocation(@Param("locationIds") List<Long> locationIds, Pageable pageable);
 
@@ -122,7 +121,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
             LEFT JOIN b.series s
             LEFT JOIN b.themes t
             JOIN b.locationBooks lb
-            WHERE lb.location.id = :locationId
+            WHERE lb.location.id IN :locationIds
             AND (:genres IS NULL OR g.id IN :genres)
             AND (:language IS NULL OR l.id = :language)
             AND (:didactic IS NULL OR b.didactic = :didactic)
@@ -135,7 +134,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
             AND (:themes IS NULL OR t.id IN :themes)
             """)
     Page<Book> filter(
-            @Param("locationId") Long location,
+            @Param("locationIds") List<Long> locationIds,
             @Param("genres") List<Long> genres,
             @Param("language") Long language,
             @Param("fiction") Boolean fiction,

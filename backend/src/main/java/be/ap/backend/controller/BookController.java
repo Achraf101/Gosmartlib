@@ -14,6 +14,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
+import be.ap.backend.config.SessionContext;
 import be.ap.backend.dto.BookCardDTO;
 import be.ap.backend.dto.BookLookupDTO;
 import be.ap.backend.dto.BookResultDTO;
@@ -42,6 +43,8 @@ public class BookController {
     private final IsbnLookupService isbnLookupService;
     private final LocationRepository locationRepository;
 
+    private final SessionContext sessionContext;
+
     @GetMapping
     public ResponseEntity<Page<Book>> getAll(
             HttpSession session,
@@ -63,12 +66,12 @@ public class BookController {
             @PathVariable String query,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size) {
-        return ResponseEntity.ok(bookService.search(session, query, PageRequest.of(page, size)));
+        return ResponseEntity.ok(bookService.search(query, PageRequest.of(page, size)));
     }
 
     @GetMapping("/{id}/related")
     public ResponseEntity<List<BookCardDTO>> getRelated(HttpSession session, @PathVariable Long id) {
-        return ResponseEntity.ok(bookService.getRelated(session, id));
+        return ResponseEntity.ok(bookService.getRelated(id));
     }
 
     @GetMapping("/filter")
@@ -88,12 +91,14 @@ public class BookController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size) {
 
-        List<Long> ids = getLocationIds(session);
+        List<Long> ids = getLocationIds();
         if (location != null && !ids.contains(location)) {
             return ResponseEntity.ok(Page.empty(PageRequest.of(page, size)));
         }
-        return ResponseEntity.ok(bookService.filter(location, genres, language, fiction, authorIds, seriesIds, pagesMin,
-                pagesMax, clibs, themes, didactic, PageRequest.of(page, size)));
+        List<Long> effectiveLocations = (location != null) ? List.of(location) : ids;
+        return ResponseEntity
+                .ok(bookService.filter(effectiveLocations, genres, language, fiction, authorIds, seriesIds, pagesMin,
+                        pagesMax, clibs, themes, didactic, PageRequest.of(page, size)));
     }
 
     @PostMapping
@@ -125,11 +130,8 @@ public class BookController {
         return ResponseEntity.ok(bookService.updateBook(id, dto));
     }
 
-    List<Long> getLocationIds(HttpSession session) {
-        Object raw = session.getAttribute("school");
-        if (raw == null)
-            return List.of();
-        Long schoolId = raw instanceof Long l ? l : Long.valueOf(raw.toString());
+    List<Long> getLocationIds() {
+        Long schoolId = sessionContext.getSchoolId();
         return locationRepository.findIdsBySchoolId(schoolId);
     }
 }

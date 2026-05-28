@@ -39,7 +39,6 @@ import be.ap.backend.repository.BookRepository;
 import be.ap.backend.repository.LocationRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -129,7 +128,7 @@ public class BookService {
     }
 
     public Page<Book> filter(
-            Long locationId,
+            List<Long> locationIds,
             List<Long> genres,
             Long language,
             Boolean fiction,
@@ -142,16 +141,23 @@ public class BookService {
             Boolean didactic,
             Pageable pageable) {
 
-        if (seriesIds != null && seriesIds.isEmpty()) {
+        if (genres != null && genres.isEmpty())
+            genres = null;
+        if (authorIds != null && authorIds.isEmpty())
+            authorIds = null;
+        if (seriesIds != null && seriesIds.isEmpty())
             seriesIds = null;
-        }
+        if (clibs != null && clibs.isEmpty())
+            clibs = null;
+        if (themes != null && themes.isEmpty())
+            themes = null;
 
         if (pagesMin != null && pagesMax != null && pagesMin > pagesMax) {
             throw new ArgumentsInvalidException("pagesMin moet kleiner zijn dan pagesMax");
         }
 
         return bookRepository.filter(
-                locationId,
+                locationIds,
                 genres,
                 language,
                 fiction,
@@ -254,27 +260,28 @@ public class BookService {
     public Book getById(Long id) {
         if (sessionContext.hasRole(UserRole.ADMIN)) {
             return bookRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Boek niet gevonden met id: " + id));
+                    .orElseThrow(() -> new EntityNotFoundException("Boek niet gevonden met id: " + id));
         }
 
         Book book = bookRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Boek niet gevonden met id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Boek niet gevonden met id: " + id));
 
         Long schoolId = sessionContext.getSchoolId();
         List<Long> locationIds = locationRepository.findIdsBySchoolId(schoolId);
         boolean hasAccess = bookRepository.existsByIdAndLocationId(id, locationIds);
-        if (!hasAccess) throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        if (!hasAccess)
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
 
         return book;
     }
 
-    public Page<Book> search(HttpSession session, String query, Pageable pageable) {
-        List<Long> ids = getLocationIds(session);
+    public Page<Book> search(String query, Pageable pageable) {
+        List<Long> ids = getLocationIds();
         return bookRepository.search(ids, query, pageable);
     }
 
-    public List<BookCardDTO> getRelated(HttpSession session, Long id) {
-        List<Long> ids = getLocationIds(session);
+    public List<BookCardDTO> getRelated(Long id) {
+        List<Long> ids = getLocationIds();
         return bookRepository.findRelated(id, ids);
     }
 
@@ -288,11 +295,9 @@ public class BookService {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    private List<Long> getLocationIds(HttpSession session) {
-        Object raw = session.getAttribute("location");
-        if (raw == null)
-            return List.of();
-        return List.of((Long) raw);
+    private List<Long> getLocationIds() {
+        Long schoolId = sessionContext.getSchoolId();
+        return locationRepository.findIdsBySchoolId(schoolId);
     }
 
     public Page<Book> getAll(Long location, Boolean full, Pageable pageable) {
