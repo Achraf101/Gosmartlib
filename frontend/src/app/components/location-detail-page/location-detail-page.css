@@ -1,7 +1,6 @@
 .page {
   margin: 0 auto;
   padding: 1.5rem 1rem;
-  /* TODO: fix height */
   min-height: 50vh;
 }
 
