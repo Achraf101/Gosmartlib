@@ -107,10 +107,6 @@ export class BookDetailPage implements OnInit {
   location?: Location;
   locationBook?: LocationBook;
 
-  userId = 1;
-  locationId = 1;
-  schoolId = 1;
-
   readonly placeholder = '/assets/no-cover.svg';
 
   constructor(
@@ -129,6 +125,14 @@ export class BookDetailPage implements OnInit {
     private router: Router,
     public authService: AuthService,
   ) {}
+
+  private get userId(): number {
+    return this.authService.currentUser?.userId ?? 0;
+  }
+
+  private get schoolId(): number {
+    return this.authService.currentUser?.schoolId ?? 0;
+  }
 
   ngOnInit(): void {
     this.route.paramMap.subscribe((params) => {
@@ -253,7 +257,7 @@ export class BookDetailPage implements OnInit {
 
     const loan: CreateLoanDTO = {
       userId: this.userId,
-      locationId: this.locationId,
+      locationId: this.schoolId,
       extended: 0,
       start: this.formatDate(rawValue.start ?? new Date()),
       end: this.formatDate(rawValue.end ?? new Date()),
@@ -337,12 +341,12 @@ export class BookDetailPage implements OnInit {
   }
 
   private loadLocationData(): void {
-    this.locationService.getById(this.locationId).subscribe({
+    this.locationService.getById(this.schoolId).subscribe({
       next: (location) => {
         this.location = location;
       },
     });
-    this.locationBookService.getLocationBook(this.locationId, this.bookId).subscribe({
+    this.locationBookService.getLocationBook(this.schoolId, this.bookId).subscribe({
       next: (locationBook) => {
         this.locationBook = locationBook;
         this.setAmountValidators(locationBook.current_amount);
