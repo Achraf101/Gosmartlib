@@ -39,7 +39,6 @@ import be.ap.backend.repository.BookRepository;
 import be.ap.backend.repository.LocationRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -129,7 +128,7 @@ public class BookService {
     }
 
     public Page<Book> filter(
-            Long locationId,
+            List<Long> locationIds,
             List<Long> genres,
             Long language,
             Boolean fiction,
@@ -140,18 +139,33 @@ public class BookService {
             List<Clib> clibs,
             List<Long> themes,
             Boolean didactic,
+            String query,
             Pageable pageable) {
 
-        if (seriesIds != null && seriesIds.isEmpty()) {
-            seriesIds = null;
+        if (!sessionContext.hasRole(UserRole.LEERKRACHT)) {
+            didactic = false;
         }
+        if (genres != null && genres.isEmpty())
+            genres = null;
+        if (authorIds != null && authorIds.isEmpty())
+            authorIds = null;
+        if (seriesIds != null && seriesIds.isEmpty())
+            seriesIds = null;
+        if (clibs != null && clibs.isEmpty())
+            clibs = null;
+        if (themes != null && themes.isEmpty())
+            themes = null;
+        if (query != null && query.isBlank())
+            query = null;
+        if (locationIds != null && locationIds.isEmpty())
+            locationIds = null;
 
         if (pagesMin != null && pagesMax != null && pagesMin > pagesMax) {
             throw new ArgumentsInvalidException("pagesMin moet kleiner zijn dan pagesMax");
         }
 
         return bookRepository.filter(
-                locationId,
+                locationIds,
                 genres,
                 language,
                 fiction,
@@ -162,6 +176,7 @@ public class BookService {
                 clibs,
                 themes,
                 didactic,
+                query,
                 pageable);
     }
 
@@ -254,27 +269,29 @@ public class BookService {
     public Book getById(Long id) {
         if (sessionContext.hasRole(UserRole.ADMIN)) {
             return bookRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Boek niet gevonden met id: " + id));
+                    .orElseThrow(() -> new EntityNotFoundException("Boek niet gevonden met id: " + id));
         }
 
         Book book = bookRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Boek niet gevonden met id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Boek niet gevonden met id: " + id));
 
         Long schoolId = sessionContext.getSchoolId();
         List<Long> locationIds = locationRepository.findIdsBySchoolId(schoolId);
         boolean hasAccess = bookRepository.existsByIdAndLocationId(id, locationIds);
-        if (!hasAccess) throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        if (!hasAccess)
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
 
         return book;
     }
 
-    public Page<Book> search(HttpSession session, String query, Pageable pageable) {
-        List<Long> ids = getLocationIds(session);
-        return bookRepository.search(ids, query, pageable);
+    public Page<Book> search(String query, Pageable pageable) {
+        List<Long> ids = getLocationIds();
+        Boolean didactic = sessionContext.hasRole(UserRole.LEERKRACHT) ? null : false;
+        return bookRepository.search(ids, query, didactic, pageable);
     }
 
-    public List<BookCardDTO> getRelated(HttpSession session, Long id) {
-        List<Long> ids = getLocationIds(session);
+    public List<BookCardDTO> getRelated(Long id) {
+        List<Long> ids = getLocationIds();
         return bookRepository.findRelated(id, ids);
     }
 
@@ -288,21 +305,18 @@ public class BookService {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    private List<Long> getLocationIds(HttpSession session) {
-        Object raw = session.getAttribute("location");
-        if (raw == null)
-            return List.of();
-        return List.of((Long) raw);
+    private List<Long> getLocationIds() {
+        Long schoolId = sessionContext.getSchoolId();
+        return locationRepository.findIdsBySchoolId(schoolId);
     }
 
     public Page<Book> getAll(Long location, Boolean full, Pageable pageable) {
+        Boolean didacticFilter = sessionContext.hasRole(UserRole.LEERKRACHT) ? null : false;
         if (sessionContext.hasRole(UserRole.ADMIN)) {
-            if (Boolean.TRUE.equals(full)) {
-                return bookRepository.findAll(pageable);
-            } else if (location == null) {
+            if (Boolean.TRUE.equals(full) || location == null) {
                 return bookRepository.findAll(pageable);
             } else {
-                return bookRepository.findAllByLocation(List.of(location), pageable);
+                return bookRepository.findAllByLocationAndDidactic(List.of(location), null, pageable);
             }
         }
 
@@ -312,7 +326,8 @@ public class BookService {
         if (Boolean.TRUE.equals(full)) {
             return bookRepository.findAll(pageable);
         } else if (location == null || ids.contains(location)) {
-            return bookRepository.findAllByLocation(ids, pageable);
+            List<Long> effectiveIds = (location != null) ? List.of(location) : ids;
+            return bookRepository.findAllByLocationAndDidactic(effectiveIds, didacticFilter, pageable);
         } else {
             return Page.empty(pageable);
         }

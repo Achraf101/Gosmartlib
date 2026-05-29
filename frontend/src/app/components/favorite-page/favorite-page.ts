@@ -16,6 +16,7 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import { ConfirmPopupModule } from 'primeng/confirmpopup';
 import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
+import { AuthService } from '../../services/auth';
 
 @Component({
   selector: 'app-bookmarked',
@@ -29,7 +30,7 @@ import { TooltipModule } from 'primeng/tooltip';
     Divider,
     ConfirmPopupModule,
     ToastModule,
-    TooltipModule
+    TooltipModule,
   ],
   providers: [ConfirmationService],
   templateUrl: './favorite-page.html',
@@ -55,8 +56,6 @@ export class FavoritePage implements OnInit {
     { breakpoint: '480px', numVisible: 1, numScroll: 1 },
   ];
 
-  private userId = 1;
-
   constructor(
     private bookmarkedService: BookmarkedService,
     private router: Router,
@@ -64,7 +63,12 @@ export class FavoritePage implements OnInit {
     private route: ActivatedRoute,
     private messageService: MessageService,
     private confirmationService: ConfirmationService,
+    private authService: AuthService,
   ) {}
+
+  private get userId(): number {
+    return this.authService.currentUser?.userId ?? 0;
+  }
 
   ngOnInit(): void {
     const token = this.route.snapshot.paramMap.get('token');

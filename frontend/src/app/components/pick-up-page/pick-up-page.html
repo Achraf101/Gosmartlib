@@ -58,6 +58,7 @@
         <tr class="show-desktop">
           <th><p>Naam</p></th>
           <th><p>Boeken</p></th>
+          <th><p>Aantal</p></th>
           <th><p>Startdatum</p></th>
           <th><p>Teruggavedatum</p></th>
           <th><p>Status</p></th>
@@ -84,6 +85,11 @@
                 </li>
               }
             </ul>
+          </td>
+          <td>
+            @for (book of loan.books; track book.bookId) {
+              <span>{{ book.requestedAmount }}</span>
+            }
           </td>
           <td>
             <span>{{ loan.start | date: 'dd/MM/yyyy' }}</span>

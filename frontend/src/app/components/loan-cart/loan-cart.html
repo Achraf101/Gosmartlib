@@ -1,17 +1,23 @@
 <div>
-  <p-button
-    icon="pi pi-shopping-cart"
+  <button
+    (click)="visible = true; loadMaxAmounts()"
+    [disabled]="cartService.isEmpty()"
     pTooltip="Bekijk je ontleenlijst"
     tooltipPosition="bottom"
-    [rounded]="true"
-    (onClick)="visible = true; loadMaxAmounts()"
-    [disabled]="cartService.isEmpty()"
     pBadge
-    [outlined]="true"
-  />
+    class="icon-btn"
+  >
+    <i class="pi pi-shopping-cart"></i>
+  </button>
 </div>
 
-<p-dialog header="Je ontleenlijst" [(visible)]="visible" [modal]="true" [draggable]="false">
+<p-dialog
+  header="Je ontleenlijst"
+  [(visible)]="visible"
+  [modal]="true"
+  [draggable]="false"
+  appendTo="body"
+>
   <div>
     @if (cartService.isEmpty()) {
       <p>Je ontleenlijst is leeg</p>
@@ -32,17 +38,28 @@
                 <b-card [bookCard]="item" />
               </td>
               <td>
-                <p-inputnumber
-                  inputId="requestedAmount"
-                  [ngModel]="item.requestedAmount"
-                  (ngModelChange)="updateAmount(item.bookId, $event)"
-                  [min]="1"
-                  [max]="getMaxAmount(item.bookId)"
-                  [showButtons]="true"
-                  buttonLayout="vertical"
-                  [useGrouping]="false"
-                  class="inputnumber"
-                />
+                @if (authService.hasRole('STUDENT')) {
+                  <p-inputnumber
+                    inputId="requestedAmount"
+                    [ngModel]="item.requestedAmount"
+                    [min]="1"
+                    [max]="1"
+                    [disabled]="true"
+                    [inputStyle]="{ width: '3.5rem' }"
+                  />
+                } @else {
+                  <p-inputnumber
+                    inputId="requestedAmount"
+                    [ngModel]="item.requestedAmount"
+                    (ngModelChange)="updateAmount(item.bookId, $event)"
+                    [min]="1"
+                    [max]="getMaxAmount(item.bookId)"
+                    [showButtons]="true"
+                    buttonLayout="vertical"
+                    [useGrouping]="false"
+                    class="inputnumber"
+                  />
+                }
               </td>
               <td>
                 <p-button

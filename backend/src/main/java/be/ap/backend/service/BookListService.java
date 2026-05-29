@@ -56,7 +56,7 @@ public class BookListService {
 
     public BookList generateShareToken(Long userId, Long listId) {
         BookList list = bookListRepository.findById(listId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "List not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "List not found"));
         if (!list.getOwnerId().equals(userId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "This is not your list");
         }
@@ -108,10 +108,10 @@ public class BookListService {
 
     public List<Book> getBooksInList(Long listId) {
         return bookListItemRepository.findByBookListId(listId)
-            .stream()
-            .map(item -> entityManager.find(Book.class, item.getBookId()))
-            .filter(Objects::nonNull)
-            .collect(Collectors.toList());
+                .stream()
+                .map(item -> entityManager.find(Book.class, item.getBookId()))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
     public void removeBook(Long bookId, Long listId) {
@@ -140,7 +140,7 @@ public class BookListService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "This is not your list");
         }
         list.setShareToken(null);
-        savedListRepository.deleteByBookListId(listId); // remove from all saved lists
+        savedListRepository.deleteByBookListId(listId);
         return bookListRepository.save(list);
     }
 }

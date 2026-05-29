@@ -48,6 +48,7 @@ import { SchoolService } from '../../services/school';
 import { School } from '../../models/school';
 import { BookCover } from '../misc/book-cover/book-cover';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { LocationStateService } from '../../services/location-state';
 
 @Component({
   selector: 'app-book-detail-page',
@@ -106,10 +107,7 @@ export class BookDetailPage implements OnInit {
   school?: School;
   location?: Location;
   locationBook?: LocationBook;
-
-  userId = 1;
-  locationId = 1;
-  schoolId = 1;
+  protected locationId: number | null = null;
 
   readonly placeholder = '/assets/no-cover.svg';
 
@@ -125,22 +123,60 @@ export class BookDetailPage implements OnInit {
     private readonly locationBookService: LocationBookService,
     private readonly materialService: MaterialService,
     private readonly uploadService: UploadService,
-    private readonly schoolService: SchoolService,
-    public auth: AuthService,
     private readonly sanitizer: DomSanitizer,
     private router: Router,
     public authService: AuthService,
+    private readonly schoolService: SchoolService,
+    private locationState: LocationStateService,
   ) {}
+
+  private get userId(): number {
+    return this.authService.currentUser?.userId ?? 0;
+  }
+
+  private get schoolId(): number {
+    return this.authService.currentUser?.schoolId ?? 0;
+  }
 
   ngOnInit(): void {
     this.route.paramMap.subscribe((params) => {
       this.bookId = Number(params.get('id'));
-      this.loadBook();
       this.showDropdown = false;
-      this.bookListService.getListsWithoutBook(this.bookId).subscribe((lists) => {
-        this.lists = lists;
-      });
-      this.loadLocationData();
+
+      const locationParam = this.route.snapshot.queryParamMap.get('location');
+      if (locationParam) {
+        this.locationId = Number(locationParam);
+        this.locationState.set(this.locationId);
+        this.loadLocationData();
+        this.loadBook();
+        this.bookListService.getListsWithoutBook(this.bookId).subscribe((lists) => {
+          this.lists = lists;
+        });
+      } else {
+        this.locationId = this.locationState.locationId;
+        if (this.locationId) {
+          this.loadLocationData();
+          this.loadBook();
+          this.bookListService.getListsWithoutBook(this.bookId).subscribe((lists) => {
+            this.lists = lists;
+          });
+        } else {
+          this.schoolService.getById(this.schoolId).subscribe({
+            next: (school) => {
+              this.school = school;
+              if (school.locations?.length === 1) {
+                this.locationId = school.locations[0].id;
+                this.locationState.set(this.locationId);
+                this.loadLocationData();
+              }
+            },
+          });
+          this.loadBook();
+          this.bookListService.getListsWithoutBook(this.bookId).subscribe((lists) => {
+            this.lists = lists;
+          });
+        }
+      }
     });
   }
 
@@ -255,7 +291,7 @@ export class BookDetailPage implements OnInit {
 
     const loan: CreateLoanDTO = {
       userId: this.userId,
-      locationId: this.locationId,
+      locationId: this.locationId ?? this.schoolId,
       extended: 0,
       start: this.formatDate(rawValue.start ?? new Date()),
       end: this.formatDate(rawValue.end ?? new Date()),
@@ -339,11 +375,14 @@ export class BookDetailPage implements OnInit {
   }
 
   private loadLocationData(): void {
+    if (!this.locationId) return;
+
     this.locationService.getById(this.locationId).subscribe({
       next: (location) => {
         this.location = location;
       },
     });
+
     this.locationBookService.getLocationBook(this.locationId, this.bookId).subscribe({
       next: (locationBook) => {
         this.locationBook = locationBook;

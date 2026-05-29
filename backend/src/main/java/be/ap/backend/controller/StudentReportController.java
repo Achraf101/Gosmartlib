@@ -11,6 +11,8 @@ import org.springframework.web.server.ResponseStatusException;
 import be.ap.backend.config.SessionContext;
 import be.ap.backend.dto.StudentReportDTO;
 import be.ap.backend.entity.UserRole;
+import be.ap.backend.exception.MissingSessionException;
+import be.ap.backend.exception.UnauthorizedAccessException;
 import be.ap.backend.service.ClassroomService;
 import be.ap.backend.service.StudentReportService;
 
@@ -33,17 +35,13 @@ public class StudentReportController {
     public ResponseEntity<StudentReportDTO> getReport(@PathVariable Long id) {
         Long teacherId = sessionContext.getUserId();
         if (teacherId == null) {
-            // throw new MissingSessionException("Niet ingelogd.");
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Niet ingelogd.");
+            throw new MissingSessionException("Niet ingelogd.");
         }
         if (!sessionContext.hasRole(UserRole.LEERKRACHT)) {
-            // throw new MissingSessionException("Toegang geweigerd.");
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Alleen leerkrachten hebben toegang.");
+            throw new MissingSessionException("Toegang geweigerd.");
         }
         if (!classroomService.teacherCanViewStudent(teacherId, id)) {
-            // throw new UnauthorizedAccessException("Deze leerling zit niet in een van jouw
-            // klassen.")
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Deze leerling zit niet in een van jouw klassen.");
+            throw new UnauthorizedAccessException("Deze leerling zit niet in een van jouw klassen.");
         }
         return ResponseEntity.ok(studentReportService.buildReport(id));
     }

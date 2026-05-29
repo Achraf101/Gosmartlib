@@ -127,7 +127,11 @@
           </div>
           <div id="book-available">
             <p class="avail-title">Beschikbaarheid</p>
-            @if (locationBook) {
+            @if (!locationId) {
+              <p class="avail-value">
+                Selecteer een locatie in de catalogus om beschikbaarheid te zien.
+              </p>
+            } @else if (locationBook) {
               <p>
                 <span class="avail-label">Status</span>
                 <span
@@ -150,7 +154,7 @@
         }
       </div>
     </div>
-    @if (auth.hasRole('LEERKRACHT')) {
+    @if (authService.hasRole('LEERKRACHT')) {
       <div class="material box">
         <div>
           <h2>Lesmateriaal</h2>

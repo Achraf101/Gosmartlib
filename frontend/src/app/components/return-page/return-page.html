@@ -24,7 +24,13 @@
   </form>
 
   <form class="search-bar" (submit)="$event.preventDefault()">
-    <input type="text" class="search-input" placeholder="Zoek op naam" [(ngModel)]="query" name="search" />
+    <input
+      type="text"
+      class="search-input"
+      placeholder="Zoek op naam"
+      [(ngModel)]="query"
+      name="search"
+    />
     @if (query) {
       <button type="button" class="search-btn" (click)="onDelete()">
         <i class="pi pi-times"></i>
@@ -40,14 +46,34 @@
       <p-skeleton height="3rem" />
     }
   } @else if (loans.length > 0) {
-    <p-table [value]="filteredLoans" class="loans-table" showGridlines stripedRows [paginator]="true" [rows]="5">
+    <p-table
+      [value]="filteredLoans"
+      class="loans-table"
+      showGridlines
+      stripedRows
+      [paginator]="true"
+      [rows]="5"
+    >
       <ng-template pTemplate="header">
         <tr class="show-desktop">
-          <th><p>Naam</p></th>
-          <th><p>Boeken</p></th>
-          <th><p>Startdatum</p></th>
-          <th><p>Teruggavedatum</p></th>
-          <th><p>Status</p></th>
+          <th>
+            <p>Naam</p>
+          </th>
+          <th>
+            <p>Boeken</p>
+          </th>
+          <th>
+            <p>Aantal</p>
+          </th>
+          <th>
+            <p>Startdatum</p>
+          </th>
+          <th>
+            <p>Teruggavedatum</p>
+          </th>
+          <th>
+            <p>Status</p>
+          </th>
         </tr>
       </ng-template>
       <ng-template pTemplate="body" let-loan>
@@ -73,13 +99,23 @@
             </ul>
           </td>
           <td>
+            @for (book of loan.books; track book.bookId) {
+              <span>{{ book.requestedAmount }}</span>
+            }
+          </td>
+          <td>
             <span>{{ loan.start | date: 'dd/MM/yyyy' }}</span>
           </td>
           <td>
             <span
               [class.overdue]="isOverdue(loan.end) && loan.status !== 'RETURNED'"
-              [pTooltip]="isOverdue(loan.end) && loan.status !== 'RETURNED' ? 'Teruggavedatum is verstreken' : ''"
-            >{{ loan.end | date: 'dd/MM/yyyy' }}</span>
+              [pTooltip]="
+                isOverdue(loan.end) && loan.status !== 'RETURNED'
+                  ? 'Teruggavedatum is verstreken'
+                  : ''
+              "
+              >{{ loan.end | date: 'dd/MM/yyyy' }}</span
+            >
           </td>
           <td>
             <p-button (onClick)="setState(loan.id)">Teruggebracht</p-button>

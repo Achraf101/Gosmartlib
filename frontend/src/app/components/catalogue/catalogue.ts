@@ -32,6 +32,7 @@ import { BookListService } from '../../services/book-list';
 import { MessageService } from 'primeng/api';
 import { SchoolService } from '../../services/school';
 import { School } from '../../models/school';
+import { LocationStateService } from '../../services/location-state';
 
 @Component({
   selector: 'app-catalogue',
@@ -76,7 +77,7 @@ export class CatalogueComponent implements OnInit {
   sidebarLocation: number | null = null;
   sidebarGenres: number[] = [];
   sidebarThemes: number[] = [];
-  sidebarDidactic: boolean = false;
+  sidebarDidactic: boolean | null = null;
   sidebarLanguage: number | null = null;
   sidebarPagesMin: number | null = null;
   sidebarPagesMax: number | null = null;
@@ -104,6 +105,7 @@ export class CatalogueComponent implements OnInit {
     public bookListService: BookListService,
     public messageService: MessageService,
     public schoolService: SchoolService,
+    private locationState: LocationStateService,
   ) {}
 
   ngOnInit(): void {
@@ -121,12 +123,12 @@ export class CatalogueComponent implements OnInit {
         } else if (this.school.locations?.length === 1) {
           this.oneLocation = true;
           this.sidebarLocation = this.school.locations[0].id;
+          this.locationState.set(this.sidebarLocation);
           if (this.activeFilters) {
             this.activeFilters.location = this.sidebarLocation;
           } else {
             this.activeFilters = { location: this.sidebarLocation };
           }
-          this.loadBooks();
         }
       },
     });
@@ -141,11 +143,14 @@ export class CatalogueComponent implements OnInit {
       this.listId = params['listId'] ? Number(params['listId']) : null;
 
       this.sidebarLocation = params['location'] ? Number(params['location']) : null;
+      this.locationState.set(this.sidebarLocation);
       this.sidebarGenres = params['genres'] ? params['genres'].split(',').map(Number) : [];
       this.sidebarThemes = params['themes'] ? params['themes'].split(',').map(Number) : [];
       this.sidebarLanguage = params['language'] ? Number(params['language']) : null;
       this.sidebarPagesMin = params['pagesMin'] ? Number(params['pagesMin']) : null;
       this.sidebarPagesMax = params['pagesMax'] ? Number(params['pagesMax']) : null;
+      this.sidebarDidactic =
+        params['didactic'] !== undefined ? params['didactic'] === 'true' : null;
 
       const hasFilters =
         params['genres'] ||
@@ -188,6 +193,7 @@ export class CatalogueComponent implements OnInit {
   }
 
   applyFilters(): void {
+    this.locationState.set(this.sidebarLocation);
     const params: any = { ...this.route.snapshot.queryParams };
     if (this.sidebarGenres.length > 0) {
       params['genres'] = this.sidebarGenres.join(',');
@@ -214,12 +220,12 @@ export class CatalogueComponent implements OnInit {
     } else {
       delete params['pagesMax'];
     }
-    if (this.sidebarDidactic === true) {
-      params['didactic'] = true;
+    if (this.sidebarDidactic !== null) {
+      params['didactic'] = this.sidebarDidactic;
     } else {
       delete params['didactic'];
     }
-    if (this.sidebarLocation !== undefined) {
+    if (this.sidebarLocation !== null) {
       params['location'] = this.sidebarLocation;
     } else {
       delete params['location'];
@@ -231,11 +237,14 @@ export class CatalogueComponent implements OnInit {
   clearSidebarFilters(): void {
     this.sidebarGenres = [];
     this.sidebarThemes = [];
-    this.sidebarDidactic = false;
-    this.sidebarLocation = null;
+    this.sidebarDidactic = null;
     this.sidebarLanguage = null;
     this.sidebarPagesMin = null;
     this.sidebarPagesMax = null;
+    if (!this.oneLocation) {
+      this.sidebarLocation = null;
+      this.locationState.set(null);
+    }
     const params: any = { ...this.route.snapshot.queryParams };
     delete params['genres'];
     delete params['themes'];
@@ -243,7 +252,7 @@ export class CatalogueComponent implements OnInit {
     delete params['pagesMin'];
     delete params['pagesMax'];
     delete params['didactic'];
-    delete params['location'];
+    if (!this.oneLocation) delete params['location'];
     params['pagina'] = 1;
     this.router.navigate([], { relativeTo: this.route, queryParams: params });
   }
@@ -253,7 +262,9 @@ export class CatalogueComponent implements OnInit {
       this.selectedBook = book;
       this.showDialog = true;
     } else {
-      this.router.navigate(['/boek', book.id]);
+      this.router.navigate(['/boek', book.id], {
+        queryParams: this.sidebarLocation ? { location: this.sidebarLocation } : {},
+      });
     }
   }
 
@@ -292,11 +303,22 @@ export class CatalogueComponent implements OnInit {
 
   loadBooks(): void {
     this.loading.start();
-    const request = this.activeFilters
-      ? this.bookService.filter(this.activeFilters, this.currentPage, this.rows)
-      : this.searchQuery.trim()
-        ? this.bookService.search(this.searchQuery.trim(), this.currentPage, this.rows)
-        : this.bookService.getAll(this.currentPage, this.rows);
+
+    const filters: BookFilter = {
+      ...(this.activeFilters ?? {}),
+      query: this.searchQuery.trim() || undefined,
+    };
+
+    if (this.oneLocation && this.sidebarLocation) {
+      filters.location = this.sidebarLocation;
+    }
+
+    const hasAnything =
+      this.activeFilters || this.searchQuery.trim() || (this.oneLocation && this.sidebarLocation);
+
+    const request = hasAnything
+      ? this.bookService.filter(filters, this.currentPage, this.rows)
+      : this.bookService.getAll(this.currentPage, this.rows);
 
     request.subscribe({
       next: (page) => {

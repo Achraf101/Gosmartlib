@@ -22,9 +22,16 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
     Page<Book> findAll(Pageable pageable);
 
-    
-    @Query("SELECT DISTINCT lb.book FROM LocationBook lb WHERE lb.location.id IN :locationIds")
-    Page<Book> findAllByLocation(@Param("locationIds") List<Long> locationIds, Pageable pageable);
+    @Query("""
+            SELECT DISTINCT lb.book FROM LocationBook lb
+            WHERE lb.location.id IN :locationIds
+            AND (:didactic IS NULL
+            OR (:didactic = true AND lb.book.didactic = true)
+            OR (:didactic = false AND (lb.book.didactic = false OR lb.book.didactic IS NULL)))
+            """)
+    Page<Book> findAllByLocationAndDidactic(@Param("locationIds") List<Long> locationIds,
+            @Param("didactic") Boolean didactic,
+            Pageable pageable);
 
     boolean existsByIsbn(String isbn);
 
@@ -60,6 +67,9 @@ public interface BookRepository extends JpaRepository<Book, Long> {
             LEFT JOIN b.series s
             JOIN b.locationBooks lb
             WHERE lb.location.id IN :locationIds
+            AND (:didactic IS NULL
+            OR (:didactic = true AND b.didactic = true)
+            OR (:didactic = false AND (b.didactic = false OR b.didactic IS NULL)))
             AND (
             LOWER(b.title) LIKE LOWER(CONCAT('%', :query, '%'))
             OR LOWER(a.name) LIKE LOWER(CONCAT('%', :query, '%'))
@@ -68,7 +78,8 @@ public interface BookRepository extends JpaRepository<Book, Long> {
             OR LOWER(t.name) LIKE LOWER(CONCAT('%', :query, '%'))
             OR b.isbn LIKE CONCAT('%', :query, '%')
             )""")
-    Page<Book> search(@Param("locationIds") List<Long> locationIds, @Param("query") String query, Pageable pageable);
+    Page<Book> search(@Param("locationIds") List<Long> locationIds, @Param("query") String query,
+            @Param("didactic") Boolean didactic, Pageable pageable);
 
     @Query("""
             SELECT new be.ap.backend.dto.BookResultDTO(
@@ -122,10 +133,12 @@ public interface BookRepository extends JpaRepository<Book, Long> {
             LEFT JOIN b.series s
             LEFT JOIN b.themes t
             JOIN b.locationBooks lb
-            WHERE lb.location.id = :locationId
+            WHERE (COALESCE(:locationIds, NULL) IS NULL OR lb.location.id IN :locationIds)
             AND (:genres IS NULL OR g.id IN :genres)
             AND (:language IS NULL OR l.id = :language)
-            AND (:didactic IS NULL OR b.didactic = :didactic)
+            AND (:didactic IS NULL
+                 OR (:didactic = true AND b.didactic = true)
+                 OR (:didactic = false AND (b.didactic = false OR b.didactic IS NULL)))
             AND (:fiction IS NULL OR b.fiction = :fiction)
             AND (:authorIds IS NULL OR a.id IN :authorIds)
             AND (COALESCE(:seriesIds, NULL) IS NULL OR s.id IN :seriesIds)
@@ -133,9 +146,16 @@ public interface BookRepository extends JpaRepository<Book, Long> {
             AND (:pagesMax IS NULL OR b.pages <= :pagesMax)
             AND (COALESCE(:clibs, NULL) IS NULL OR b.clib IN :clibs)
             AND (:themes IS NULL OR t.id IN :themes)
+            AND (:query IS NULL
+                 OR LOWER(b.title) LIKE LOWER(CONCAT('%', :query, '%'))
+                 OR LOWER(a.name) LIKE LOWER(CONCAT('%', :query, '%'))
+                 OR LOWER(g.name) LIKE LOWER(CONCAT('%', :query, '%'))
+                 OR LOWER(s.name) LIKE LOWER(CONCAT('%', :query, '%'))
+                 OR LOWER(t.name) LIKE LOWER(CONCAT('%', :query, '%'))
+                 OR b.isbn LIKE CONCAT('%', :query, '%'))
             """)
     Page<Book> filter(
-            @Param("locationId") Long location,
+            @Param("locationIds") List<Long> locationIds,
             @Param("genres") List<Long> genres,
             @Param("language") Long language,
             @Param("fiction") Boolean fiction,
@@ -146,6 +166,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
             @Param("clibs") List<Clib> clibs,
             @Param("themes") List<Long> themes,
             @Param("didactic") Boolean didactic,
+            @Param("query") String query,
             Pageable pageable);
 
     @Modifying

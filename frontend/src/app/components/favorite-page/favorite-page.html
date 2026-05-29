@@ -47,7 +47,7 @@
         <div class="book-card">
           <b-card [bookCard]="book"></b-card>
           <i
-            (click)="toggleBookmarked(book.book_id); $event.stopPropagation()"
+            (click)="toggleBookmarked(book.id); $event.stopPropagation()"
             class="bookmark pi"
             [class.pi-bookmark-fill]="true"
             pTooltip="Verwijder uit favorieten"

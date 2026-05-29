@@ -1,6 +1,7 @@
 .borrow-approval {
   padding: 2rem;
   overflow-x: auto;
+  min-height: 75vh;
 }
 
 .scan-bar {

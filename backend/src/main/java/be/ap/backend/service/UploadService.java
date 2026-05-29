@@ -32,7 +32,7 @@ public class UploadService {
 
     private final MaterialRepository materialRepository;
 
-    private final int idLength = 16;
+    private static final int idLength = 16;
 
     @Setter
     @Value("${app.upload-dir}")
@@ -107,29 +107,30 @@ public class UploadService {
      * @return
      */
     public Material saveMaterial(MultipartFile file, Long bookId, String note) {
-    Book book = bookRepository.findById(bookId).orElse(null);
-    if (book == null) return null;
+        Book book = bookRepository.findById(bookId).orElse(null);
+        if (book == null)
+            return null;
 
-    String fileId = generateId();
-    Material material = new Material();
-    material.setBook(book);
-    material.setFileName(file.getOriginalFilename());
-    material.setFileId(fileId);
-    material.setSize(file.getSize());
-    material.setComment(note); 
+        String fileId = generateId();
+        Material material = new Material();
+        material.setBook(book);
+        material.setFileName(file.getOriginalFilename());
+        material.setFileId(fileId);
+        material.setSize(file.getSize());
+        material.setComment(note);
 
-    Material m = materialRepository.save(material);
+        Material m = materialRepository.save(material);
 
-    Path coverPath = Paths.get(uploadDir, "file", fileId);
-    try {
-        Files.createDirectories(coverPath.getParent());
-        file.transferTo(coverPath);
-    } catch (IllegalStateException | IOException e) {
-        e.printStackTrace();
+        Path coverPath = Paths.get(uploadDir, "file", fileId);
+        try {
+            Files.createDirectories(coverPath.getParent());
+            file.transferTo(coverPath);
+        } catch (IllegalStateException | IOException e) {
+            e.printStackTrace();
+        }
+
+        return m;
     }
-
-    return m;
-}
 
     SecureRandom random = new SecureRandom();
 
