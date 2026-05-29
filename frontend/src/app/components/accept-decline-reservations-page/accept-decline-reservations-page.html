@@ -8,27 +8,6 @@
       </div>
     </ng-template>
 
-    <form class="scan-bar" (submit)="$event.preventDefault()">
-      <i class="pi pi-barcode scan-icon"></i>
-      <input
-        type="text"
-        class="scan-input"
-        placeholder="Scan streepjescode..."
-        [(ngModel)]="scanInput"
-        name="scan"
-        (keydown.enter)="scanAndFind()"
-        autocomplete="off"
-      />
-      @if (scanInput) {
-        <button type="button" class="scan-btn" (click)="scanInput = ''">
-          <i class="pi pi-times"></i>
-        </button>
-      }
-      <button type="button" class="scan-btn" (click)="scanAndFind()">
-        <i class="pi pi-search"></i>
-      </button>
-    </form>
-
     <p-table
       [value]="groupedLoans"
       [loading]="loading"
