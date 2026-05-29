@@ -129,12 +129,13 @@
             [(ngModel)]="sidebarPagesMin"
             placeholder="Min."
             [min]="0"
+            [max]="sidebarPagesMax!"
             styleClass="w-full"
           />
           <p-inputnumber
             [(ngModel)]="sidebarPagesMax"
             placeholder="Max."
-            [min]="0"
+            [min]="sidebarPagesMin!"
             styleClass="w-full"
           />
         </div>
