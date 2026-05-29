@@ -10,10 +10,11 @@ import { DatePipe } from '@angular/common';
 import { Button } from 'primeng/button';
 import { FormsModule } from '@angular/forms';
 import { LocationBookService } from '../../services/locationbook';
+import { DialogModule } from 'primeng/dialog';
 
 @Component({
   selector: 'app-pick-up-page',
-  imports: [NavBarComponent, Skeleton, TableModule, BookCover, DatePipe, Button, FormsModule],
+  imports: [NavBarComponent, Skeleton, TableModule, BookCover, DatePipe, Button, FormsModule, DialogModule],
   templateUrl: './pick-up-page.html',
   styleUrl: './pick-up-page.css',
 })
@@ -22,6 +23,10 @@ export class PickUpPageComponent implements OnInit {
   loading = true;
   query = '';
   scanInput = '';
+
+  manualDialogVisible = false;
+  manualAccessionId = 'LIB-';
+  pendingLoanId: number | null = null;
 
   get filteredLoans(): LoanDTO[] {
     const trimmedQuery = this.query.trim().toLowerCase();
@@ -51,6 +56,30 @@ export class PickUpPageComponent implements OnInit {
       },
       error: () => {
         this.loading = false;
+      },
+    });
+  }
+
+  openManualDialog(loanId: number): void {
+    this.pendingLoanId = loanId;
+    this.manualAccessionId = 'LIB-';
+    this.manualDialogVisible = true;
+  }
+
+  closeManualDialog(): void {
+    this.manualDialogVisible = false;
+    this.pendingLoanId = null;
+    this.manualAccessionId = 'LIB-';
+  }
+
+  confirmManualPickup(): void {
+    const id = this.manualAccessionId.trim().toUpperCase();
+    if (!id || id === 'LIB-') return;
+
+    this.locationBookService.getCopyByAccessionId(id).subscribe({
+      next: (copy) => {
+        this.pickupLoan(this.pendingLoanId!, copy.id);
+        this.closeManualDialog();
       },
     });
   }

@@ -118,7 +118,7 @@
             >
           </td>
           <td>
-            <p-button (onClick)="setState(loan.id)">Teruggebracht</p-button>
+            <p-button (onClick)="openManualDialog(loan.id)">Teruggebracht</p-button>
           </td>
         </tr>
       </ng-template>
@@ -129,3 +129,25 @@
     </div>
   }
 </div>
+
+<p-dialog
+  header="Exemplaar ID invoeren"
+  [(visible)]="manualDialogVisible"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  (onHide)="closeManualDialog()"
+>
+  <p class="manual-dialog-hint">Voer het accession ID in van het exemplaar dat wordt teruggebracht.</p>
+  <input
+    type="text"
+    class="manual-id-input"
+    [(ngModel)]="manualAccessionId"
+    (keydown.enter)="confirmManualReturn()"
+    autocomplete="off"
+  />
+  <div class="manual-dialog-btns">
+    <p-button label="Annuleren" severity="secondary" (onClick)="closeManualDialog()" />
+    <p-button label="Bevestigen" (onClick)="confirmManualReturn()" [disabled]="manualAccessionId.trim() === 'LIB-' || manualAccessionId.trim() === ''" />
+  </div>
+</p-dialog>

@@ -132,6 +132,38 @@ button {
 }
 
 
+.manual-dialog-hint {
+  font-size: 0.9rem;
+  margin-bottom: 0.75rem;
+  color: var(--p-neutral-600);
+}
+
+.manual-id-input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--p-neutral-300);
+  border-radius: 6px;
+  font-size: 1rem;
+  font-family: monospace;
+  letter-spacing: 0.05em;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.manual-id-input:focus {
+  border-color: var(--p-rose-800);
+  box-shadow: 0 0 0 2px rgba(122, 30, 46, 0.15);
+}
+
+.manual-dialog-btns {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+}
+
 @media (max-width: 700px) {
   .loans-table td {
     justify-content: center;

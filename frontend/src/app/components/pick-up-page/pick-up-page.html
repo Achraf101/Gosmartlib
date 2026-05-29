@@ -98,7 +98,7 @@
             <span>{{ loan.end | date: 'dd/MM/yyyy' }}</span>
           </td>
           <td>
-            <p-button (onClick)="pickupLoan(loan.id)">Opgehaald</p-button>
+            <p-button (onClick)="openManualDialog(loan.id)">Opgehaald</p-button>
           </td>
         </tr>
       </ng-template>
@@ -107,3 +107,25 @@
     <div class="empty-state"><p>Er zijn geen boeken op te halen.</p></div>
   }
 </div>
+
+<p-dialog
+  header="Exemplaar ID invoeren"
+  [(visible)]="manualDialogVisible"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  (onHide)="closeManualDialog()"
+>
+  <p class="manual-dialog-hint">Voer het accession ID in van het exemplaar dat wordt opgehaald.</p>
+  <input
+    type="text"
+    class="manual-id-input"
+    [(ngModel)]="manualAccessionId"
+    (keydown.enter)="confirmManualPickup()"
+    autocomplete="off"
+  />
+  <div class="manual-dialog-btns">
+    <p-button label="Annuleren" severity="secondary" (onClick)="closeManualDialog()" />
+    <p-button label="Bevestigen" (onClick)="confirmManualPickup()" [disabled]="manualAccessionId.trim() === 'LIB-' || manualAccessionId.trim() === ''" />
+  </div>
+</p-dialog>

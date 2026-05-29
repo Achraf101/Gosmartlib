@@ -11,6 +11,7 @@ import { LoanService } from '../../services/loan';
 import { MessageService } from 'primeng/api';
 import { TooltipModule } from 'primeng/tooltip';
 import { LocationBookService } from '../../services/locationbook';
+import { DialogModule } from 'primeng/dialog';
 
 @Component({
   selector: 'app-return-page',
@@ -23,6 +24,7 @@ import { LocationBookService } from '../../services/locationbook';
     Button,
     DatePipe,
     TooltipModule,
+    DialogModule,
   ],
   templateUrl: './return-page.html',
   styleUrl: './return-page.css',
@@ -33,6 +35,10 @@ export class ReturnPageComponent implements OnInit {
   today: Date = new Date();
   query = '';
   scanInput = '';
+
+  manualDialogVisible = false;
+  manualAccessionId = 'LIB-';
+  pendingLoanId: number | null = null;
 
   get filteredLoans(): LoanDTO[] {
     const trimmedQuery = this.query.trim().toLowerCase();
@@ -72,6 +78,51 @@ export class ReturnPageComponent implements OnInit {
     });
   }
 
+  openManualDialog(loanId: number): void {
+    this.pendingLoanId = loanId;
+    this.manualAccessionId = 'LIB-';
+    this.manualDialogVisible = true;
+  }
+
+  closeManualDialog(): void {
+    this.manualDialogVisible = false;
+    this.pendingLoanId = null;
+    this.manualAccessionId = 'LIB-';
+  }
+
+  confirmManualReturn(): void {
+    const id = this.manualAccessionId.trim().toUpperCase();
+    if (!id || id === 'LIB-') return;
+
+    const pendingLoan = this.loans.find((l) => l.id === this.pendingLoanId);
+    if (!pendingLoan) return;
+
+    this.locationBookService.getCopyByAccessionId(id).subscribe({
+      next: (copy) => {
+        if (pendingLoan.books.some((b) => b.bookCopyId === copy.id)) {
+          this.setState(this.pendingLoanId!);
+          this.closeManualDialog();
+          return;
+        }
+        if (pendingLoan.books.some((b) => b.bookId === copy.book_id)) {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Verkeerd exemplaar',
+            detail: `Dit exemplaar (${id}) is niet het exemplaar dat werd ontleend.`,
+            life: 5000,
+          });
+          return;
+        }
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Niet gevonden',
+          detail: `Exemplaar ${id} hoort niet bij deze uitlening.`,
+          life: 3000,
+        });
+      },
+    });
+  }
+
   setState(loanId: number) {
     this.loanService.changeStatus(loanId, LoanStatus.RETURNED).subscribe({
       next: () => {
@@ -96,7 +147,6 @@ export class ReturnPageComponent implements OnInit {
 
     this.locationBookService.getCopyByAccessionId(id).subscribe({
       next: (copy) => {
-        // Find loan where this exact copy was assigned at pickup
         const exactLoan = this.loans.find((l) =>
           l.books.some((b) => b.bookCopyId === copy.id),
         );
@@ -105,7 +155,6 @@ export class ReturnPageComponent implements OnInit {
           return;
         }
 
-        // Copy is from the right book but not the assigned copy
         const wrongCopyLoan = this.loans.find((l) =>
           l.books.some((b) => b.bookId === copy.book_id),
         );
