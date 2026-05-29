@@ -23,6 +23,12 @@ services:
 
   db:
     image: mysql:9.6.0
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     container_name: db
     restart: always
     volumes:
@@ -37,7 +43,8 @@ services:
 
   backend:
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     container_name: backend
     volumes:
       - maven-repo:/root/.m2
