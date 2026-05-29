@@ -102,7 +102,7 @@
     />
 
     <div class="location-books">
-      <h3>Boeken in deze locatie</h3>
+      <h3>Boek exemplaren</h3>
       @if (locationBooks.length > 0) {
         <div class="book-list">
           @for (locationBook of locationBooks; track locationBook.id) {
@@ -127,7 +127,7 @@
           }
         </div>
       } @else {
-        <p>Geen boeken in deze locatie.</p>
+        <p>Geen boek exemplaren gevonden.</p>
       }
       <p-paginator
         [first]="locationBooksPage * locationBooksRows"
