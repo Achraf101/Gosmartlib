@@ -142,7 +142,7 @@ public class NotificationService {
     private Boolean sendMail(String url) {
 
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(url))
+                .uri(URI.create(url.replace(" ", "%20")))
                 .GET()
                 .build();
 
