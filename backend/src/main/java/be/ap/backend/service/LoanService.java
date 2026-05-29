@@ -92,7 +92,7 @@ public class LoanService {
         }
         if (dto.getBooks().length > school.getBorrowLimit()) {
             throw new IllegalArgumentException(
-                    "Aantal boeken is groter dan de ontleenlimiet van je location " + school.getBorrowLimit());
+                    "Aantal boeken is groter dan de ontleenlimiet van je locatie " + school.getBorrowLimit());
         }
         LocalDate expectedEnd = dto.getStart().plusDays(school.getBorrowPeriod());
         if (!dto.getEnd().equals(expectedEnd)) {

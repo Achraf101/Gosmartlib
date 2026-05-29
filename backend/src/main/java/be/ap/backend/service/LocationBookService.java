@@ -15,7 +15,9 @@ import be.ap.backend.entity.Location;
 import be.ap.backend.entity.LocationBook;
 import be.ap.backend.exception.ArgumentsInvalidException;
 import be.ap.backend.exception.MissingArgumentsException;
+import be.ap.backend.repository.BookRepository;
 import be.ap.backend.repository.LocationBookRepository;
+import be.ap.backend.repository.LocationRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,9 @@ public class LocationBookService {
     private final LocationBookRepository locationBookRepository;
 
     private final EntityManager entityManager;
+
+    private final LocationRepository locationRepository;
+    private final BookRepository bookRepository;
 
     public LocationBookDetailDTO createLocationBook(LocationBookDTO dto) {
         if (dto.getLocationId() == null || dto.getBookId() == null) {
@@ -51,7 +56,7 @@ public class LocationBookService {
         newLocationBook.setAmount(dto.getAmount());
         newLocationBook.setCurrentAmount(dto.getAmount());
 
-       return toDTO(locationBookRepository.save(newLocationBook));
+        return toDTO(locationBookRepository.save(newLocationBook));
     }
 
     public List<LocationBookDetailDTO> findAll() {
@@ -68,10 +73,18 @@ public class LocationBookService {
     }
 
     public LocationBookDetailDTO getLocationBook(Long locationId, Long bookId) {
+        String bookTitle = bookRepository.findById(bookId)
+                .map(Book::getTitle)
+                .orElse("id=" + bookId);
+
+        String locationName = locationRepository.findById(locationId)
+                .map(Location::getName)
+                .orElse("id=" + locationId);
+
         LocationBook locationBook = locationBookRepository
                 .findByLocationIdAndBookId(locationId, bookId)
                 .orElseThrow(() -> new EntityNotFoundException(
-                        "LocationBook niet gevonden voor locationId=" + locationId + ", bookId=" + bookId));
+                        "Het boek '" + bookTitle + "' is niet aanwezig in '" + locationName + "'."));
         return toDTO(locationBook);
     }
 
