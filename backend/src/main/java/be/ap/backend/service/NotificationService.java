@@ -12,6 +12,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 // import java.net.URI;
 // import java.net.http.HttpClient;
@@ -87,10 +88,9 @@ public class NotificationService {
 
         // send mail to smartschool async
         // (https://{subdomain}.smartschool.be/Api/V1/sendmsg)
-        String url = "https://" + subdomain + ".smartschool.be/Api/V1/sendmsg?access_token=" + tokens.accessToken() + "&messageTitle="
-                + reminderTitle + "&messageBody=" + populatedTemplate;
+        String url = "https://" + subdomain + ".smartschool.be/Api/V1/sendmsg";
 
-        Boolean state = sendMail(url);
+        Boolean state = sendMail(url, tokens.accessToken(), reminderTitle, populatedTemplate);
 
         return state;
 
@@ -139,10 +139,19 @@ public class NotificationService {
         }
     }
 
-    private Boolean sendMail(String url) {
+    private Boolean sendMail(String url, String accessToken, String title, String message) {
+
+        URI uri = UriComponentsBuilder
+        .fromHttpUrl(url)
+        .queryParam("access_token", accessToken)
+        .queryParam("messageTitle", title)
+        .queryParam("messageBody", message)
+        .encode()
+        .build()
+        .toUri();
 
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(url.replace(" ", "%20")))
+                .uri(uri)
                 .GET()
                 .build();
 
