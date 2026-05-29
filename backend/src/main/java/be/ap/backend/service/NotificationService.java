@@ -80,7 +80,7 @@ public class NotificationService {
 
         // send mail to smartschool async
         // (https://{subdomain}.smartschool.be/Api/V1/sendmsg)
-        String url = "https://" + subdomain + ".smartschool.be/Api/V1/sendmsg?access_token=" + accessToken + "&messageTitle="
+        String url = "https://" + subdomain + ".smartschool.be/Api/V1/sendmsg?access_token=" + accessToken.get() + "&messageTitle="
                 + reminderTitle + "&messageBody=" + populatedTemplate;
 
         Boolean state = sendMail(url);
