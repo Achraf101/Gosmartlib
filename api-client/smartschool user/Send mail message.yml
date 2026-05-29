@@ -4,7 +4,7 @@ info:
   seq: 3
 
 http:
-  method: GET
+  method: POST
   url: https://aphogeschool.smartschool.be/Api/V1/sendmsg?messageTitle=test&messageBody=this is the body
   params:
     - name: messageTitle
