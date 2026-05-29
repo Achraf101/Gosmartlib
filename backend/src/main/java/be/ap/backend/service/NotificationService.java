@@ -5,19 +5,14 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpResponse;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-// import java.net.URI;
-// import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
-// import java.net.http.HttpResponse;
 import java.util.concurrent.CompletableFuture;
 
 import com.nimbusds.oauth2.sdk.ParseException;
@@ -107,6 +102,8 @@ public class NotificationService {
             TokenResponse response = TokenResponse.parse(httpResponse);
 
             if (!response.indicatesSuccess()) {
+                System.out.println("#############");
+                System.out.println("Tokens niet meer kunnen ophalen");
                 return null;
             }
 
@@ -153,6 +150,8 @@ public class NotificationService {
 
         responseFuture.thenAccept(response -> {
             System.out.println("Response Body: " + response.body());
+            System.out.println("##############################");
+            System.out.println(response.body());
         }).exceptionally(ex -> {
             System.err.println("Error occurred: " + ex.getMessage());
             return null;
