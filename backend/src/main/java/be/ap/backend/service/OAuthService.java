@@ -92,7 +92,7 @@ public class OAuthService {
         // save refresh token for notifications
         System.out.println("#################refresh##############");
         user.setSsRefresh(tokens.getRefreshToken().toString());
-        System.out.println(tokens.getRefreshToken().toString());
+        userRepository.save(user);
 
         School school = schoolRepository.findBySsSubdomain(originplatform).orElse(null);
         if (school == null) {
