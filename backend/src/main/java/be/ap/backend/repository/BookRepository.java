@@ -169,6 +169,47 @@ public interface BookRepository extends JpaRepository<Book, Long> {
             @Param("query") String query,
             Pageable pageable);
 
+    @Query(value = """
+            SELECT DISTINCT b FROM Book b
+            LEFT JOIN b.author a
+            LEFT JOIN b.genres g
+            LEFT JOIN b.language l
+            LEFT JOIN b.series s
+            LEFT JOIN b.themes t
+            WHERE (:genres IS NULL OR g.id IN :genres)
+            AND (:language IS NULL OR l.id = :language)
+            AND (:didactic IS NULL
+                 OR (:didactic = true AND b.didactic = true)
+                 OR (:didactic = false AND (b.didactic = false OR b.didactic IS NULL)))
+            AND (:fiction IS NULL OR b.fiction = :fiction)
+            AND (:authorIds IS NULL OR a.id IN :authorIds)
+            AND (COALESCE(:seriesIds, NULL) IS NULL OR s.id IN :seriesIds)
+            AND (:pagesMin IS NULL OR b.pages >= :pagesMin)
+            AND (:pagesMax IS NULL OR b.pages <= :pagesMax)
+            AND (COALESCE(:clibs, NULL) IS NULL OR b.clib IN :clibs)
+            AND (:themes IS NULL OR t.id IN :themes)
+            AND (:query IS NULL
+                 OR LOWER(b.title) LIKE LOWER(CONCAT('%', :query, '%'))
+                 OR LOWER(a.name) LIKE LOWER(CONCAT('%', :query, '%'))
+                 OR LOWER(g.name) LIKE LOWER(CONCAT('%', :query, '%'))
+                 OR LOWER(s.name) LIKE LOWER(CONCAT('%', :query, '%'))
+                 OR LOWER(t.name) LIKE LOWER(CONCAT('%', :query, '%'))
+                 OR b.isbn LIKE CONCAT('%', :query, '%'))
+            """)
+    Page<Book> filterAdmin(
+            @Param("genres") List<Long> genres,
+            @Param("language") Long language,
+            @Param("fiction") Boolean fiction,
+            @Param("authorIds") List<Long> authorIds,
+            @Param("seriesIds") List<Long> seriesIds,
+            @Param("pagesMin") Integer pagesMin,
+            @Param("pagesMax") Integer pagesMax,
+            @Param("clibs") List<Clib> clibs,
+            @Param("themes") List<Long> themes,
+            @Param("didactic") Boolean didactic,
+            @Param("query") String query,
+            Pageable pageable);
+
     @Modifying
     @Transactional
     @Query("UPDATE Book b SET b.cover = :filename WHERE b.id = :id")
