@@ -10,6 +10,7 @@ import { CommonModule } from '@angular/common';
 import { TableModule } from 'primeng/table';
 import { LoanDTO, LoanStatus } from '../../models/loan';
 import { Message } from 'primeng/message';
+import { LocationBookService } from '../../services/locationbook';
 
 @Component({
   selector: 'app-accept-decline-reservations-page',
@@ -28,10 +29,12 @@ export class AcceptDeclineReservationsPageComponent implements OnInit {
   note = '';
   infoDialogVisible = false;
   groupInfoDialogVisible = false;
+  scanInput = '';
 
   constructor(
     private loanService: LoanService,
     private messageService: MessageService,
+    private locationBookService: LocationBookService,
   ) {}
 
   ngOnInit(): void {
@@ -195,6 +198,42 @@ export class AcceptDeclineReservationsPageComponent implements OnInit {
   }
 
   getTotalBooks(group: LoanDTO[]): number {
-  return group.reduce((sum, loan) => sum + (loan.books[0]?.requestedAmount ?? 0), 0);
-}
+    return group.reduce((sum, loan) => sum + (loan.books[0]?.requestedAmount ?? 0), 0);
+  }
+
+  scanAndFind(): void {
+    const id = this.scanInput.trim().toUpperCase();
+    this.scanInput = '';
+    if (!id) return;
+
+    this.locationBookService.getCopyByAccessionId(id).subscribe({
+      next: (copy) => {
+        const loan = this.loans.find((l) => l.books.some((b) => b.bookId === copy.book_id));
+        if (!loan) {
+          this.messageService.add({
+            severity: 'warn',
+            summary: 'Niet gevonden',
+            detail: `Geen aanvraag gevonden voor exemplaar ${id}.`,
+            life: 3000,
+          });
+          return;
+        }
+        if (loan.groupId) {
+          const group = this.loans.filter((l) => l.groupId === loan.groupId);
+          this.openGroupDialog(group);
+        } else {
+          this.selectedLoan = loan;
+          this.infoDialogVisible = true;
+        }
+      },
+      error: () => {
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Niet gevonden',
+          detail: `Exemplaar ${id} niet gevonden.`,
+          life: 3000,
+        });
+      },
+    });
+  }
 }

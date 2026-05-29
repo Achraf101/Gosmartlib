@@ -3,6 +3,53 @@
   overflow-x: auto;
 }
 
+.scan-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--p-neutral-200);
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+.scan-icon {
+  font-size: 1.1rem;
+  color: var(--p-neutral-400);
+  padding-left: 0.5rem;
+}
+
+.scan-input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.6rem 0.75rem;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 0.9rem;
+}
+
+.scan-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--p-neutral-400);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.4rem;
+  font-size: 1rem;
+  min-width: 2.5rem;
+  min-height: 2.5rem;
+  border-radius: 999px;
+}
+
+.scan-btn:hover {
+  color: var(--p-pink-900);
+}
+
 .card-header {
   padding: 1rem 1.25rem;
   border-bottom: 1px solid #e5e7eb;

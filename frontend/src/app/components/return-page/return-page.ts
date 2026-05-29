@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { NavBarComponent } from '../nav-bar/nav-bar';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Skeleton } from 'primeng/skeleton';
@@ -10,6 +10,7 @@ import { LoanDTO, LoanStatus } from '../../models/loan';
 import { LoanService } from '../../services/loan';
 import { MessageService } from 'primeng/api';
 import { TooltipModule } from 'primeng/tooltip';
+import { LocationBookService } from '../../services/locationbook';
 
 @Component({
   selector: 'app-return-page',
@@ -26,11 +27,12 @@ import { TooltipModule } from 'primeng/tooltip';
   templateUrl: './return-page.html',
   styleUrl: './return-page.css',
 })
-export class ReturnPageComponent {
+export class ReturnPageComponent implements OnInit {
   loans: LoanDTO[] = [];
   loading = true;
   today: Date = new Date();
   query = '';
+  scanInput = '';
 
   get filteredLoans(): LoanDTO[] {
     const trimmedQuery = this.query.trim().toLowerCase();
@@ -51,6 +53,7 @@ export class ReturnPageComponent {
   constructor(
     private loanService: LoanService,
     private messageService: MessageService,
+    private locationBookService: LocationBookService,
   ) {}
 
   ngOnInit(): void {
@@ -82,6 +85,54 @@ export class ReturnPageComponent {
       },
       error: () => {
         this.loading = false;
+      },
+    });
+  }
+
+  scanAndProcess(): void {
+    const id = this.scanInput.trim().toUpperCase();
+    this.scanInput = '';
+    if (!id) return;
+
+    this.locationBookService.getCopyByAccessionId(id).subscribe({
+      next: (copy) => {
+        // Find loan where this exact copy was assigned at pickup
+        const exactLoan = this.loans.find((l) =>
+          l.books.some((b) => b.bookCopyId === copy.id),
+        );
+        if (exactLoan) {
+          this.setState(exactLoan.id);
+          return;
+        }
+
+        // Copy is from the right book but not the assigned copy
+        const wrongCopyLoan = this.loans.find((l) =>
+          l.books.some((b) => b.bookId === copy.book_id),
+        );
+        if (wrongCopyLoan) {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Verkeerd exemplaar',
+            detail: `Dit exemplaar (${id}) is niet het exemplaar dat werd ontleend.`,
+            life: 5000,
+          });
+          return;
+        }
+
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Niet gevonden',
+          detail: `Geen actieve uitlening gevonden voor exemplaar ${id}.`,
+          life: 3000,
+        });
+      },
+      error: () => {
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Niet gevonden',
+          detail: `Exemplaar ${id} niet gevonden.`,
+          life: 3000,
+        });
       },
     });
   }

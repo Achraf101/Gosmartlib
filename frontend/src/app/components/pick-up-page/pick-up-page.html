@@ -2,6 +2,27 @@
 <div class="loans-page">
   <h1>Op te halen</h1>
 
+  <form class="search-bar scan-bar" (submit)="$event.preventDefault()">
+    <i class="pi pi-barcode scan-icon"></i>
+    <input
+      type="text"
+      class="search-input"
+      placeholder="Scan streepjescode..."
+      [(ngModel)]="scanInput"
+      name="scan"
+      (keydown.enter)="scanAndProcess()"
+      autocomplete="off"
+    />
+    @if (scanInput) {
+      <button type="button" class="search-btn" (click)="scanInput = ''">
+        <i class="pi pi-times"></i>
+      </button>
+    }
+    <button type="button" class="search-btn" (click)="scanAndProcess()">
+      <i class="pi pi-search"></i>
+    </button>
+  </form>
+
   <form class="search-bar" (submit)="$event.preventDefault()">
     <input
       type="text"
@@ -71,7 +92,7 @@
             <span>{{ loan.end | date: 'dd/MM/yyyy' }}</span>
           </td>
           <td>
-            <p-button (onClick)="setState(loan.id)">Opgehaald</p-button>
+            <p-button (onClick)="pickupLoan(loan.id)">Opgehaald</p-button>
           </td>
         </tr>
       </ng-template>

@@ -9,6 +9,7 @@ import { BookCover } from '../misc/book-cover/book-cover';
 import { DatePipe } from '@angular/common';
 import { Button } from 'primeng/button';
 import { FormsModule } from '@angular/forms';
+import { LocationBookService } from '../../services/locationbook';
 
 @Component({
   selector: 'app-pick-up-page',
@@ -20,6 +21,7 @@ export class PickUpPageComponent implements OnInit {
   loans: LoanDTO[] = [];
   loading = true;
   query = '';
+  scanInput = '';
 
   get filteredLoans(): LoanDTO[] {
     const trimmedQuery = this.query.trim().toLowerCase();
@@ -34,6 +36,7 @@ export class PickUpPageComponent implements OnInit {
   constructor(
     private loanService: LoanService,
     private messageService: MessageService,
+    private locationBookService: LocationBookService,
   ) {}
 
   ngOnInit(): void {
@@ -52,8 +55,8 @@ export class PickUpPageComponent implements OnInit {
     });
   }
 
-  setState(loanId: number) {
-    this.loanService.changeStatus(loanId, LoanStatus.RECEIVED).subscribe({
+  pickupLoan(loanId: number, bookCopyId?: number): void {
+    this.loanService.pickupLoan(loanId, bookCopyId).subscribe({
       next: () => {
         this.loans = this.loans.filter((l) => l.id !== loanId);
         this.messageService.add({
@@ -65,6 +68,36 @@ export class PickUpPageComponent implements OnInit {
       },
       error: () => {
         this.loading = false;
+      },
+    });
+  }
+
+  scanAndProcess(): void {
+    const id = this.scanInput.trim().toUpperCase();
+    this.scanInput = '';
+    if (!id) return;
+
+    this.locationBookService.getCopyByAccessionId(id).subscribe({
+      next: (copy) => {
+        const loan = this.loans.find((l) => l.books.some((b) => b.bookId === copy.book_id));
+        if (!loan) {
+          this.messageService.add({
+            severity: 'warn',
+            summary: 'Niet gevonden',
+            detail: `Geen uitlening gevonden voor exemplaar ${id}.`,
+            life: 3000,
+          });
+          return;
+        }
+        this.pickupLoan(loan.id, copy.id);
+      },
+      error: () => {
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Niet gevonden',
+          detail: `Exemplaar ${id} niet gevonden.`,
+          life: 3000,
+        });
       },
     });
   }

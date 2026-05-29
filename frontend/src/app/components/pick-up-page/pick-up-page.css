@@ -67,6 +67,17 @@ form {
   background-color: white;
 }
 
+.scan-bar {
+  border-color: var(--p-neutral-300);
+  margin-bottom: 0.75rem;
+}
+
+.scan-icon {
+  font-size: 1.1rem;
+  color: var(--p-neutral-400);
+  padding-left: 0.5rem;
+}
+
 .search-bar {
   margin-bottom: 1.5rem;
   display: flex;
