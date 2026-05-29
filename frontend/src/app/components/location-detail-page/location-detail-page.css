@@ -193,24 +193,6 @@ h3 {
   letter-spacing: 0.05em;
 }
 
-/* Print: only show the barcode grid */
-@media print {
-  body > * {
-    display: none !important;
-  }
-
-  .print-area {
-    display: flex !important;
-    flex-wrap: wrap;
-    gap: 1rem;
-    padding: 1rem;
-  }
-
-  .barcode-card {
-    page-break-inside: avoid;
-  }
-}
-
 @media (max-width: 600px) {
   .no-results {
     flex-direction: column;

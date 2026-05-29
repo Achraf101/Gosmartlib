@@ -164,7 +164,28 @@ export class LocationDetailPageComponent implements OnInit, AfterViewChecked {
   }
 
   printBarcodes(): void {
-    window.print();
+    const svgElements = this.barcodeSvgs.toArray();
+    const printWindow = window.open('', '_blank', 'width=800,height=600');
+    if (!printWindow) return;
+
+    const cards = this.newAccessionIds
+      .map((id, i) => {
+        const svgHtml = svgElements[i]?.nativeElement?.outerHTML ?? '';
+        return `<div class="barcode-card">${svgHtml}<span class="accession-label">${id}</span></div>`;
+      })
+      .join('');
+
+    printWindow.document.write(`<!DOCTYPE html>
+<html><head><title>Barcodes afdrukken</title><style>
+  body { margin: 1rem; font-family: monospace; }
+  .barcode-grid { display: flex; flex-wrap: wrap; gap: 1rem; }
+  .barcode-card { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; padding: 0.5rem 0.75rem; border: 1px dashed #d1d5db; border-radius: 6px; page-break-inside: avoid; break-inside: avoid; }
+  .accession-label { font-size: 0.8rem; letter-spacing: 0.05em; }
+</style></head><body><div class="barcode-grid">${cards}</div></body></html>`);
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+    printWindow.close();
   }
 
   onSearch(query: string) {
