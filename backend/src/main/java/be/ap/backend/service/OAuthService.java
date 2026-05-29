@@ -90,7 +90,6 @@ public class OAuthService {
         User user = optUser.get();
 
         // save refresh token for notifications
-        System.out.println("#################refresh##############");
         user.setSsRefresh(tokens.getRefreshToken().toString());
         userRepository.save(user);
 

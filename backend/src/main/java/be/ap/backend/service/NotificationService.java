@@ -75,19 +75,11 @@ public class NotificationService {
         u.setSsRefresh(tokens.refreshToken());
         userRepository.save(u);
 
-        // fill in template with all books from loan
         List<Book> books = loanBookRepository.getBooksByLoanId(loanId);
         
-        // call emailtemplateservice
-        System.out.println("######################");
-        System.out.println(l.getEnd());
-        System.out.println(l.getUser().getSsRefresh());
         String populatedTemplate = emailTemplateService.buildReminderEmail(books, l.getEnd());
-        System.out.println(populatedTemplate);
-        System.out.println("######################");
 
         // send mail to smartschool async
-        // (https://{subdomain}.smartschool.be/Api/V1/sendmsg)
         String url = "https://" + subdomain + ".smartschool.be/Api/V1/sendmsg";
 
         Boolean state = sendMail(url, tokens.accessToken(), reminderTitle, populatedTemplate);
@@ -165,9 +157,6 @@ public class NotificationService {
             System.err.println("Error occurred: " + ex.getMessage());
             return null;
         });
-
-        // Block if you need to wait for the result before the program exits
-        // responseFuture.join()
 
         return true;
     }

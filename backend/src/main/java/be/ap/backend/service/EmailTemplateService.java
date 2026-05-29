@@ -64,7 +64,8 @@ public class EmailTemplateService {
         for (Book book : books) {
             bookRows += fillTemplate(bookRowTemplate, Map.of(
                     "cover_url",
-                    (book.getCover() == null) ? "/assets/no-cover.svg"
+                    (book.getCover().isBlank()) ? "https://" + domain
+                            + "/assets/no-cover.svg"
                             : "https://" + domain + "/static/cover/" + book
                                     .getCover(),
                     "book_title", book.getTitle(),
