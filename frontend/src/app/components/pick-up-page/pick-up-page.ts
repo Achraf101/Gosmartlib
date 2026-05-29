@@ -11,6 +11,7 @@ import { Button } from 'primeng/button';
 import { FormsModule } from '@angular/forms';
 import { LocationBookService } from '../../services/locationbook';
 import { DialogModule } from 'primeng/dialog';
+import { BookCopyDetail } from '../../models/bookCopy';
 
 @Component({
   selector: 'app-pick-up-page',
@@ -28,6 +29,10 @@ export class PickUpPageComponent implements OnInit, AfterViewInit {
   manualDialogVisible = false;
   manualAccessionId = 'LIB-';
   pendingLoanId: number | null = null;
+
+  disambigDialogVisible = false;
+  disambigLoans: LoanDTO[] = [];
+  pendingCopy: BookCopyDetail | null = null;
 
   get filteredLoans(): LoanDTO[] {
     const trimmedQuery = this.query.trim().toLowerCase();
@@ -114,8 +119,10 @@ export class PickUpPageComponent implements OnInit, AfterViewInit {
 
     this.locationBookService.getCopyByAccessionId(id).subscribe({
       next: (copy) => {
-        const loan = this.loans.find((l) => l.books.some((b) => b.bookId === copy.book_id));
-        if (!loan) {
+        const matchingLoans = this.loans.filter((l) =>
+          l.books.some((b) => b.bookId === copy.book_id),
+        );
+        if (matchingLoans.length === 0) {
           this.messageService.add({
             severity: 'warn',
             summary: 'Niet gevonden',
@@ -124,7 +131,13 @@ export class PickUpPageComponent implements OnInit, AfterViewInit {
           });
           return;
         }
-        this.pickupLoan(loan.id, copy.id);
+        if (matchingLoans.length === 1) {
+          this.pickupLoan(matchingLoans[0].id, copy.id);
+          return;
+        }
+        this.pendingCopy = copy;
+        this.disambigLoans = matchingLoans;
+        this.disambigDialogVisible = true;
       },
       error: () => {
         this.messageService.add({
@@ -135,5 +148,17 @@ export class PickUpPageComponent implements OnInit, AfterViewInit {
         });
       },
     });
+  }
+
+  selectDisambigLoan(loan: LoanDTO): void {
+    this.pickupLoan(loan.id, this.pendingCopy!.id);
+    this.closeDisambigDialog();
+  }
+
+  closeDisambigDialog(): void {
+    this.disambigDialogVisible = false;
+    this.disambigLoans = [];
+    this.pendingCopy = null;
+    setTimeout(() => this.scanInputRef?.nativeElement?.focus(), 0);
   }
 }

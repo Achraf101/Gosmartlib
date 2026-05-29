@@ -110,6 +110,30 @@
 </div>
 
 <p-dialog
+  header="Wie haalt het boek op?"
+  [(visible)]="disambigDialogVisible"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  (onHide)="closeDisambigDialog()"
+>
+  <p class="manual-dialog-hint">
+    Meerdere leerlingen wachten op dit boek. Selecteer wie het ophaalt.
+  </p>
+  <div class="disambig-list">
+    @for (loan of disambigLoans; track loan.id) {
+      <div class="disambig-item">
+        <div class="disambig-info">
+          <span class="disambig-name">{{ loan.username }}</span>
+          <span class="disambig-date">{{ loan.start | date: 'dd/MM/yyyy' }} – {{ loan.end | date: 'dd/MM/yyyy' }}</span>
+        </div>
+        <p-button label="Selecteren" size="small" (onClick)="selectDisambigLoan(loan)" />
+      </div>
+    }
+  </div>
+</p-dialog>
+
+<p-dialog
   header="Exemplaar ID invoeren"
   [(visible)]="manualDialogVisible"
   [modal]="true"
