@@ -213,7 +213,8 @@ public class LoanService {
             throw new IllegalArgumentException("Alle exemplaren zijn al ontvangen");
         }
         if (lb.getScannedCopyIds().contains(bookCopyId)) {
-            throw new IllegalArgumentException("Exemplaar " + copy.getAccessionId() + " is al gescand voor deze uitlening");
+            throw new IllegalArgumentException(
+                    "Exemplaar " + copy.getAccessionId() + " is al gescand voor deze uitlening");
         }
 
         lb.getScannedCopyIds().add(bookCopyId);
@@ -224,7 +225,7 @@ public class LoanService {
         if (lb.getReceivedAmount() >= lb.getRequestedAmount()) {
             loan.setStatus(LoanStatus.RECEIVED);
         }
-        return toDTO(loanRepository.save(loan));
+        return buildDTO(loanRepository.save(loan));
     }
 
     @Transactional
@@ -244,7 +245,8 @@ public class LoanService {
             throw new IllegalArgumentException("Alle exemplaren zijn al teruggebracht");
         }
         if (lb.getReturnedCopyIds().contains(bookCopyId)) {
-            throw new IllegalArgumentException("Exemplaar " + copy.getAccessionId() + " is al teruggebracht voor deze uitlening");
+            throw new IllegalArgumentException(
+                    "Exemplaar " + copy.getAccessionId() + " is al teruggebracht voor deze uitlening");
         }
 
         lb.getReturnedCopyIds().add(bookCopyId);
@@ -258,7 +260,7 @@ public class LoanService {
             locationBookService.updateCurrentAmount(locationBook, -lb.getRequestedAmount());
             loan.setStatus(LoanStatus.RETURNED);
         }
-        return toDTO(loanRepository.save(loan));
+        return buildDTO(loanRepository.save(loan));
     }
 
     @Transactional
@@ -285,7 +287,7 @@ public class LoanService {
         }
 
         loan.setStatus(LoanStatus.RECEIVED);
-        return toDTO(loanRepository.save(loan));
+        return buildDTO(loanRepository.save(loan));
     }
 
     public List<LoanDTO> getByUserId(Long userId) {
