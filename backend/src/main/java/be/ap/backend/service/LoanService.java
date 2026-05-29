@@ -210,7 +210,8 @@ public class LoanService {
             throw new IllegalArgumentException("Alle exemplaren zijn al ontvangen");
         }
         if (lb.getScannedCopyIds().contains(bookCopyId)) {
-            throw new IllegalArgumentException("Exemplaar " + copy.getAccessionId() + " is al gescand voor deze uitlening");
+            throw new IllegalArgumentException(
+                    "Exemplaar " + copy.getAccessionId() + " is al gescand voor deze uitlening");
         }
 
         lb.getScannedCopyIds().add(bookCopyId);
@@ -241,7 +242,12 @@ public class LoanService {
             throw new IllegalArgumentException("Alle exemplaren zijn al teruggebracht");
         }
         if (lb.getReturnedCopyIds().contains(bookCopyId)) {
-            throw new IllegalArgumentException("Exemplaar " + copy.getAccessionId() + " is al teruggebracht voor deze uitlening");
+            throw new IllegalArgumentException(
+                    "Exemplaar " + copy.getAccessionId() + " is al teruggebracht voor deze uitlening");
+        }
+        if (!lb.getScannedCopyIds().isEmpty() && !lb.getScannedCopyIds().contains(bookCopyId)) {
+            throw new IllegalArgumentException(
+                    "Exemplaar " + copy.getAccessionId() + " werd niet uitgeleend voor deze uitlening");
         }
 
         lb.getReturnedCopyIds().add(bookCopyId);

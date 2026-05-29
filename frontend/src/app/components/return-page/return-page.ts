@@ -131,6 +131,15 @@ export class ReturnPageComponent implements OnInit, AfterViewInit {
           });
         }
       },
+      error: (err) => {
+        loanSet.delete(copyId);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Fout',
+          detail: err?.error?.message ?? 'Exemplaar kon niet worden geregistreerd.',
+          life: 4000,
+        });
+      },
     });
   }
 
@@ -177,6 +186,22 @@ export class ReturnPageComponent implements OnInit, AfterViewInit {
               this.manualAccessionId = 'LIB-';
             }
           },
+          error: (err) => {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Verkeerd exemplaar',
+              detail: err?.error?.message ?? 'Dit exemplaar kan niet worden geregistreerd voor deze uitlening.',
+              life: 4000,
+            });
+          },
+        });
+      },
+      error: () => {
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Niet gevonden',
+          detail: `Exemplaar ${id} niet gevonden.`,
+          life: 3000,
         });
       },
     });
