@@ -27,6 +27,10 @@ public class LoanBook {
     @JoinColumn(name = "book_id", nullable = false)
     private Book book;
 
+    @ManyToOne
+    @JoinColumn(name = "book_copy_id")
+    private BookCopy bookCopy;
+
     @Column(name = "requested_amount", nullable = false)
     private Integer requestedAmount;
 

@@ -16,13 +16,16 @@ import be.ap.backend.dto.LoanBookDTO;
 import be.ap.backend.dto.LoanDTO;
 import be.ap.backend.dto.TopBookDTO;
 import be.ap.backend.entity.Book;
+import be.ap.backend.entity.BookCopy;
 import be.ap.backend.entity.Location;
 import be.ap.backend.entity.LocationBook;
 import be.ap.backend.entity.School;
 import be.ap.backend.entity.Loan;
 import be.ap.backend.entity.LoanBook;
 import be.ap.backend.entity.User;
+import be.ap.backend.enums.CopyStatus;
 import be.ap.backend.enums.LoanStatus;
+import be.ap.backend.repository.BookCopyRepository;
 import be.ap.backend.repository.LocationBookRepository;
 import be.ap.backend.repository.LoanBookRepository;
 import be.ap.backend.repository.LoanRepository;
@@ -41,18 +44,21 @@ public class LoanService {
     private final LoanBookRepository loanBookRepository;
     private final LocationBookRepository locationBookRepository;
     private final LocationBookService locationBookService;
+    private final BookCopyRepository bookCopyRepository;
     private final SmartschoolLookupService lookupService;
     private final Executor lookupExecutor;
 
     public LoanService(LoanRepository loanRepository, EntityManager entityManager,
             LoanBookRepository loanBookRepository, LocationBookRepository locationBookRepository,
-            LocationBookService locationBookService, SmartschoolLookupService lookupService,
+            LocationBookService locationBookService, BookCopyRepository bookCopyRepository,
+            SmartschoolLookupService lookupService,
             @Qualifier("lookupExecutor") Executor lookupExecutor) {
         this.loanRepository = loanRepository;
         this.entityManager = entityManager;
         this.loanBookRepository = loanBookRepository;
         this.locationBookRepository = locationBookRepository;
         this.locationBookService = locationBookService;
+        this.bookCopyRepository = bookCopyRepository;
         this.lookupService = lookupService;
         this.lookupExecutor = lookupExecutor;
     }
@@ -187,6 +193,33 @@ public class LoanService {
         return toDTO(loanRepository.save(loan));
     }
 
+    @Transactional
+    public LoanDTO pickupLoan(Long loanId, Long bookCopyId) {
+        Loan loan = loanRepository.findById(loanId)
+                .orElseThrow(() -> new EntityNotFoundException("Lening niet gevonden met id: " + loanId));
+
+        for (LoanBook lb : loan.getLoanBooks()) {
+            BookCopy copy;
+            if (bookCopyId != null) {
+                copy = bookCopyRepository.findById(bookCopyId)
+                        .orElseThrow(() -> new EntityNotFoundException("Exemplaar niet gevonden: " + bookCopyId));
+            } else {
+                LocationBook locationBook = locationBookRepository
+                        .findByLocationIdAndBookId(loan.getLocation().getId(), lb.getBook().getId())
+                        .orElseThrow(() -> new EntityNotFoundException(
+                                "Boek niet gevonden in locatie voor exemplaar toewijzing"));
+                List<BookCopy> available = bookCopyRepository
+                        .findByLocationBookIdAndStatus(locationBook.getId(), CopyStatus.AVAILABLE);
+                copy = available.isEmpty() ? null : available.get(0);
+            }
+            lb.setBookCopy(copy);
+            loanBookRepository.save(lb);
+        }
+
+        loan.setStatus(LoanStatus.RECEIVED);
+        return toDTO(loanRepository.save(loan));
+    }
+
     public List<LoanDTO> getByUserId(Long userId) {
         return toDTOs(loanRepository.findByUserId(userId));
     }
@@ -239,6 +272,7 @@ public class LoanService {
                     LoanBookDTO lbDto = new LoanBookDTO();
                     lbDto.setId(lb.getId());
                     lbDto.setBookId(lb.getBook().getId());
+                    lbDto.setBookCopyId(lb.getBookCopy() != null ? lb.getBookCopy().getId() : null);
                     lbDto.setRequestedAmount(lb.getRequestedAmount());
                     lbDto.setReceivedAmount(lb.getReceivedAmount());
                     lbDto.setReturnedAmount(lb.getReturnedAmount());

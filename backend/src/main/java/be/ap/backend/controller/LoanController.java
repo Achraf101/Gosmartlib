@@ -16,6 +16,8 @@ import be.ap.backend.dto.LoanDTO;
 import be.ap.backend.dto.TopBookDTO;
 import be.ap.backend.dto.UpdateNoteDTO;
 import be.ap.backend.dto.UpdateStatusDTO;
+
+import java.util.Map;
 import be.ap.backend.enums.LoanStatus;
 import be.ap.backend.exception.MissingSessionException;
 import be.ap.backend.service.LoanService;
@@ -53,6 +55,17 @@ public class LoanController {
     @PutMapping("/{id}/status")
     public ResponseEntity<LoanDTO> updateStatus(@PathVariable Long id, @RequestBody UpdateStatusDTO dto) {
         return ResponseEntity.ok(loanService.updateStatus(id, dto.status()));
+    }
+
+    @PutMapping("/{id}/pickup")
+    public ResponseEntity<LoanDTO> pickupLoan(
+            @PathVariable Long id,
+            @RequestBody(required = false) Map<String, Object> body) {
+        Long bookCopyId = null;
+        if (body != null && body.get("book_copy_id") != null) {
+            bookCopyId = Long.valueOf(body.get("book_copy_id").toString());
+        }
+        return ResponseEntity.ok(loanService.pickupLoan(id, bookCopyId));
     }
 
     @GetMapping("/user")
