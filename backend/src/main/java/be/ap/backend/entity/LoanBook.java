@@ -5,6 +5,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "loan_book")
@@ -39,5 +41,15 @@ public class LoanBook {
 
     @Column(name = "returned_amount", nullable = false)
     private Integer returnedAmount;
+
+    @ElementCollection
+    @CollectionTable(name = "loan_book_scanned_copies", joinColumns = @JoinColumn(name = "loan_book_id"))
+    @Column(name = "book_copy_id")
+    private Set<Long> scannedCopyIds = new HashSet<>();
+
+    @ElementCollection
+    @CollectionTable(name = "loan_book_returned_copies", joinColumns = @JoinColumn(name = "loan_book_id"))
+    @Column(name = "book_copy_id")
+    private Set<Long> returnedCopyIds = new HashSet<>();
 
 }

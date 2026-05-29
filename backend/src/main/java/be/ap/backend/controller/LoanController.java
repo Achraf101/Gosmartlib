@@ -57,6 +57,22 @@ public class LoanController {
         return ResponseEntity.ok(loanService.updateStatus(id, dto.status()));
     }
 
+    @PutMapping("/{id}/scan-pickup")
+    public ResponseEntity<LoanDTO> scanPickup(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> body) {
+        Long bookCopyId = Long.valueOf(body.get("book_copy_id").toString());
+        return ResponseEntity.ok(loanService.scanPickup(id, bookCopyId));
+    }
+
+    @PutMapping("/{id}/scan-return")
+    public ResponseEntity<LoanDTO> scanReturn(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> body) {
+        Long bookCopyId = Long.valueOf(body.get("book_copy_id").toString());
+        return ResponseEntity.ok(loanService.scanReturn(id, bookCopyId));
+    }
+
     @PutMapping("/{id}/pickup")
     public ResponseEntity<LoanDTO> pickupLoan(
             @PathVariable Long id,

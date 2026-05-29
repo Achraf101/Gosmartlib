@@ -194,6 +194,71 @@ public class LoanService {
     }
 
     @Transactional
+    public LoanDTO scanPickup(Long loanId, Long bookCopyId) {
+        Loan loan = loanRepository.findById(loanId)
+                .orElseThrow(() -> new EntityNotFoundException("Lening niet gevonden: " + loanId));
+        BookCopy copy = bookCopyRepository.findById(bookCopyId)
+                .orElseThrow(() -> new EntityNotFoundException("Exemplaar niet gevonden: " + bookCopyId));
+
+        LoanBook lb = loan.getLoanBooks().stream().findFirst()
+                .orElseThrow(() -> new EntityNotFoundException("Geen boek gevonden in lening"));
+
+        if (!copy.getLocationBook().getBook().getId().equals(lb.getBook().getId())) {
+            throw new IllegalArgumentException("Exemplaar hoort niet bij dit boek");
+        }
+        if (lb.getReceivedAmount() >= lb.getRequestedAmount()) {
+            throw new IllegalArgumentException("Alle exemplaren zijn al ontvangen");
+        }
+        if (lb.getScannedCopyIds().contains(bookCopyId)) {
+            throw new IllegalArgumentException("Exemplaar " + copy.getAccessionId() + " is al gescand voor deze uitlening");
+        }
+
+        lb.getScannedCopyIds().add(bookCopyId);
+        lb.setReceivedAmount(lb.getReceivedAmount() + 1);
+        lb.setBookCopy(copy);
+        loanBookRepository.save(lb);
+
+        if (lb.getReceivedAmount() >= lb.getRequestedAmount()) {
+            loan.setStatus(LoanStatus.RECEIVED);
+        }
+        return toDTO(loanRepository.save(loan));
+    }
+
+    @Transactional
+    public LoanDTO scanReturn(Long loanId, Long bookCopyId) {
+        Loan loan = loanRepository.findById(loanId)
+                .orElseThrow(() -> new EntityNotFoundException("Lening niet gevonden: " + loanId));
+        BookCopy copy = bookCopyRepository.findById(bookCopyId)
+                .orElseThrow(() -> new EntityNotFoundException("Exemplaar niet gevonden: " + bookCopyId));
+
+        LoanBook lb = loan.getLoanBooks().stream().findFirst()
+                .orElseThrow(() -> new EntityNotFoundException("Geen boek gevonden in lening"));
+
+        if (!copy.getLocationBook().getBook().getId().equals(lb.getBook().getId())) {
+            throw new IllegalArgumentException("Exemplaar hoort niet bij dit boek");
+        }
+        if (lb.getReturnedAmount() >= lb.getReceivedAmount()) {
+            throw new IllegalArgumentException("Alle exemplaren zijn al teruggebracht");
+        }
+        if (lb.getReturnedCopyIds().contains(bookCopyId)) {
+            throw new IllegalArgumentException("Exemplaar " + copy.getAccessionId() + " is al teruggebracht voor deze uitlening");
+        }
+
+        lb.getReturnedCopyIds().add(bookCopyId);
+        lb.setReturnedAmount(lb.getReturnedAmount() + 1);
+        loanBookRepository.save(lb);
+
+        if (lb.getReturnedAmount() >= lb.getReceivedAmount()) {
+            LocationBook locationBook = locationBookRepository
+                    .findByLocationIdAndBookId(loan.getLocation().getId(), lb.getBook().getId())
+                    .orElseThrow(() -> new EntityNotFoundException("Boek niet gevonden in locatie"));
+            locationBookService.updateCurrentAmount(locationBook, -lb.getRequestedAmount());
+            loan.setStatus(LoanStatus.RETURNED);
+        }
+        return toDTO(loanRepository.save(loan));
+    }
+
+    @Transactional
     public LoanDTO pickupLoan(Long loanId, Long bookCopyId) {
         Loan loan = loanRepository.findById(loanId)
                 .orElseThrow(() -> new EntityNotFoundException("Lening niet gevonden met id: " + loanId));
