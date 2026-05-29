@@ -27,7 +27,7 @@ import { Message } from 'primeng/message';
 import { SchoolService } from '../../services/school';
 import { School } from '../../models/school';
 import { TooltipModule } from 'primeng/tooltip';
-import { LocationStateService } from '../../services/location-state';
+import { SelectModule } from 'primeng/select';
 
 @Component({
   selector: 'app-loan-cart',
@@ -45,6 +45,7 @@ import { LocationStateService } from '../../services/location-state';
     TableModule,
     Message,
     TooltipModule,
+    SelectModule,
   ],
   templateUrl: './loan-cart.html',
   styleUrl: './loan-cart.css',
@@ -56,7 +57,6 @@ export class LoanCartComponent {
     private readonly locationBookService: LocationBookService,
     public authService: AuthService,
     private readonly schoolService: SchoolService,
-    private locationState: LocationStateService,
   ) {}
 
   readonly cartService = inject(LoanCartService);
@@ -65,10 +65,11 @@ export class LoanCartComponent {
   today = new Date();
   items = this.cartService.items();
   maxAmounts: Map<number, number> = new Map();
+  locations: Location[] = [];
+  selectedLocationId: number | null = null;
 
-  location?: Location;
   school?: School;
-  private locationId: number | null = null;
+  protected locationId: number | null = null;
 
   private get userId(): number {
     return this.authService.currentUser?.userId ?? 0;
@@ -85,21 +86,44 @@ export class LoanCartComponent {
         this.cartService.setBorrowLimit(school.borrowLimit);
         if (school.locations?.length === 1) {
           this.locationId = school.locations[0].id;
-          this.locationState.set(this.locationId);
         } else {
-          this.locationId = this.locationState.locationId;
+          this.locations = school.locations ?? [];
+          this.selectedLocationId = this.locationId;
         }
+
+        console.log('locationId na init:', this.locationId);
+        console.log('locations na init:', this.locations);
         this.loadMaxAmounts();
       },
     });
   }
 
+  onLocationChange(locationId: number): void {
+    this.selectedLocationId = locationId;
+    this.loadMaxAmounts();
+  }
+
   loadMaxAmounts(): void {
-    if (!this.locationId) return;
+    const effectiveLocationId = this.locationId ?? this.selectedLocationId;
+    if (!effectiveLocationId) return;
     for (const item of this.cartService.items()) {
-      this.locationBookService.getLocationBook(this.locationId, item.bookId).subscribe({
+      this.locationBookService.getLocationBook(effectiveLocationId, item.bookId).subscribe({
         next: (locationBook: LocationBook) => {
           this.maxAmounts.set(item.bookId, locationBook.current_amount);
+
+          if (item.requestedAmount > locationBook.current_amount) {
+            this.cartService.updateAmount(item.bookId, locationBook.current_amount);
+          }
+        },
+        error: () => {
+          this.maxAmounts.set(item.bookId, 0);
+          this.cartService.updateAmount(item.bookId, 0);
+          this.messageService.add({
+            severity: 'warn',
+            summary: 'Niet beschikbaar',
+            detail: `Een boek in je lijst is niet beschikbaar op deze locatie.`,
+            life: 3000,
+          });
         },
       });
     }
@@ -135,6 +159,18 @@ export class LoanCartComponent {
   }
 
   submitLoan(): void {
+    const effectiveLocationId = this.locationId ?? this.selectedLocationId;
+
+    if (!effectiveLocationId) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Geen locatie',
+        detail: 'Selecteer een locatie voor je ontlening.',
+        life: 3000,
+      });
+      return;
+    }
+
     if (this.checkoutForm.invalid || this.cartService.isEmpty() || !this.calculatedEnd) return;
 
     if (this.school && this.cartService.items().length > this.school.borrowLimit) {
@@ -149,7 +185,7 @@ export class LoanCartComponent {
 
     const loan: CreateLoanDTO = {
       userId: this.userId,
-      locationId: this.locationId ?? this.schoolId,
+      locationId: effectiveLocationId,
       extended: 0,
       start: this.formatDate(this.checkoutForm.value.start!),
       end: this.formatDate(this.calculatedEnd ?? new Date()),

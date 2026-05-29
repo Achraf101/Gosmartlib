@@ -48,7 +48,6 @@ import { SchoolService } from '../../services/school';
 import { School } from '../../models/school';
 import { BookCover } from '../misc/book-cover/book-cover';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { LocationStateService } from '../../services/location-state';
 
 @Component({
   selector: 'app-book-detail-page',
@@ -127,7 +126,6 @@ export class BookDetailPage implements OnInit {
     private router: Router,
     public authService: AuthService,
     private readonly schoolService: SchoolService,
-    private locationState: LocationStateService,
   ) {}
 
   private get userId(): number {
@@ -146,14 +144,12 @@ export class BookDetailPage implements OnInit {
       const locationParam = this.route.snapshot.queryParamMap.get('location');
       if (locationParam) {
         this.locationId = Number(locationParam);
-        this.locationState.set(this.locationId);
         this.loadLocationData();
         this.loadBook();
         this.bookListService.getListsWithoutBook(this.bookId).subscribe((lists) => {
           this.lists = lists;
         });
       } else {
-        this.locationId = this.locationState.locationId;
         if (this.locationId) {
           this.loadLocationData();
           this.loadBook();
@@ -166,7 +162,6 @@ export class BookDetailPage implements OnInit {
               this.school = school;
               if (school.locations?.length === 1) {
                 this.locationId = school.locations[0].id;
-                this.locationState.set(this.locationId);
                 this.loadLocationData();
               }
             },
@@ -323,16 +318,6 @@ export class BookDetailPage implements OnInit {
 
   addToCart(): void {
     if (this.cartForm.invalid || !this.book) return;
-
-    if (!this.locationBook || this.locationBook.current_amount < 1) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Niet beschikbaar',
-        detail: 'Dit boek is momenteel niet beschikbaar op uw locatie.',
-        life: 3000,
-      });
-      return;
-    }
 
     const book: CartBook = {
       id: this.bookId,

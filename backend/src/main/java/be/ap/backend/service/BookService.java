@@ -164,6 +164,11 @@ public class BookService {
             throw new ArgumentsInvalidException("pagesMin moet kleiner zijn dan pagesMax");
         }
 
+        if (locationIds == null) {
+            return bookRepository.filterAdmin(genres, language, fiction, authorIds, seriesIds,
+                    pagesMin, pagesMax, clibs, themes, didactic, query, pageable);
+        }
+
         return bookRepository.filter(
                 locationIds,
                 genres,

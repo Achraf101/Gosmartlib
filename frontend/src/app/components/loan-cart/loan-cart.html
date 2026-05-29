@@ -23,6 +23,19 @@
       <p>Je ontleenlijst is leeg</p>
     } @else {
       <div>
+        @if (locations.length > 1 && !locationId) {
+          <div class="location-select">
+            <label>Locatie: </label>
+            <p-select
+              [options]="locations"
+              [(ngModel)]="selectedLocationId"
+              optionLabel="name"
+              optionValue="id"
+              placeholder="Selecteer een locatie"
+              (onChange)="onLocationChange($event.value)"
+            />
+          </div>
+        }
         <p-table [value]="cartService.items()" sortField="start" [sortOrder]="-1" stripedRows>
           <ng-template pTemplate="header">
             <tr>

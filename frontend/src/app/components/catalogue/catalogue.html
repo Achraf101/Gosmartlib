@@ -171,7 +171,7 @@
             @for (book of books; track book.id) {
               <div class="grid-card" (click)="onBookClick(book)">
                 <div class="grid-cover">
-                  <b-cover [bookCard]="getAsBookCard(book)"></b-cover>
+                  <b-cover [bookInput]="getAsBookCard(book)"></b-cover>
                 </div>
                 <div class="grid-info">
                   <p class="grid-title">{{ book.title }}</p>
@@ -226,7 +226,7 @@
 >
   <div class="dialog-content">
     @if (selectedBook?.cover) {
-      <b-cover [bookCard]="getAsBookCard(selectedBook!)"></b-cover>
+      <b-cover [bookInput]="getAsBookCard(selectedBook!)"></b-cover>
     }
     <p *ngIf="selectedBook?.author">{{ selectedBook!.author!.name }}</p>
   </div>

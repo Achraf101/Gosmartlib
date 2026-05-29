@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import be.ap.backend.dto.LoanBookDTO;
 import be.ap.backend.dto.LoanDTO;
+import be.ap.backend.dto.LoanLookupContextDTO;
 import be.ap.backend.dto.TopBookDTO;
 import be.ap.backend.entity.Book;
 import be.ap.backend.entity.BookCopy;
@@ -98,7 +99,7 @@ public class LoanService {
         }
         if (dto.getBooks().length > school.getBorrowLimit()) {
             throw new IllegalArgumentException(
-                    "Aantal boeken is groter dan de ontleenlimiet van je location " + school.getBorrowLimit());
+                    "Aantal boeken is groter dan de ontleenlimiet van je locatie " + school.getBorrowLimit());
         }
         LocalDate expectedEnd = dto.getStart().plusDays(school.getBorrowPeriod());
         if (!dto.getEnd().equals(expectedEnd)) {
@@ -158,7 +159,8 @@ public class LoanService {
 
             loanBookRepository.save(lb);
             savedLoan.setLoanBooks(new HashSet<>(List.of(lb)));
-            result.add(toDTO(savedLoan));
+
+            result.add(buildDTO(savedLoan));
         }
         return result;
     }
@@ -174,7 +176,8 @@ public class LoanService {
             throw new IllegalArgumentException("Notitie is te lang!");
         }
         loan.setNote(note);
-        return toDTO(loanRepository.save(loan));
+
+        return buildDTO(loanRepository.save(loan));
     }
 
     public LoanDTO updateStatus(Long id, LoanStatus status) {
@@ -190,7 +193,7 @@ public class LoanService {
                 locationBookService.updateCurrentAmount(locationBook, -lb.getRequestedAmount());
             });
         }
-        return toDTO(loanRepository.save(loan));
+        return buildDTO(loanRepository.save(loan));
     }
 
     @Transactional
@@ -301,7 +304,26 @@ public class LoanService {
         return toDTOs(loanRepository.findByStateAndSchool(state, schoolId));
     }
 
-    private LoanDTO toDTO(Loan loan) {
+    /**
+     * Performs the Smartschool lookup (with null guard on oneRosterId) and builds
+     * the DTO. Use this for synchronous single-loan call sites.
+     */
+    private LoanDTO buildDTO(Loan loan) {
+        String oneRosterId = loan.getUser().getOneRosterId();
+        Map<String, Object> userInfo = null;
+        if (oneRosterId != null) {
+            userInfo = lookupService.getUser(
+                    loan.getUser().getSchool(),
+                    oneRosterId,
+                    loan.getUser().getRoles());
+        } else {
+            log.warn("OneRoster ID is null voor gebruiker {}, Smartschool lookup overgeslagen",
+                    loan.getUser().getId());
+        }
+        return toDTO(loan, userInfo);
+    }
+
+    private LoanDTO toDTO(Loan loan, Map<String, Object> userInfo) {
         LoanDTO dto = new LoanDTO();
         dto.setId(loan.getId());
         dto.setUserId(loan.getUser().getId());
@@ -313,24 +335,16 @@ public class LoanService {
         dto.setStatus(loan.getStatus());
         dto.setClosed(loan.getClosed());
         dto.setCreated(loan.getCreated());
+        dto.setGroupId(loan.getGroupId());
+        dto.setExtendPeriod(loan.getLocation().getSchool().getExtendPeriod());
 
-        Map<String, Object> userInfo = lookupService.getUser(
-                loan.getUser().getSchool(),
-                loan.getUser().getOneRosterId(),
-                loan.getUser().getRoles());
-
-        String displayName;
         if (userInfo != null) {
             String firstName = (String) userInfo.get("givenName");
             String lastName = (String) userInfo.get("familyName");
-            displayName = firstName + " " + lastName;
+            dto.setUsername(firstName + " " + lastName);
         } else {
-            displayName = loan.getUser().getUsername();
+            dto.setUsername(loan.getUser().getUsername());
         }
-        dto.setUsername(displayName);
-
-        dto.setGroupId(loan.getGroupId());
-        dto.setExtendPeriod(loan.getLocation().getSchool().getExtendPeriod());
 
         LoanBookDTO[] books = loan.getLoanBooks().stream()
                 .map(lb -> {
@@ -352,9 +366,29 @@ public class LoanService {
     }
 
     private List<LoanDTO> toDTOs(List<Loan> loans) {
-        List<CompletableFuture<LoanDTO>> futures = loans.stream()
-                .map(loan -> CompletableFuture.supplyAsync(
-                        () -> toDTO(loan), lookupExecutor))
+        List<LoanLookupContextDTO> prepared = loans.stream()
+                .map(loan -> {
+                    loan.getLoanBooks().size();
+                    LoanLookupContextDTO ctx = new LoanLookupContextDTO();
+                    ctx.setLoan(loan);
+                    ctx.setOneRosterId(loan.getUser().getOneRosterId());
+                    ctx.setSchool(loan.getUser().getSchool());
+                    ctx.setRoles(loan.getUser().getRoles());
+                    return ctx;
+                })
+                .toList();
+
+        List<CompletableFuture<LoanDTO>> futures = prepared.stream()
+                .map(ctx -> CompletableFuture.supplyAsync(() -> {
+                    Map<String, Object> userInfo = null;
+                    if (ctx.getOneRosterId() != null) {
+                        userInfo = lookupService.getUser(ctx.getSchool(), ctx.getOneRosterId(), ctx.getRoles());
+                    } else {
+                        log.warn("OneRoster ID is null voor loan {}, Smartschool lookup overgeslagen",
+                                ctx.getLoan().getId());
+                    }
+                    return toDTO(ctx.getLoan(), userInfo);
+                }, lookupExecutor))
                 .toList();
 
         return futures.stream()
@@ -362,7 +396,7 @@ public class LoanService {
                     try {
                         return future.join();
                     } catch (CompletionException e) {
-                        log.error("Lookup mislukt voor loan: {}", e.getMessage());
+                        log.error("Lookup mislukt: {}", e.getMessage());
                         throw new RuntimeException("Gebruiker kon niet opgehaald worden", e.getCause());
                     }
                 })
@@ -438,7 +472,7 @@ public class LoanService {
         loan.setEnd(loan.getEnd().plusDays(school.getExtendPeriod()));
         loan.setExtended((byte) (loan.getExtended() + 1));
 
-        return toDTO(loanRepository.save(loan));
+        return buildDTO(loanRepository.save(loan));
     }
 
 }

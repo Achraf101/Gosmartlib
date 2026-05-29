@@ -21,4 +21,8 @@ public class BorrowedBookPreviewDTO {
     private LocalDate end;
     private boolean returned;
     private boolean overdue;
+    private boolean requested;
+    private boolean accepted;
+    private boolean received;
+    private boolean declined;
 }
