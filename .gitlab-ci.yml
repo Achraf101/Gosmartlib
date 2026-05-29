@@ -15,4 +15,5 @@ deploy_project:
     - cd $CI_PROJECT_DIR
 
     # deploy using docker compose
+    - docker compose down -v
     - docker compose up -d --build --force-recreate
