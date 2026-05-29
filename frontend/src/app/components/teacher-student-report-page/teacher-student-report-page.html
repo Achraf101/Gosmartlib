@@ -59,7 +59,7 @@
         @for (b of report.borrowedBooksPreview; track b.bookId) {
           <p-card class="book-card">
             @if (b.cover) {
-              <img class="cover" [src]="b.cover" [alt]="b.title" />
+              <b-cover [bookInput]="b"></b-cover>
             }
             <h3>{{ b.title }}</h3>
             @if (b.author) {

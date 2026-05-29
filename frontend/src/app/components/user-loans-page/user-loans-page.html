@@ -5,173 +5,204 @@
   <h2>Ontleende boeken</h2>
 
   @if (loading) {
-  @for (i of [1, 2, 3]; track i) {
-  <p-skeleton height="3rem" />
-  }
+    @for (i of [1, 2, 3]; track i) {
+      <p-skeleton height="3rem" />
+    }
   } @else if (activeLoans.length > 0) {
-  <p-table [value]="activeLoans" class="loans-table" stripedRows [paginator]="true" [rows]="5">
-    <ng-template pTemplate="header" class="p-datatable-thead">
-      <tr class="show-desktop">
-        <th>
-          <p>Boeken</p>
-        </th>
-        <th>
-          <p>Startdatum</p>
-        </th>
-        <th>
-          <p>Teruggavedatum</p>
-        </th>
-        <th>
-          <p>Status</p>
-        </th>
-        <th>
-          <p>Acties</p>
-        </th>
-      </tr>
-    </ng-template>
-    <ng-template pTemplate="body" let-loan class="p-datatable-tbody">
-      <tr>
-        <td>
-          <ul class="book-list">
-            @for (book of loan.books; track book.bookId) {
-            <li>
-              <div class="book-info">
-                <div class="cover">
-                  <b-cover [bookCard]="book"></b-cover>
-                </div>
-                <span class="book-title">{{ book.bookTitle }}</span>
-                @if (book.author) {
-                <span class="book-author">{{ book.author.name }}</span>
-                }
-              </div>
-            </li>
+    <p-table [value]="activeLoans" class="loans-table" stripedRows [paginator]="true" [rows]="5">
+      <ng-template pTemplate="header" class="p-datatable-thead">
+        <tr class="show-desktop">
+          <th>
+            <p>Boeken</p>
+          </th>
+          <th>
+            <p>Startdatum</p>
+          </th>
+          <th>
+            <p>Teruggavedatum</p>
+          </th>
+          <th>
+            <p>Status</p>
+          </th>
+          <th>
+            <p>Acties</p>
+          </th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-loan class="p-datatable-tbody">
+        <tr>
+          <td>
+            <ul class="book-list">
+              @for (book of loan.books; track book.bookId) {
+                <li>
+                  <div class="book-info">
+                    <div class="cover">
+                      <b-cover [bookInput]="book"></b-cover>
+                    </div>
+                    <span class="book-title">{{ book.bookTitle }}</span>
+                    @if (book.author) {
+                      <span class="book-author">{{ book.author.name }}</span>
+                    }
+                  </div>
+                </li>
+              }
+            </ul>
+          </td>
+          <td>
+            <span>{{ loan.start | date: 'dd/MM/yyyy' }}</span>
+          </td>
+          <td>
+            <span
+              [class.overdue]="isOverdue(loan.end) && loan.status !== 'RETURNED'"
+              [pTooltip]="
+                isOverdue(loan.end) && loan.status !== 'RETURNED'
+                  ? 'Teruggavedatum is verstreken'
+                  : ''
+              "
+            >
+              {{ loan.end | date: 'dd/MM/yyyy' }}
+            </span>
+          </td>
+          <td>
+            <p-tag [value]="statusLabel(loan.status)" [severity]="statusSeverity(loan.status)" />
+          </td>
+          <td>
+            @if (loan.status === 'RECEIVED' || loan.status === 'ACCEPTED') {
+              <p-button
+                icon="pi pi-calendar-plus"
+                label="Verlengen"
+                severity="info"
+                [text]="true"
+                (onClick)="openExtendDialog(loan)"
+              />
             }
-          </ul>
-        </td>
-        <td>
-          <span>{{ loan.start | date: 'dd/MM/yyyy' }}</span>
-        </td>
-        <td>
-          <span [class.overdue]="isOverdue(loan.end) && loan.status !== 'RETURNED'"
-            [pTooltip]="isOverdue(loan.end) && loan.status !== 'RETURNED' ? 'Teruggavedatum is verstreken' : ''">
-            {{ loan.end | date: 'dd/MM/yyyy' }}
-          </span>
-        </td>
-        <td>
-          <p-tag [value]="statusLabel(loan.status)" [severity]="statusSeverity(loan.status)" />
-        </td>
-        <td>
-          @if (loan.status === 'RECEIVED' || loan.status === 'ACCEPTED') {
-          <p-button icon="pi pi-calendar-plus" label="Verlengen" severity="info" [text]="true"
-            (onClick)="openExtendDialog(loan)" />
-          }
-        </td>
-      </tr>
-    </ng-template>
-  </p-table>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
   } @else {
-  <div class="empty-state">
-    <p>Je hebt nog geen boeken ontleend.</p>
-  </div>
+    <div class="empty-state">
+      <p>Je hebt nog geen boeken ontleend.</p>
+    </div>
   }
 
   <h2>Ontleenverzoeken</h2>
 
   @if (loading) {
-  @for (i of [1, 2, 3]; track i) {
-  <p-skeleton height="3rem" />
-  }
+    @for (i of [1, 2, 3]; track i) {
+      <p-skeleton height="3rem" />
+    }
   } @else if (loanRequests.length > 0) {
-  <p-table [value]="loanRequests" stripedRows [paginator]="true" [rows]="5" class="loans-table">
-    <ng-template pTemplate="header" class="p-datatable-thead">
-      <tr class="show-desktop">
-        <th>
-          <p>Boeken aangevraagd</p>
-        </th>
-        <th>
-          <p>Startdatum</p>
-        </th>
-        <th pSortableColumn="end">
-          <p>Einddatum</p>
-          <p-sortIcon field="end" />
-        </th>
-        <th pSortableColumn="created">
-          <p>Ingediend</p>
-          <p-sortIcon field="created" />
-        </th>
-        <th>
-          <p>Status</p>
-        </th>
-        <th></th>
-      </tr>
-    </ng-template>
-    <ng-template pTemplate="body" let-loan class="p-datatable-tbody">
-      <tr>
-        <td class="books-cell">
-          <ul class="book-list">
-            @for (book of loan.books; track book.bookId) {
-            <li class="book-item">
-              <div class="book-info">
-                <div class="cover">
-                  <b-cover [bookCard]="book"></b-cover>
-                </div>
-                <span class="book-title">{{ book.bookTitle }}</span>
-                @if (book.author) {
-                <span class="book-author">{{ book.author.name }}</span>
+    <p-table [value]="loanRequests" stripedRows [paginator]="true" [rows]="5" class="loans-table">
+      <ng-template pTemplate="header" class="p-datatable-thead">
+        <tr class="show-desktop">
+          <th>
+            <p>Boeken aangevraagd</p>
+          </th>
+          <th>
+            <p>Startdatum</p>
+          </th>
+          <th pSortableColumn="end">
+            <p>Einddatum</p>
+            <p-sortIcon field="end" />
+          </th>
+          <th pSortableColumn="created">
+            <p>Ingediend</p>
+            <p-sortIcon field="created" />
+          </th>
+          <th>
+            <p>Status</p>
+          </th>
+          <th></th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-loan class="p-datatable-tbody">
+        <tr>
+          <td class="books-cell">
+            <ul class="book-list">
+              @for (book of loan.books; track book.bookId) {
+                <li class="book-item">
+                  <div class="book-info">
+                    <div class="cover">
+                      <b-cover [bookInput]="book"></b-cover>
+                    </div>
+                    <span class="book-title">{{ book.bookTitle }}</span>
+                    @if (book.author) {
+                      <span class="book-author">{{ book.author.name }}</span>
+                    }
+                  </div>
+                </li>
+              }
+            </ul>
+          </td>
+          <td>
+            <span>{{ loan.start | date: 'dd/MM/yyyy' }}</span>
+          </td>
+          <td>
+            <span [class.overdue]="isOverdue(loan.end)">
+              {{ loan.end | date: 'dd/MM/yyyy' }}
+            </span>
+          </td>
+          <td>{{ loan.created | date: 'dd/MM/yyyy' }}</td>
+          <td>
+            <p-tag [value]="statusLabel(loan.status)" [severity]="statusSeverity(loan.status)" />
+          </td>
+          <td>
+            @if (loan.status == 'DECLINED') {
+              <div class="btns">
+                @if (loan.note) {
+                  <p-button
+                    icon="pi pi-info-circle"
+                    severity="info"
+                    [text]="true"
+                    (onClick)="selectedLoan = loan"
+                  />
                 }
+                <p-button
+                  icon="pi pi-trash"
+                  severity="danger"
+                  [text]="true"
+                  (onClick)="deleteLoan(loan.id)"
+                />
               </div>
-            </li>
             }
-          </ul>
-        </td>
-        <td>
-          <span>{{ loan.start | date: 'dd/MM/yyyy' }}</span>
-        </td>
-        <td>
-          <span [class.overdue]="isOverdue(loan.end)">
-            {{ loan.end | date: 'dd/MM/yyyy' }}
-          </span>
-        </td>
-        <td>{{ loan.created | date: 'dd/MM/yyyy' }}</td>
-        <td>
-          <p-tag [value]="statusLabel(loan.status)" [severity]="statusSeverity(loan.status)" />
-        </td>
-        <td>
-          @if (loan.status == 'DECLINED') {
-          <div class="btns">
-            @if (loan.note) {
-            <p-button icon="pi pi-info-circle" severity="info" [text]="true" (onClick)="selectedLoan = loan" />
-            }
-            <p-button icon="pi pi-trash" severity="danger" [text]="true" (onClick)="deleteLoan(loan.id)" />
-          </div>
-          }
-        </td>
-      </tr>
-      <p-dialog header="Notitie" [(visible)]="selectedLoan" [modal]="true" [draggable]="false">
-        <p class="note">{{ selectedLoan?.note }}</p>
-      </p-dialog>
-    </ng-template>
-  </p-table>
+          </td>
+        </tr>
+        <p-dialog header="Notitie" [(visible)]="selectedLoan" [modal]="true" [draggable]="false">
+          <p class="note">{{ selectedLoan?.note }}</p>
+        </p-dialog>
+      </ng-template>
+    </p-table>
   } @else {
-  <div class="empty-state">
-    <p>Je hebt nog geen ontleenverzoeken.</p>
-  </div>
+    <div class="empty-state">
+      <p>Je hebt nog geen ontleenverzoeken.</p>
+    </div>
   }
 
-  <p-dialog header="Ontlening verlengen" [(visible)]="extendDialogVisible" [modal]="true" [draggable]="false"
-    [style]="{ width: '380px' }">
+  <p-dialog
+    header="Ontlening verlengen"
+    [(visible)]="extendDialogVisible"
+    [modal]="true"
+    [draggable]="false"
+    [style]="{ width: '380px' }"
+  >
     <div class="extend-dialog-content">
       <i class="pi pi-calendar-plus extend-icon"></i>
       <p>Ben je zeker dat je de ontlening wil verlengen?</p>
       @if (loanToExtend) {
-      <p class="extend-date">
-        Nieuwe teruggavedatum:
-        <strong>{{ extendedEndDate | date: 'dd/MM/yyyy' }}</strong>
-      </p>
+        <p class="extend-date">
+          Nieuwe teruggavedatum:
+          <strong>{{ extendedEndDate | date: 'dd/MM/yyyy' }}</strong>
+        </p>
       }
     </div>
     <ng-template pTemplate="footer">
-      <p-button label="Annuleren" severity="secondary" [text]="true" (onClick)="extendDialogVisible = false" />
+      <p-button
+        label="Annuleren"
+        severity="secondary"
+        [text]="true"
+        (onClick)="extendDialogVisible = false"
+      />
       <p-button label="Ja, verlengen" icon="pi pi-check" (onClick)="confirmExtend()" />
     </ng-template>
   </p-dialog>
