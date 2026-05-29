@@ -160,18 +160,14 @@ public class NotificationService {
 
 
         responseFuture.thenAccept(response -> {
-            System.out.println("Status Code: " + response.statusCode());
             System.out.println("Response Body: " + response.body());
         }).exceptionally(ex -> {
             System.err.println("Error occurred: " + ex.getMessage());
             return null;
         });
 
-        // The program continues here immediately while the request is in flight
-        System.out.println("Request sent! Doing other things...");
-
-        // Optional: Block if you need to wait for the result before the program exits
-        System.out.println(responseFuture.join());
+        // Block if you need to wait for the result before the program exits
+        // responseFuture.join()
 
         return true;
     }
