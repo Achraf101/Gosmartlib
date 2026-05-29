@@ -155,6 +155,15 @@ button {
   box-shadow: 0 0 0 2px rgba(122, 30, 46, 0.15);
 }
 
+.scan-progress {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--p-rose-800);
+  margin-bottom: 0.25rem;
+  text-align: center;
+}
+
 .disambig-list {
   display: flex;
   flex-direction: column;

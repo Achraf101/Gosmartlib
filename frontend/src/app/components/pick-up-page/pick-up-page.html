@@ -99,6 +99,9 @@
             <span>{{ loan.end | date: 'dd/MM/yyyy' }}</span>
           </td>
           <td>
+            @if (loan.books[0].receivedAmount > 0) {
+              <span class="scan-progress">{{ loan.books[0].receivedAmount }}/{{ loan.books[0].requestedAmount }}</span>
+            }
             <p-button (onClick)="openManualDialog(loan.id)">Opgehaald</p-button>
           </td>
         </tr>
@@ -141,7 +144,13 @@
   [resizable]="false"
   (onHide)="closeManualDialog()"
 >
-  <p class="manual-dialog-hint">Voer het accession ID in van het exemplaar dat wordt opgehaald.</p>
+  @if (pendingLoan && pendingLoan.books[0].requestedAmount > 1) {
+    <p class="manual-dialog-hint">
+      Exemplaar {{ pendingLoan.books[0].receivedAmount + 1 }} van {{ pendingLoan.books[0].requestedAmount }} — voer het accession ID in.
+    </p>
+  } @else {
+    <p class="manual-dialog-hint">Voer het accession ID in van het exemplaar dat wordt opgehaald.</p>
+  }
   <input
     type="text"
     class="manual-id-input"

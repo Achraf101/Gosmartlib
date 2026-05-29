@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, EventEmitter, OnInit, Output, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { LoanService } from '../../services/loan';
 import { MessageService } from 'primeng/api';
 import { LoanDTO, LoanStatus } from '../../models/loan';
@@ -33,6 +33,12 @@ export class PickUpPageComponent implements OnInit, AfterViewInit {
   disambigDialogVisible = false;
   disambigLoans: LoanDTO[] = [];
   pendingCopy: BookCopyDetail | null = null;
+
+  private scannedCopyIds = new Map<number, Set<number>>();
+
+  get pendingLoan(): LoanDTO | undefined {
+    return this.loans.find((l) => l.id === this.pendingLoanId);
+  }
 
   get filteredLoans(): LoanDTO[] {
     const trimmedQuery = this.query.trim().toLowerCase();
@@ -70,6 +76,46 @@ export class PickUpPageComponent implements OnInit, AfterViewInit {
     });
   }
 
+  private processScanPickup(loanId: number, copyId: number): void {
+    const loanSet = this.scannedCopyIds.get(loanId) ?? new Set<number>();
+    if (loanSet.has(copyId)) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Al gescand',
+        detail: 'Dit exemplaar is al gescand voor deze uitlening.',
+        life: 3000,
+      });
+      return;
+    }
+    loanSet.add(copyId);
+    this.scannedCopyIds.set(loanId, loanSet);
+
+    this.loanService.scanPickup(loanId, copyId).subscribe({
+      next: (updatedLoan) => {
+        if (updatedLoan.status === LoanStatus.RECEIVED) {
+          this.loans = this.loans.filter((l) => l.id !== updatedLoan.id);
+          this.scannedCopyIds.delete(loanId);
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Succes',
+            detail: 'Boek opgehaald',
+            life: 3000,
+          });
+        } else {
+          const idx = this.loans.findIndex((l) => l.id === updatedLoan.id);
+          if (idx !== -1) this.loans[idx] = updatedLoan;
+          const book = updatedLoan.books[0];
+          this.messageService.add({
+            severity: 'info',
+            summary: 'Exemplaar gescand',
+            detail: `${book.receivedAmount}/${book.requestedAmount} exemplaren gescand`,
+            life: 3000,
+          });
+        }
+      },
+    });
+  }
+
   openManualDialog(loanId: number): void {
     this.pendingLoanId = loanId;
     this.manualAccessionId = 'LIB-';
@@ -89,25 +135,31 @@ export class PickUpPageComponent implements OnInit, AfterViewInit {
 
     this.locationBookService.getCopyByAccessionId(id).subscribe({
       next: (copy) => {
-        this.pickupLoan(this.pendingLoanId!, copy.id);
-        this.closeManualDialog();
-      },
-    });
-  }
-
-  pickupLoan(loanId: number, bookCopyId?: number): void {
-    this.loanService.pickupLoan(loanId, bookCopyId).subscribe({
-      next: () => {
-        this.loans = this.loans.filter((l) => l.id !== loanId);
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Succes',
-          detail: 'Boek opgehaald',
-          life: 3000,
+        this.loanService.scanPickup(this.pendingLoanId!, copy.id).subscribe({
+          next: (updatedLoan) => {
+            if (updatedLoan.status === LoanStatus.RECEIVED) {
+              this.loans = this.loans.filter((l) => l.id !== updatedLoan.id);
+              this.messageService.add({
+                severity: 'success',
+                summary: 'Succes',
+                detail: 'Boek opgehaald',
+                life: 3000,
+              });
+              this.closeManualDialog();
+            } else {
+              const idx = this.loans.findIndex((l) => l.id === updatedLoan.id);
+              if (idx !== -1) this.loans[idx] = updatedLoan;
+              const book = updatedLoan.books[0];
+              this.messageService.add({
+                severity: 'info',
+                summary: 'Exemplaar gescand',
+                detail: `${book.receivedAmount}/${book.requestedAmount} exemplaren gescand`,
+                life: 3000,
+              });
+              this.manualAccessionId = 'LIB-';
+            }
+          },
         });
-      },
-      error: () => {
-        this.loading = false;
       },
     });
   }
@@ -120,7 +172,9 @@ export class PickUpPageComponent implements OnInit, AfterViewInit {
     this.locationBookService.getCopyByAccessionId(id).subscribe({
       next: (copy) => {
         const matchingLoans = this.loans.filter((l) =>
-          l.books.some((b) => b.bookId === copy.book_id),
+          l.books.some(
+            (b) => b.bookId === copy.book_id && b.receivedAmount < b.requestedAmount,
+          ),
         );
         if (matchingLoans.length === 0) {
           this.messageService.add({
@@ -132,7 +186,7 @@ export class PickUpPageComponent implements OnInit, AfterViewInit {
           return;
         }
         if (matchingLoans.length === 1) {
-          this.pickupLoan(matchingLoans[0].id, copy.id);
+          this.processScanPickup(matchingLoans[0].id, copy.id);
           return;
         }
         this.pendingCopy = copy;
@@ -151,7 +205,7 @@ export class PickUpPageComponent implements OnInit, AfterViewInit {
   }
 
   selectDisambigLoan(loan: LoanDTO): void {
-    this.pickupLoan(loan.id, this.pendingCopy!.id);
+    this.processScanPickup(loan.id, this.pendingCopy!.id);
     this.closeDisambigDialog();
   }
 

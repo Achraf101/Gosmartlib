@@ -72,4 +72,16 @@ export class LoanService {
     const body = bookCopyId != null ? { book_copy_id: bookCopyId } : {};
     return this.apiService.put<LoanDTO>(`${this.endpoint}/${id}/pickup`, body);
   }
+
+  scanPickup(id: number, bookCopyId: number): Observable<LoanDTO> {
+    return this.apiService.put<LoanDTO>(`${this.endpoint}/${id}/scan-pickup`, {
+      book_copy_id: bookCopyId,
+    });
+  }
+
+  scanReturn(id: number, bookCopyId: number): Observable<LoanDTO> {
+    return this.apiService.put<LoanDTO>(`${this.endpoint}/${id}/scan-return`, {
+      book_copy_id: bookCopyId,
+    });
+  }
 }
