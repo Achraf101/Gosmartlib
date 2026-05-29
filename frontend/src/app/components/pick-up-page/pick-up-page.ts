@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, EventEmitter, OnInit, Output, ViewChild } from '@angular/core';
 import { LoanService } from '../../services/loan';
 import { MessageService } from 'primeng/api';
 import { LoanDTO, LoanStatus } from '../../models/loan';
@@ -18,7 +18,8 @@ import { DialogModule } from 'primeng/dialog';
   templateUrl: './pick-up-page.html',
   styleUrl: './pick-up-page.css',
 })
-export class PickUpPageComponent implements OnInit {
+export class PickUpPageComponent implements OnInit, AfterViewInit {
+  @ViewChild('scanInputRef') scanInputRef!: ElementRef<HTMLInputElement>;
   loans: LoanDTO[] = [];
   loading = true;
   query = '';
@@ -48,6 +49,10 @@ export class PickUpPageComponent implements OnInit {
     this.getRecords();
   }
 
+  ngAfterViewInit(): void {
+    this.scanInputRef?.nativeElement?.focus();
+  }
+
   private getRecords() {
     this.loanService.getByState(LoanStatus.ACCEPTED).subscribe({
       next: (data) => {
@@ -70,6 +75,7 @@ export class PickUpPageComponent implements OnInit {
     this.manualDialogVisible = false;
     this.pendingLoanId = null;
     this.manualAccessionId = 'LIB-';
+    setTimeout(() => this.scanInputRef?.nativeElement?.focus(), 0);
   }
 
   confirmManualPickup(): void {

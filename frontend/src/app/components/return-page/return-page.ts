@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { NavBarComponent } from '../nav-bar/nav-bar';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Skeleton } from 'primeng/skeleton';
@@ -29,7 +29,8 @@ import { DialogModule } from 'primeng/dialog';
   templateUrl: './return-page.html',
   styleUrl: './return-page.css',
 })
-export class ReturnPageComponent implements OnInit {
+export class ReturnPageComponent implements OnInit, AfterViewInit {
+  @ViewChild('scanInputRef') scanInputRef!: ElementRef<HTMLInputElement>;
   loans: LoanDTO[] = [];
   loading = true;
   today: Date = new Date();
@@ -66,6 +67,10 @@ export class ReturnPageComponent implements OnInit {
     this.getRecords();
   }
 
+  ngAfterViewInit(): void {
+    this.scanInputRef?.nativeElement?.focus();
+  }
+
   private getRecords() {
     this.loanService.getByState(LoanStatus.RECEIVED).subscribe({
       next: (data) => {
@@ -88,6 +93,7 @@ export class ReturnPageComponent implements OnInit {
     this.manualDialogVisible = false;
     this.pendingLoanId = null;
     this.manualAccessionId = 'LIB-';
+    setTimeout(() => this.scanInputRef?.nativeElement?.focus(), 0);
   }
 
   confirmManualReturn(): void {

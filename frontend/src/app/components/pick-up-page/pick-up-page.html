@@ -5,6 +5,7 @@
   <form class="search-bar scan-bar" (submit)="$event.preventDefault()">
     <i class="pi pi-barcode scan-icon"></i>
     <input
+      #scanInputRef
       type="text"
       class="search-input"
       placeholder="Scan streepjescode..."
