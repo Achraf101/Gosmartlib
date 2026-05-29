@@ -25,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 public class LocationBookService {
 
     private final LocationBookRepository locationBookRepository;
-
+    private final BookCopyService bookCopyService;
     private final EntityManager entityManager;
 
     public LocationBookDetailDTO createLocationBook(LocationBookDTO dto) {
@@ -35,23 +35,28 @@ public class LocationBookService {
         if (dto.getAmount() == null || dto.getAmount() < 1) {
             throw new ArgumentsInvalidException("Aantal moet minimaal 1 zijn.");
         }
+
+        LocationBook saved;
         if (locationBookRepository.existsByLocationIdAndBookId(dto.getLocationId(), dto.getBookId())) {
             LocationBook existing = locationBookRepository
                     .findByLocationIdAndBookId(dto.getLocationId(), dto.getBookId())
                     .orElseThrow();
             existing.setAmount(existing.getAmount() + dto.getAmount());
             existing.setCurrentAmount(existing.getCurrentAmount() + dto.getAmount());
-            return toDTO(locationBookRepository.save(existing));
+            saved = locationBookRepository.save(existing);
+        } else {
+            LocationBook newLocationBook = new LocationBook();
+            newLocationBook.setLocation(entityManager.find(Location.class, dto.getLocationId()));
+            newLocationBook.setBook(entityManager.find(Book.class, dto.getBookId()));
+            newLocationBook.setAmount(dto.getAmount());
+            newLocationBook.setCurrentAmount(dto.getAmount());
+            saved = locationBookRepository.save(newLocationBook);
         }
 
-        LocationBook newLocationBook = new LocationBook();
-
-        newLocationBook.setLocation(entityManager.find(Location.class, dto.getLocationId()));
-        newLocationBook.setBook(entityManager.find(Book.class, dto.getBookId()));
-        newLocationBook.setAmount(dto.getAmount());
-        newLocationBook.setCurrentAmount(dto.getAmount());
-
-       return toDTO(locationBookRepository.save(newLocationBook));
+        List<String> newAccessionIds = bookCopyService.createCopies(saved, dto.getAmount());
+        LocationBookDetailDTO result = toDTO(saved);
+        result.setNewAccessionIds(newAccessionIds);
+        return result;
     }
 
     public List<LocationBookDetailDTO> findAll() {

@@ -100,6 +100,7 @@
       [rowsPerPageOptions]="[5, 10, 20]"
       (onPageChange)="onPageChange($event)"
     />
+
     <div class="location-books">
       <h3>Boeken in deze locatie</h3>
       @if (locationBooks.length > 0) {
@@ -136,5 +137,104 @@
         (onPageChange)="onLocationPageChange($event)"
       />
     </div>
+
+    <!-- Copy lookup -->
+    <div class="lookup-section">
+      <h3>Exemplaar opzoeken</h3>
+      <div class="lookup-input-row">
+        <input
+          pInputText
+          type="text"
+          [(ngModel)]="lookupAccessionId"
+          placeholder="LIB-000001"
+          class="lookup-input"
+          (keydown.enter)="lookupCopy()"
+        />
+        <button
+          pButton
+          type="button"
+          icon="pi pi-search"
+          label="Zoeken"
+          class="p-button-sm"
+          [disabled]="lookupLoading"
+          (click)="lookupCopy()"
+        ></button>
+      </div>
+
+      @if (foundCopy) {
+        <div class="copy-result">
+          <img
+            [src]="foundCopy.book_cover ? '/static/cover/' + foundCopy.book_cover : placeholder"
+            [alt]="foundCopy.book_title"
+            class="book-cover"
+          />
+          <div class="copy-info">
+            <span class="book-title">{{ foundCopy.book_title }}</span>
+            @if (foundCopy.author_name) {
+              <span class="book-author">{{ foundCopy.author_name }}</span>
+            }
+            @if (foundCopy.isbn) {
+              <span class="copy-meta">ISBN: {{ foundCopy.isbn }}</span>
+            }
+            <span class="copy-meta">Locatie: {{ foundCopy.location_name }}</span>
+            <span class="copy-meta"
+              >Beschikbaar: {{ foundCopy.current_amount }}/{{ foundCopy.amount }}</span
+            >
+            <span class="copy-meta">ID: {{ foundCopy.accession_id }}</span>
+          </div>
+          <div class="copy-status-col">
+            <p-tag
+              [value]="copyStatusLabel(foundCopy.status)"
+              [severity]="copyStatusSeverity(foundCopy.status)"
+            />
+            @if (isLibrarian()) {
+              <button
+                pButton
+                type="button"
+                [label]="foundCopy.status === 'AVAILABLE' ? 'Markeer beschadigd' : 'Markeer beschikbaar'"
+                class="p-button-sm p-button-outlined status-toggle-btn"
+                (click)="toggleCopyStatus(foundCopy)"
+              ></button>
+            }
+          </div>
+        </div>
+      }
+    </div>
   }
 </div>
+
+<!-- Barcode dialog -->
+<p-dialog
+  header="Exemplaren aangemaakt"
+  [(visible)]="barcodeDialogVisible"
+  [modal]="true"
+  [closable]="true"
+  (onHide)="closeBarcodeDialog()"
+  styleClass="barcode-dialog"
+>
+  <div class="barcode-grid print-area">
+    @for (id of newAccessionIds; track id; let i = $index) {
+      <div class="barcode-card">
+        <svg #barcodesvg></svg>
+        <span class="accession-label">{{ id }}</span>
+      </div>
+    }
+  </div>
+  <ng-template #footer>
+    <button
+      pButton
+      type="button"
+      icon="pi pi-print"
+      label="Afdrukken"
+      class="p-button-sm"
+      (click)="printBarcodes()"
+    ></button>
+    <button
+      pButton
+      type="button"
+      label="Sluiten"
+      class="p-button-sm p-button-outlined"
+      (click)="closeBarcodeDialog()"
+    ></button>
+  </ng-template>
+</p-dialog>

@@ -7,6 +7,7 @@ export interface LocationBookDetail {
   book_cover: string;
   amount: number;
   current_amount: number;
+  new_accession_ids?: string[];
 }
 
 export interface SchoolStats {

@@ -1,4 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import {
+  AfterViewChecked,
+  Component,
+  ElementRef,
+  OnInit,
+  QueryList,
+  ViewChildren,
+} from '@angular/core';
 import { Select } from 'primeng/select';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -14,10 +21,15 @@ import { NavBarComponent } from '../nav-bar/nav-bar';
 import { BookService } from '../../services/book';
 import { ProgressSpinner } from 'primeng/progressspinner';
 import { DelayedLoader } from '../../utils/delayed-loader';
-
 import { PaginatorModule, PaginatorState } from 'primeng/paginator';
 import { LocationBookDetail } from '../../models/locationBookDetail';
 import { SearchBar } from '../misc/search-bar/search-bar';
+import { BookCopyDetail, CopyStatus } from '../../models/bookCopy';
+import { DialogModule } from 'primeng/dialog';
+import { TagModule } from 'primeng/tag';
+import { InputTextModule } from 'primeng/inputtext';
+import { AuthService } from '../../services/auth';
+import JsBarcode from 'jsbarcode';
 
 @Component({
   selector: 'app-location-detail-page',
@@ -32,11 +44,14 @@ import { SearchBar } from '../misc/search-bar/search-bar';
     ProgressSpinner,
     PaginatorModule,
     SearchBar,
+    DialogModule,
+    TagModule,
+    InputTextModule,
   ],
   templateUrl: './location-detail-page.html',
   styleUrl: './location-detail-page.css',
 })
-export class LocationDetailPageComponent implements OnInit {
+export class LocationDetailPageComponent implements OnInit, AfterViewChecked {
   locations: Location[] = [];
   books: BookBase[] = [];
   locationBooks: LocationBookDetail[] = [];
@@ -53,14 +68,26 @@ export class LocationDetailPageComponent implements OnInit {
   locationBooksPage = 0;
   locationBooksRows = 5;
   locationTotalRecords = 0;
-
   addedBooks: Set<number> = new Set();
+
+  // Barcode dialog
+  barcodeDialogVisible = false;
+  newAccessionIds: string[] = [];
+  private barcodesRendered = false;
+
+  @ViewChildren('barcodesvg') barcodeSvgs!: QueryList<ElementRef<SVGElement>>;
+
+  // Copy lookup
+  lookupAccessionId = '';
+  foundCopy: BookCopyDetail | null = null;
+  lookupLoading = false;
 
   constructor(
     private locationService: LocationService,
     private messageService: MessageService,
     private bookService: BookService,
     private locationBookService: LocationBookService,
+    public authService: AuthService,
   ) {}
 
   ngOnInit(): void {
@@ -68,6 +95,23 @@ export class LocationDetailPageComponent implements OnInit {
       next: (locations) => (this.locations = locations),
     });
     this.loadBooks();
+  }
+
+  ngAfterViewChecked(): void {
+    if (this.barcodeDialogVisible && !this.barcodesRendered && this.barcodeSvgs?.length) {
+      this.barcodeSvgs.forEach((ref, i) => {
+        const id = this.newAccessionIds[i];
+        if (id) {
+          JsBarcode(ref.nativeElement, id, {
+            format: 'CODE128',
+            displayValue: false,
+            width: 2,
+            height: 60,
+          });
+        }
+      });
+      this.barcodesRendered = true;
+    }
   }
 
   onSelect(event: any) {
@@ -105,7 +149,7 @@ export class LocationDetailPageComponent implements OnInit {
     };
     this.addedBooks.add(book.id);
     this.locationBookService.createLocationBook(newLocationBook).subscribe({
-      next: () => {
+      next: (result) => {
         this.messageService.add({
           severity: 'success',
           summary: 'Succes',
@@ -113,6 +157,11 @@ export class LocationDetailPageComponent implements OnInit {
           life: 3000,
         });
         this.loadLocationBooks();
+        if (result.new_accession_ids?.length) {
+          this.newAccessionIds = result.new_accession_ids;
+          this.barcodesRendered = false;
+          this.barcodeDialogVisible = true;
+        }
       },
       error: () => {
         this.addedBooks.delete(book.id!);
@@ -120,11 +169,22 @@ export class LocationDetailPageComponent implements OnInit {
     });
   }
 
+  closeBarcodeDialog(): void {
+    this.barcodeDialogVisible = false;
+    this.newAccessionIds = [];
+    this.barcodesRendered = false;
+  }
+
+  printBarcodes(): void {
+    window.print();
+  }
+
   onSearch(query: string) {
     this.searchQuery = query;
     this.currentPage = 0;
     this.loadBooks();
   }
+
   loadBooks() {
     this.loading.start();
     const request = this.searchQuery.trim()
@@ -161,11 +221,10 @@ export class LocationDetailPageComponent implements OnInit {
       life: 3000,
     });
   }
+
   loadLocationBooks(locationId?: number): void {
     const id = locationId ?? this.selectedLocation!.id;
-
     if (!id) return;
-
     this.locationBookService
       .getByLocation(id, this.locationBooksPage, this.locationBooksRows)
       .subscribe({
@@ -175,9 +234,55 @@ export class LocationDetailPageComponent implements OnInit {
         },
       });
   }
+
   onLocationPageChange(event: PaginatorState): void {
     this.locationBooksPage = event.page ?? 0;
     this.locationBooksRows = event.rows ?? 5;
     this.loadLocationBooks();
+  }
+
+  lookupCopy(): void {
+    const id = this.lookupAccessionId.trim().toUpperCase();
+    if (!id) return;
+    this.lookupLoading = true;
+    this.foundCopy = null;
+    this.locationBookService.getCopyByAccessionId(id).subscribe({
+      next: (copy) => {
+        this.foundCopy = copy;
+        this.lookupLoading = false;
+      },
+      error: () => {
+        this.lookupLoading = false;
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Niet gevonden',
+          detail: 'Exemplaar niet gevonden.',
+          life: 3000,
+        });
+      },
+    });
+  }
+
+  isLibrarian(): boolean {
+    return (
+      this.authService.hasRole('BIBLIOTHEEKBEHEERDER') || this.authService.hasRole('ADMIN')
+    );
+  }
+
+  toggleCopyStatus(copy: BookCopyDetail): void {
+    const newStatus: CopyStatus = copy.status === 'AVAILABLE' ? 'DAMAGED' : 'AVAILABLE';
+    this.locationBookService.updateCopyStatus(copy.id, newStatus).subscribe({
+      next: (updated) => {
+        this.foundCopy = updated;
+      },
+    });
+  }
+
+  copyStatusSeverity(status: CopyStatus): 'success' | 'warn' {
+    return status === 'AVAILABLE' ? 'success' : 'warn';
+  }
+
+  copyStatusLabel(status: CopyStatus): string {
+    return status === 'AVAILABLE' ? 'Beschikbaar' : 'Beschadigd';
   }
 }
