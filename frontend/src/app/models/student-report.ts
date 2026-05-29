@@ -14,6 +14,10 @@ export interface BorrowedBookPreviewDTO {
   end: string;
   returned: boolean;
   overdue: boolean;
+  requested: boolean;
+  accepted: boolean;
+  received: boolean;
+  declined: boolean;
 }
 
 export interface StudentReviewDTO {
