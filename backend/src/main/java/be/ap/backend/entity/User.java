@@ -39,9 +39,9 @@ public class User implements UserDetails {
     @Column(name = "ss_id", unique = true, length = 255)
     private String ssId;
 
-    // bij messages terug nodig
-    // @Column(name = "ss_refresh", length = 1023)
-    // private String ssRefresh;
+    // needed for notifications
+    @Column(name = "ss_refresh", length = 1023)
+    private String ssRefresh;
 
     @Column(name = "oneroster_id", unique = true, length = 255)
     private String oneRosterId;

@@ -89,6 +89,9 @@ public class OAuthService {
 
         User user = optUser.get();
 
+        // save refresh token for notifications
+        user.setSsRefresh(tokens.getRefreshToken().toString());
+
         School school = schoolRepository.findBySsSubdomain(originplatform).orElse(null);
         if (school == null) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("School niet gevonden.");
