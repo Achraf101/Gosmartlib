@@ -31,8 +31,10 @@ import com.nimbusds.oauth2.sdk.token.RefreshToken;
 
 import be.ap.backend.entity.Book;
 import be.ap.backend.entity.Loan;
+import be.ap.backend.entity.User;
 import be.ap.backend.repository.LoanBookRepository;
 import be.ap.backend.repository.LoanRepository;
+import be.ap.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -41,6 +43,7 @@ public class NotificationService {
     private final LoanBookRepository loanBookRepository;
     private final LoanRepository loanRepository;
     private final EmailTemplateService emailTemplateService;
+    private final UserRepository userRepository;
 
     private final HttpClient client = HttpClient.newHttpClient();
 
@@ -60,12 +63,16 @@ public class NotificationService {
         if(loan.isEmpty()) return false;
 
         Loan l = loan.get();
+        User u = l.getUser();
+        String subdomain = u.getSchool().getSsSubdomain();
 
-        String subdomain = l.getUser().getSchool().getSsSubdomain();
+        TokenRecord tokens = getAccessToken(l.getUser().getSsRefresh(), subdomain);
 
-        Optional<String> accessToken = getAccessToken(l.getUser().getSsRefresh(), subdomain);
+        if(tokens.accessToken() == null) return false;
 
-        if(accessToken.isEmpty()) return false;
+        // save refresh reason: changed
+        u.setSsRefresh(tokens.refreshToken());
+        userRepository.save(u);
 
         // fill in template with all books from loan
         List<Book> books = loanBookRepository.getBooksByLoanId(loanId);
@@ -80,7 +87,7 @@ public class NotificationService {
 
         // send mail to smartschool async
         // (https://{subdomain}.smartschool.be/Api/V1/sendmsg)
-        String url = "https://" + subdomain + ".smartschool.be/Api/V1/sendmsg?access_token=" + accessToken.get() + "&messageTitle="
+        String url = "https://" + subdomain + ".smartschool.be/Api/V1/sendmsg?access_token=" + tokens.accessToken() + "&messageTitle="
                 + reminderTitle + "&messageBody=" + populatedTemplate;
 
         Boolean state = sendMail(url);
@@ -94,7 +101,7 @@ public class NotificationService {
     }
 
     // get access token from smartschool
-    private Optional<String> getAccessToken(String refreshToken, String subdomain) {
+    private TokenRecord getAccessToken(String refreshToken, String subdomain) {
 
         try {
             TokenRequest request = new TokenRequest(
@@ -108,7 +115,7 @@ public class NotificationService {
             TokenResponse response = TokenResponse.parse(httpResponse);
 
             if (!response.indicatesSuccess()) {
-                return Optional.empty();
+                return null;
             }
 
             String accessToken = response.toSuccessResponse()
@@ -116,14 +123,19 @@ public class NotificationService {
                     .getAccessToken()
                     .getValue();
 
-            return Optional.of(accessToken);
+            String newRefreshToken = response.toSuccessResponse()
+                    .getTokens()
+                    .getRefreshToken()
+                    .getValue();
+
+            return new TokenRecord(accessToken, newRefreshToken);
 
         } catch (URISyntaxException e) {
-            return Optional.empty();
+            return null;
         } catch (IOException e) {
-            return Optional.empty();
+            return null;
         } catch (ParseException e) {
-            return Optional.empty();
+            return null;
         }
     }
 
@@ -154,5 +166,7 @@ public class NotificationService {
 
         return true;
     }
+
+    private record TokenRecord(String accessToken, String refreshToken) {} 
 
 }
