@@ -68,6 +68,7 @@ public class BookCopyService {
         dto.setLocationName(lb.getLocation().getName());
         dto.setAmount(lb.getAmount());
         dto.setCurrentAmount(lb.getCurrentAmount());
+        dto.setNote(copy.getNote());
         return dto;
     }
 }

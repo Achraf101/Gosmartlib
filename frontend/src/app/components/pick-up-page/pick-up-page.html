@@ -137,6 +137,30 @@
 </p-dialog>
 
 <p-dialog
+  header="Opgelet: notitie bij dit exemplaar"
+  [(visible)]="copyNoteDialogVisible"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  (onHide)="closeCopyNoteDialog()"
+>
+  <p class="manual-dialog-hint">Exemplaar <strong>{{ copyNoteAccessionId }}</strong> heeft de volgende notitie:</p>
+  @if (copyIsDamaged) {
+    <div class="copy-note-damaged">
+      <i class="pi pi-exclamation-triangle"></i>
+      <span>Status: Beschadigd</span>
+    </div>
+  }
+  @if (copyNoteDisplay) {
+    <p class="copy-note-text">{{ copyNoteDisplay }}</p>
+  }
+  <div class="manual-dialog-btns">
+    <p-button label="Annuleren" severity="secondary" (onClick)="closeCopyNoteDialog()" />
+    <p-button label="OK, doorgaan" (onClick)="acknowledgeCopyNote()" />
+  </div>
+</p-dialog>
+
+<p-dialog
   header="Exemplaar ID invoeren"
   [(visible)]="manualDialogVisible"
   [modal]="true"
