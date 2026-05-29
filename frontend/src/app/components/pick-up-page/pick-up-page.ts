@@ -1,18 +1,31 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { LoanService } from '../../services/loan';
+import { NotificationService } from '../../services/notification';
 import { MessageService } from 'primeng/api';
 import { LoanDTO, LoanStatus } from '../../models/loan';
 import { NavBarComponent } from '../nav-bar/nav-bar';
 import { Skeleton } from 'primeng/skeleton';
 import { TableModule } from 'primeng/table';
+import { TooltipModule } from 'primeng/tooltip';
 import { BookCover } from '../misc/book-cover/book-cover';
 import { DatePipe } from '@angular/common';
 import { Button } from 'primeng/button';
 import { FormsModule } from '@angular/forms';
+import { Tooltip } from 'primeng/tooltip';
 
 @Component({
   selector: 'app-pick-up-page',
-  imports: [NavBarComponent, Skeleton, TableModule, BookCover, DatePipe, Button, FormsModule],
+  imports: [
+    NavBarComponent,
+    Skeleton,
+    TableModule,
+    BookCover,
+    DatePipe,
+    Button,
+    FormsModule,
+    Tooltip,
+    TooltipModule,
+  ],
   templateUrl: './pick-up-page.html',
   styleUrl: './pick-up-page.css',
 })
@@ -33,6 +46,7 @@ export class PickUpPageComponent implements OnInit {
 
   constructor(
     private loanService: LoanService,
+    private notificationService: NotificationService,
     private messageService: MessageService,
   ) {}
 
@@ -77,6 +91,20 @@ export class PickUpPageComponent implements OnInit {
           life: 3000,
         });
         this.loading = false;
+      },
+    });
+  }
+
+  // send new notification
+  notify(loanId: number) {
+    this.notificationService.notify(loanId).subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Succes',
+          detail: 'Bericht vestuurd',
+          life: 3000,
+        });
       },
     });
   }
