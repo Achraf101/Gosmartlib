@@ -28,6 +28,7 @@ import com.nimbusds.oauth2.sdk.token.RefreshToken;
 import be.ap.backend.entity.Book;
 import be.ap.backend.entity.Loan;
 import be.ap.backend.entity.User;
+import be.ap.backend.queue.NotificationTask;
 import be.ap.backend.repository.LoanBookRepository;
 import be.ap.backend.repository.LoanRepository;
 import be.ap.backend.repository.UserRepository;
@@ -49,14 +50,15 @@ public class NotificationService {
     @Value("${app.smartschool.client-secret}")
     private String clientSecret; // needed for images in mail
 
-    private final String notificationTitle = "Overzicht van ontleende boeken";
+    private final String loanTitle = "Overzicht van je ontleende boeken";
     private final String reminderTitle = "Vergeet je boeken niet binnen te brengen!";
 
-    public Boolean sendReminderNotification(Long loanId) {
+    public Boolean sendNotification(Long loanId, NotificationTask.Type type) {
         // get user tokens with refresh token (also subdomain)
 
         Optional<Loan> loan = loanRepository.findById(loanId);
-        if(loan.isEmpty()) return false;
+        if (loan.isEmpty())
+            return false;
 
         Loan l = loan.get();
         User u = l.getUser();
@@ -64,27 +66,34 @@ public class NotificationService {
 
         TokenRecord tokens = getAccessToken(l.getUser().getSsRefresh(), subdomain);
 
-        if(tokens.accessToken() == null) return false;
+        if (tokens.accessToken() == null)
+            return false;
 
         // save refresh reason: changed
         u.setSsRefresh(tokens.refreshToken());
         userRepository.save(u);
 
         List<Book> books = loanBookRepository.getBooksByLoanId(loanId);
-        
-        String populatedTemplate = emailTemplateService.buildReminderEmail(books, l.getEnd());
+
+        String populatedTemplate = "";
+        String title = "";
+        if (type == NotificationTask.Type.REMINDER) {
+            title = reminderTitle;
+            populatedTemplate = emailTemplateService.buildReminderEmail(books, l.getEnd());
+        } else { // loan (confirmation)
+            title = loanTitle;
+            populatedTemplate = emailTemplateService.buildLoanEmail(books, l.getEnd());
+        }
 
         // send mail to smartschool async
         String url = "https://" + subdomain + ".smartschool.be/Api/V1/sendmsg";
 
-        Boolean state = sendMail(url, tokens.accessToken(), reminderTitle, populatedTemplate);
+        Boolean state = sendMail(url, tokens.accessToken(), title, populatedTemplate);
 
+        if (type == NotificationTask.Type.REMINDER) {
+            loanRepository.setNotifiedTrue(loanId);
+        }
         return state;
-
-    }
-
-    public Boolean sendNotification(Long userId, Long loanId) {
-        return true;
     }
 
     // get access token from smartschool
@@ -131,13 +140,13 @@ public class NotificationService {
     private Boolean sendMail(String url, String accessToken, String title, String message) {
 
         URI uri = UriComponentsBuilder
-        .fromHttpUrl(url)
-        .queryParam("access_token", accessToken)
-        .queryParam("messageTitle", title)
-        .queryParam("messageBody", message)
-        .encode()
-        .build()
-        .toUri();
+                .fromHttpUrl(url)
+                .queryParam("access_token", accessToken)
+                .queryParam("messageTitle", title)
+                .queryParam("messageBody", message)
+                .encode()
+                .build()
+                .toUri();
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(uri)
@@ -147,19 +156,19 @@ public class NotificationService {
         CompletableFuture<HttpResponse<String>> responseFuture = client.sendAsync(request,
                 HttpResponse.BodyHandlers.ofString());
 
-
         responseFuture.thenAccept(response -> {
             System.out.println("Response Body: " + response.body());
             System.out.println("##############################");
             System.out.println(response.body());
         }).exceptionally(ex -> {
-            System.err.println("Error occurred: " + ex.getMessage());
+            System.err.println("{message} Error occurred: " + ex.getMessage());
             return null;
         });
 
         return true;
     }
 
-    private record TokenRecord(String accessToken, String refreshToken) {} 
+    private record TokenRecord(String accessToken, String refreshToken) {
+    }
 
 }

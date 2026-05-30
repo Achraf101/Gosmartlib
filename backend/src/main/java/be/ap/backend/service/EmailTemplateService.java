@@ -39,9 +39,17 @@ public class EmailTemplateService {
         return new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
     }
 
-    public String buildLoanEmail(Map<String, String> values) {
-        // TODO make this one
-        return fillTemplate(loanTemplate, values);
+    public String buildLoanEmail(List<Book> books, LocalDate returnDate) {
+
+        String formattedDate = returnDate.format(formatter);
+        String template = loanTemplate;
+
+        // make row for each book
+        String bookRows = buildBookRows(books);
+
+        template  = template.replace("{{book_html_rows}}", bookRows).replace("{{return_date}}", formattedDate);
+
+        return template;
     }
 
     public String buildReminderEmail(List<Book> books, LocalDate returnDate) {
