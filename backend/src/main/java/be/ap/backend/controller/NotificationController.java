@@ -3,7 +3,8 @@ package be.ap.backend.controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import be.ap.backend.service.NotificationService;
+import be.ap.backend.queue.NotificationTask;
+import be.ap.backend.queue.TaskQueueService;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,7 +16,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class NotificationController {
 
-    private final NotificationService notificationService;
+    private final TaskQueueService taskQueueService;
+
 
     @PostMapping("{loanId}")
     public ResponseEntity<Boolean> addNotification(@PathVariable Long loanId) {
@@ -24,6 +26,8 @@ public class NotificationController {
             return ResponseEntity.status(400).body(false);
         }
 
-        return ResponseEntity.ok(notificationService.sendReminderNotification(loanId));
+        taskQueueService.push(new NotificationTask(NotificationTask.Type.REMINDER, loanId));
+
+        return ResponseEntity.ok(true);
     }
 }

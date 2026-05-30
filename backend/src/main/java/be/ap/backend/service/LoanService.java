@@ -24,6 +24,8 @@ import be.ap.backend.entity.Loan;
 import be.ap.backend.entity.LoanBook;
 import be.ap.backend.entity.LoanStatus;
 import be.ap.backend.entity.User;
+import be.ap.backend.queue.NotificationTask;
+import be.ap.backend.queue.TaskQueueService;
 import be.ap.backend.repository.LocationBookRepository;
 import be.ap.backend.repository.LoanBookRepository;
 import be.ap.backend.repository.LoanRepository;
@@ -44,12 +46,13 @@ public class LoanService {
     private LocationBookService locationBookService;
     private SmartschoolLookupService lookupService;
     private final Executor lookupExecutor;
+    private final TaskQueueService taskQueueService;
 
     @Autowired
     public LoanService(LoanRepository loanRepository, EntityManager entityManager,
             LoanBookRepository loanBookRepository, LocationBookRepository locationBookRepository,
             LocationBookService locationBookService, SmartschoolLookupService lookupService,
-            @Qualifier("lookupExecutor") Executor lookupExecutor) {
+            @Qualifier("lookupExecutor") Executor lookupExecutor, TaskQueueService taskQueueService) {
         this.loanRepository = loanRepository;
         this.entityManager = entityManager;
         this.loanBookRepository = loanBookRepository;
@@ -57,6 +60,7 @@ public class LoanService {
         this.locationBookService = locationBookService;
         this.lookupService = lookupService;
         this.lookupExecutor = lookupExecutor;
+        this.taskQueueService = taskQueueService;
     }
 
     @Transactional
@@ -174,6 +178,11 @@ public class LoanService {
     }
 
     public LoanDTO updateStatus(Long id, LoanStatus status) {
+        // if received add notification to the queue
+        if(status == LoanStatus.RECEIVED) {
+            taskQueueService.push(new NotificationTask(NotificationTask.Type.LOAN, id));
+        }
+
         Loan loan = loanRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Loan niet gevonden met id: " + id));
         loan.setStatus(status);
