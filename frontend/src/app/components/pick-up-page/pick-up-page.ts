@@ -102,7 +102,7 @@ export class PickUpPageComponent implements OnInit {
         this.messageService.add({
           severity: 'success',
           summary: 'Succes',
-          detail: 'Bericht vestuurd',
+          detail: 'Bericht verzonden',
           life: 3000,
         });
       },
