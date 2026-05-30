@@ -11,6 +11,19 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+/**
+ * Centrale exception handler voor de REST API.
+ *
+ * <p>
+ * Vertaalt exceptions uit de applicatielaag naar consistente HTTP-responses
+ * met bijhorende statuscodes en foutberichten.
+ * </p>
+ *
+ * <p>
+ * Alle niet-afgevangen exceptions worden hier omgezet naar een
+ * generieke 500 response.
+ * </p>
+ */
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
