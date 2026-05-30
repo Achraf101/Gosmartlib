@@ -177,7 +177,10 @@ export class BookformComponent implements OnInit {
     this.themeService.getAll().subscribe((t) => (this.themes = t));
     this.publisherService.getAll().subscribe((p) => (this.publishers = p));
     this.authorService.getAll().subscribe((a) => (this.authors = a));
-    this.languageService.getAll().subscribe((l) => (this.languages = l));
+    this.languageService.getAll().subscribe((l) => {
+      this.languages = l;
+      this.bookForm.patchValue({ language: l[0].id });
+    });
     this.bookTypeService.getAll().subscribe((bt) => {
       this.bookTypes = bt;
       this.setDefaultBookType();
