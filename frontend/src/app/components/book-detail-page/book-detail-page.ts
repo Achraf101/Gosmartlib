@@ -41,8 +41,10 @@ import { FileSelectEvent, FileUpload, FileUploadModule } from 'primeng/fileuploa
 import { MaterialComponent } from '../material/material';
 import { AuthService } from '../../services/auth';
 import { LocationBook } from '../../models/locationBook';
+import { LocationAvailability } from '../../models/locationBookDetail';
 import { LocationService } from '../../services/location';
 import { LocationBookService } from '../../services/locationbook';
+import { BookCopyDetail } from '../../models/bookCopy';
 import { Location } from '../../models/location';
 import { SchoolService } from '../../services/school';
 import { School } from '../../models/school';
@@ -97,6 +99,9 @@ export class BookDetailPage implements OnInit {
   uploadNote = '';
   previewDialogVisible = false;
   previewUrl: SafeResourceUrl | null = null;
+  notesDialogVisible = false;
+  notesDialogCopies: BookCopyDetail[] = [];
+  notesDialogLocationName = '';
   iaId: string | null = null;
   today = new Date();
   endDate = new Date();
@@ -106,6 +111,7 @@ export class BookDetailPage implements OnInit {
   school?: School;
   location?: Location;
   locationBook?: LocationBook;
+  locationAvailability: LocationAvailability[] = [];
   protected locationId: number | null = null;
 
   readonly placeholder = '/assets/no-cover.svg';
@@ -209,6 +215,10 @@ export class BookDetailPage implements OnInit {
 
         this.bookService.getRelated(this.bookId).subscribe({
           next: (relatedBooks) => (this.relatedBooks = relatedBooks),
+        });
+
+        this.locationBookService.getAvailabilityByBook(this.bookId).subscribe({
+          next: (availability) => (this.locationAvailability = availability),
         });
 
         if (book.isbn) {
@@ -478,6 +488,17 @@ export class BookDetailPage implements OnInit {
     if (this.ratingValue >= position) return 100;
     if (this.ratingValue <= position - 1) return 0;
     return (this.ratingValue - (position - 1)) * 100;
+  }
+
+  openNotesDialog(avail: LocationAvailability): void {
+    this.notesDialogLocationName = avail.location_name;
+    this.notesDialogCopies = [];
+    this.notesDialogVisible = true;
+    this.locationBookService.getCopiesByLocationBook(avail.location_book_id).subscribe({
+      next: (copies) => {
+        this.notesDialogCopies = copies.filter((c) => c.note && c.note.trim().length > 0);
+      },
+    });
   }
 
   editBook() {

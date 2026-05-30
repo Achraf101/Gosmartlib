@@ -7,12 +7,16 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import be.ap.backend.dto.LocationAvailabilityDTO;
 import be.ap.backend.dto.LocationBookDTO;
 import be.ap.backend.dto.LocationBookDetailDTO;
 import be.ap.backend.dto.SchoolStatsDTO;
 import be.ap.backend.entity.Book;
+import be.ap.backend.entity.BookCopy;
 import be.ap.backend.entity.Location;
 import be.ap.backend.entity.LocationBook;
+import be.ap.backend.enums.CopyStatus;
+import be.ap.backend.repository.BookCopyRepository;
 import be.ap.backend.exception.ArgumentsInvalidException;
 import be.ap.backend.exception.MissingArgumentsException;
 import be.ap.backend.repository.BookRepository;
@@ -28,6 +32,7 @@ public class LocationBookService {
 
     private final LocationBookRepository locationBookRepository;
     private final BookCopyService bookCopyService;
+    private final BookCopyRepository bookCopyRepository;
     private final EntityManager entityManager;
 
     private final LocationRepository locationRepository;
@@ -110,6 +115,25 @@ public class LocationBookService {
         dto.setAmount(locationBook.getAmount());
         dto.setCurrentAmount(locationBook.getCurrentAmount());
         return dto;
+    }
+
+    public List<LocationAvailabilityDTO> getAvailabilityByBook(Long bookId, Long schoolId) {
+        return locationBookRepository.findByBookIdAndLocationSchoolId(bookId, schoolId).stream()
+                .map(lb -> {
+                    List<BookCopy> copies = bookCopyRepository.findByLocationBookId(lb.getId());
+                    LocationAvailabilityDTO dto = new LocationAvailabilityDTO();
+                    dto.setLocationBookId(lb.getId());
+                    dto.setLocationId(lb.getLocation().getId());
+                    dto.setLocationName(lb.getLocation().getName());
+                    dto.setAmount(lb.getAmount());
+                    dto.setCurrentAmount(lb.getCurrentAmount());
+                    dto.setDamagedCount((int) copies.stream()
+                            .filter(c -> c.getStatus() == CopyStatus.DAMAGED).count());
+                    dto.setNotedCount((int) copies.stream()
+                            .filter(c -> c.getNote() != null && !c.getNote().isBlank()).count());
+                    return dto;
+                })
+                .toList();
     }
 
     public SchoolStatsDTO getStatsForSchool(Long schoolId) {
