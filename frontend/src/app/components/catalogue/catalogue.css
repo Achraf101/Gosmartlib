@@ -393,6 +393,10 @@ h1 {
   color: var(--p-amber-500);
 }
 
+.cover {
+  height: 40vh;
+}
+
 @media (min-width: 800px) {
   .show-desktop {
     display: flex;
