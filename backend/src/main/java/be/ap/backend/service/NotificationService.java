@@ -25,7 +25,6 @@ import com.nimbusds.oauth2.sdk.http.HTTPResponse;
 import com.nimbusds.oauth2.sdk.id.ClientID;
 import com.nimbusds.oauth2.sdk.token.RefreshToken;
 
-import be.ap.backend.entity.Book;
 import be.ap.backend.entity.Loan;
 import be.ap.backend.entity.User;
 import be.ap.backend.mapper.BookWithAmount;
@@ -112,8 +111,6 @@ public class NotificationService {
             TokenResponse response = TokenResponse.parse(httpResponse);
 
             if (!response.indicatesSuccess()) {
-                System.out.println("#############");
-                System.out.println("Tokens niet meer kunnen ophalen");
                 return null;
             }
 
@@ -158,9 +155,6 @@ public class NotificationService {
                 HttpResponse.BodyHandlers.ofString());
 
         responseFuture.thenAccept(response -> {
-            System.out.println("Response Body: " + response.body());
-            System.out.println("##############################");
-            System.out.println(response.body());
         }).exceptionally(ex -> {
             System.err.println("{message} Error occurred: " + ex.getMessage());
             return null;
