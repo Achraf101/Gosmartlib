@@ -233,6 +233,8 @@ public class LoanService {
 
         if (lb.getReceivedAmount() >= lb.getRequestedAmount()) {
             loan.setStatus(LoanStatus.RECEIVED);
+            // send notification
+            taskQueueService.push(new NotificationTask(NotificationTask.Type.LOAN, loanId));
         }
         return buildDTO(loanRepository.save(loan));
     }
