@@ -13,6 +13,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import be.ap.backend.entity.Book;
 
+
 import jakarta.annotation.PostConstruct;
 
 @Service
@@ -72,7 +73,7 @@ public class EmailTemplateService {
         for (Book book : books) {
             bookRows += fillTemplate(bookRowTemplate, Map.of(
                     "cover_url",
-                    (book.getCover().isBlank()) ? "https://" + domain
+                    (book.getCover() == null || book.getCover().isBlank()) ? "https://" + domain
                             + "/assets/no-cover.svg"
                             : "https://" + domain + "/static/cover/" + book
                                     .getCover(),
