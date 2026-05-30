@@ -9,4 +9,5 @@ import java.util.List;
 public interface UserChallengeRepository extends JpaRepository<UserChallenge, Long> {
     List<UserChallenge> findByUserIdAndMonth(Long userId, String month);
     boolean existsByUserIdAndMonth(Long userId, String month);
+    boolean existsByUserIdAndMonthAndChallengeId(Long userId, String month, Long challengeId);
 }

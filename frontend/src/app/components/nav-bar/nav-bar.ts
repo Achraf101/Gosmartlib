@@ -1,9 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { AsyncPipe, CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth';
 import { LoanCartComponent } from '../loan-cart/loan-cart';
-import { GamificationService } from '../../services/gamification.service';
 import { PopoverModule } from 'primeng/popover';
 import { ButtonModule } from 'primeng/button';
 
@@ -14,17 +13,10 @@ import { ButtonModule } from 'primeng/button';
   templateUrl: './nav-bar.html',
   styleUrl: './nav-bar.css',
 })
-export class NavBarComponent implements OnInit {
+export class NavBarComponent {
   menuOpen = false;
 
-  constructor(
-    public authService: AuthService,
-    public gamificationService: GamificationService,
-  ) {}
-
-  ngOnInit(): void {
-    this.gamificationService.load();
-  }
+  constructor(public authService: AuthService) {}
 
   toggleMenu(): void {
     this.menuOpen = !this.menuOpen;
