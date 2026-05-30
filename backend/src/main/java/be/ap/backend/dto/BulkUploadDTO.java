@@ -13,11 +13,13 @@ public class BulkUploadDTO {
     private final List<RowIssue> skipped = new ArrayList<>();
     private final List<RowIssue> errors = new ArrayList<>();
     private final List<IncompleteBookDTO> incomplete = new ArrayList<>();
+    private final List<AddedBook> addedBooks = new ArrayList<>();
 
     public void incrementAdded()                    { this.added++; }
     public void addSkipped(int row, String message) { skipped.add(new RowIssue(row, message)); }
     public void addError(int row, String message)   { errors.add(new RowIssue(row, message)); }
     public void addIncomplete(IncompleteBookDTO book)   { incomplete.add(book); }
+    public void addAddedBook(Long id, String title) { addedBooks.add(new AddedBook(id, title)); }
 
     public int getSkippedCount()         { return skipped.size(); }
     public int getErrorCount()           { return errors.size(); }
@@ -29,6 +31,12 @@ public class BulkUploadDTO {
     public static class RowIssue {
         private final int row;
         private final String message;
+    }
+
+    @Value
+    public static class AddedBook {
+        private final Long id;
+        private final String title;
     }
 }
 

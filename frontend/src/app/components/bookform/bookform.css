@@ -32,7 +32,7 @@
 .container {
   width: 90vw;
   max-width: 80rem;
-  margin: 60px auto 0 auto;
+  margin: 60px auto 2rem auto;
   display: flex;
   flex-direction: column;
 }

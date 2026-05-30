@@ -194,6 +194,7 @@
 
       @if (result.incomplete.length > 0) {
         <div class="incomplete-section">
+          <span class="step-label">Stap 2</span>
           <h4>Vul de ontbrekende velden in</h4>
 
           @for (book of result.incomplete; track $index) {
@@ -408,5 +409,75 @@
         </div>
       }
     </div>
+
+    @if (addedBooks.length > 0) {
+      <div class="card">
+        <span class="step-label">Stap 3</span>
+        <h3>Exemplaren toevoegen</h3>
+        <p>Selecteer per boek een locatie en aantal om exemplaren aan te maken.</p>
+        <div class="imported-books-list">
+          @for (book of addedBooks; track book.id) {
+            <div class="imported-book-row" [class.done]="doneCopyBooks.has(book.id)">
+              <div class="imported-book-title-row">
+                <span class="imported-book-title">{{ book.title }}</span>
+                @if (doneCopyBooks.has(book.id)) {
+                  <span class="done-badge"><i class="pi pi-check"></i> Aangemaakt</span>
+                }
+              </div>
+              <div class="copy-controls">
+                <p-select
+                  fluid
+                  [options]="locations"
+                  optionLabel="name"
+                  optionValue="id"
+                  [(ngModel)]="copyState[book.id].locationId"
+                  [showClear]="true"
+                  placeholder="Locatie..."
+                  class="copy-select"
+                />
+                <p-inputNumber
+                  [(ngModel)]="copyState[book.id].amount"
+                  [showButtons]="true"
+                  [min]="1"
+                  [max]="100"
+                  [useGrouping]="false"
+                  class="copy-amount"
+                />
+                <p-button
+                  icon="pi pi-plus"
+                  label="Aanmaken"
+                  size="small"
+                  severity="success"
+                  [disabled]="!copyState[book.id].locationId || copyState[book.id].amount < 1"
+                  (onClick)="addCopiesForBook(book.id)"
+                />
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
   }
 </div>
+
+<p-dialog
+  header="Exemplaren aangemaakt"
+  [(visible)]="barcodeDialogVisible"
+  [modal]="true"
+  [closable]="true"
+  (onShow)="renderBarcodes()"
+  (onHide)="closeBarcodeDialog()"
+>
+  <div class="barcode-grid">
+    @for (id of newAccessionIds; track id; let i = $index) {
+      <div class="barcode-card">
+        <svg #barcodesvg></svg>
+        <span class="accession-label">{{ id }}</span>
+      </div>
+    }
+  </div>
+  <ng-template #footer>
+    <p-button icon="pi pi-print" label="Afdrukken" size="small" (onClick)="printBarcodes()" />
+    <p-button label="Sluiten" size="small" severity="secondary" (onClick)="closeBarcodeDialog()" />
+  </ng-template>
+</p-dialog>

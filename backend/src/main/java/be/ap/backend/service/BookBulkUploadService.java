@@ -254,7 +254,8 @@ public class BookBulkUploadService {
             return;
         }
 
-        bookRepository.save(book);
+        Book saved = bookRepository.save(book);
+        result.addAddedBook(saved.getId(), saved.getTitle());
         result.incrementAdded();
     }
 
@@ -338,7 +339,8 @@ public class BookBulkUploadService {
                 language, year, pages, isbn, publisher, clib, fontSize, cover, rowNum, result);
 
         if (book != null) {
-            bookRepository.save(book);
+            Book saved = bookRepository.save(book);
+            result.addAddedBook(saved.getId(), saved.getTitle());
             result.incrementAdded();
         }
     }
