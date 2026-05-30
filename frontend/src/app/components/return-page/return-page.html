@@ -2,6 +2,28 @@
 <div class="loans-page">
   <h1>Terug te brengen</h1>
 
+  <form class="search-bar scan-bar" (submit)="$event.preventDefault()">
+    <i class="pi pi-barcode scan-icon"></i>
+    <input
+      #scanInputRef
+      type="text"
+      class="search-input"
+      placeholder="Scan streepjescode..."
+      [(ngModel)]="scanInput"
+      name="scan"
+      (keydown.enter)="scanAndProcess()"
+      autocomplete="off"
+    />
+    @if (scanInput) {
+      <button type="button" class="search-btn" (click)="scanInput = ''">
+        <i class="pi pi-times"></i>
+      </button>
+    }
+    <button type="button" class="search-btn" (click)="scanAndProcess()">
+      <i class="pi pi-search"></i>
+    </button>
+  </form>
+
   <form class="search-bar" (submit)="$event.preventDefault()">
     <input
       type="text"
@@ -51,6 +73,9 @@
             <p>Teruggavedatum</p>
           </th>
           <th>
+            <p>Verlengingen</p>
+          </th>
+          <th>
             <p>Status</p>
           </th>
         </tr>
@@ -97,7 +122,13 @@
             >
           </td>
           <td>
-            <p-button (onClick)="setState(loan.id)">Teruggebracht</p-button>
+            <span>{{ loan.extended }}</span>
+          </td>
+          <td>
+            @if (loan.books[0].returnedAmount > 0) {
+              <span class="scan-progress">{{ loan.books[0].returnedAmount }}/{{ loan.books[0].receivedAmount }}</span>
+            }
+            <p-button (onClick)="openManualDialog(loan.id)">Teruggebracht</p-button>
           </td>
         </tr>
       </ng-template>
@@ -108,3 +139,87 @@
     </div>
   }
 </div>
+
+<p-dialog
+  header="Van wie is het boek?"
+  [(visible)]="disambigDialogVisible"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  (onHide)="closeDisambigDialog()"
+>
+  <p class="manual-dialog-hint">
+    Meerdere leerlingen brengen hetzelfde boek terug. Selecteer de juiste uitlening.
+  </p>
+  <div class="disambig-list">
+    @for (loan of disambigLoans; track loan.id) {
+      <div class="disambig-item">
+        <div class="disambig-info">
+          <span class="disambig-name">{{ loan.username }}</span>
+          <span class="disambig-date">{{ loan.start | date: 'dd/MM/yyyy' }} – {{ loan.end | date: 'dd/MM/yyyy' }}</span>
+        </div>
+        <p-button label="Selecteren" size="small" (onClick)="selectDisambigLoan(loan)" />
+      </div>
+    }
+  </div>
+</p-dialog>
+
+<p-dialog
+  header="Exemplaar ID invoeren"
+  [(visible)]="manualDialogVisible"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  (onHide)="closeManualDialog()"
+>
+
+  @if (pendingLoan && pendingLoan.books[0].receivedAmount > 1) {
+    <p class="manual-dialog-hint">
+      Exemplaar {{ pendingLoan.books[0].returnedAmount + 1 }} van {{ pendingLoan.books[0].receivedAmount }} — voer het accession ID in.
+    </p>
+  } @else {
+    <p class="manual-dialog-hint">Voer het accession ID in van het exemplaar dat wordt teruggebracht.</p>
+  }
+  <input
+    type="text"
+    class="manual-id-input"
+    [(ngModel)]="manualAccessionId"
+    (keydown.enter)="confirmManualReturn()"
+    autocomplete="off"
+  />
+  <div class="manual-dialog-btns">
+    <p-button label="Annuleren" severity="secondary" (onClick)="closeManualDialog()" />
+    <p-button label="Bevestigen" (onClick)="confirmManualReturn()" [disabled]="manualAccessionId.trim() === 'LIB-' || manualAccessionId.trim() === ''" />
+  </div>
+</p-dialog>
+
+<p-dialog
+  header="Staat van het exemplaar"
+  [(visible)]="conditionDialogVisible"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  (onHide)="closeConditionDialog()"
+>
+  @if (conditionHasExisting) {
+    <p class="manual-dialog-hint existing-note-hint">
+      <i class="pi pi-info-circle"></i> Dit exemplaar heeft al een notitie of status. Pas aan indien nodig.
+    </p>
+  } @else {
+    <p class="manual-dialog-hint">Voeg optioneel een notitie toe over de staat van het boek.</p>
+  }
+  <textarea
+    class="condition-note-input"
+    [(ngModel)]="conditionNote"
+    placeholder="Bijv. eerste pagina ontbreekt, kaft beschadigd..."
+    rows="4"
+  ></textarea>
+  <div class="condition-damaged-row">
+    <input type="checkbox" id="damagedCheck" [(ngModel)]="conditionDamaged" />
+    <label for="damagedCheck">Boek is beschadigd</label>
+  </div>
+  <div class="manual-dialog-btns">
+    <p-button label="Annuleren" severity="secondary" (onClick)="closeConditionDialog()" />
+    <p-button label="Bevestigen" (onClick)="confirmConditionDialog()" />
+  </div>
+</p-dialog>

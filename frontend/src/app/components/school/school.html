@@ -12,21 +12,22 @@
         <p-button [routerLink]="['/school/leerkrachten/', school.id]">Leerkrachten</p-button>
       </div>
     </div>
-    <p-button
-      label="Synchroniseren"
-      icon="pi pi-refresh"
-      severity="secondary"
-      size="small"
-      [loading]="syncLoading"
-      (onClick)="confirmSync(school.id)"
-    />
+    @if (!authService.hasRole('BIBLIOTHEEKBEHEERDER') || authService.hasRole('ADMIN')) {
+      <p-button
+        label="Synchroniseren"
+        icon="pi pi-refresh"
+        severity="secondary"
+        size="small"
+        [loading]="syncLoading"
+        (onClick)="confirmSync(school.id)"
+      />
+    }
   }
 
   <div class="nav-buttons">
     @if (authService.hasRole('ADMIN')) {
       <p-button routerLink="/school/toevoegen">School toevoegen</p-button>
     }
-    <p-button routerLink="/locatie">Locaties detail pagina</p-button>
   </div>
 </div>
 <p-confirmDialog></p-confirmDialog>

@@ -7,9 +7,20 @@ export interface LocationBookDetail {
   book_cover: string;
   amount: number;
   current_amount: number;
+  new_accession_ids?: string[];
 }
 
 export interface SchoolStats {
   total_books: number;
   available_books: number;
+}
+
+export interface LocationAvailability {
+  location_book_id: number;
+  location_id: number;
+  location_name: string;
+  amount: number;
+  current_amount: number;
+  damaged_count: number;
+  noted_count: number;
 }

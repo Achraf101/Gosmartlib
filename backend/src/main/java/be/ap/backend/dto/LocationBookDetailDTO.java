@@ -2,6 +2,8 @@ package be.ap.backend.dto;
 
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class LocationBookDetailDTO {
     private Long id;
@@ -12,4 +14,5 @@ public class LocationBookDetailDTO {
     private String bookCover;
     private Integer amount;
     private Integer currentAmount;
+    private List<String> newAccessionIds;
 }

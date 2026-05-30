@@ -8,6 +8,7 @@ export interface CreateLoanBookDTO {
 export interface LoanBookDTO {
   id: number;
   bookId: number;
+  bookCopyId?: number | null;
   bookTitle: string;
   requestedAmount: number;
   receivedAmount: number;

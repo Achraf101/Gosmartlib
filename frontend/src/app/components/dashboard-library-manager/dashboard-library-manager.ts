@@ -124,7 +124,7 @@ export class DashboardLibraryManager implements OnInit {
     private schoolSettingsService: SchoolSettingsService,
     private smartschoolSyncService: SmartschoolSyncService,
     private confirmationService: ConfirmationService,
-    private authService: AuthService,
+    public authService: AuthService,
     private themeService: ThemeService,
   ) {}
 

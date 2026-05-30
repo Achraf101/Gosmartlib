@@ -41,13 +41,16 @@ import { FileSelectEvent, FileUpload, FileUploadModule } from 'primeng/fileuploa
 import { MaterialComponent } from '../material/material';
 import { AuthService } from '../../services/auth';
 import { LocationBook } from '../../models/locationBook';
+import { LocationAvailability } from '../../models/locationBookDetail';
 import { LocationService } from '../../services/location';
 import { LocationBookService } from '../../services/locationbook';
+import { BookCopyDetail } from '../../models/bookCopy';
 import { Location } from '../../models/location';
 import { SchoolService } from '../../services/school';
 import { School } from '../../models/school';
 import { BookCover } from '../misc/book-cover/book-cover';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { SelectModule } from 'primeng/select';
 
 @Component({
   selector: 'app-book-detail-page',
@@ -72,6 +75,7 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
     FileUploadModule,
     MaterialComponent,
     BookCover,
+    SelectModule,
   ],
   templateUrl: './book-detail-page.html',
   styleUrl: './book-detail-page.css',
@@ -92,11 +96,15 @@ export class BookDetailPage implements OnInit {
   themesString = '';
   loanFormVisible = false;
   cartDialogVisible = false;
+  selectedLoanLocationId: number | null = null;
   uploadDialogVisible = false;
   pendingFile?: File;
   uploadNote = '';
   previewDialogVisible = false;
   previewUrl: SafeResourceUrl | null = null;
+  notesDialogVisible = false;
+  notesDialogCopies: BookCopyDetail[] = [];
+  notesDialogLocationName = '';
   iaId: string | null = null;
   today = new Date();
   endDate = new Date();
@@ -106,6 +114,7 @@ export class BookDetailPage implements OnInit {
   school?: School;
   location?: Location;
   locationBook?: LocationBook;
+  locationAvailability: LocationAvailability[] = [];
   protected locationId: number | null = null;
 
   readonly placeholder = '/assets/no-cover.svg';
@@ -211,6 +220,10 @@ export class BookDetailPage implements OnInit {
           next: (relatedBooks) => (this.relatedBooks = relatedBooks),
         });
 
+        this.locationBookService.getAvailabilityByBook(this.bookId).subscribe({
+          next: (availability) => (this.locationAvailability = availability),
+        });
+
         if (book.isbn) {
           this.bookService.getIaPreview(this.bookId).subscribe({
             next: (data) => (this.iaId = data.ia_id),
@@ -274,6 +287,16 @@ export class BookDetailPage implements OnInit {
   }
 
   createLoan(): void {
+    const effectiveLocationId = this.locationId ?? this.selectedLoanLocationId;
+    if (!effectiveLocationId) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Geen locatie',
+        detail: 'Selecteer een locatie voor je ontlening.',
+        life: 3000,
+      });
+      return;
+    }
     if (this.loanForm.invalid || !this.book) return;
     const rawValue = this.loanForm.value;
 
@@ -286,7 +309,7 @@ export class BookDetailPage implements OnInit {
 
     const loan: CreateLoanDTO = {
       userId: this.userId,
-      locationId: this.locationId ?? this.schoolId,
+      locationId: effectiveLocationId,
       extended: 0,
       start: this.formatDate(rawValue.start ?? new Date()),
       end: this.formatDate(rawValue.end ?? new Date()),
@@ -465,6 +488,10 @@ export class BookDetailPage implements OnInit {
   }
 
   openLoanDialog(): void {
+    if (!this.locationId) {
+      this.selectedLoanLocationId = null;
+      this.locationBook = undefined;
+    }
     if (this.authService.hasRole('STUDENT')) {
       this.loanForm.patchValue({ requestedAmount: 1 });
       this.loanForm.controls.requestedAmount.clearValidators();
@@ -473,10 +500,38 @@ export class BookDetailPage implements OnInit {
     this.loanFormVisible = true;
   }
 
+  onLoanLocationChange(locationId: number): void {
+    this.selectedLoanLocationId = locationId;
+    this.locationBookService.getLocationBook(locationId, this.bookId).subscribe({
+      next: (lb) => {
+        this.locationBook = lb;
+        this.setAmountValidators(lb.current_amount);
+      },
+      error: () => {
+        this.locationBook = undefined;
+      },
+    });
+  }
+
+  get availableLoanLocations(): LocationAvailability[] {
+    return this.locationAvailability.filter((l) => l.current_amount > 0);
+  }
+
   getStarFill(position: number): number {
     if (this.ratingValue >= position) return 100;
     if (this.ratingValue <= position - 1) return 0;
     return (this.ratingValue - (position - 1)) * 100;
+  }
+
+  openNotesDialog(avail: LocationAvailability): void {
+    this.notesDialogLocationName = avail.location_name;
+    this.notesDialogCopies = [];
+    this.notesDialogVisible = true;
+    this.locationBookService.getCopiesByLocationBook(avail.location_book_id).subscribe({
+      next: (copies) => {
+        this.notesDialogCopies = copies.filter((c) => c.note && c.note.trim().length > 0);
+      },
+    });
   }
 
   editBook() {

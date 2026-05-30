@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ElementRef, QueryList, ViewChildren } from '@angular/core';
 import { HttpClient, HttpEventType } from '@angular/common/http';
 import { timeout } from 'rxjs/operators';
 import { BulkUpload as BulkUpload_1 } from '../../services/BulkUpload';
@@ -13,6 +13,8 @@ import { GenreService } from '../../services/genre';
 import { LanguageService } from '../../services/language';
 import { forkJoin, Observable } from 'rxjs';
 import { CardModule } from 'primeng/card';
+import { DialogModule } from 'primeng/dialog';
+import { InputNumberModule } from 'primeng/inputnumber';
 import { TagModule } from 'primeng/tag';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
@@ -25,6 +27,10 @@ import { BookType } from '../../models/book-type';
 import { Theme } from '../../models/theme';
 import { ThemeService } from '../../services/theme';
 import { BulkPreviewResult } from '../../models/bulk';
+import { LocationService } from '../../services/location';
+import { LocationBookService } from '../../services/locationbook';
+import { Location } from '../../models/location';
+import JsBarcode from 'jsbarcode';
 
 interface RowIssue {
   row: number;
@@ -57,6 +63,7 @@ interface IncompleteBookDTO {
 
 interface BulkUploadResult {
   added: number;
+  added_books: { id: number; title: string }[];
   skipped: RowIssue[];
   errors: RowIssue[];
   incomplete: IncompleteBookDTO[];
@@ -75,18 +82,20 @@ const LOOKUP_TIMEOUT_MS = 5 * 60 * 1000;
   imports: [
     ButtonModule,
     FormsModule,
-    ButtonModule,
     CardModule,
     TagModule,
-    InputTextModule,
     InputTextModule,
     SelectModule,
     MultiSelectModule,
     IftaLabel,
+    DialogModule,
+    InputNumberModule,
   ],
   styleUrls: ['./bulk-upload.css'],
 })
 export class BulkUpload {
+  @ViewChildren('barcodesvg') barcodeSvgs!: QueryList<ElementRef<SVGElement>>;
+
   selectedFile: File | null = null;
   isDragging = false;
   isUploading = false;
@@ -101,6 +110,14 @@ export class BulkUpload {
   languages: Language[] | undefined;
   themes: Theme[] | undefined;
 
+  // Copy-adding
+  locations: Location[] = [];
+  addedBooks: { id: number; title: string }[] = [];
+  copyState: Record<number, { locationId: number | null; amount: number }> = {};
+  doneCopyBooks = new Set<number>();
+  barcodeDialogVisible = false;
+  newAccessionIds: string[] = [];
+
   constructor(
     private http: HttpClient,
     private bulkUpload: BulkUpload_1,
@@ -112,6 +129,8 @@ export class BulkUpload {
     private languageService: LanguageService,
     private messageService: MessageService,
     private themeService: ThemeService,
+    private locationService: LocationService,
+    private locationBookService: LocationBookService,
   ) {
     this.genreService.getAll().subscribe((g) => (this.genres = g));
     this.bookTypeService.getAll().subscribe((bt) => {
@@ -119,6 +138,64 @@ export class BulkUpload {
     });
     this.languageService.getAll().subscribe((l) => (this.languages = l));
     this.themeService.getAll().subscribe((g) => (this.themes = g));
+    this.locationService.getAll().subscribe((l) => (this.locations = l));
+  }
+
+  renderBarcodes(): void {
+    setTimeout(() => {
+      this.barcodeSvgs.forEach((ref, i) => {
+        const id = this.newAccessionIds[i];
+        if (id) JsBarcode(ref.nativeElement, id, { format: 'CODE128', displayValue: false, width: 2, height: 60 });
+      });
+    }, 0);
+  }
+
+  addCopiesForBook(bookId: number): void {
+    const state = this.copyState[bookId];
+    if (!state?.locationId || state.amount < 1) return;
+    this.locationBookService.createLocationBook({
+      location_id: state.locationId,
+      book_id: bookId,
+      amount: state.amount,
+      current_amount: state.amount,
+    }).subscribe({
+      next: (result) => {
+        this.messageService.add({ severity: 'success', summary: 'Succes', detail: `${state.amount} exemplaren aangemaakt.`, life: 3000 });
+        if (result.new_accession_ids?.length) {
+          this.newAccessionIds = result.new_accession_ids;
+          this.barcodeDialogVisible = true;
+        }
+        this.doneCopyBooks.add(bookId);
+        this.copyState[bookId] = { locationId: null, amount: 1 };
+      },
+      error: () => {
+        this.messageService.add({ severity: 'error', summary: 'Fout', detail: 'Exemplaren aanmaken mislukt.', life: 3000 });
+      },
+    });
+  }
+
+  closeBarcodeDialog(): void {
+    this.barcodeDialogVisible = false;
+    this.newAccessionIds = [];
+  }
+
+  printBarcodes(): void {
+    const svgElements = this.barcodeSvgs.toArray();
+    const printWindow = window.open('', '_blank', 'width=800,height=600');
+    if (!printWindow) return;
+    const cards = this.newAccessionIds.map((id, i) => {
+      const svgHtml = svgElements[i]?.nativeElement?.outerHTML ?? '';
+      return `<div class="barcode-card">${svgHtml}<span class="accession-label">${id}</span></div>`;
+    }).join('');
+    printWindow.document.write(`<!DOCTYPE html><html><head><title>Barcodes afdrukken</title><style>
+      body{margin:1rem;font-family:monospace}.barcode-grid{display:flex;flex-wrap:wrap;gap:1rem}
+      .barcode-card{display:flex;flex-direction:column;align-items:center;gap:.25rem;padding:.5rem .75rem;border:1px dashed #d1d5db;border-radius:6px;page-break-inside:avoid;break-inside:avoid}
+      .accession-label{font-size:.8rem;letter-spacing:.05em}
+    </style></head><body><div class="barcode-grid">${cards}</div></body></html>`);
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+    printWindow.close();
   }
 
   private setDefaultBookType(key: string): void {
@@ -231,6 +308,10 @@ export class BulkUpload {
             this.result = event.body;
             this.initCompletions();
             this.isUploading = false;
+            for (const book of this.result?.added_books ?? []) {
+              this.addedBooks.push(book);
+              this.copyState[book.id] = { locationId: null, amount: 1 };
+            }
           }
         },
         error: (err) => {
@@ -249,6 +330,9 @@ export class BulkUpload {
     this.result = null;
     this.uploadProgress = 0;
     this.uploadError = null;
+    this.addedBooks = [];
+    this.copyState = {};
+    this.doneCopyBooks = new Set();
   }
 
   initCompletions(): void {
@@ -439,11 +523,13 @@ export class BulkUpload {
         };
 
         this.bookService.addBook(body).subscribe({
-          next: () => {
+          next: (savedBook) => {
             this.result!.incomplete = this.result!.incomplete.filter(
               (b) => this.getCompletionKey(b) !== key,
             );
             this.result!.added++;
+            this.addedBooks.push({ id: savedBook.id, title: savedBook.title });
+            this.copyState[savedBook.id] = { locationId: null, amount: 1 };
 
             this.messageService.add({
               severity: 'success',

@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { LoanService } from '../../services/loan';
 import { MessageService } from 'primeng/api';
 import { LoanDTO, LoanStatus } from '../../models/loan';
@@ -9,17 +9,42 @@ import { BookCover } from '../misc/book-cover/book-cover';
 import { DatePipe } from '@angular/common';
 import { Button } from 'primeng/button';
 import { FormsModule } from '@angular/forms';
+import { LocationBookService } from '../../services/locationbook';
+import { DialogModule } from 'primeng/dialog';
+import { BookCopyDetail } from '../../models/bookCopy';
 
 @Component({
   selector: 'app-pick-up-page',
-  imports: [NavBarComponent, Skeleton, TableModule, BookCover, DatePipe, Button, FormsModule],
+  imports: [NavBarComponent, Skeleton, TableModule, BookCover, DatePipe, Button, FormsModule, DialogModule],
   templateUrl: './pick-up-page.html',
   styleUrl: './pick-up-page.css',
 })
-export class PickUpPageComponent implements OnInit {
+export class PickUpPageComponent implements OnInit, AfterViewInit {
+  @ViewChild('scanInputRef') scanInputRef!: ElementRef<HTMLInputElement>;
   loans: LoanDTO[] = [];
   loading = true;
   query = '';
+  scanInput = '';
+
+  manualDialogVisible = false;
+  manualAccessionId = 'LIB-';
+  pendingLoanId: number | null = null;
+
+  disambigDialogVisible = false;
+  disambigLoans: LoanDTO[] = [];
+  pendingCopy: BookCopyDetail | null = null;
+
+  copyNoteDialogVisible = false;
+  copyNoteDisplay = '';
+  copyIsDamaged = false;
+  copyNoteAccessionId = '';
+  private pendingPickup: { loanId: number; copyId: number; fromManual: boolean } | null = null;
+
+  private scannedCopyIds = new Map<number, Set<number>>();
+
+  get pendingLoan(): LoanDTO | undefined {
+    return this.loans.find((l) => l.id === this.pendingLoanId);
+  }
 
   get filteredLoans(): LoanDTO[] {
     const trimmedQuery = this.query.trim().toLowerCase();
@@ -34,10 +59,15 @@ export class PickUpPageComponent implements OnInit {
   constructor(
     private loanService: LoanService,
     private messageService: MessageService,
+    private locationBookService: LocationBookService,
   ) {}
 
   ngOnInit(): void {
     this.getRecords();
+  }
+
+  ngAfterViewInit(): void {
+    this.scanInputRef?.nativeElement?.focus();
   }
 
   private getRecords() {
@@ -52,20 +82,242 @@ export class PickUpPageComponent implements OnInit {
     });
   }
 
-  setState(loanId: number) {
-    this.loanService.changeStatus(loanId, LoanStatus.RECEIVED).subscribe({
-      next: () => {
-        this.loans = this.loans.filter((l) => l.id !== loanId);
+  private processScanPickup(loanId: number, copyId: number, onDone?: (completed: boolean) => void): void {
+    const loanSet = this.scannedCopyIds.get(loanId) ?? new Set<number>();
+    if (loanSet.has(copyId)) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Al gescand',
+        detail: 'Dit exemplaar is al gescand voor deze uitlening.',
+        life: 3000,
+      });
+      return;
+    }
+    loanSet.add(copyId);
+    this.scannedCopyIds.set(loanId, loanSet);
+
+    this.loanService.scanPickup(loanId, copyId).subscribe({
+      next: (updatedLoan) => {
+        if (updatedLoan.status === LoanStatus.RECEIVED) {
+          this.loans = this.loans.filter((l) => l.id !== updatedLoan.id);
+          this.scannedCopyIds.delete(loanId);
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Succes',
+            detail: 'Boek opgehaald',
+            life: 3000,
+          });
+          onDone?.(true);
+        } else {
+          const idx = this.loans.findIndex((l) => l.id === updatedLoan.id);
+          if (idx !== -1) this.loans[idx] = updatedLoan;
+          const book = updatedLoan.books[0];
+          this.messageService.add({
+            severity: 'info',
+            summary: 'Exemplaar gescand',
+            detail: `${book.receivedAmount}/${book.requestedAmount} exemplaren gescand`,
+            life: 3000,
+          });
+          onDone?.(false);
+        }
+      },
+      error: (err) => {
+        loanSet.delete(copyId);
         this.messageService.add({
-          severity: 'success',
-          summary: 'Succes',
-          detail: 'Boek opgehaald',
+          severity: 'error',
+          summary: 'Fout',
+          detail: err?.error?.message ?? 'Exemplaar kon niet worden geregistreerd.',
+          life: 4000,
+        });
+        onDone?.(false);
+      },
+    });
+  }
+
+  openCopyNoteDialog(
+    loanId: number,
+    copyId: number,
+    note: string,
+    isDamaged: boolean,
+    accessionId: string,
+    fromManual: boolean,
+  ): void {
+    this.pendingPickup = { loanId, copyId, fromManual };
+    this.copyNoteDisplay = note;
+    this.copyIsDamaged = isDamaged;
+    this.copyNoteAccessionId = accessionId;
+    this.copyNoteDialogVisible = true;
+  }
+
+  acknowledgeCopyNote(): void {
+    if (!this.pendingPickup) return;
+    const { loanId, copyId, fromManual } = this.pendingPickup;
+    this.pendingPickup = null;
+    this.copyNoteDialogVisible = false;
+
+    this.processScanPickup(
+      loanId,
+      copyId,
+      fromManual
+        ? (completed) => {
+            if (!completed) {
+              this.pendingLoanId = loanId;
+              this.manualAccessionId = 'LIB-';
+              this.manualDialogVisible = true;
+            }
+          }
+        : undefined,
+    );
+  }
+
+  closeCopyNoteDialog(): void {
+    if (!this.pendingPickup) return;
+    const { fromManual, loanId } = this.pendingPickup;
+    this.copyNoteDialogVisible = false;
+    this.pendingPickup = null;
+    if (fromManual) {
+      this.pendingLoanId = loanId;
+      this.manualAccessionId = 'LIB-';
+      this.manualDialogVisible = true;
+    } else {
+      setTimeout(() => this.scanInputRef?.nativeElement?.focus(), 0);
+    }
+  }
+
+  openManualDialog(loanId: number): void {
+    this.pendingLoanId = loanId;
+    this.manualAccessionId = 'LIB-';
+    this.manualDialogVisible = true;
+  }
+
+  closeManualDialog(): void {
+    this.manualDialogVisible = false;
+    this.pendingLoanId = null;
+    this.manualAccessionId = 'LIB-';
+    if (!this.copyNoteDialogVisible) {
+      setTimeout(() => this.scanInputRef?.nativeElement?.focus(), 0);
+    }
+  }
+
+  confirmManualPickup(): void {
+    const id = this.manualAccessionId.trim().toUpperCase();
+    if (!id || id === 'LIB-') return;
+
+    this.locationBookService.getCopyByAccessionId(id).subscribe({
+      next: (copy) => {
+        const loanId = this.pendingLoanId!;
+        if (copy.note || copy.status === 'DAMAGED') {
+          this.openCopyNoteDialog(loanId, copy.id, copy.note ?? '', copy.status === 'DAMAGED', copy.accession_id, true);
+          this.manualDialogVisible = false;
+        } else {
+          this.loanService.scanPickup(loanId, copy.id).subscribe({
+            next: (updatedLoan) => {
+              if (updatedLoan.status === LoanStatus.RECEIVED) {
+                this.loans = this.loans.filter((l) => l.id !== updatedLoan.id);
+                this.messageService.add({
+                  severity: 'success',
+                  summary: 'Succes',
+                  detail: 'Boek opgehaald',
+                  life: 3000,
+                });
+                this.closeManualDialog();
+              } else {
+                const idx = this.loans.findIndex((l) => l.id === updatedLoan.id);
+                if (idx !== -1) this.loans[idx] = updatedLoan;
+                const book = updatedLoan.books[0];
+                this.messageService.add({
+                  severity: 'info',
+                  summary: 'Exemplaar gescand',
+                  detail: `${book.receivedAmount}/${book.requestedAmount} exemplaren gescand`,
+                  life: 3000,
+                });
+                this.manualAccessionId = 'LIB-';
+              }
+            },
+            error: (err) => {
+              this.messageService.add({
+                severity: 'error',
+                summary: 'Verkeerd exemplaar',
+                detail: err?.error?.message ?? 'Dit exemplaar kan niet worden geregistreerd voor deze uitlening.',
+                life: 4000,
+              });
+            },
+          });
+        }
+      },
+      error: () => {
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Niet gevonden',
+          detail: `Exemplaar ${id} niet gevonden.`,
           life: 3000,
         });
       },
+    });
+  }
+
+  scanAndProcess(): void {
+    const id = this.scanInput.trim().toUpperCase();
+    this.scanInput = '';
+    if (!id) return;
+
+    this.locationBookService.getCopyByAccessionId(id).subscribe({
+      next: (copy) => {
+        const matchingLoans = this.loans.filter((l) =>
+          l.books.some(
+            (b) => b.bookId === copy.book_id && b.receivedAmount < b.requestedAmount,
+          ),
+        );
+        if (matchingLoans.length === 0) {
+          this.messageService.add({
+            severity: 'warn',
+            summary: 'Niet gevonden',
+            detail: `Geen uitlening gevonden voor exemplaar ${id}.`,
+            life: 3000,
+          });
+          return;
+        }
+        if (matchingLoans.length === 1) {
+          const loan = matchingLoans[0];
+          if (copy.note || copy.status === 'DAMAGED') {
+            this.openCopyNoteDialog(loan.id, copy.id, copy.note ?? '', copy.status === 'DAMAGED', copy.accession_id, false);
+          } else {
+            this.processScanPickup(loan.id, copy.id);
+          }
+          return;
+        }
+        this.pendingCopy = copy;
+        this.disambigLoans = matchingLoans;
+        this.disambigDialogVisible = true;
+      },
       error: () => {
-        this.loading = false;
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Niet gevonden',
+          detail: `Exemplaar ${id} niet gevonden.`,
+          life: 3000,
+        });
       },
     });
+  }
+
+  selectDisambigLoan(loan: LoanDTO): void {
+    const copy = this.pendingCopy!;
+    if (copy.note || copy.status === 'DAMAGED') {
+      this.openCopyNoteDialog(loan.id, copy.id, copy.note ?? '', copy.status === 'DAMAGED', copy.accession_id, false);
+      this.closeDisambigDialog();
+    } else {
+      this.closeDisambigDialog();
+      this.processScanPickup(loan.id, copy.id);
+    }
+  }
+
+  closeDisambigDialog(): void {
+    this.disambigDialogVisible = false;
+    this.disambigLoans = [];
+    this.pendingCopy = null;
+    if (!this.copyNoteDialogVisible) {
+      setTimeout(() => this.scanInputRef?.nativeElement?.focus(), 0);
+    }
   }
 }

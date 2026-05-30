@@ -42,6 +42,7 @@ export class Gamification implements OnInit {
           completed: c.completed
         }))
       }),
+      error: () => {},
     });
   }
 

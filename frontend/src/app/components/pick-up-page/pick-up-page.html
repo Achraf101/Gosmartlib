@@ -2,6 +2,28 @@
 <div class="loans-page">
   <h1>Op te halen</h1>
 
+  <form class="search-bar scan-bar" (submit)="$event.preventDefault()">
+    <i class="pi pi-barcode scan-icon"></i>
+    <input
+      #scanInputRef
+      type="text"
+      class="search-input"
+      placeholder="Scan streepjescode..."
+      [(ngModel)]="scanInput"
+      name="scan"
+      (keydown.enter)="scanAndProcess()"
+      autocomplete="off"
+    />
+    @if (scanInput) {
+      <button type="button" class="search-btn" (click)="scanInput = ''">
+        <i class="pi pi-times"></i>
+      </button>
+    }
+    <button type="button" class="search-btn" (click)="scanAndProcess()">
+      <i class="pi pi-search"></i>
+    </button>
+  </form>
+
   <form class="search-bar" (submit)="$event.preventDefault()">
     <input
       type="text"
@@ -77,7 +99,10 @@
             <span>{{ loan.end | date: 'dd/MM/yyyy' }}</span>
           </td>
           <td>
-            <p-button (onClick)="setState(loan.id)">Opgehaald</p-button>
+            @if (loan.books[0].receivedAmount > 0) {
+              <span class="scan-progress">{{ loan.books[0].receivedAmount }}/{{ loan.books[0].requestedAmount }}</span>
+            }
+            <p-button (onClick)="openManualDialog(loan.id)">Opgehaald</p-button>
           </td>
         </tr>
       </ng-template>
@@ -86,3 +111,79 @@
     <div class="empty-state"><p>Er zijn geen boeken op te halen.</p></div>
   }
 </div>
+
+<p-dialog
+  header="Wie haalt het boek op?"
+  [(visible)]="disambigDialogVisible"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  (onHide)="closeDisambigDialog()"
+>
+  <p class="manual-dialog-hint">
+    Meerdere leerlingen wachten op dit boek. Selecteer wie het ophaalt.
+  </p>
+  <div class="disambig-list">
+    @for (loan of disambigLoans; track loan.id) {
+      <div class="disambig-item">
+        <div class="disambig-info">
+          <span class="disambig-name">{{ loan.username }}</span>
+          <span class="disambig-date">{{ loan.start | date: 'dd/MM/yyyy' }} – {{ loan.end | date: 'dd/MM/yyyy' }}</span>
+        </div>
+        <p-button label="Selecteren" size="small" (onClick)="selectDisambigLoan(loan)" />
+      </div>
+    }
+  </div>
+</p-dialog>
+
+<p-dialog
+  header="Opgelet: notitie bij dit exemplaar"
+  [(visible)]="copyNoteDialogVisible"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  (onHide)="closeCopyNoteDialog()"
+>
+  <p class="manual-dialog-hint">Exemplaar <strong>{{ copyNoteAccessionId }}</strong> heeft de volgende notitie:</p>
+  @if (copyIsDamaged) {
+    <div class="copy-note-damaged">
+      <i class="pi pi-exclamation-triangle"></i>
+      <span>Status: Beschadigd</span>
+    </div>
+  }
+  @if (copyNoteDisplay) {
+    <p class="copy-note-text">{{ copyNoteDisplay }}</p>
+  }
+  <div class="manual-dialog-btns">
+    <p-button label="Annuleren" severity="secondary" (onClick)="closeCopyNoteDialog()" />
+    <p-button label="OK, doorgaan" (onClick)="acknowledgeCopyNote()" />
+  </div>
+</p-dialog>
+
+<p-dialog
+  header="Exemplaar ID invoeren"
+  [(visible)]="manualDialogVisible"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  (onHide)="closeManualDialog()"
+>
+  @if (pendingLoan && pendingLoan.books[0].requestedAmount > 1) {
+    <p class="manual-dialog-hint">
+      Exemplaar {{ pendingLoan.books[0].receivedAmount + 1 }} van {{ pendingLoan.books[0].requestedAmount }} — voer het accession ID in.
+    </p>
+  } @else {
+    <p class="manual-dialog-hint">Voer het accession ID in van het exemplaar dat wordt opgehaald.</p>
+  }
+  <input
+    type="text"
+    class="manual-id-input"
+    [(ngModel)]="manualAccessionId"
+    (keydown.enter)="confirmManualPickup()"
+    autocomplete="off"
+  />
+  <div class="manual-dialog-btns">
+    <p-button label="Annuleren" severity="secondary" (onClick)="closeManualDialog()" />
+    <p-button label="Bevestigen" (onClick)="confirmManualPickup()" [disabled]="manualAccessionId.trim() === 'LIB-' || manualAccessionId.trim() === ''" />
+  </div>
+</p-dialog>
