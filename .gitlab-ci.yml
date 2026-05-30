@@ -1,6 +1,6 @@
 workflow:
   rules:
-    - if: '$CI_COMMIT_BRANCH == "feature-49-wachtwoord-veranderen"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
     - when: never
   # this comment was added to trigger the pipeline
 stages:
