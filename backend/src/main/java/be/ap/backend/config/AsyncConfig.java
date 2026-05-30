@@ -10,6 +10,12 @@ import java.util.concurrent.ThreadPoolExecutor;
 @Configuration
 public class AsyncConfig {
 
+    /**
+     * Executor voor asynchrone lookup-taken.
+     *
+     * @return de threadpool die gebruikt wordt door
+     *         {@code @Async("lookupExecutor")}
+     */
     @Bean(name = "lookupExecutor")
     public Executor lookupExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();

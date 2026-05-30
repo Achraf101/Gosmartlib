@@ -20,6 +20,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 
+/**
+ * Configureert de beveiliging van de applicatie, waaronder authenticatie,
+ * autorisatie en sessiebeheer.
+ */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -29,6 +33,12 @@ public class SecurityConfig {
 
     private final UserService userService;
 
+    /**
+     * Publiceert HTTP-sessie-events zodat Spring Security wijzigingen in sessies
+     * kan opvolgen.
+     *
+     * @return de publisher voor HTTP-sessie-events
+     */
     @Bean
     public HttpSessionEventPublisher httpSessionEventPublisher() {
         return new HttpSessionEventPublisher();
@@ -38,6 +48,14 @@ public class SecurityConfig {
         this.userService = userService;
     }
 
+    /**
+     * Configureert de security filter chain met authenticatie, autorisatieregels,
+     * login- en logoutafhandeling.
+     *
+     * @param http de {@link HttpSecurity} configuratie
+     * @return de geconfigureerde security filter chain
+     * @throws Exception wanneer de securityconfiguratie niet kan worden opgebouwd
+     */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -91,11 +109,24 @@ public class SecurityConfig {
         return http.build();
     }
 
+    /**
+     * Maakt de password encoder aan die gebruikt wordt voor het hashen en
+     * verifiëren van wachtwoorden.
+     *
+     * @return de geconfigureerde password encoder
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(this.strength);
     }
 
+    /**
+     * Configureert de authenticatieprovider die gebruikersgegevens ophaalt via
+     * de {@link UserService} en wachtwoorden valideert met de geconfigureerde
+     * password encoder.
+     *
+     * @return de geconfigureerde authenticatieprovider
+     */
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userService);
