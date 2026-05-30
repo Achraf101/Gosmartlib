@@ -7,13 +7,13 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import be.ap.backend.entity.Book;
 import be.ap.backend.entity.LoanBook;
+import be.ap.backend.mapper.BookWithAmount;
 
 @Repository
 public interface LoanBookRepository extends JpaRepository<LoanBook, Long> {
     List<LoanBook> findByLoanId(Long loanId);
 
-    @Query("SELECT lb.book FROM LoanBook lb WHERE lb.loan.id = :loanId")
-    List<Book> getBooksByLoanId(@Param("loanId") Long loanId);
+    @Query("SELECT new be.ap.backend.mapper.BookWithAmount(lb.book, lb.amount) FROM LoanBook lb WHERE lb.loan.id = :loanId")
+    List<BookWithAmount> getBooksByLoanId(@Param("loanId") Long loanId);
 }

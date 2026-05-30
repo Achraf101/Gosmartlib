@@ -12,8 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import be.ap.backend.entity.Book;
-
-
+import be.ap.backend.mapper.BookWithAmount;
 import jakarta.annotation.PostConstruct;
 
 @Service
@@ -40,49 +39,53 @@ public class EmailTemplateService {
         return new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
     }
 
-    public String buildLoanEmail(List<Book> books, LocalDate returnDate) {
+    public String buildLoanEmail(List<BookWithAmount> books, LocalDate returnDate) {
 
         String formattedDate = returnDate.format(formatter);
         String template = loanTemplate;
 
         // make row for each book
-        String bookRows = buildBookRows(books);
+        BookRows bookRows = buildBookRows(books);
 
-        template  = template.replace("{{book_html_rows}}", bookRows).replace("{{return_date}}", formattedDate);
+        template = template.replace("{{book_html_rows}}", bookRows.populatedTemplate())
+                .replace("{{return_date}}", formattedDate)
+                .replace("{{total_books_amount}}", bookRows.totalAmount().toString());
 
         return template;
     }
 
-    public String buildReminderEmail(List<Book> books, LocalDate returnDate) {
+    public String buildReminderEmail(List<BookWithAmount> books, LocalDate returnDate) {
 
         String formattedDate = returnDate.format(formatter);
         String template = reminderTemplate;
 
         // make row for each book
-        String bookRows = buildBookRows(books);
+        BookRows bookRows = buildBookRows(books);
 
-        template = template.replace("{{book_html_rows}}", bookRows).replace("{{return_date}}", formattedDate);
+        template = template.replace("{{book_html_rows}}", bookRows.populatedTemplate()).replace("{{return_date}}",
+                formattedDate);
 
         return template;
     }
 
-    private String buildBookRows(List<Book> books) {
+    private BookRows buildBookRows(List<BookWithAmount> books) {
 
         String bookRows = "";
+        Integer total = 0;
 
-        for (Book book : books) {
+        for (BookWithAmount book : books) {
             bookRows += fillTemplate(bookRowTemplate, Map.of(
                     "cover_url",
-                    (book.getCover() == null || book.getCover().isBlank()) ? "https://" + domain
+                    (book.book().getCover() == null || book.book().getCover().isBlank()) ? "https://" + domain
                             + "/assets/no-cover.svg"
-                            : "https://" + domain + "/static/cover/" + book
-                                    .getCover(),
-                    "book_title", book.getTitle(),
-                    "book_author", book.getAuthor().getName() // TODO add amount
-            ));
+                            : "https://" + domain + "/static/cover/" + book.book().getCover(),
+                    "book_title", book.book().getTitle(),
+                    "book_author", book.book().getAuthor().getName(),
+                    "book_amount", book.amount().toString()));
+            total += book.amount();
         }
 
-        return bookRows;
+        return new BookRows(bookRows, total);
     }
 
     private String fillTemplate(String template, Map<String, String> values) {
@@ -91,5 +94,8 @@ public class EmailTemplateService {
             result = result.replace("{{" + entry.getKey() + "}}", entry.getValue());
         }
         return result;
+    }
+
+    private record BookRows(String populatedTemplate, Integer totalAmount) {
     }
 }

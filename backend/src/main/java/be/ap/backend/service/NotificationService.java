@@ -28,6 +28,7 @@ import com.nimbusds.oauth2.sdk.token.RefreshToken;
 import be.ap.backend.entity.Book;
 import be.ap.backend.entity.Loan;
 import be.ap.backend.entity.User;
+import be.ap.backend.mapper.BookWithAmount;
 import be.ap.backend.queue.NotificationTask;
 import be.ap.backend.repository.LoanBookRepository;
 import be.ap.backend.repository.LoanRepository;
@@ -73,7 +74,7 @@ public class NotificationService {
         u.setSsRefresh(tokens.refreshToken());
         userRepository.save(u);
 
-        List<Book> books = loanBookRepository.getBooksByLoanId(loanId);
+        List<BookWithAmount> books = loanBookRepository.getBooksByLoanId(loanId);
 
         String populatedTemplate = "";
         String title = "";
