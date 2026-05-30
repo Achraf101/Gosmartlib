@@ -51,8 +51,13 @@
   <p-card class="nav-card" (click)="goToSchools()">
     <div class="card-content">
       <i class="pi pi-building card-icon"></i>
-      <span class="card-title">Scholen</span>
-      <span class="card-desc">Bekijk alle scholen</span>
+      @if (authService.hasRole('BIBLIOTHEEKBEHEERDER') && !authService.hasRole('ADMIN')) {
+        <span class="card-title">Locaties</span>
+        <span class="card-desc">Bekijk alle locaties</span>
+      } @else {
+        <span class="card-title">Scholen</span>
+        <span class="card-desc">Bekijk alle scholen</span>
+      }
     </div>
   </p-card>
 
