@@ -17,6 +17,13 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+/**
+ * Represents a genre classification for books.
+ *
+ * <p>
+ * Used to categorize books into thematic or stylistic groups.
+ * </p>
+ */
 @Data
 @NoArgsConstructor
 @EqualsAndHashCode(exclude = "books")

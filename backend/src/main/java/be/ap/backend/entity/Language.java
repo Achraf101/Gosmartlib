@@ -16,6 +16,14 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+/**
+ * Represents a language used for books in the system.
+ *
+ * <p>
+ * Each language has a unique code and name, and can be associated with multiple
+ * books.
+ * </p>
+ */
 @Data
 @NoArgsConstructor
 @Entity

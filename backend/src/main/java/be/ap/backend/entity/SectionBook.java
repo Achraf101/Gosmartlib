@@ -4,6 +4,14 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * Represents a relationship between a section and a book, including ordering
+ * and optional grade metadata.
+ *
+ * <p>
+ * This entity is used to control how books are organized within a section.
+ * </p>
+ */
 @Data
 @NoArgsConstructor
 @Entity

@@ -5,6 +5,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 
+/**
+ * Tracks a user's progress on a monthly challenge assignment.
+ *
+ * <p>
+ * Stores assignment metadata, completion state, and enforces uniqueness per
+ * user, month, and challenge.
+ * </p>
+ */
 @Data
 @NoArgsConstructor
 @Entity

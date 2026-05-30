@@ -4,6 +4,11 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * Represents a user's enrollment within a classroom, optionally linked to a
+ * school
+ * and identified externally via OneRoster.
+ */
 @Entity
 @Table(name = "enrollment")
 @Data

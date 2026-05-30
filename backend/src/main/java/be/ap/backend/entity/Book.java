@@ -29,6 +29,11 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+/**
+ * Represents a book entity with bibliographic metadata, classification data,
+ * relationships (author, publisher, genres, themes), and school-specific
+ * attributes.
+ */
 @Data
 @NoArgsConstructor
 @EqualsAndHashCode(exclude = { "genres", "contributors", "themes" })

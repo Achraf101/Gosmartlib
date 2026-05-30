@@ -5,6 +5,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
+/**
+ * Represents a user review for a book, including rating, optional text content,
+ * visibility state, and metadata such as creation timestamp.
+ */
 @Data
 @NoArgsConstructor
 @Entity

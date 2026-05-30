@@ -10,6 +10,14 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
+/**
+ * Represents a classroom within a school context.
+ *
+ * <p>
+ * A classroom can have a teacher, associated school, enrolled users, and
+ * metadata such as visibility.
+ * </p>
+ */
 @Entity
 @Table(name = "classroom")
 @Data

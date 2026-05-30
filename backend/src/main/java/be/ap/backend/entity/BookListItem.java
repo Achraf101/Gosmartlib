@@ -9,11 +9,18 @@ import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import lombok.Data;
 
+/**
+ * Represents an item inside a book list, linking a book list to a specific
+ * book.
+ *
+ * <p>
+ * Ensures that each book can only appear once per book list via a unique
+ * constraint.
+ * </p>
+ */
 @Data
 @Entity
-@Table(name="book_list_item",
-    indexes = @Index(columnList = "book_list_id, book_id", unique = true)
-)
+@Table(name = "book_list_item", indexes = @Index(columnList = "book_list_id, book_id", unique = true))
 public class BookListItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

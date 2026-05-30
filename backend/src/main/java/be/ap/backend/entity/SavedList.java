@@ -10,6 +10,14 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Data;
 
+/**
+ * Represents a saved book list reference created by a user.
+ *
+ * <p>
+ * Stores a link between a user and a book list, including the creation
+ * timestamp.
+ * </p>
+ */
 @Data
 @Entity
 @Table(name = "saved_lists")

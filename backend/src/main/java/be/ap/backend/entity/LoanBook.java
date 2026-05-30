@@ -8,6 +8,11 @@ import lombok.AllArgsConstructor;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Represents a book entry within a loan, tracking requested, received, and
+ * returned quantities,
+ * as well as associated physical book copies.
+ */
 @Entity
 @Table(name = "loan_book")
 @Data

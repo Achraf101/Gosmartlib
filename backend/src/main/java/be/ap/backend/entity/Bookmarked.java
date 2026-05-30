@@ -16,10 +16,16 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+/**
+ * Represents a bookmarked book by a user.
+ *
+ * <p>
+ * Stores the relationship between a user and a book, including the timestamp
+ * when the bookmark was created.
+ * </p>
+ */
 @Entity
-@Table(name = "bookmarked",    
-    indexes = @Index(columnList = "user_id, book_id", unique = true)
-)
+@Table(name = "bookmarked", indexes = @Index(columnList = "user_id, book_id", unique = true))
 @Getter
 @Setter
 @NoArgsConstructor

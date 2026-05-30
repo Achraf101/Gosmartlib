@@ -11,6 +11,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+/**
+ * Represents a school entity containing configuration, contact information,
+ * and all associated academic and library-related data.
+ *
+ * <p>
+ * This entity acts as a root aggregate for locations, classrooms, users,
+ * enrollments, and materials.
+ * </p>
+ */
 @Entity
 @Table(name = "school")
 @Data

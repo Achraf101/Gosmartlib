@@ -9,6 +9,14 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+/**
+ * Represents a book series, optionally linked to an author and containing
+ * multiple books.
+ *
+ * <p>
+ * A series groups related books under a common name and description.
+ * </p>
+ */
 @Entity
 @Table(name = "series")
 @Getter

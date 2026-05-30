@@ -11,6 +11,13 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
+/**
+ * Represents a loan transaction between a user and a location.
+ *
+ * <p>
+ * A loan contains a time range, status, and a collection of borrowed books.
+ * </p>
+ */
 @Entity
 @Table(name = "loan")
 @Data

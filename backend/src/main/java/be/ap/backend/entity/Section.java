@@ -4,6 +4,14 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * Represents a configurable section within a school context.
+ *
+ * <p>
+ * Sections are used for organizing or ranking content and can be hidden per
+ * school configuration.
+ * </p>
+ */
 @Data
 @NoArgsConstructor
 @Entity

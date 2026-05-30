@@ -4,6 +4,14 @@ import be.ap.backend.enums.CopyStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
+/**
+ * Represents a physical copy of a book within a specific library location.
+ *
+ * <p>
+ * Each copy has a unique accession identifier and a status indicating its
+ * current condition.
+ * </p>
+ */
 @Entity
 @Table(name = "book_copy")
 @NoArgsConstructor

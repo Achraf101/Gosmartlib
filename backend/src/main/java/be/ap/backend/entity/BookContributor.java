@@ -14,6 +14,15 @@ import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * Represents the relationship between a book and an author with a specific
+ * contribution type.
+ *
+ * <p>
+ * This entity models many-to-many enrichment between books and authors,
+ * allowing classification of the author's role (e.g. co-author, illustrator).
+ * </p>
+ */
 @Data
 @NoArgsConstructor
 @Entity

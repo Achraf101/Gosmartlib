@@ -3,6 +3,15 @@ package be.ap.backend.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+/**
+ * Represents the association between a location and a book, including stock
+ * tracking information.
+ *
+ * <p>
+ * Stores how many copies of a book are available and currently held at a
+ * specific location.
+ * </p>
+ */
 @Entity
 @Table(name = "location_book")
 @NoArgsConstructor

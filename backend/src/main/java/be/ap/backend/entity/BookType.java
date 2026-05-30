@@ -16,6 +16,13 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+/**
+ * Represents a classification type for books.
+ *
+ * <p>
+ * Used to categorize books into predefined or configurable types.
+ * </p>
+ */
 @Data
 @NoArgsConstructor
 @Entity

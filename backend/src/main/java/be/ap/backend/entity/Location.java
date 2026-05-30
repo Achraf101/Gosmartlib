@@ -6,6 +6,10 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * Represents a physical location belonging to a school where books can be
+ * stored or managed.
+ */
 @Entity
 @Table(name = "location")
 @Data

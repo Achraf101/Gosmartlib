@@ -10,6 +10,15 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Represents an application user and integrates with Spring Security
+ * authentication.
+ *
+ * <p>
+ * Stores credentials, roles, and external identifiers, and is linked optionally
+ * to a school.
+ * </p>
+ */
 @Entity
 @Table(name = "user")
 @Data

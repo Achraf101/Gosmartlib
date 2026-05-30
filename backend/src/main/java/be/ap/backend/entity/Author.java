@@ -18,6 +18,10 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+/**
+ * Represents an author in the system, including their bibliographic metadata
+ * and relationships to books and contributions.
+ */
 @Entity
 @Table(name = "author", indexes = { @Index(name = "index_genre_name", columnList = "name", unique = true) })
 @Getter

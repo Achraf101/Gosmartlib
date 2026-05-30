@@ -12,6 +12,14 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * Embeddable identifier representing a hidden UI component on a specific
+ * screen.
+ *
+ * <p>
+ * Used to store which component types are hidden per screen configuration.
+ * </p>
+ */
 @Embeddable
 @Data
 @NoArgsConstructor
@@ -27,4 +35,3 @@ public class HiddenComponent implements Serializable {
     @Column(name = "component_type")
     private ComponentType type;
 }
-

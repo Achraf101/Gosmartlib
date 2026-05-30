@@ -19,6 +19,14 @@ import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * Stores configuration settings for a school, including UI visibility rules
+ * for components across different screens.
+ *
+ * <p>
+ * This entity is tightly coupled to a School via a shared primary key.
+ * </p>
+ */
 @Data
 @NoArgsConstructor
 @Entity

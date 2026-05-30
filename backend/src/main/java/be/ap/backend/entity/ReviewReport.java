@@ -6,6 +6,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
+/**
+ * Represents a report submitted by a user regarding a review.
+ *
+ * <p>
+ * Tracks moderation status, reporter information, and optional notes for review
+ * handling.
+ * </p>
+ */
 @Data
 @NoArgsConstructor
 @Entity

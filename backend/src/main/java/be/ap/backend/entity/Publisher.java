@@ -17,6 +17,14 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+/**
+ * Represents a publisher of books in the system.
+ *
+ * <p>
+ * A publisher can be associated with multiple books and contains basic metadata
+ * such as name and description.
+ * </p>
+ */
 @Data
 @NoArgsConstructor
 @Entity

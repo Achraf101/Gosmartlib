@@ -17,6 +17,15 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+/**
+ * Represents a thematic classification used to group books by subject or
+ * concept.
+ *
+ * <p>
+ * A theme can be associated with multiple books and is uniquely identified by
+ * its name.
+ * </p>
+ */
 @Data
 @NoArgsConstructor
 @EqualsAndHashCode(exclude = "books")

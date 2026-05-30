@@ -10,9 +10,16 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Data;
 
+/**
+ * Represents a user-defined book list owned by a specific user.
+ *
+ * <p>
+ * Supports optional sharing via a unique share token and tracks creation time.
+ * </p>
+ */
 @Data
 @Entity
-@Table(name="book_list")
+@Table(name = "book_list")
 public class BookList {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

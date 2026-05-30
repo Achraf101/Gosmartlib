@@ -15,6 +15,14 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * Represents a material (file/resource) attached to a book.
+ *
+ * <p>
+ * Stores metadata such as filename, storage identifier, size, and upload
+ * timestamp.
+ * </p>
+ */
 @Getter
 @Setter
 @Entity
