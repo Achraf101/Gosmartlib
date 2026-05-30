@@ -1,5 +1,13 @@
 package be.ap.backend.enums;
 
+/**
+ * Defines the available dashboard and home components used for UI composition.
+ *
+ * <p>
+ * Each enum value represents a specific widget or section that can be rendered
+ * on a given application screen.
+ * </p>
+ */
 public enum ComponentType {
     // HOME
     MONTHLY_BOOK,
