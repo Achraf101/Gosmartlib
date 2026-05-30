@@ -16,11 +16,11 @@ public class NotificationScheduler {
     private final TaskQueueService taskQueueService;
     private final LoanRepository loanRepository;
 
-    @Scheduled(cron = "0 52 17 * * *", zone = "Europe/Brussels") // every day at 10:00 AM
+    @Scheduled(cron = "0 03 18 * * *", zone = "Europe/Brussels") // every day at 10:00 AM
     public void scheduleDailyNotifications() {
         // fetch all non notified loans for today (loans that need to be returned
         // tomorrow)
-        List<Long> dueLoans = loanRepository.getDueLoans(LocalDate.now().plusDays(1+14));
+        List<Long> dueLoans = loanRepository.getDueLoans(LocalDate.now().plusDays(1+13));
 
         // Push them to the queue
         dueLoans.forEach((id) -> {
