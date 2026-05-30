@@ -34,18 +34,18 @@ public class BookResultDTO {
     private int rating;
     private int ratingCount;
 
-    public BookResultDTO(Long id, String title, String cover, String author_name, BookType book_type,
-            Long series_id, String series_name, Integer series_number, Language language,
+    public BookResultDTO(Long id, String title, String cover, String authorName, BookType bookType,
+            Long seriesId, String seriesName, Integer seriesNumber, Language language,
             Year published, String description, boolean fiction, Clib clib,
-            int pages, int rating, int rating_count) {
+            int pages, int rating, int ratingCount) {
         this.id = id;
         this.title = title;
         this.cover = cover;
-        this.authorName = author_name;
-        this.bookType = book_type;
-        this.seriesId = series_id;
-        this.seriesName = series_name;
-        this.seriesNumber = series_number;
+        this.authorName = authorName;
+        this.bookType = bookType;
+        this.seriesId = seriesId;
+        this.seriesName = seriesName;
+        this.seriesNumber = seriesNumber;
         this.language = language;
         this.published = published;
         this.description = description;
@@ -53,6 +53,6 @@ public class BookResultDTO {
         this.clib = clib;
         this.pages = pages;
         this.rating = rating;
-        this.ratingCount = rating_count;
+        this.ratingCount = ratingCount;
     }
 }
