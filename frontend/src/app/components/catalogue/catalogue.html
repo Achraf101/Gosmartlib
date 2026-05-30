@@ -129,12 +129,13 @@
             [(ngModel)]="sidebarPagesMin"
             placeholder="Min."
             [min]="0"
+            [max]="sidebarPagesMax!"
             styleClass="w-full"
           />
           <p-inputnumber
             [(ngModel)]="sidebarPagesMax"
             placeholder="Max."
-            [min]="0"
+            [min]="sidebarPagesMin!"
             styleClass="w-full"
           />
         </div>
@@ -222,11 +223,12 @@
   [modal]="true"
   [closable]="true"
   header="{{ selectedBook?.title }}"
-  [style]="{ width: 'min(90vw, 400px)' }"
 >
   <div class="dialog-content">
     @if (selectedBook?.cover) {
-      <b-cover [bookInput]="getAsBookCard(selectedBook!)"></b-cover>
+      <div class="cover">
+        <b-cover [bookInput]="selectedBook!"></b-cover>
+      </div>
     }
     <p *ngIf="selectedBook?.author">{{ selectedBook!.author!.name }}</p>
   </div>
