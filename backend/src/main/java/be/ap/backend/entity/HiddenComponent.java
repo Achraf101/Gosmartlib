@@ -27,4 +27,3 @@ public class HiddenComponent implements Serializable {
     @Column(name = "component_type")
     private ComponentType type;
 }
-
