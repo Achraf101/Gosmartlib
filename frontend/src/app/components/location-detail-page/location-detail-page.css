@@ -81,6 +81,14 @@ h3 {
   height: 56px;
   object-fit: cover;
   border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.no-cover-placeholder {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f1f5f9;
 }
 
 .book-info {
