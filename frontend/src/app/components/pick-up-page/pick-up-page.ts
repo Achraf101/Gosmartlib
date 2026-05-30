@@ -1,6 +1,5 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { LoanService } from '../../services/loan';
-import { NotificationService } from '../../services/notification';
 import { MessageService } from 'primeng/api';
 import { LoanDTO, LoanStatus } from '../../models/loan';
 import { NavBarComponent } from '../nav-bar/nav-bar';
@@ -46,7 +45,6 @@ export class PickUpPageComponent implements OnInit {
 
   constructor(
     private loanService: LoanService,
-    private notificationService: NotificationService,
     private messageService: MessageService,
   ) {}
 
@@ -95,17 +93,4 @@ export class PickUpPageComponent implements OnInit {
     });
   }
 
-  // send new notification
-  notify(loanId: number) {
-    this.notificationService.notify(loanId).subscribe({
-      next: () => {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Succes',
-          detail: 'Bericht verzonden',
-          life: 3000,
-        });
-      },
-    });
-  }
 }

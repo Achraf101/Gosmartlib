@@ -11,7 +11,6 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
-import be.ap.backend.entity.Book;
 import be.ap.backend.mapper.BookWithAmount;
 import jakarta.annotation.PostConstruct;
 

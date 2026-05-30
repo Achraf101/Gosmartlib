@@ -10,6 +10,7 @@ import { LoanDTO, LoanStatus } from '../../models/loan';
 import { LoanService } from '../../services/loan';
 import { MessageService } from 'primeng/api';
 import { TooltipModule } from 'primeng/tooltip';
+import { NotificationService } from '../../services/notification';
 
 @Component({
   selector: 'app-return-page',
@@ -51,6 +52,7 @@ export class ReturnPageComponent {
   constructor(
     private loanService: LoanService,
     private messageService: MessageService,
+    private notificationService: NotificationService,
   ) {}
 
   ngOnInit(): void {
@@ -94,6 +96,20 @@ export class ReturnPageComponent {
           life: 3000,
         });
         this.loading = false;
+      },
+    });
+  }
+
+  // send new notification
+  notify(loanId: number) {
+    this.notificationService.notify(loanId).subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Succes',
+          detail: 'Bericht verzonden',
+          life: 3000,
+        });
       },
     });
   }

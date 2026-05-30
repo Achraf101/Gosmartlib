@@ -40,6 +40,18 @@
           <th><p>Startdatum</p></th>
           <th><p>Datum binnen te brengen</p></th>
           <th><p>Status</p></th>
+          <th>
+            <p>
+              Herinnering sturen &nbsp;
+              <i
+                class="pi pi-info-circle"
+                pTooltip="Stuur een extra herinnering via een Smartschool bericht"
+                tooltipPosition="right"
+                style="cursor: pointer; color: var(--primary-color)"
+              >
+              </i>
+            </p>
+          </th>
         </tr>
       </ng-template>
       <ng-template pTemplate="body" let-loan>
@@ -80,6 +92,14 @@
           </td>
           <td>
             <p-button (onClick)="setState(loan.id)">Teruggebracht</p-button>
+          </td>
+          <td>
+            <p-button
+              icon="pi pi-bell"
+              variant="text"
+              severity="danger"
+              (onClick)="notify(loan.id)"
+            />
           </td>
         </tr>
       </ng-template>
