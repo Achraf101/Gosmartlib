@@ -5,6 +5,7 @@ import be.ap.backend.entity.BookCopy;
 import be.ap.backend.entity.LocationBook;
 import be.ap.backend.enums.CopyStatus;
 import be.ap.backend.repository.BookCopyRepository;
+import be.ap.backend.repository.LocationBookRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ import java.util.List;
 public class BookCopyService {
 
     private final BookCopyRepository bookCopyRepository;
+    private final LocationBookRepository locationBookRepository;
 
     public List<String> createCopies(LocationBook locationBook, int count) {
         int nextSeq = bookCopyRepository.findMaxSequenceNumber() + 1;
@@ -50,6 +52,16 @@ public class BookCopyService {
                 .orElseThrow(() -> new EntityNotFoundException("Exemplaar niet gevonden: " + id));
         copy.setStatus(status);
         return toDTO(bookCopyRepository.save(copy));
+    }
+
+    public void deleteCopy(String accessionId) {
+        BookCopy copy = bookCopyRepository.findByAccessionId(accessionId)
+                .orElseThrow(() -> new EntityNotFoundException("Exemplaar niet gevonden: " + accessionId));
+        LocationBook lb = copy.getLocationBook();
+        lb.setAmount(lb.getAmount() - 1);
+        lb.setCurrentAmount(Math.max(0, lb.getCurrentAmount() - 1));
+        locationBookRepository.save(lb);
+        bookCopyRepository.delete(copy);
     }
 
     private BookCopyDetailDTO toDTO(BookCopy copy) {

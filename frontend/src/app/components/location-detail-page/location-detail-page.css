@@ -177,6 +177,61 @@ h3 {
   margin: 0;
 }
 
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.section-header h3 {
+  margin: 0;
+}
+
+.delete-dialog-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 320px;
+}
+
+.delete-dialog-hint {
+  margin: 0;
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+.delete-input-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.delete-accession-input {
+  flex: 1;
+  padding: 0.45rem 0.7rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-family: monospace;
+}
+
+.found-copy-info {
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.found-copy-info p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
 /* Barcode grid inside dialog */
 .barcode-grid {
   display: flex;

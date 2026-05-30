@@ -51,4 +51,8 @@ export class LocationBookService {
   updateCopyStatus(id: number, status: CopyStatus): Observable<BookCopyDetail> {
     return this.apiService.put<BookCopyDetail>(`${this.copyEndpoint}/${id}/status`, { status });
   }
+
+  deleteCopyByAccessionId(accessionId: string): Observable<void> {
+    return this.apiService.delete<void>(`${this.copyEndpoint}/by-accession/${accessionId}`);
+  }
 }
