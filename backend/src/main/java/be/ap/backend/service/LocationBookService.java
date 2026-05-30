@@ -137,8 +137,8 @@ public class LocationBookService {
     }
 
     public SchoolStatsDTO getStatsForSchool(Long schoolId) {
-        int total = locationBookRepository.sumAmountBySchoolId(schoolId);
-        int available = locationBookRepository.sumCurrentAmountBySchoolId(schoolId);
-        return new SchoolStatsDTO(total, available);
+        Integer total = locationBookRepository.sumAmountBySchoolId(schoolId);
+        Integer available = locationBookRepository.sumCurrentAmountBySchoolId(schoolId);
+        return new SchoolStatsDTO(total != null ? total : 0, available != null ? available : 0);
     }
 }

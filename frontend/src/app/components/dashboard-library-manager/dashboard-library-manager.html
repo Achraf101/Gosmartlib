@@ -95,7 +95,7 @@
     <div class="card-content">
       <i class="pi pi-search card-icon"></i>
       <span class="card-title">Catalogus</span>
-      @if (schoolStats) {
+      @if (schoolStats && schoolStats.total_books > 0) {
         <span class="card-desc"
           >{{ schoolStats.available_books }}/{{ schoolStats.total_books }} boeken beschikbaar</span
         >
