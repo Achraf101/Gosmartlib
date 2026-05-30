@@ -14,6 +14,6 @@ import be.ap.backend.mapper.BookWithAmount;
 public interface LoanBookRepository extends JpaRepository<LoanBook, Long> {
     List<LoanBook> findByLoanId(Long loanId);
 
-    @Query("SELECT new be.ap.backend.mapper.BookWithAmount(lb.book, lb.amount) FROM LoanBook lb WHERE lb.loan.id = :loanId")
+    @Query("SELECT new be.ap.backend.mapper.BookWithAmount(lb.book, lb.requestedAmount) FROM LoanBook lb WHERE lb.loan.id = :loanId")
     List<BookWithAmount> getBooksByLoanId(@Param("loanId") Long loanId);
 }
