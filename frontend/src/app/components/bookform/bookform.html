@@ -467,7 +467,7 @@
                   <ng-template #content let-activateCallback="activateCallback">
                     @if (bookToEdit?.cover || lookupCoverUrl) {
                       <div class="cover-preview">
-                        <b-cover [bookCard]="previewBookCard"></b-cover>
+                        <b-cover [bookInput]="previewBookCard"></b-cover>
                         <p class="cover-preview-note">
                           @if (bookToEdit) {
                             Huidige boekomslag. Upload een nieuwe om hem te vervangen.

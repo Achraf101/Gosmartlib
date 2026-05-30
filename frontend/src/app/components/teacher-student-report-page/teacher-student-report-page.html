@@ -59,7 +59,7 @@
         @for (b of report.borrowedBooksPreview; track b.bookId) {
           <p-card class="book-card">
             @if (b.cover) {
-              <img class="cover" [src]="b.cover" [alt]="b.title" />
+              <b-cover [bookInput]="b"></b-cover>
             }
             <h3>{{ b.title }}</h3>
             @if (b.author) {
@@ -70,6 +70,12 @@
             </p>
             @if (b.returned) {
               <p-tag severity="success" value="Teruggebracht"></p-tag>
+            } @else if (b.requested) {
+              <p-tag severity="warn" value="In behandeling"></p-tag>
+            } @else if (b.accepted) {
+              <p-tag severity="success" value="Op te halen"></p-tag>
+            } @else if (b.declined) {
+              <p-tag severity="danger" value="Geweigerd"></p-tag>
             } @else if (b.overdue) {
               <p-tag severity="danger" value="Te laat"></p-tag>
             } @else {
