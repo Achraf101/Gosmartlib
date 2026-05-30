@@ -20,7 +20,6 @@ import be.ap.backend.dto.BookLookupDTO;
 import be.ap.backend.dto.BookResultDTO;
 import be.ap.backend.dto.CreateBookDTO;
 import be.ap.backend.dto.UpdateBookDTO;
-import be.ap.backend.entity.Book;
 import be.ap.backend.entity.UserRole;
 import be.ap.backend.enums.Clib;
 import be.ap.backend.repository.LocationRepository;
@@ -47,7 +46,7 @@ public class BookController {
     private final SessionContext sessionContext;
 
     @GetMapping
-    public ResponseEntity<Page<Book>> getAll(
+    public ResponseEntity<Page<BookResultDTO>> getAll(
             HttpSession session,
             @RequestParam(required = false) Boolean full,
             @RequestParam(required = false) Long location,
@@ -57,12 +56,12 @@ public class BookController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Book> getById(@PathVariable Long id) {
+    public ResponseEntity<BookResultDTO> getById(@PathVariable Long id) {
         return ResponseEntity.ok(bookService.getById(id));
     }
 
     @GetMapping("/search/{query}")
-    public ResponseEntity<Page<Book>> search(
+    public ResponseEntity<Page<BookResultDTO>> search(
             HttpSession session,
             @PathVariable String query,
             @RequestParam(defaultValue = "0") int page,
@@ -76,7 +75,7 @@ public class BookController {
     }
 
     @GetMapping("/filter")
-    public ResponseEntity<Page<Book>> filter(
+    public ResponseEntity<Page<BookResultDTO>> filter(
             HttpSession session,
             @RequestParam(required = false) String query,
             @RequestParam(required = false) Long location,
@@ -112,7 +111,7 @@ public class BookController {
     }
 
     @PostMapping
-    public ResponseEntity<Book> addBook(@RequestBody CreateBookDTO dto) {
+    public ResponseEntity<BookResultDTO> addBook(@RequestBody CreateBookDTO dto) {
         return ResponseEntity.ok(bookService.saveBook(dto));
     }
 
@@ -136,7 +135,7 @@ public class BookController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Book> updateBook(@PathVariable Long id, @RequestBody UpdateBookDTO dto) {
+    public ResponseEntity<BookResultDTO> updateBook(@PathVariable Long id, @RequestBody UpdateBookDTO dto) {
         return ResponseEntity.ok(bookService.updateBook(id, dto));
     }
 

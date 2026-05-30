@@ -52,7 +52,7 @@ public class BookService {
     private final SessionContext sessionContext;
     private final LocationRepository locationRepository;
 
-    public Book saveBook(CreateBookDTO dto) {
+    public BookResultDTO saveBook(CreateBookDTO dto) {
         Book book = new Book();
 
         book.setTitle(dto.getTitle());
@@ -124,10 +124,10 @@ public class BookService {
             }
         }
 
-        return bookRepository.save(book);
+        return toDTO(bookRepository.save(book));
     }
 
-    public Page<Book> filter(
+    public Page<BookResultDTO> filter(
             List<Long> locationIds,
             List<Long> genres,
             Long language,
@@ -165,61 +165,22 @@ public class BookService {
         }
 
         if (locationIds == null) {
-            return bookRepository.filterAdmin(genres, language, fiction, authorIds, seriesIds,
-                    pagesMin, pagesMax, clibs, themes, didactic, query, pageable);
+            Page<BookResultDTO> dtoPage = bookRepository.filterAdmin(genres, language, fiction, authorIds,
+                    seriesIds, pagesMin, pagesMax, clibs, themes, didactic, query, pageable).map(this::toDTO);
+            return enrichWithGenresAndThemes(dtoPage);
         }
 
-        return bookRepository.filter(
-                locationIds,
-                genres,
-                language,
-                fiction,
-                authorIds,
-                seriesIds,
-                pagesMin,
-                pagesMax,
-                clibs,
-                themes,
-                didactic,
-                query,
-                pageable);
+        Page<BookResultDTO> dtoPage = bookRepository.filter(locationIds, genres, language, fiction,
+                authorIds, seriesIds, pagesMin, pagesMax, clibs, themes, didactic, query,
+                pageable).map(this::toDTO);
+        return enrichWithGenresAndThemes(dtoPage);
     }
 
     public Page<BookResultDTO> getAllBookResults(Pageable pageable) {
-        Page<BookResultDTO> page = bookRepository.getAllBookResults(pageable);
-
-        List<Long> bookIds = page.getContent().stream()
-                .map(BookResultDTO::getId)
-                .toList();
-
-        if (bookIds.isEmpty()) {
-            return page;
-        }
-
-        List<GenreProjectionDTO> results = bookRepository.findGenresForBooks(bookIds);
-
-        Map<Long, Set<GenreDTO>> genreMap = new HashMap<>();
-        for (GenreProjectionDTO row : results) {
-            genreMap.computeIfAbsent(row.getBookId(), k -> new HashSet<>())
-                    .add(new GenreDTO(row.getGenreId(), row.getGenreName()));
-        }
-
-        page.getContent().forEach(dto -> dto.setGenres(genreMap.getOrDefault(dto.getId(), Set.of())));
-
-        List<ThemeProjectionDTO> themes = bookRepository.findThemesForBooks(bookIds);
-
-        Map<Long, Set<ThemeDTO>> themeMap = new HashMap<>();
-        for (ThemeProjectionDTO row : themes) {
-            themeMap.computeIfAbsent(row.getBookId(), k -> new HashSet<>())
-                    .add(new ThemeDTO(row.getThemeId(), row.getThemeName()));
-        }
-
-        page.getContent().forEach(dto -> dto.setThemes(themeMap.getOrDefault(dto.getId(), Set.of())));
-
-        return page;
+        return enrichWithGenresAndThemes(bookRepository.getAllBookResults(pageable));
     }
 
-    public Book updateBook(Long id, UpdateBookDTO dto) {
+    public BookResultDTO updateBook(Long id, UpdateBookDTO dto) {
         Book book = bookRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Boek niet gevonden met id: " + id));
 
@@ -268,13 +229,13 @@ public class BookService {
             book.setThemes(themes);
         }
 
-        return bookRepository.save(book);
+        return toDTO(bookRepository.save(book));
     }
 
-    public Book getById(Long id) {
+    public BookResultDTO getById(Long id) {
         if (sessionContext.hasRole(UserRole.ADMIN)) {
-            return bookRepository.findById(id)
-                    .orElseThrow(() -> new EntityNotFoundException("Boek niet gevonden met id: " + id));
+            return toDTO(bookRepository.findById(id)
+                    .orElseThrow(() -> new EntityNotFoundException("Boek niet gevonden met id: " + id)));
         }
 
         Book book = bookRepository.findById(id)
@@ -286,13 +247,14 @@ public class BookService {
         if (!hasAccess)
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
 
-        return book;
+        return toDTO(book);
     }
 
-    public Page<Book> search(String query, Pageable pageable) {
+    public Page<BookResultDTO> search(String query, Pageable pageable) {
         List<Long> ids = getLocationIds();
         Boolean didactic = sessionContext.hasRole(UserRole.LEERKRACHT) ? null : false;
-        return bookRepository.search(ids, query, didactic, pageable);
+        Page<BookResultDTO> dtoPage = bookRepository.search(ids, query, didactic, pageable).map(this::toDTO);
+        return enrichWithGenresAndThemes(dtoPage);
     }
 
     public List<BookCardDTO> getRelated(Long id) {
@@ -315,26 +277,89 @@ public class BookService {
         return locationRepository.findIdsBySchoolId(schoolId);
     }
 
-    public Page<Book> getAll(Long location, Boolean full, Pageable pageable) {
+    public Page<BookResultDTO> getAll(Long location, Boolean full, Pageable pageable) {
         Boolean didacticFilter = sessionContext.hasRole(UserRole.LEERKRACHT) ? null : false;
+        Page<Book> books;
+
         if (sessionContext.hasRole(UserRole.ADMIN)) {
             if (Boolean.TRUE.equals(full) || location == null) {
-                return bookRepository.findAll(pageable);
+                books = bookRepository.findAll(pageable);
             } else {
-                return bookRepository.findAllByLocationAndDidactic(List.of(location), null, pageable);
+                books = bookRepository.findAllByLocationAndDidactic(List.of(location), null, pageable);
+            }
+        } else {
+            Long schoolId = sessionContext.getSchoolId();
+            List<Long> ids = locationRepository.findIdsBySchoolId(schoolId);
+
+            if (Boolean.TRUE.equals(full)) {
+                books = bookRepository.findAll(pageable);
+            } else if (location == null || ids.contains(location)) {
+                List<Long> effectiveIds = (location != null) ? List.of(location) : ids;
+                books = bookRepository.findAllByLocationAndDidactic(effectiveIds, didacticFilter, pageable);
+            } else {
+                return Page.empty(pageable);
             }
         }
+        Page<BookResultDTO> dtoPage = books.map(this::toDTO);
+        return enrichWithGenresAndThemes(dtoPage);
+    }
 
-        Long schoolId = sessionContext.getSchoolId();
-        List<Long> ids = locationRepository.findIdsBySchoolId(schoolId);
+    private Page<BookResultDTO> enrichWithGenresAndThemes(Page<BookResultDTO> page) {
+        List<Long> bookIds = page.getContent().stream()
+                .map(BookResultDTO::getId)
+                .toList();
 
-        if (Boolean.TRUE.equals(full)) {
-            return bookRepository.findAll(pageable);
-        } else if (location == null || ids.contains(location)) {
-            List<Long> effectiveIds = (location != null) ? List.of(location) : ids;
-            return bookRepository.findAllByLocationAndDidactic(effectiveIds, didacticFilter, pageable);
-        } else {
-            return Page.empty(pageable);
+        if (bookIds.isEmpty()) {
+            return page;
         }
+
+        List<GenreProjectionDTO> genreResults = bookRepository.findGenresForBooks(bookIds);
+        Map<Long, Set<GenreDTO>> genreMap = new HashMap<>();
+        for (GenreProjectionDTO row : genreResults) {
+            genreMap.computeIfAbsent(row.getBookId(), k -> new HashSet<>())
+                    .add(new GenreDTO(row.getGenreId(), row.getGenreName()));
+        }
+        page.getContent().forEach(dto -> dto.setGenres(genreMap.getOrDefault(dto.getId(), Set.of())));
+
+        List<ThemeProjectionDTO> themeResults = bookRepository.findThemesForBooks(bookIds);
+        Map<Long, Set<ThemeDTO>> themeMap = new HashMap<>();
+        for (ThemeProjectionDTO row : themeResults) {
+            themeMap.computeIfAbsent(row.getBookId(), k -> new HashSet<>())
+                    .add(new ThemeDTO(row.getThemeId(), row.getThemeName()));
+        }
+        page.getContent().forEach(dto -> dto.setThemes(themeMap.getOrDefault(dto.getId(), Set.of())));
+
+        return page;
+    }
+
+    private BookResultDTO toDTO(Book book) {
+        BookResultDTO dto = new BookResultDTO();
+        dto.setId(book.getId());
+        dto.setTitle(book.getTitle());
+        dto.setCover(book.getCover());
+        dto.setAuthorName(book.getAuthor() != null ? book.getAuthor().getName() : null);
+        dto.setBookType(book.getBookType());
+        dto.setSeriesId(book.getSeries() != null ? book.getSeries().getId() : null);
+        dto.setSeriesName(book.getSeries() != null ? book.getSeries().getName() : null);
+        dto.setSeriesNumber(book.getSeriesNumber());
+        dto.setLanguage(book.getLanguage());
+        dto.setPublished(book.getPublished());
+        dto.setDescription(book.getDescription());
+        dto.setFiction(book.getFiction() != null && book.getFiction());
+        dto.setClib(book.getClib());
+        dto.setPages(book.getPages() != null ? book.getPages() : 0);
+        dto.setRating((int) book.getRating());
+        dto.setRatingCount(book.getRatingCount());
+        if (book.getGenres() != null) {
+            dto.setGenres(book.getGenres().stream()
+                    .map(g -> new GenreDTO(g.getId(), g.getName()))
+                    .collect(Collectors.toSet()));
+        }
+        if (book.getThemes() != null) {
+            dto.setThemes(book.getThemes().stream()
+                    .map(t -> new ThemeDTO(t.getId(), t.getName()))
+                    .collect(Collectors.toSet()));
+        }
+        return dto;
     }
 }
