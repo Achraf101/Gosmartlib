@@ -21,4 +21,15 @@ public class AsyncConfig {
         executor.initialize();
         return executor;
     }
+
+    @Bean(name = "queueTaskExecutor")
+    public Executor queueTaskExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(1);
+        executor.setMaxPoolSize(1);
+        executor.setQueueCapacity(250);
+        executor.setThreadNamePrefix("task-queue-");
+        executor.initialize();
+        return executor;
+    }
 }
