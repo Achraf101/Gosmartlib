@@ -14,4 +14,5 @@ export interface BookCopyDetail {
   location_name: string;
   amount: number;
   current_amount: number;
+  note?: string;
 }

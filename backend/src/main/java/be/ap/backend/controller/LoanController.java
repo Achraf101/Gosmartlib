@@ -70,7 +70,9 @@ public class LoanController {
             @PathVariable Long id,
             @RequestBody Map<String, Object> body) {
         Long bookCopyId = Long.valueOf(body.get("book_copy_id").toString());
-        return ResponseEntity.ok(loanService.scanReturn(id, bookCopyId));
+        String note = body.get("note") != null ? body.get("note").toString() : null;
+        boolean damaged = Boolean.TRUE.equals(body.get("damaged"));
+        return ResponseEntity.ok(loanService.scanReturn(id, bookCopyId, note, damaged));
     }
 
     @PutMapping("/{id}/pickup")

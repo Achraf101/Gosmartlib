@@ -2,6 +2,7 @@ package be.ap.backend.repository;
 
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -19,6 +20,8 @@ public interface LocationBookRepository extends JpaRepository<LocationBook, Long
     Page<LocationBook> findByLocationId(Long locationId, Pageable pageable);
 
     Optional<LocationBook> findByLocationIdAndBookId(Long locationId, Long bookId);
+
+    List<LocationBook> findByBookIdAndLocationSchoolId(Long bookId, Long schoolId);
 
     @Query("SELECT SUM(cb.amount) FROM LocationBook cb WHERE cb.location.school.id = :schoolId")
     Integer sumAmountBySchoolId(@Param("schoolId") Long schoolId);

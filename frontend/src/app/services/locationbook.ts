@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { ApiService } from './api';
 import { Observable } from 'rxjs';
 import { LocationBook } from '../models/locationBook';
-import { LocationBookDetail, SchoolStats } from '../models/locationBookDetail';
+import { LocationAvailability, LocationBookDetail, SchoolStats } from '../models/locationBookDetail';
 import { BookCopyDetail, CopyStatus } from '../models/bookCopy';
 
 @Injectable({
@@ -36,6 +36,10 @@ export class LocationBookService {
     return this.apiService.get<SchoolStats>(`${this.endpoint}/stats`);
   }
 
+  getAvailabilityByBook(bookId: number): Observable<LocationAvailability[]> {
+    return this.apiService.get<LocationAvailability[]>(`${this.endpoint}/book/${bookId}`);
+  }
+
   getCopiesByLocationBook(locationBookId: number): Observable<BookCopyDetail[]> {
     return this.apiService.get<BookCopyDetail[]>(`${this.copyEndpoint}/locationbook/${locationBookId}`);
   }
@@ -46,5 +50,9 @@ export class LocationBookService {
 
   updateCopyStatus(id: number, status: CopyStatus): Observable<BookCopyDetail> {
     return this.apiService.put<BookCopyDetail>(`${this.copyEndpoint}/${id}/status`, { status });
+  }
+
+  deleteCopyByAccessionId(accessionId: string): Observable<void> {
+    return this.apiService.delete<void>(`${this.copyEndpoint}/by-accession/${accessionId}`);
   }
 }

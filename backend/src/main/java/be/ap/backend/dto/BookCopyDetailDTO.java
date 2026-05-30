@@ -18,4 +18,5 @@ public class BookCopyDetailDTO {
     private String locationName;
     private Integer amount;
     private Integer currentAmount;
+    private String note;
 }

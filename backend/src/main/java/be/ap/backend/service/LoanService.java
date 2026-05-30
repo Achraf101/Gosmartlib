@@ -229,7 +229,7 @@ public class LoanService {
     }
 
     @Transactional
-    public LoanDTO scanReturn(Long loanId, Long bookCopyId) {
+    public LoanDTO scanReturn(Long loanId, Long bookCopyId, String note, boolean damaged) {
         Loan loan = loanRepository.findById(loanId)
                 .orElseThrow(() -> new EntityNotFoundException("Lening niet gevonden: " + loanId));
         BookCopy copy = bookCopyRepository.findById(bookCopyId)
@@ -248,10 +248,20 @@ public class LoanService {
             throw new IllegalArgumentException(
                     "Exemplaar " + copy.getAccessionId() + " is al teruggebracht voor deze uitlening");
         }
+        if (!lb.getScannedCopyIds().isEmpty() && !lb.getScannedCopyIds().contains(bookCopyId)) {
+            throw new IllegalArgumentException(
+                    "Exemplaar " + copy.getAccessionId() + " werd niet uitgeleend voor deze uitlening");
+        }
 
         lb.getReturnedCopyIds().add(bookCopyId);
         lb.setReturnedAmount(lb.getReturnedAmount() + 1);
         loanBookRepository.save(lb);
+
+        if (note != null && !note.isBlank())
+            copy.setNote(note.trim());
+        if (damaged)
+            copy.setStatus(CopyStatus.DAMAGED);
+        bookCopyRepository.save(copy);
 
         if (lb.getReturnedAmount() >= lb.getReceivedAmount()) {
             LocationBook locationBook = locationBookRepository

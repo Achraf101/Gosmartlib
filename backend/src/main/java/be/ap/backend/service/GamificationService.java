@@ -102,6 +102,9 @@ public class GamificationService {
         List<Challenge> selected = all.stream().limit(3).toList();
 
         for (Challenge challenge : selected) {
+            if (userChallengeRepository.existsByUserIdAndMonthAndChallengeId(userId, month, challenge.getId())) {
+                continue;
+            }
             UserChallenge uc = new UserChallenge();
             uc.setUserId(userId);
             uc.setChallenge(challenge);
