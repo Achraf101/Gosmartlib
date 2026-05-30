@@ -7,6 +7,7 @@ import be.ap.backend.queue.NotificationTask;
 import be.ap.backend.queue.TaskQueueService;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("notify")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('BIBLIOTHEEKBEHEERDER')")
 public class NotificationController {
 
     private final TaskQueueService taskQueueService;

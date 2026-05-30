@@ -11,7 +11,10 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "loan")
+@Table(name = "loan", indexes = {
+        @Index(name = "idx_created", columnList = "created"),
+        @Index(name = "idx_end", columnList = "end"),
+})
 @Data
 @NoArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
