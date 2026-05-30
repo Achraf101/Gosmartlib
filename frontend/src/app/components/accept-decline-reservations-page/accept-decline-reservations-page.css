@@ -201,3 +201,16 @@ textarea[pTextarea] {
   width: 100%;
   box-sizing: border-box;
 }
+
+.note-cell {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.25rem;
+
+  .note-text {
+    flex: 1;
+    font-size: 0.875rem;
+    word-break: break-word;
+    white-space: pre-wrap;
+  }
+}

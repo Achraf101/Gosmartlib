@@ -10,24 +10,22 @@ import { CommonModule } from '@angular/common';
 import { TableModule } from 'primeng/table';
 import { LoanDTO, LoanStatus } from '../../models/loan';
 import { Message } from 'primeng/message';
+import { TooltipModule } from 'primeng/tooltip';
 
 @Component({
   selector: 'app-accept-decline-reservations-page',
-  imports: [NavBarComponent, Card, Button, Dialog, FormsModule, CommonModule, TableModule, Message],
+  imports: [NavBarComponent, Card, Button, Dialog, FormsModule, CommonModule, TableModule, Message, TooltipModule],
   templateUrl: './accept-decline-reservations-page.html',
   styleUrl: './accept-decline-reservations-page.css',
 })
 export class AcceptDeclineReservationsPageComponent implements OnInit {
   loans: LoanDTO[] = [];
   groupedLoans: (LoanDTO | LoanDTO[])[] = [];
-  expandedGroups: Set<string> = new Set();
   loading = false;
   selectedLoan: LoanDTO | null = null;
-  selectedGroupLoans: LoanDTO[] = [];
   noteDialogVisible = false;
   note = '';
-  infoDialogVisible = false;
-  groupInfoDialogVisible = false;
+
   constructor(
     private loanService: LoanService,
     private messageService: MessageService,
@@ -118,10 +116,6 @@ export class AcceptDeclineReservationsPageComponent implements OnInit {
           detail: 'Uitlening geaccepteerd!',
           life: 3000,
         });
-        this.selectedGroupLoans = this.selectedGroupLoans.filter(l => l.id !== loan.id);
-        if (this.selectedGroupLoans.length === 0) {
-          this.groupInfoDialogVisible = false;
-        }
         this.loadPending();
       },
     });
@@ -137,10 +131,6 @@ export class AcceptDeclineReservationsPageComponent implements OnInit {
           detail: 'Uitlening geweigerd!',
           life: 3000,
         });
-        this.selectedGroupLoans = this.selectedGroupLoans.filter(l => l.id !== loan.id);
-        if (this.selectedGroupLoans.length === 0) {
-          this.groupInfoDialogVisible = false;
-        }
         this.loadPending();
       },
     });
@@ -159,7 +149,6 @@ export class AcceptDeclineReservationsPageComponent implements OnInit {
               detail: 'Alle ontleningen geaccepteerd!',
               life: 3000,
             });
-            this.groupInfoDialogVisible = false;
             this.loadPending();
           }
         },
@@ -180,7 +169,6 @@ export class AcceptDeclineReservationsPageComponent implements OnInit {
               detail: 'Alle ontleningen geweigerd!',
               life: 3000,
             });
-            this.groupInfoDialogVisible = false;
             this.loadPending();
           }
         },
@@ -188,13 +176,7 @@ export class AcceptDeclineReservationsPageComponent implements OnInit {
     }
   }
 
-  openGroupDialog(group: LoanDTO[]): void {
-    this.selectedGroupLoans = group;
-    this.groupInfoDialogVisible = true;
-  }
-
   getTotalBooks(group: LoanDTO[]): number {
     return group.reduce((sum, loan) => sum + (loan.books[0]?.requestedAmount ?? 0), 0);
   }
-
 }
