@@ -307,6 +307,19 @@
     >
       <form [formGroup]="loanForm">
         <div class="loanForm">
+          @if (!locationId) {
+            <div>
+              <p-select
+                [options]="availableLoanLocations"
+                optionLabel="location_name"
+                optionValue="location_id"
+                placeholder="Selecteer een locatie"
+                [(ngModel)]="selectedLoanLocationId"
+                [ngModelOptions]="{ standalone: true }"
+                (onChange)="onLoanLocationChange($event.value)"
+              />
+            </div>
+          }
           <div>
             <p-datepicker
               formControlName="start"
@@ -365,7 +378,7 @@
             <p-button
               class="btn"
               label="Opslaan"
-              [disabled]="loanForm.invalid"
+              [disabled]="loanForm.invalid || (!locationId && !selectedLoanLocationId)"
               (onClick)="createLoan()"
             />
           </div>

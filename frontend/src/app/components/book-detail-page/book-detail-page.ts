@@ -50,6 +50,7 @@ import { SchoolService } from '../../services/school';
 import { School } from '../../models/school';
 import { BookCover } from '../misc/book-cover/book-cover';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { SelectModule } from 'primeng/select';
 
 @Component({
   selector: 'app-book-detail-page',
@@ -74,6 +75,7 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
     FileUploadModule,
     MaterialComponent,
     BookCover,
+    SelectModule,
   ],
   templateUrl: './book-detail-page.html',
   styleUrl: './book-detail-page.css',
@@ -94,6 +96,7 @@ export class BookDetailPage implements OnInit {
   themesString = '';
   loanFormVisible = false;
   cartDialogVisible = false;
+  selectedLoanLocationId: number | null = null;
   uploadDialogVisible = false;
   pendingFile?: File;
   uploadNote = '';
@@ -284,6 +287,16 @@ export class BookDetailPage implements OnInit {
   }
 
   createLoan(): void {
+    const effectiveLocationId = this.locationId ?? this.selectedLoanLocationId;
+    if (!effectiveLocationId) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Geen locatie',
+        detail: 'Selecteer een locatie voor je ontlening.',
+        life: 3000,
+      });
+      return;
+    }
     if (this.loanForm.invalid || !this.book) return;
     const rawValue = this.loanForm.value;
 
@@ -296,7 +309,7 @@ export class BookDetailPage implements OnInit {
 
     const loan: CreateLoanDTO = {
       userId: this.userId,
-      locationId: this.locationId ?? this.schoolId,
+      locationId: effectiveLocationId,
       extended: 0,
       start: this.formatDate(rawValue.start ?? new Date()),
       end: this.formatDate(rawValue.end ?? new Date()),
@@ -476,12 +489,33 @@ export class BookDetailPage implements OnInit {
   }
 
   openLoanDialog(): void {
+    if (!this.locationId) {
+      this.selectedLoanLocationId = null;
+      this.locationBook = undefined;
+    }
     if (this.authService.hasRole('STUDENT')) {
       this.loanForm.patchValue({ requestedAmount: 1 });
       this.loanForm.controls.requestedAmount.clearValidators();
       this.loanForm.controls.requestedAmount.updateValueAndValidity();
     }
     this.loanFormVisible = true;
+  }
+
+  onLoanLocationChange(locationId: number): void {
+    this.selectedLoanLocationId = locationId;
+    this.locationBookService.getLocationBook(locationId, this.bookId).subscribe({
+      next: (lb) => {
+        this.locationBook = lb;
+        this.setAmountValidators(lb.current_amount);
+      },
+      error: () => {
+        this.locationBook = undefined;
+      },
+    });
+  }
+
+  get availableLoanLocations(): LocationAvailability[] {
+    return this.locationAvailability.filter((l) => l.current_amount > 0);
   }
 
   getStarFill(position: number): number {
