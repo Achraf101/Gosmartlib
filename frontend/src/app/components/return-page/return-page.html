@@ -73,6 +73,9 @@
             <p>Teruggavedatum</p>
           </th>
           <th>
+            <p>Verlengingen</p>
+          </th>
+          <th>
             <p>Status</p>
           </th>
         </tr>
@@ -117,6 +120,9 @@
               "
               >{{ loan.end | date: 'dd/MM/yyyy' }}</span
             >
+          </td>
+          <td>
+            <span>{{ loan.extended }}</span>
           </td>
           <td>
             @if (loan.books[0].returnedAmount > 0) {
