@@ -7,6 +7,8 @@ import be.ap.backend.enums.Clib;
 import java.time.Year;
 import java.util.HashSet;
 import java.util.Set;
+
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
@@ -14,11 +16,12 @@ import lombok.NoArgsConstructor;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 public class BookResultDTO {
     private Long id;
     private String title;
     private String cover;
-    private String authorName;
+    private AuthorDTO author;
     private BookType bookType;
     private Long seriesId;
     private String seriesName;
@@ -41,7 +44,7 @@ public class BookResultDTO {
         this.id = id;
         this.title = title;
         this.cover = cover;
-        this.authorName = authorName;
+        this.author = author;
         this.bookType = bookType;
         this.seriesId = seriesId;
         this.seriesName = seriesName;

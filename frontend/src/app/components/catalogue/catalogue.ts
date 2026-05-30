@@ -387,7 +387,6 @@ export class CatalogueComponent implements OnInit {
       id: book.id,
       title: book.title,
       author: book.author,
-      author_name: book.author_name,
       cover: book.cover,
     };
   }

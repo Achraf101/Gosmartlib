@@ -324,7 +324,6 @@ export class BookDetailPage implements OnInit {
       bookId: this.bookId,
       title: this.book.title,
       author: this.book.author,
-      author_name: this.book.author_name,
       cover: this.book.cover,
       requestedAmount: this.cartForm.value.requestedAmount ?? 1,
       receivedAmount: 0,

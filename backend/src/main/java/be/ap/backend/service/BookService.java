@@ -19,6 +19,7 @@ import be.ap.backend.dto.ThemeDTO;
 import be.ap.backend.dto.ThemeProjectionDTO;
 import be.ap.backend.dto.UpdateBookDTO;
 import be.ap.backend.config.SessionContext;
+import be.ap.backend.dto.AuthorDTO;
 import be.ap.backend.dto.BookCardDTO;
 import be.ap.backend.dto.BookResultDTO;
 import be.ap.backend.dto.CreateBookDTO;
@@ -337,7 +338,12 @@ public class BookService {
         dto.setId(book.getId());
         dto.setTitle(book.getTitle());
         dto.setCover(book.getCover());
-        dto.setAuthorName(book.getAuthor() != null ? book.getAuthor().getName() : null);
+        if (book.getAuthor() != null) {
+            dto.setAuthor(new AuthorDTO(
+                    book.getAuthor().getId(),
+                    book.getAuthor().getName(),
+                    book.getAuthor().getDescription()));
+        }
         dto.setBookType(book.getBookType());
         dto.setSeriesId(book.getSeries() != null ? book.getSeries().getId() : null);
         dto.setSeriesName(book.getSeries() != null ? book.getSeries().getName() : null);

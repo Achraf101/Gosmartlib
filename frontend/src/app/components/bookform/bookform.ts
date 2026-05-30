@@ -270,7 +270,6 @@ export class BookformComponent implements OnInit {
         title: '',
         cover: this.lookupCoverUrl ?? undefined,
         author: { id: 0, name: '' },
-        author_name: '',
       }
     );
   }
@@ -368,8 +367,7 @@ export class BookformComponent implements OnInit {
         this.suggestionCard = {
           id: 0,
           title: result.title ?? '',
-          author: { id: 0, name: result.author_name ?? '' },
-          author_name: result.author_name ?? '',
+          author: { id: 0, name: '' },
           cover: result.cover_url ?? undefined,
         };
         this.isLookingUp = false;
