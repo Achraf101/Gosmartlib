@@ -3,12 +3,11 @@
     <img src="assets/logo.png" alt="GO! Antwerpen" class="logo" routerLink="/" />
   </div>
   <div class="header-right">
-    <button class="icon-btn hide-mobile">
-      <i class="pi pi-bell" style="font-size: 1.2rem"></i>
-    </button>
+    @if (!authService.hasRole('ADMIN')) {
+      <app-loan-cart style="font-size: 1.2rem" />
+    }
     @if (authService.currentUser$ | async; as user) {
       <div class="user-info">
-        <app-loan-cart />
         <i class="pi pi-user hide-mobile"></i>
         @if (user.username) {
           @if (user.roles.includes('ADMIN')) {
@@ -39,26 +38,38 @@
 </header>
 
 <nav class="nav" [class.open]="menuOpen">
-  <a
-    routerLink="/"
-    routerLinkActive="active"
-    [routerLinkActiveOptions]="{ exact: true }"
-    class="nav-link"
-    (click)="menuOpen = false"
-    >Startpagina</a
-  >
-  <a routerLink="/catalogus" routerLinkActive="active" class="nav-link" (click)="menuOpen = false"
-    >Catalogus</a
-  >
-  <a routerLink="/uitleningen" routerLinkActive="active" class="nav-link" (click)="menuOpen = false"
-    >Mijn uitleningen</a
-  >
-  <a routerLink="/favorieten" routerLinkActive="active" class="nav-link" (click)="menuOpen = false"
-    >Mijn leeslijst &amp; favorieten</a
-  >
-  @if (authService.hasRole('BIBLIOTHEEKBEHEERDER')) {
+  @if (!authService.hasRole('ADMIN')) {
     <a
-      routerLink="/dashboard/bibliotheek-beheerder"
+      routerLink="/"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: true }"
+      class="nav-link"
+      (click)="menuOpen = false"
+      >Startpagina</a
+    >
+    <a routerLink="/catalogus" routerLinkActive="active" class="nav-link" (click)="menuOpen = false"
+      >Catalogus</a
+    >
+    <a
+      routerLink="/uitleningen"
+      routerLinkActive="active"
+      class="nav-link"
+      (click)="menuOpen = false"
+      >Mijn ontleningen</a
+    >
+    <a
+      routerLink="/favorieten"
+      routerLinkActive="active"
+      class="nav-link"
+      (click)="menuOpen = false"
+      >Mijn leeslijst en favorieten</a
+    >
+  }
+  @if (authService.hasRole('BIBLIOTHEEKBEHEERDER') || authService.hasRole('ADMIN')) {
+    <a
+      routerLink="{{
+        authService.hasRole('ADMIN') ? '/dashboard/admin' : '/dashboard/bibliotheek-beheerder'
+      }}"
       routerLinkActive="active"
       class="nav-link"
       (click)="menuOpen = false"
@@ -72,6 +83,15 @@
       class="nav-link"
       (click)="menuOpen = false"
       >Mijn klassen</a
+    >
+  }
+  @if (authService.hasRole('STUDENT', 'LEERKRACHT')) {
+    <a
+      routerLink="/begeleiding"
+      routerLinkActive="active"
+      class="nav-link"
+      (click)="menuOpen = false"
+      >Begeleiding</a
     >
   }
 </nav>

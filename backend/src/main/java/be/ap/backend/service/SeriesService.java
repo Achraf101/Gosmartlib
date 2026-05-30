@@ -3,6 +3,7 @@ package be.ap.backend.service;
 import be.ap.backend.dto.SeriesDTO;
 import be.ap.backend.entity.Series;
 import be.ap.backend.repository.SeriesRepository;
+import jakarta.persistence.EntityNotFoundException;
 import be.ap.backend.repository.AuthorRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -32,7 +33,7 @@ public class SeriesService {
     public SeriesDTO findById(Long id) {
     return seriesRepository.findById(id)
             .map(this::convertToDTO)
-            .orElseThrow(() -> new RuntimeException("Series niet gevonden: " + id));
+            .orElseThrow(() -> new EntityNotFoundException("Series niet gevonden met id: " + id));
 }
 
     public SeriesDTO createSeries(SeriesDTO dto) {

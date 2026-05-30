@@ -67,4 +67,23 @@ export class LoanService {
   extend(id: number): Observable<LoanDTO> {
     return this.apiService.put<LoanDTO>(`${this.endpoint}/${id}/extend`, {});
   }
+
+  pickupLoan(id: number, bookCopyId?: number): Observable<LoanDTO> {
+    const body = bookCopyId != null ? { book_copy_id: bookCopyId } : {};
+    return this.apiService.put<LoanDTO>(`${this.endpoint}/${id}/pickup`, body);
+  }
+
+  scanPickup(id: number, bookCopyId: number): Observable<LoanDTO> {
+    return this.apiService.put<LoanDTO>(`${this.endpoint}/${id}/scan-pickup`, {
+      book_copy_id: bookCopyId,
+    });
+  }
+
+  scanReturn(id: number, bookCopyId: number, note = '', damaged = false): Observable<LoanDTO> {
+    return this.apiService.put<LoanDTO>(`${this.endpoint}/${id}/scan-return`, {
+      book_copy_id: bookCopyId,
+      note: note || null,
+      damaged,
+    });
+  }
 }

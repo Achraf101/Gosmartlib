@@ -1,0 +1,54 @@
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  padding: 1.5rem;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+:host ::ng-deep .nav-card {
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+
+:host ::ng-deep .nav-card:hover {
+  transform: translateY(-2px);
+}
+
+.card-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  text-align: center;
+}
+
+.card-icon {
+  font-size: 2rem;
+  color: var(--p-primary-color);
+}
+
+.card-title {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.card-desc {
+  font-size: 0.85rem;
+  color: var(--p-text-muted-color);
+}
+
+.card-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 1rem 1rem;
+}
+
+:host ::ng-deep .card-actions .p-button {
+  width: 100%;
+  justify-content: center;
+}

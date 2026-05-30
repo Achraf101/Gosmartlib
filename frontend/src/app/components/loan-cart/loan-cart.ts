@@ -26,6 +26,8 @@ import { TableModule } from 'primeng/table';
 import { Message } from 'primeng/message';
 import { SchoolService } from '../../services/school';
 import { School } from '../../models/school';
+import { TooltipModule } from 'primeng/tooltip';
+import { SelectModule } from 'primeng/select';
 
 @Component({
   selector: 'app-loan-cart',
@@ -42,6 +44,8 @@ import { School } from '../../models/school';
     BookCardComponent,
     TableModule,
     Message,
+    TooltipModule,
+    SelectModule,
   ],
   templateUrl: './loan-cart.html',
   styleUrl: './loan-cart.css',
@@ -50,9 +54,8 @@ export class LoanCartComponent {
   constructor(
     private readonly loanService: LoanService,
     private readonly messageService: MessageService,
-    private readonly locationService: LocationService,
     private readonly locationBookService: LocationBookService,
-    private readonly authService: AuthService,
+    public authService: AuthService,
     private readonly schoolService: SchoolService,
   ) {}
 
@@ -62,41 +65,65 @@ export class LoanCartComponent {
   today = new Date();
   items = this.cartService.items();
   maxAmounts: Map<number, number> = new Map();
+  locations: Location[] = [];
+  selectedLocationId: number | null = null;
 
-  location?: Location;
   school?: School;
+  protected locationId: number | null = null;
 
   private get userId(): number {
     return this.authService.currentUser?.userId ?? 0;
   }
-
-  // private get locationId(): number {
-  //   return this.authService.currentUser?.locationId ?? 0;
-  // }
 
   private get schoolId(): number {
     return this.authService.currentUser?.schoolId ?? 0;
   }
 
   ngOnInit(): void {
-    // this.locationService.getById(this.locationId).subscribe({
-    //   next: (location) => {
-    //     this.location = location;
-    //   },
-    // });
     this.schoolService.getById(this.schoolId).subscribe({
       next: (school) => {
-        ((this.school = school), this.cartService.setBorrowLimit(school.borrowLimit));
+        this.school = school;
+        this.cartService.setBorrowLimit(school.borrowLimit);
+        if (school.locations?.length === 1) {
+          this.locationId = school.locations[0].id;
+        } else {
+          this.locations = school.locations ?? [];
+          this.selectedLocationId = this.locationId;
+        }
+
+        console.log('locationId na init:', this.locationId);
+        console.log('locations na init:', this.locations);
+        this.loadMaxAmounts();
       },
     });
   }
 
-  //TODO: locatie terug zetten (waar 1) maar via school
+  onLocationChange(locationId: number): void {
+    this.selectedLocationId = locationId;
+    this.loadMaxAmounts();
+  }
+
   loadMaxAmounts(): void {
+    const effectiveLocationId = this.locationId ?? this.selectedLocationId;
+    if (!effectiveLocationId) return;
     for (const item of this.cartService.items()) {
-      this.locationBookService.getLocationBook(1, item.bookId).subscribe({
+      this.locationBookService.getLocationBook(effectiveLocationId, item.bookId).subscribe({
         next: (locationBook: LocationBook) => {
           this.maxAmounts.set(item.bookId, locationBook.current_amount);
+
+          if (item.requestedAmount > locationBook.current_amount) {
+            this.cartService.updateAmount(item.bookId, locationBook.current_amount);
+          }
+        },
+        error: () => {
+          this.maxAmounts.set(item.bookId, 0);
+          this.cartService.updateAmount(item.bookId, 0);
+          this.messageService.add({
+            severity: 'warn',
+            summary: 'Niet beschikbaar',
+            detail: `Een boek in je lijst is niet beschikbaar op deze locatie.`,
+            life: 3000,
+          });
         },
       });
     }
@@ -132,13 +159,25 @@ export class LoanCartComponent {
   }
 
   submitLoan(): void {
+    const effectiveLocationId = this.locationId ?? this.selectedLocationId;
+
+    if (!effectiveLocationId) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Geen locatie',
+        detail: 'Selecteer een locatie voor je ontlening.',
+        life: 3000,
+      });
+      return;
+    }
+
     if (this.checkoutForm.invalid || this.cartService.isEmpty() || !this.calculatedEnd) return;
 
     if (this.school && this.cartService.items().length > this.school.borrowLimit) {
       this.messageService.add({
         severity: 'warn',
         summary: 'Limiet overschreden',
-        detail: `U mag maximaal ${this.school.borrowLimit} verschillende boeken per ontlening aanvragen.`,
+        detail: `Je mag maximaal ${this.school.borrowLimit} verschillende boeken per ontlening aanvragen.`,
         life: 4000,
       });
       return;
@@ -146,7 +185,7 @@ export class LoanCartComponent {
 
     const loan: CreateLoanDTO = {
       userId: this.userId,
-      locationId: 1, //this.locationId
+      locationId: effectiveLocationId,
       extended: 0,
       start: this.formatDate(this.checkoutForm.value.start!),
       end: this.formatDate(this.calculatedEnd ?? new Date()),
@@ -167,15 +206,6 @@ export class LoanCartComponent {
         this.cartService.clear();
         this.checkoutForm.reset();
         this.visible = false;
-      },
-      error: (err) => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fout',
-          detail: 'Er is iets misgegaan, probeer opnieuw.',
-          life: 3000,
-        });
-        console.error(err);
       },
     });
   }

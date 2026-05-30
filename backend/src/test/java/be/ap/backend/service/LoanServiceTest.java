@@ -4,6 +4,7 @@ import be.ap.backend.dto.LoanBookDTO;
 import be.ap.backend.dto.LoanDTO;
 import be.ap.backend.dto.TopBookDTO;
 import be.ap.backend.entity.*;
+import be.ap.backend.enums.LoanStatus;
 import be.ap.backend.repository.LocationBookRepository;
 import be.ap.backend.repository.LoanBookRepository;
 import be.ap.backend.repository.LoanRepository;
@@ -264,7 +265,7 @@ public class LoanServiceTest {
 
         assertThatThrownBy(() -> loanService.createLoan(dto))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("uitleen limiet");
+                .hasMessageContaining("Ontleenlimiet");
     }
 
     @Test

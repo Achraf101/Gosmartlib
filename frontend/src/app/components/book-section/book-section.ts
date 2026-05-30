@@ -4,7 +4,6 @@ import { RouterModule, Router } from '@angular/router';
 import { SectionService } from '../../services/section';
 import { BookDetail } from '../../models/book';
 import { Section } from '../../models/section';
-import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { SelectModule } from 'primeng/select';
 import { ButtonModule } from 'primeng/button';
@@ -34,7 +33,7 @@ import { AuthService } from '../../services/auth';
   ],
   templateUrl: './book-section.html',
   styleUrl: './book-section.css',
-  providers: [MessageService],
+  providers: [],
 })
 export class BookSectionComponent implements OnInit {
   sections: Section[] = [];
@@ -54,7 +53,6 @@ export class BookSectionComponent implements OnInit {
 
   constructor(
     private sectionService: SectionService,
-    private messageService: MessageService,
     private router: Router,
     private schoolSettingsService: SchoolSettingsService,
     public authService: AuthService,
@@ -74,12 +72,6 @@ export class BookSectionComponent implements OnInit {
       },
       error: () => {
         this.loading.stop();
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fout',
-          detail: 'Fout bij laden van secties.',
-          life: 3750,
-        });
       },
     });
 
@@ -128,12 +120,6 @@ export class BookSectionComponent implements OnInit {
         },
         error: () => {
           this.loading.stop();
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Fout',
-            detail: 'Fout bij laden van boeken.',
-            life: 3750,
-          });
         },
       });
     }

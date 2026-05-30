@@ -9,13 +9,16 @@ import be.ap.backend.entity.Location;
 import be.ap.backend.entity.School;
 import be.ap.backend.exception.MissingArgumentsException;
 import be.ap.backend.repository.LocationRepository;
+import be.ap.backend.repository.SchoolRepository;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class LocationService {
     private final LocationRepository locationRepository;
+    private final SchoolRepository schoolRepository;
 
     private final EntityManager entityManager;
 
@@ -35,7 +38,8 @@ public class LocationService {
     }
 
     public LocationDTO findById(Long id) {
-        Location location = locationRepository.findById(id).orElseThrow();
+        Location location = locationRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Locatie niet gevonden met id: " + id));
         return toDTO(location);
     }
 
@@ -55,5 +59,15 @@ public class LocationService {
             dto.setSchoolId(location.getSchool().getId());
         }
         return dto;
+    }
+
+    public List<LocationDTO> getLocationsBySchool(Long schoolId) {
+        School school = schoolRepository.findById(schoolId)
+                .orElseThrow(() -> new EntityNotFoundException("School niet gevonden"));
+
+        return locationRepository.findBySchool(school)
+                .stream()
+                .map(this::toDTO)
+                .toList();
     }
 }

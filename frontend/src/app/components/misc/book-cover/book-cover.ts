@@ -1,5 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { BookCard } from '../../../models/book';
+import { BookCoverInput } from '../../../models/bookCoverInput';
 
 @Component({
   selector: 'b-cover',
@@ -8,10 +9,10 @@ import { BookCard } from '../../../models/book';
   styleUrl: './book-cover.css',
 })
 export class BookCover {
-  @Input() bookCard!: BookCard;
+  @Input() bookInput!: BookCoverInput;
 
   get coverSrc(): string {
-    const c = this.bookCard.cover;
+    const c = this.bookInput.cover;
     if (!c) return '';
     return /^https?:\/\//i.test(c) ? c : `/static/cover/${c}`;
   }

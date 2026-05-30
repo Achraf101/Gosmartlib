@@ -76,7 +76,7 @@ export class CatalogueComponent implements OnInit {
   sidebarLocation: number | null = null;
   sidebarGenres: number[] = [];
   sidebarThemes: number[] = [];
-  sidebarDidactic: boolean = false;
+  sidebarDidactic: boolean | null = null;
   sidebarLanguage: number | null = null;
   sidebarPagesMin: number | null = null;
   sidebarPagesMax: number | null = null;
@@ -126,7 +126,6 @@ export class CatalogueComponent implements OnInit {
           } else {
             this.activeFilters = { location: this.sidebarLocation };
           }
-          this.loadBooks();
         }
       },
     });
@@ -146,6 +145,8 @@ export class CatalogueComponent implements OnInit {
       this.sidebarLanguage = params['language'] ? Number(params['language']) : null;
       this.sidebarPagesMin = params['pagesMin'] ? Number(params['pagesMin']) : null;
       this.sidebarPagesMax = params['pagesMax'] ? Number(params['pagesMax']) : null;
+      this.sidebarDidactic =
+        params['didactic'] !== undefined ? params['didactic'] === 'true' : null;
 
       const hasFilters =
         params['genres'] ||
@@ -214,12 +215,12 @@ export class CatalogueComponent implements OnInit {
     } else {
       delete params['pagesMax'];
     }
-    if (this.sidebarDidactic === true) {
-      params['didactic'] = true;
+    if (this.sidebarDidactic !== null) {
+      params['didactic'] = this.sidebarDidactic;
     } else {
       delete params['didactic'];
     }
-    if (this.sidebarLocation !== undefined) {
+    if (this.sidebarLocation !== null) {
       params['location'] = this.sidebarLocation;
     } else {
       delete params['location'];
@@ -231,11 +232,13 @@ export class CatalogueComponent implements OnInit {
   clearSidebarFilters(): void {
     this.sidebarGenres = [];
     this.sidebarThemes = [];
-    this.sidebarDidactic = false;
-    this.sidebarLocation = null;
+    this.sidebarDidactic = null;
     this.sidebarLanguage = null;
     this.sidebarPagesMin = null;
     this.sidebarPagesMax = null;
+    if (!this.oneLocation) {
+      this.sidebarLocation = null;
+    }
     const params: any = { ...this.route.snapshot.queryParams };
     delete params['genres'];
     delete params['themes'];
@@ -243,7 +246,7 @@ export class CatalogueComponent implements OnInit {
     delete params['pagesMin'];
     delete params['pagesMax'];
     delete params['didactic'];
-    delete params['location'];
+    if (!this.oneLocation) delete params['location'];
     params['pagina'] = 1;
     this.router.navigate([], { relativeTo: this.route, queryParams: params });
   }
@@ -253,7 +256,9 @@ export class CatalogueComponent implements OnInit {
       this.selectedBook = book;
       this.showDialog = true;
     } else {
-      this.router.navigate(['/boek', book.id]);
+      this.router.navigate(['/boek', book.id], {
+        queryParams: this.sidebarLocation ? { location: this.sidebarLocation } : {},
+      });
     }
   }
 
@@ -284,26 +289,30 @@ export class CatalogueComponent implements OnInit {
           this.showDialog = false;
           this.router.navigate(['/dashboard/bibliotheek-beheerder']);
         },
-        error: (err) => {
+        error: () => {
           this.showDialog = false;
-          if (err.status === 409) {
-            this.messageService.add({
-              severity: 'warn',
-              summary: 'Al in de kijker',
-              detail: 'Dit boek staat al in de kijker.',
-            });
-          }
         },
       });
   }
 
   loadBooks(): void {
     this.loading.start();
-    const request = this.activeFilters
-      ? this.bookService.filter(this.activeFilters, this.currentPage, this.rows)
-      : this.searchQuery.trim()
-        ? this.bookService.search(this.searchQuery.trim(), this.currentPage, this.rows)
-        : this.bookService.getAll(this.currentPage, this.rows);
+
+    const filters: BookFilter = {
+      ...(this.activeFilters ?? {}),
+      query: this.searchQuery.trim() || undefined,
+    };
+
+    if (this.oneLocation && this.sidebarLocation) {
+      filters.location = this.sidebarLocation;
+    }
+
+    const hasAnything =
+      this.activeFilters || this.searchQuery.trim() || (this.oneLocation && this.sidebarLocation);
+
+    const request = hasAnything
+      ? this.bookService.filter(filters, this.currentPage, this.rows)
+      : this.bookService.getAll(this.currentPage, this.rows);
 
     request.subscribe({
       next: (page) => {
@@ -390,21 +399,6 @@ export class CatalogueComponent implements OnInit {
       next: () => {
         this.showDialog = false;
         this.router.navigate(['/boekenlijst', this.listId]);
-      },
-      error: (err) => {
-        if (err.status === 500 || err.status === 409) {
-          this.messageService.add({
-            severity: 'warn',
-            summary: 'Al in lijst',
-            detail: `"${this.selectedBook!.title}" staat al in deze lijst.`,
-          });
-        } else {
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Fout',
-            detail: 'Er is een fout opgetreden.',
-          });
-        }
       },
     });
   }

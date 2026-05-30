@@ -19,6 +19,23 @@
   }
 }
 
+.icon-btn {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+  padding: 0.5rem;
+  font-size: 1.2rem;
+}
+
+.icon-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.icon-btn:hover:not(:disabled) {
+  color: rgba(255, 255, 255, 0.75);
+}
 .dates {
   margin: 1rem;
 
@@ -32,6 +49,10 @@
       align-items: flex-start;
     }
   }
+}
+
+.white {
+  color: white;
 }
 
 .inputnumber {

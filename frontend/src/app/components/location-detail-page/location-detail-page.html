@@ -31,7 +31,7 @@
       <p>Adres: {{ selectedLocation.adres }}</p>
     </div>
 
-    <h3>Boek toevoegen:</h3>
+    <h3>Boek toevoegen</h3>
     <s-bar (search)="onSearch($event)" />
     @if (loading.visible) {
       <div class="loading-container">
@@ -61,7 +61,14 @@
               @if (book.cover) {
                 <img src="/static/cover/{{ book.cover }}" [alt]="book.title" class="book-cover" />
               } @else {
-                <img src="{{ placeholder }}" [alt]="book.title" class="book-cover" />
+                <div class="book-cover no-cover-placeholder">
+                  <svg width="60%" height="60%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22 16.7402V4.67019C22 3.47019 21.02 2.58019 19.83 2.68019H19.77C17.67 2.86019 14.48 3.93019 12.7 5.05019L12.53 5.16019C12.24 5.34019 11.76 5.34019 11.47 5.16019L11.22 5.01019C9.44 3.90019 6.26 2.84019 4.16 2.67019C2.97 2.57019 2 3.47019 2 4.66019V16.7402C2 17.7002 2.78 18.6002 3.74 18.7202L4.03 18.7602C6.2 19.0502 9.55 20.1502 11.47 21.2002L11.51 21.2202C11.78 21.3702 12.21 21.3702 12.47 21.2202C14.39 20.1602 17.75 19.0502 19.93 18.7602L20.26 18.7202C21.22 18.6002 22 17.7002 22 16.7402Z" stroke="#292D32" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path opacity="0.4" d="M12 5.49023V20.4902" stroke="#292D32" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path opacity="0.4" d="M7.75 8.49023H5.5" stroke="#292D32" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path opacity="0.4" d="M8.5 11.4902H5.5" stroke="#292D32" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
               }
               <span class="book-title">{{ book.title }}</span>
               @if (book.author) {
@@ -100,19 +107,37 @@
       [rowsPerPageOptions]="[5, 10, 20]"
       (onPageChange)="onPageChange($event)"
     />
+
     <div class="location-books">
-      <h3>Boeken in deze locatie:</h3>
+      <div class="section-header">
+        <h3>Boek exemplaren</h3>
+        @if (selectedLocation) {
+          <button
+            pButton
+            type="button"
+            icon="pi pi-trash"
+            label="Exemplaar verwijderen"
+            class="p-button-sm p-button-outlined p-button-danger"
+            (click)="openDeleteDialog()"
+          ></button>
+        }
+      </div>
       @if (locationBooks.length > 0) {
         <div class="book-list">
           @for (locationBook of locationBooks; track locationBook.id) {
             <div class="book-card">
-              <img
-                [src]="
-                  locationBook.book_cover ? '/static/cover/' + locationBook.book_cover : placeholder
-                "
-                [alt]="locationBook.book_title"
-                class="book-cover"
-              />
+              @if (locationBook.book_cover) {
+                <img src="/static/cover/{{ locationBook.book_cover }}" [alt]="locationBook.book_title" class="book-cover" />
+              } @else {
+                <div class="book-cover no-cover-placeholder">
+                  <svg width="60%" height="60%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22 16.7402V4.67019C22 3.47019 21.02 2.58019 19.83 2.68019H19.77C17.67 2.86019 14.48 3.93019 12.7 5.05019L12.53 5.16019C12.24 5.34019 11.76 5.34019 11.47 5.16019L11.22 5.01019C9.44 3.90019 6.26 2.84019 4.16 2.67019C2.97 2.57019 2 3.47019 2 4.66019V16.7402C2 17.7002 2.78 18.6002 3.74 18.7202L4.03 18.7602C6.2 19.0502 9.55 20.1502 11.47 21.2002L11.51 21.2202C11.78 21.3702 12.21 21.3702 12.47 21.2202C14.39 20.1602 17.75 19.0502 19.93 18.7602L20.26 18.7202C21.22 18.6002 22 17.7002 22 16.7402Z" stroke="#292D32" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path opacity="0.4" d="M12 5.49023V20.4902" stroke="#292D32" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path opacity="0.4" d="M7.75 8.49023H5.5" stroke="#292D32" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path opacity="0.4" d="M8.5 11.4902H5.5" stroke="#292D32" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+              }
               <div class="book-info">
                 <span class="book-title">{{ locationBook.book_title }}</span>
                 @if (locationBook.author_name) {
@@ -126,7 +151,7 @@
           }
         </div>
       } @else {
-        <p>Geen boeken in deze locatie.</p>
+        <p>Geen boek exemplaren gevonden.</p>
       }
       <p-paginator
         [first]="locationBooksPage * locationBooksRows"
@@ -136,5 +161,102 @@
         (onPageChange)="onLocationPageChange($event)"
       />
     </div>
+
   }
 </div>
+
+<!-- Delete copy dialog -->
+<p-dialog
+  header="Exemplaar verwijderen"
+  [(visible)]="deleteDialogVisible"
+  [modal]="true"
+  [closable]="true"
+  (onHide)="closeDeleteDialog()"
+  styleClass="delete-copy-dialog"
+>
+  <div class="delete-dialog-content">
+    <p class="delete-dialog-hint">Scan de barcode of voer het toegangsnummer in.</p>
+    <div class="delete-input-row">
+      <input
+        #deleteInput
+        type="text"
+        [(ngModel)]="deleteAccessionInput"
+        placeholder="Bijv. LIB-000001"
+        class="delete-accession-input"
+        (keydown.enter)="lookupCopyForDeletion()"
+      />
+      <button
+        pButton
+        type="button"
+        icon="pi pi-search"
+        class="p-button-sm"
+        (click)="lookupCopyForDeletion()"
+        [loading]="deleteLookupLoading"
+      ></button>
+    </div>
+    @if (foundCopyForDeletion) {
+      <div class="found-copy-info">
+        <p><strong>Boek:</strong> {{ foundCopyForDeletion.book_title }}</p>
+        <p><strong>Toegangsnummer:</strong> {{ foundCopyForDeletion.accession_id }}</p>
+        <p><strong>Status:</strong> {{ foundCopyForDeletion.status === 'AVAILABLE' ? 'Beschikbaar' : 'Beschadigd' }}</p>
+        <p><strong>Locatie:</strong> {{ foundCopyForDeletion.location_name }}</p>
+      </div>
+    }
+  </div>
+  <ng-template #footer>
+    <button
+      pButton
+      type="button"
+      label="Annuleren"
+      class="p-button-sm p-button-outlined"
+      (click)="closeDeleteDialog()"
+    ></button>
+    @if (foundCopyForDeletion) {
+      <button
+        pButton
+        type="button"
+        icon="pi pi-trash"
+        label="Verwijderen"
+        severity="danger"
+        class="p-button-sm"
+        (click)="confirmDeleteCopy()"
+      ></button>
+    }
+  </ng-template>
+</p-dialog>
+
+<!-- Barcode dialog -->
+<p-dialog
+  header="Exemplaren aangemaakt"
+  [(visible)]="barcodeDialogVisible"
+  [modal]="true"
+  [closable]="true"
+  (onHide)="closeBarcodeDialog()"
+  styleClass="barcode-dialog"
+>
+  <div class="barcode-grid print-area">
+    @for (id of newAccessionIds; track id; let i = $index) {
+      <div class="barcode-card">
+        <svg #barcodesvg></svg>
+        <span class="accession-label">{{ id }}</span>
+      </div>
+    }
+  </div>
+  <ng-template #footer>
+    <button
+      pButton
+      type="button"
+      icon="pi pi-print"
+      label="Afdrukken"
+      class="p-button-sm"
+      (click)="printBarcodes()"
+    ></button>
+    <button
+      pButton
+      type="button"
+      label="Sluiten"
+      class="p-button-sm p-button-outlined"
+      (click)="closeBarcodeDialog()"
+    ></button>
+  </ng-template>
+</p-dialog>

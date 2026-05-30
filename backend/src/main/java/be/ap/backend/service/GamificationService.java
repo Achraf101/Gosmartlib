@@ -4,8 +4,8 @@ import be.ap.backend.dto.ChallengeDTO;
 import be.ap.backend.dto.GamificationDTO;
 import be.ap.backend.entity.Challenge;
 import be.ap.backend.entity.Loan;
-import be.ap.backend.entity.LoanStatus;
 import be.ap.backend.entity.UserChallenge;
+import be.ap.backend.enums.LoanStatus;
 import be.ap.backend.repository.ChallengeRepository;
 import be.ap.backend.repository.LoanRepository;
 import be.ap.backend.repository.UserChallengeRepository;
@@ -18,6 +18,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 @Service
 @RequiredArgsConstructor
@@ -97,16 +98,19 @@ public class GamificationService {
 
     private void assignChallenges(Long userId, String month) {
         List<Challenge> all = new ArrayList<>(challengeRepository.findAll());
-        Collections.shuffle(all, new java.util.Random(userId + month.hashCode()));
+        Collections.shuffle(all, new Random(userId + month.hashCode()));
         List<Challenge> selected = all.stream().limit(3).toList();
 
         for (Challenge challenge : selected) {
+            if (userChallengeRepository.existsByUserIdAndMonthAndChallengeId(userId, month, challenge.getId())) {
+                continue;
+            }
             UserChallenge uc = new UserChallenge();
             uc.setUserId(userId);
             uc.setChallenge(challenge);
             uc.setMonth(month);
             uc.setCompleted(false);
-            uc.setAssignedAt(LocalDate.now()); // ← datum van toewijzing opslaan
+            uc.setAssignedAt(LocalDate.now());
             userChallengeRepository.save(uc);
         }
     }

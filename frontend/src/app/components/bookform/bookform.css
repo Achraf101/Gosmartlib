@@ -32,7 +32,7 @@
 .container {
   width: 90vw;
   max-width: 80rem;
-  margin: 60px auto 0 auto;
+  margin: 60px auto 2rem auto;
   display: flex;
   flex-direction: column;
 }
@@ -246,4 +246,39 @@ p-dialog .flex-column p-iftalabel {
   gap: 0.75rem;
   flex-wrap: wrap;
   justify-content: center;
+}
+
+.copy-section-hint {
+  font-size: 0.9rem;
+  color: var(--p-neutral-600, #6b7280);
+  margin-bottom: 1.25rem;
+}
+
+.copy-section-divider {
+  border: none;
+  border-top: 1px solid #e5e7eb;
+  margin: 1.5rem 0;
+}
+
+.barcode-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 0.5rem 0;
+}
+
+.barcode-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px dashed #d1d5db;
+  border-radius: 6px;
+}
+
+.accession-label {
+  font-size: 0.8rem;
+  font-family: monospace;
+  letter-spacing: 0.05em;
 }

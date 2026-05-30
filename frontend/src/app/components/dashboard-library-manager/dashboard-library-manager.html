@@ -12,7 +12,7 @@
   <p-card class="nav-card" (click)="goToReviewModeration()">
     <div class="card-content">
       <i class="pi pi-flag card-icon"></i>
-      <span class="card-title">Recensie moderatie</span>
+      <span class="card-title">Recensiemoderatie</span>
       <span class="card-desc">Bekijk en beheer gerapporteerde recensies</span>
     </div>
   </p-card>
@@ -20,8 +20,8 @@
   <p-card class="nav-card">
     <div class="card-content">
       <i class="pi pi-users card-icon"></i>
-      <span class="card-title">Auteurs &amp; uitgevers</span>
-      <span class="card-desc">Voeg nieuwe auteurs of uitgevers toe</span>
+      <span class="card-title">Auteurs, uitgevers en thema’s</span>
+      <span class="card-desc">Voeg nieuwe auteurs, uitgevers of thema’s toe</span>
     </div>
     <div class="card-actions">
       <p-button
@@ -38,14 +38,34 @@
         size="small"
         (onClick)="publisherFormVisible = true"
       />
+      <p-button
+        label="Nieuw thema"
+        icon="pi pi-plus"
+        severity="secondary"
+        size="small"
+        (onClick)="themeFormVisible = true"
+      />
+    </div>
+  </p-card>
+
+  <p-card class="nav-card" (click)="goToSchools()">
+    <div class="card-content">
+      <i class="pi pi-building card-icon"></i>
+      @if (authService.hasRole('BIBLIOTHEEKBEHEERDER') && !authService.hasRole('ADMIN')) {
+        <span class="card-title">Locaties</span>
+        <span class="card-desc">Bekijk alle locaties</span>
+      } @else {
+        <span class="card-title">Scholen</span>
+        <span class="card-desc">Bekijk alle scholen</span>
+      }
     </div>
   </p-card>
 
   <p-card class="nav-card" (click)="goToLocation()">
     <div class="card-content">
-      <i class="pi pi-building card-icon"></i>
-      <span class="card-title">Locatie boeken</span>
-      <span class="card-desc">Beheer de boeken per locatie en aantal</span>
+      <i class="pi pi-barcode card-icon"></i>
+      <span class="card-title">Boek exemplaren</span>
+      <span class="card-desc">Beheer de boek exemplaren per locatie</span>
     </div>
   </p-card>
 
@@ -57,10 +77,10 @@
           <span class="loan-badge">{{ pendingLoanCount }}</span>
         }
       </div>
-      <span class="card-title">Uitleen aanvragen</span>
+      <span class="card-title">Ontleenaanvragen</span>
       @if (pendingLoanCount > 0) {
         <span class="card-desc pending">
-          {{ pendingLoanCount }} leerling{{ pendingLoanCount === 1 ? '' : 'en' }} wacht{{
+          {{ pendingLoanCount }} ontlening{{ pendingLoanCount === 1 ? '' : 'en' }} wacht{{
             pendingLoanCount === 1 ? '' : 'en'
           }}
           op jou
@@ -75,7 +95,7 @@
     <div class="card-content">
       <i class="pi pi-search card-icon"></i>
       <span class="card-title">Catalogus</span>
-      @if (schoolStats) {
+      @if (schoolStats && schoolStats.total_books > 0) {
         <span class="card-desc"
           >{{ schoolStats.available_books }}/{{ schoolStats.total_books }} boeken beschikbaar</span
         >
@@ -101,23 +121,15 @@
   <p-card class="nav-card" (click)="goToReturn()">
     <div class="card-content">
       <i class="pi pi-inbox card-icon"></i>
-      <span class="card-title">Terug te brengen boeken</span>
-      <span class="card-desc">Hier staan alle boeken die teruggebracht moeten worden.</span>
-    </div>
-  </p-card>
-
-  <p-card class="nav-card">
-    <div class="card-content">
-      <i class="pi pi-star card-icon"></i>
-      <span class="card-title">Recensies</span>
-      <span class="card-desc">Bekijk wat leerlingen schrijven</span>
+      <span class="card-title">Terug in te leveren boeken</span>
+      <span class="card-desc">Hier staan alle boeken die teruggebracht moeten worden</span>
     </div>
   </p-card>
 
   <p-card class="nav-card">
     <div class="card-content">
       <i class="pi pi-refresh card-icon"></i>
-      <span class="card-title">Smartschool sync</span>
+      <span class="card-title">Smartschool-synchronisatie</span>
       <span class="card-desc">Synchroniseer gebruikers en klassen</span>
     </div>
     <div class="card-actions">
@@ -248,7 +260,7 @@
                   severity="warn"
                   [rounded]="true"
                   [text]="true"
-                  pTooltip="Herinner leerling"
+                  pTooltip="Herinner de leerling"
                   tooltipPosition="left"
                 />
               </div>
@@ -387,7 +399,7 @@
     <div class="overdue-header">
       <div class="overdue-title-wrap">
         <i class="pi pi-eye"></i>
-        <span class="card-title">Startpagina &amp; dashboard instellingen</span>
+        <span class="card-title">Startpagina en dashboardinstellingen</span>
       </div>
     </div>
     @if (schoolSettings) {
@@ -537,4 +549,31 @@
     <p-button label="Opslaan" icon="pi pi-check" (onClick)="addPublisher()" />
   </ng-template>
 </p-dialog>
+
+<p-dialog
+  header="Nieuw thema"
+  [(visible)]="themeFormVisible"
+  [modal]="true"
+  [style]="{ width: '400px' }"
+  (onHide)="themeForm.reset()"
+>
+  <form [formGroup]="themeForm">
+    <div class="dialog-field">
+      <label for="theme-name">Naam*</label>
+      <input pInputText id="theme-name" formControlName="name" placeholder="Naam thema" />
+      @if (themeForm.controls.name.invalid && themeForm.controls.name.touched) {
+        <p-message severity="error" size="small" variant="simple">Naam is verplicht!</p-message>
+      }
+    </div>
+  </form>
+  <ng-template #footer>
+    <p-button
+      label="Annuleren"
+      severity="secondary"
+      (onClick)="themeFormVisible = false; themeForm.reset()"
+    />
+    <p-button label="Opslaan" icon="pi pi-check" (onClick)="addTheme()" />
+  </ng-template>
+</p-dialog>
+
 <p-confirmDialog></p-confirmDialog>

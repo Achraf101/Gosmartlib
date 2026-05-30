@@ -9,23 +9,26 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import be.ap.backend.dto.LoanBookDTO;
 import be.ap.backend.dto.LoanDTO;
+import be.ap.backend.dto.LoanLookupContextDTO;
 import be.ap.backend.dto.TopBookDTO;
 import be.ap.backend.entity.Book;
+import be.ap.backend.entity.BookCopy;
 import be.ap.backend.entity.Location;
 import be.ap.backend.entity.LocationBook;
 import be.ap.backend.entity.School;
 import be.ap.backend.entity.Loan;
 import be.ap.backend.entity.LoanBook;
-import be.ap.backend.entity.LoanStatus;
 import be.ap.backend.entity.User;
 import be.ap.backend.queue.NotificationTask;
 import be.ap.backend.queue.TaskQueueService;
+import be.ap.backend.enums.CopyStatus;
+import be.ap.backend.enums.LoanStatus;
+import be.ap.backend.repository.BookCopyRepository;
 import be.ap.backend.repository.LocationBookRepository;
 import be.ap.backend.repository.LoanBookRepository;
 import be.ap.backend.repository.LoanRepository;
@@ -39,25 +42,27 @@ import java.util.concurrent.Executor;
 @Service
 @Slf4j
 public class LoanService {
-    private LoanRepository loanRepository;
-    private EntityManager entityManager;
-    private LoanBookRepository loanBookRepository;
-    private LocationBookRepository locationBookRepository;
-    private LocationBookService locationBookService;
-    private SmartschoolLookupService lookupService;
+    private final LoanRepository loanRepository;
+    private final EntityManager entityManager;
+    private final LoanBookRepository loanBookRepository;
+    private final LocationBookRepository locationBookRepository;
+    private final LocationBookService locationBookService;
+    private final BookCopyRepository bookCopyRepository;
+    private final SmartschoolLookupService lookupService;
     private final Executor lookupExecutor;
     private final TaskQueueService taskQueueService;
 
-    @Autowired
     public LoanService(LoanRepository loanRepository, EntityManager entityManager,
             LoanBookRepository loanBookRepository, LocationBookRepository locationBookRepository,
             LocationBookService locationBookService, SmartschoolLookupService lookupService,
-            @Qualifier("lookupExecutor") Executor lookupExecutor, TaskQueueService taskQueueService) {
+            @Qualifier("lookupExecutor") Executor lookupExecutor, TaskQueueService taskQueueService,
+            BookCopyRepository bookCopyRepository) {
         this.loanRepository = loanRepository;
         this.entityManager = entityManager;
         this.loanBookRepository = loanBookRepository;
         this.locationBookRepository = locationBookRepository;
         this.locationBookService = locationBookService;
+        this.bookCopyRepository = bookCopyRepository;
         this.lookupService = lookupService;
         this.lookupExecutor = lookupExecutor;
         this.taskQueueService = taskQueueService;
@@ -98,7 +103,7 @@ public class LoanService {
         }
         if (dto.getBooks().length > school.getBorrowLimit()) {
             throw new IllegalArgumentException(
-                    "Aantal boeken is groter dan de uitleen limiet van je location " + school.getBorrowLimit());
+                    "Aantal boeken is groter dan de ontleenlimiet van je locatie " + school.getBorrowLimit());
         }
         LocalDate expectedEnd = dto.getStart().plusDays(school.getBorrowPeriod());
         if (!dto.getEnd().equals(expectedEnd)) {
@@ -158,7 +163,8 @@ public class LoanService {
 
             loanBookRepository.save(lb);
             savedLoan.setLoanBooks(new HashSet<>(List.of(lb)));
-            result.add(toDTO(savedLoan));
+
+            result.add(buildDTO(savedLoan));
         }
         return result;
     }
@@ -174,7 +180,8 @@ public class LoanService {
             throw new IllegalArgumentException("Notitie is te lang!");
         }
         loan.setNote(note);
-        return toDTO(loanRepository.save(loan));
+
+        return buildDTO(loanRepository.save(loan));
     }
 
     public LoanDTO updateStatus(Long id, LoanStatus status) {
@@ -186,7 +193,7 @@ public class LoanService {
         Loan loan = loanRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Loan niet gevonden met id: " + id));
         loan.setStatus(status);
-        if (status == LoanStatus.DECLINED) {
+        if (status == LoanStatus.DECLINED || status == LoanStatus.RETURNED) {
             loan.getLoanBooks().forEach(lb -> {
                 LocationBook locationBook = locationBookRepository
                         .findByLocationIdAndBookId(loan.getLocation().getId(), lb.getBook().getId())
@@ -195,7 +202,111 @@ public class LoanService {
                 locationBookService.updateCurrentAmount(locationBook, -lb.getRequestedAmount());
             });
         }
-        return toDTO(loanRepository.save(loan));
+        return buildDTO(loanRepository.save(loan));
+    }
+
+    @Transactional
+    public LoanDTO scanPickup(Long loanId, Long bookCopyId) {
+        Loan loan = loanRepository.findById(loanId)
+                .orElseThrow(() -> new EntityNotFoundException("Lening niet gevonden: " + loanId));
+        BookCopy copy = bookCopyRepository.findById(bookCopyId)
+                .orElseThrow(() -> new EntityNotFoundException("Exemplaar niet gevonden: " + bookCopyId));
+
+        LoanBook lb = loan.getLoanBooks().stream().findFirst()
+                .orElseThrow(() -> new EntityNotFoundException("Geen boek gevonden in lening"));
+
+        if (!copy.getLocationBook().getBook().getId().equals(lb.getBook().getId())) {
+            throw new IllegalArgumentException("Exemplaar hoort niet bij dit boek");
+        }
+        if (lb.getReceivedAmount() >= lb.getRequestedAmount()) {
+            throw new IllegalArgumentException("Alle exemplaren zijn al ontvangen");
+        }
+        if (lb.getScannedCopyIds().contains(bookCopyId)) {
+            throw new IllegalArgumentException(
+                    "Exemplaar " + copy.getAccessionId() + " is al gescand voor deze uitlening");
+        }
+
+        lb.getScannedCopyIds().add(bookCopyId);
+        lb.setReceivedAmount(lb.getReceivedAmount() + 1);
+        lb.setBookCopy(copy);
+        loanBookRepository.save(lb);
+
+        if (lb.getReceivedAmount() >= lb.getRequestedAmount()) {
+            loan.setStatus(LoanStatus.RECEIVED);
+        }
+        return buildDTO(loanRepository.save(loan));
+    }
+
+    @Transactional
+    public LoanDTO scanReturn(Long loanId, Long bookCopyId, String note, boolean damaged) {
+        Loan loan = loanRepository.findById(loanId)
+                .orElseThrow(() -> new EntityNotFoundException("Lening niet gevonden: " + loanId));
+        BookCopy copy = bookCopyRepository.findById(bookCopyId)
+                .orElseThrow(() -> new EntityNotFoundException("Exemplaar niet gevonden: " + bookCopyId));
+
+        LoanBook lb = loan.getLoanBooks().stream().findFirst()
+                .orElseThrow(() -> new EntityNotFoundException("Geen boek gevonden in lening"));
+
+        if (!copy.getLocationBook().getBook().getId().equals(lb.getBook().getId())) {
+            throw new IllegalArgumentException("Exemplaar hoort niet bij dit boek");
+        }
+        if (lb.getReturnedAmount() >= lb.getReceivedAmount()) {
+            throw new IllegalArgumentException("Alle exemplaren zijn al teruggebracht");
+        }
+        if (lb.getReturnedCopyIds().contains(bookCopyId)) {
+            throw new IllegalArgumentException(
+                    "Exemplaar " + copy.getAccessionId() + " is al teruggebracht voor deze uitlening");
+        }
+        if (!lb.getScannedCopyIds().isEmpty() && !lb.getScannedCopyIds().contains(bookCopyId)) {
+            throw new IllegalArgumentException(
+                    "Exemplaar " + copy.getAccessionId() + " werd niet uitgeleend voor deze uitlening");
+        }
+
+        lb.getReturnedCopyIds().add(bookCopyId);
+        lb.setReturnedAmount(lb.getReturnedAmount() + 1);
+        loanBookRepository.save(lb);
+
+        if (note != null && !note.isBlank())
+            copy.setNote(note.trim());
+        if (damaged)
+            copy.setStatus(CopyStatus.DAMAGED);
+        bookCopyRepository.save(copy);
+
+        if (lb.getReturnedAmount() >= lb.getReceivedAmount()) {
+            LocationBook locationBook = locationBookRepository
+                    .findByLocationIdAndBookId(loan.getLocation().getId(), lb.getBook().getId())
+                    .orElseThrow(() -> new EntityNotFoundException("Boek niet gevonden in locatie"));
+            locationBookService.updateCurrentAmount(locationBook, -lb.getRequestedAmount());
+            loan.setStatus(LoanStatus.RETURNED);
+        }
+        return buildDTO(loanRepository.save(loan));
+    }
+
+    @Transactional
+    public LoanDTO pickupLoan(Long loanId, Long bookCopyId) {
+        Loan loan = loanRepository.findById(loanId)
+                .orElseThrow(() -> new EntityNotFoundException("Lening niet gevonden met id: " + loanId));
+
+        for (LoanBook lb : loan.getLoanBooks()) {
+            BookCopy copy;
+            if (bookCopyId != null) {
+                copy = bookCopyRepository.findById(bookCopyId)
+                        .orElseThrow(() -> new EntityNotFoundException("Exemplaar niet gevonden: " + bookCopyId));
+            } else {
+                LocationBook locationBook = locationBookRepository
+                        .findByLocationIdAndBookId(loan.getLocation().getId(), lb.getBook().getId())
+                        .orElseThrow(() -> new EntityNotFoundException(
+                                "Boek niet gevonden in locatie voor exemplaar toewijzing"));
+                List<BookCopy> available = bookCopyRepository
+                        .findByLocationBookIdAndStatus(locationBook.getId(), CopyStatus.AVAILABLE);
+                copy = available.isEmpty() ? null : available.get(0);
+            }
+            lb.setBookCopy(copy);
+            loanBookRepository.save(lb);
+        }
+
+        loan.setStatus(LoanStatus.RECEIVED);
+        return buildDTO(loanRepository.save(loan));
     }
 
     public List<LoanDTO> getByUserId(Long userId) {
@@ -214,7 +325,26 @@ public class LoanService {
         return toDTOs(loanRepository.findByStateAndSchool(state, schoolId));
     }
 
-    private LoanDTO toDTO(Loan loan) {
+    /**
+     * Performs the Smartschool lookup (with null guard on oneRosterId) and builds
+     * the DTO. Use this for synchronous single-loan call sites.
+     */
+    private LoanDTO buildDTO(Loan loan) {
+        String oneRosterId = loan.getUser().getOneRosterId();
+        Map<String, Object> userInfo = null;
+        if (oneRosterId != null) {
+            userInfo = lookupService.getUser(
+                    loan.getUser().getSchool(),
+                    oneRosterId,
+                    loan.getUser().getRoles());
+        } else {
+            log.warn("OneRoster ID is null voor gebruiker {}, Smartschool lookup overgeslagen",
+                    loan.getUser().getId());
+        }
+        return toDTO(loan, userInfo);
+    }
+
+    private LoanDTO toDTO(Loan loan, Map<String, Object> userInfo) {
         LoanDTO dto = new LoanDTO();
         dto.setId(loan.getId());
         dto.setUserId(loan.getUser().getId());
@@ -226,30 +356,23 @@ public class LoanService {
         dto.setStatus(loan.getStatus());
         dto.setClosed(loan.getClosed());
         dto.setCreated(loan.getCreated());
+        dto.setGroupId(loan.getGroupId());
+        dto.setExtendPeriod(loan.getLocation().getSchool().getExtendPeriod());
 
-        Map<String, Object> userInfo = lookupService.getUser(
-                loan.getUser().getSchool(),
-                loan.getUser().getOneRosterId(),
-                loan.getUser().getRoles());
-
-        String displayName;
         if (userInfo != null) {
             String firstName = (String) userInfo.get("givenName");
             String lastName = (String) userInfo.get("familyName");
-            displayName = firstName + " " + lastName;
+            dto.setUsername(firstName + " " + lastName);
         } else {
-            displayName = loan.getUser().getUsername();
+            dto.setUsername(loan.getUser().getUsername());
         }
-        dto.setUsername(displayName);
-
-        dto.setGroupId(loan.getGroupId());
-        dto.setExtendPeriod(loan.getLocation().getSchool().getExtendPeriod());
 
         LoanBookDTO[] books = loan.getLoanBooks().stream()
                 .map(lb -> {
                     LoanBookDTO lbDto = new LoanBookDTO();
                     lbDto.setId(lb.getId());
                     lbDto.setBookId(lb.getBook().getId());
+                    lbDto.setBookCopyId(lb.getBookCopy() != null ? lb.getBookCopy().getId() : null);
                     lbDto.setRequestedAmount(lb.getRequestedAmount());
                     lbDto.setReceivedAmount(lb.getReceivedAmount());
                     lbDto.setReturnedAmount(lb.getReturnedAmount());
@@ -264,9 +387,29 @@ public class LoanService {
     }
 
     private List<LoanDTO> toDTOs(List<Loan> loans) {
-        List<CompletableFuture<LoanDTO>> futures = loans.stream()
-                .map(loan -> CompletableFuture.supplyAsync(
-                        () -> toDTO(loan), lookupExecutor))
+        List<LoanLookupContextDTO> prepared = loans.stream()
+                .map(loan -> {
+                    loan.getLoanBooks().size();
+                    LoanLookupContextDTO ctx = new LoanLookupContextDTO();
+                    ctx.setLoan(loan);
+                    ctx.setOneRosterId(loan.getUser().getOneRosterId());
+                    ctx.setSchool(loan.getUser().getSchool());
+                    ctx.setRoles(loan.getUser().getRoles());
+                    return ctx;
+                })
+                .toList();
+
+        List<CompletableFuture<LoanDTO>> futures = prepared.stream()
+                .map(ctx -> CompletableFuture.supplyAsync(() -> {
+                    Map<String, Object> userInfo = null;
+                    if (ctx.getOneRosterId() != null) {
+                        userInfo = lookupService.getUser(ctx.getSchool(), ctx.getOneRosterId(), ctx.getRoles());
+                    } else {
+                        log.warn("OneRoster ID is null voor loan {}, Smartschool lookup overgeslagen",
+                                ctx.getLoan().getId());
+                    }
+                    return toDTO(ctx.getLoan(), userInfo);
+                }, lookupExecutor))
                 .toList();
 
         return futures.stream()
@@ -274,7 +417,7 @@ public class LoanService {
                     try {
                         return future.join();
                     } catch (CompletionException e) {
-                        log.error("Lookup mislukt voor loan: {}", e.getMessage());
+                        log.error("Lookup mislukt: {}", e.getMessage());
                         throw new RuntimeException("Gebruiker kon niet opgehaald worden", e.getCause());
                     }
                 })
@@ -350,7 +493,7 @@ public class LoanService {
         loan.setEnd(loan.getEnd().plusDays(school.getExtendPeriod()));
         loan.setExtended((byte) (loan.getExtended() + 1));
 
-        return toDTO(loanRepository.save(loan));
+        return buildDTO(loanRepository.save(loan));
     }
 
 }

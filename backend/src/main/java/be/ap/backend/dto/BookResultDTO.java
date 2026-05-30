@@ -2,7 +2,8 @@ package be.ap.backend.dto;
 
 import be.ap.backend.entity.BookType;
 import be.ap.backend.entity.Language;
-import be.ap.backend.entity.Clib;
+import be.ap.backend.enums.Clib;
+
 import java.time.Year;
 import java.util.HashSet;
 import java.util.Set;
@@ -17,11 +18,11 @@ public class BookResultDTO {
     private Long id;
     private String title;
     private String cover;
-    private String author_name;
-    private BookType book_type;
-    private Long series_id;
-    private String series_name;
-    private Integer series_number;
+    private String authorName;
+    private BookType bookType;
+    private Long seriesId;
+    private String seriesName;
+    private Integer seriesNumber;
     private Language language;
     private Year published;
     private String description;
@@ -31,7 +32,7 @@ public class BookResultDTO {
     private Clib clib;
     private int pages;
     private int rating;
-    private int rating_count;
+    private int ratingCount;
 
     public BookResultDTO(Long id, String title, String cover, String author_name, BookType book_type,
             Long series_id, String series_name, Integer series_number, Language language,
@@ -40,11 +41,11 @@ public class BookResultDTO {
         this.id = id;
         this.title = title;
         this.cover = cover;
-        this.author_name = author_name;
-        this.book_type = book_type;
-        this.series_id = series_id;
-        this.series_name = series_name;
-        this.series_number = series_number;
+        this.authorName = author_name;
+        this.bookType = book_type;
+        this.seriesId = series_id;
+        this.seriesName = series_name;
+        this.seriesNumber = series_number;
         this.language = language;
         this.published = published;
         this.description = description;
@@ -52,6 +53,6 @@ public class BookResultDTO {
         this.clib = clib;
         this.pages = pages;
         this.rating = rating;
-        this.rating_count = rating_count;
+        this.ratingCount = rating_count;
     }
 }

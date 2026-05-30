@@ -19,6 +19,7 @@ import be.ap.backend.repository.BookListItemRepository;
 import be.ap.backend.repository.BookListRepository;
 import be.ap.backend.repository.SavedListRepository;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 
@@ -55,7 +56,7 @@ public class BookListService {
 
     public BookList generateShareToken(Long userId, Long listId) {
         BookList list = bookListRepository.findById(listId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "List not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "List not found"));
         if (!list.getOwnerId().equals(userId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "This is not your list");
         }
@@ -89,7 +90,7 @@ public class BookListService {
 
     public BookList renameList(Long listId, String newName) {
         BookList list = bookListRepository.findById(listId)
-                .orElseThrow(() -> new RuntimeException("List not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Lijst niet gevonden met id: " + listId));
         list.setName(newName);
         return bookListRepository.save(list);
     }
@@ -107,10 +108,10 @@ public class BookListService {
 
     public List<Book> getBooksInList(Long listId) {
         return bookListItemRepository.findByBookListId(listId)
-            .stream()
-            .map(item -> entityManager.find(Book.class, item.getBookId()))
-            .filter(Objects::nonNull)
-            .collect(Collectors.toList());
+                .stream()
+                .map(item -> entityManager.find(Book.class, item.getBookId()))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
     public void removeBook(Long bookId, Long listId) {
@@ -139,7 +140,7 @@ public class BookListService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "This is not your list");
         }
         list.setShareToken(null);
-        savedListRepository.deleteByBookListId(listId); // remove from all saved lists
+        savedListRepository.deleteByBookListId(listId);
         return bookListRepository.save(list);
     }
 }

@@ -10,6 +10,8 @@ public class LoanBookDTO {
     private Long id;
     @JsonProperty("bookId")
     private Long bookId;
+    @JsonProperty("bookCopyId")
+    private Long bookCopyId;
     @JsonProperty("requestedAmount")
     private Integer requestedAmount;
     @JsonProperty("receivedAmount")

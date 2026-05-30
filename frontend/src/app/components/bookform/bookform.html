@@ -1,8 +1,9 @@
 <app-nav-bar></app-nav-bar>
-<p-toast position="bottom-right"></p-toast>
 @if (!bookToEdit) {
   <nav class="upload-nav">
-    <button [class.active]="uploadMode === 'manual'" (click)="setMode('manual')">Manueel</button>
+    <button [class.active]="uploadMode === 'manual'" (click)="setMode('manual')">
+      Individueel
+    </button>
     <button [class.active]="uploadMode === 'bulk'" (click)="setMode('bulk')">Bulk</button>
   </nav>
 }
@@ -46,9 +47,9 @@
             <b-card [bookCard]="suggestionCard"></b-card>
             <div class="isbn-suggestion-actions">
               <p-button
-                label="Nee, opnieuw zoeken"
+                label="Nee, manueel invullen"
                 severity="secondary"
-                (onClick)="rejectSuggestion()"
+                (onClick)="selectMethod('manual')"
               />
               <p-button
                 label="Ja, gegevens overnemen"
@@ -312,7 +313,7 @@
                             id="clib"
                             [showClear]="true"
                           />
-                          <label for="clib">CLIB (optioneel)</label>
+                          <label for="clib">Leesniveau (optioneel)</label>
                         </p-iftalabel>
                       </div>
                     </div>
@@ -466,7 +467,7 @@
                   <ng-template #content let-activateCallback="activateCallback">
                     @if (bookToEdit?.cover || lookupCoverUrl) {
                       <div class="cover-preview">
-                        <b-cover [bookCard]="previewBookCard"></b-cover>
+                        <b-cover [bookInput]="previewBookCard"></b-cover>
                         <p class="cover-preview-note">
                           @if (bookToEdit) {
                             Huidige boekomslag. Upload een nieuwe om hem te vervangen.
@@ -492,16 +493,28 @@
                       <div class="btns btns-center">
                         <p-button
                           label="Volgende boek toevoegen"
+                          severity="secondary"
                           icon="pi pi-plus"
                           (onClick)="resetForm()"
+                        />
+                        <p-button
+                          label="Exemplaren toevoegen"
+                          icon="pi pi-tag"
+                          (onClick)="activateCallback(4)"
                         />
                       </div>
                     } @else {
                       <div class="btns btns-center">
                         <p-button
-                          label="Naar boek pagina"
+                          label="Naar boekpagina"
+                          severity="secondary"
                           icon="pi pi-arrow-right"
                           (onClick)="goToBookPage()"
+                        />
+                        <p-button
+                          label="Exemplaren toevoegen"
+                          icon="pi pi-tag"
+                          (onClick)="activateCallback(4)"
                         />
                       </div>
                     }
@@ -509,9 +522,101 @@
                 </p-step-panel>
               </p-step-item>
             </form>
+
+            <p-step-item [value]="4">
+              <p-step>Exemplaren</p-step>
+              <p-step-panel>
+                <ng-template #content let-activateCallback="activateCallback">
+                  <p class="copy-section-hint">
+                    Voeg exemplaren toe aan een locatie. Je kan meerdere locaties toevoegen.
+                  </p>
+                  <div class="inputitem">
+                    <p-iftalabel>
+                      <p-select
+                        fluid
+                        [options]="locations"
+                        optionLabel="name"
+                        optionValue="id"
+                        [(ngModel)]="selectedCopyLocationId"
+                        [ngModelOptions]="{ standalone: true }"
+                        [showClear]="true"
+                        id="copy-location"
+                      />
+                      <label for="copy-location">Locatie</label>
+                    </p-iftalabel>
+                  </div>
+                  <div class="inputitem">
+                    <p-iftalabel>
+                      <p-inputNumber
+                        fluid
+                        [(ngModel)]="copyAmount"
+                        [ngModelOptions]="{ standalone: true }"
+                        [showButtons]="true"
+                        [min]="1"
+                        [max]="100"
+                        [useGrouping]="false"
+                      />
+                      <label>Aantal exemplaren</label>
+                    </p-iftalabel>
+                  </div>
+                  <div class="btns">
+                    <p-button
+                      label="Toevoegen"
+                      icon="pi pi-plus"
+                      [disabled]="!selectedCopyLocationId || copyAmount < 1"
+                      (onClick)="addCopies()"
+                    />
+                  </div>
+                  <hr class="copy-section-divider" />
+                  @if (!bookToEdit) {
+                    <div class="btns btns-center">
+                      <p-button
+                        label="Volgende boek toevoegen"
+                        icon="pi pi-plus"
+                        (onClick)="resetForm()"
+                      />
+                    </div>
+                  } @else {
+                    <div class="btns btns-center">
+                      <p-button
+                        label="Naar boekpagina"
+                        icon="pi pi-arrow-right"
+                        (onClick)="goToBookPage()"
+                      />
+                    </div>
+                  }
+                </ng-template>
+              </p-step-panel>
+            </p-step-item>
           </p-stepper>
         </div>
       </div>
+
+      <p-dialog
+        header="Exemplaren aangemaakt"
+        [(visible)]="barcodeDialogVisible"
+        [modal]="true"
+        [closable]="true"
+        (onHide)="closeBarcodeDialog()"
+      >
+        <div class="barcode-grid">
+          @for (id of newAccessionIds; track id; let i = $index) {
+            <div class="barcode-card">
+              <svg #barcodesvg></svg>
+              <span class="accession-label">{{ id }}</span>
+            </div>
+          }
+        </div>
+        <ng-template #footer>
+          <p-button icon="pi pi-print" label="Afdrukken" size="small" (onClick)="printBarcodes()" />
+          <p-button
+            label="Sluiten"
+            size="small"
+            severity="secondary"
+            (onClick)="closeBarcodeDialog()"
+          />
+        </ng-template>
+      </p-dialog>
 
       <form [formGroup]="authorForm">
         <p-dialog
@@ -535,7 +640,7 @@
             <textarea rows="5" formControlName="description" class="w-full" pTextarea></textarea>
           </p-iftalabel>
           <div class="btns mt-3">
-            <p-button label="Annuleer" severity="secondary" (click)="authorFormVisible = false" />
+            <p-button label="Annuleren" severity="secondary" (click)="authorFormVisible = false" />
             <p-button label="Opslaan" [disabled]="authorForm.invalid" (click)="addAuthor()" />
           </div>
         </p-dialog>
@@ -558,7 +663,7 @@
           </p-iftalabel>
           <div class="btns mt-3">
             <p-button
-              label="Annuleer"
+              label="Annuleren"
               severity="secondary"
               (click)="publisherFormVisible = false"
             />
@@ -596,7 +701,11 @@
             </div>
 
             <div class="btns">
-              <p-button label="Annuleer" severity="secondary" (click)="seriesFormVisible = false" />
+              <p-button
+                label="Annuleren"
+                severity="secondary"
+                (click)="seriesFormVisible = false"
+              />
               <p-button label="Opslaan" [disabled]="seriesForm.invalid" (click)="addSeries()" />
             </div>
           </form>

@@ -101,7 +101,15 @@
   </div>
 
   <div class="filter-group">
-    <h3>CLIB niveau</h3>
+    <h3>
+      Leesniveau
+      <i
+        class="pi pi-info-circle"
+        pTooltip="Leesniveau: A (makkelijk) tot D (moeilijk)"
+        tooltipPosition="right"
+        style="cursor: pointer; color: var(--primary-color)"
+      ></i>
+    </h3>
     <div class="fiction-btns">
       @for (level of ['A', 'B', 'C', 'D']; track level) {
         <button class="tag-btn" [class.active]="isClibSelected(level)" (click)="toggleClib(level)">
@@ -111,12 +119,38 @@
     </div>
   </div>
 
+  @if (authService.hasRole('LEERKRACHT')) {
+    <div class="filter-group">
+      <h3>Didactisch materiaal</h3>
+      <div>
+        <div>
+          <p-radio-button
+            name="didactic"
+            [value]="false"
+            [(ngModel)]="didacticFilter"
+            inputId="val1"
+          />
+          <label for="val2"> Nee</label>
+        </div>
+        <div>
+          <p-radio-button
+            name="didactic"
+            [value]="true"
+            [(ngModel)]="didacticFilter"
+            inputId="val2"
+          />
+          <label for="val2"> Ja</label>
+        </div>
+      </div>
+    </div>
+  }
+
   <div class="filter-group">
     <h3>Pagina's</h3>
     <div class="range-inputs">
       <p-inputnumber
         [(ngModel)]="pagesMin"
-        placeholder="Min"
+        placeholder="Min."
         [min]="0"
         [step]="50"
         [showButtons]="true"
@@ -125,7 +159,7 @@
       <span>—</span>
       <p-inputnumber
         [(ngModel)]="pagesMax"
-        placeholder="Max"
+        placeholder="Max."
         [min]="0"
         [step]="50"
         [showButtons]="true"

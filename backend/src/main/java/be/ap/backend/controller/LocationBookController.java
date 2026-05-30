@@ -12,9 +12,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import be.ap.backend.dto.LocationAvailabilityDTO;
 import be.ap.backend.dto.LocationBookDTO;
 import be.ap.backend.dto.LocationBookDetailDTO;
 import be.ap.backend.dto.SchoolStatsDTO;
+import be.ap.backend.exception.MissingSessionException;
 import be.ap.backend.service.LocationBookService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -51,9 +53,23 @@ public class LocationBookController {
         return ResponseEntity.ok(locationBookService.getLocationBook(locationId, bookId));
     }
 
+    @GetMapping("/book/{bookId}")
+    public ResponseEntity<List<LocationAvailabilityDTO>> getAvailabilityByBook(
+            @PathVariable Long bookId,
+            HttpSession session) {
+        Object raw = session.getAttribute("school");
+        if (raw == null)
+            throw new MissingSessionException("Niet ingelogd");
+        Long schoolId = Long.valueOf(raw.toString());
+        return ResponseEntity.ok(locationBookService.getAvailabilityByBook(bookId, schoolId));
+    }
+
     @GetMapping("/stats")
     public ResponseEntity<SchoolStatsDTO> getSchoolStats(HttpSession session) {
-        Long schoolId = Long.valueOf(session.getAttribute("school").toString());
+        Object raw = session.getAttribute("school");
+        if (raw == null) 
+            throw new MissingSessionException("Niet ingelogd");
+        Long schoolId = Long.valueOf(raw.toString());
         return ResponseEntity.ok(locationBookService.getStatsForSchool(schoolId));
     }
 }

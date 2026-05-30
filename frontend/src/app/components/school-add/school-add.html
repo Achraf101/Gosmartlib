@@ -31,7 +31,7 @@
     </p-iftaLabel>
     @if (form.controls.adres.invalid && form.controls.adres.touched) {
       <small class="p-error">
-        <p-message severity="error" size="small" variant="simple">Maximum 500 tekens!</p-message>
+        <p-message severity="error" size="small" variant="simple">Maximum 500 tekens</p-message>
       </small>
     }
   </div>
@@ -55,7 +55,7 @@
     @if (form.controls.contact.invalid && form.controls.contact.touched) {
       <small class="p-error"
         ><p-message severity="error" size="small" variant="simple"
-          >Maximum 500 tekens!</p-message
+          >Maximum 500 tekens</p-message
         ></small
       >
     }
@@ -78,10 +78,11 @@
       ></app-char-counter>
     </p-iftaLabel>
     <p-iftaLabel>
-      <label for="schoolDomain">Smartschool url*</label>
+      <label for="schoolDomain">Smartschool-subdomein*</label>
       <input
         id="schoolDomain"
-        pTooltip="bvb: https://school.smartschool.be/"
+        pTooltip="Het subdomein is het unieke gedeelte van de Smartschool-URL van jouw school.
+Voorbeeld: voor 'hetgroteinstituut.smartschool.be' is het subdomein 'hetgroteinstituut'."
         pInputText
         formControlName="subdomain"
       />
@@ -89,18 +90,18 @@
     @if (form.controls.description.invalid && form.controls.description.touched) {
       <small class="p-error"
         ><p-message severity="error" size="small" variant="simple"
-          >Maximum 1000 tekens!</p-message
+          >Maximum 1000 tekens</p-message
         ></small
       >
     }
   </div>
   <div class="field">
     <p-iftaLabel>
-      <label for="borrowLimit">Uitleenbeperking*</label>
+      <label for="borrowLimit">Ontleenbeperking*</label>
       <input
         type="number"
         id="borrowLimit"
-        pTooltip="Hoeveel boeken mag je maximaal per keer uitlenen?"
+        pTooltip="Hoeveel boeken mag je maximum per keer ontlenen?"
         tooltipPosition="right"
         tooltipEvent="focus"
         pInputText
@@ -117,13 +118,13 @@
   </div>
   <div class="field">
     <p-iftalabel>
-      <label for="amount">Uitleentermijn*</label>
+      <label for="amount">Ontleentermijn*</label>
       <input
         id="amount"
         type="number"
         pInputText
         formControlName="borrowPeriod"
-        pTooltip="Hoelang mag een boek uitgeleend blijven? (dagen)"
+        pTooltip="Hoelang mag een boek ontleend blijven? (dagen)"
         tooltipPosition="right"
         tooltipEvent="focus"
       />
@@ -144,7 +145,7 @@
         type="number"
         pInputText
         formControlName="extendPeriod"
-        pTooltip="Hoelang mag een boek verlengd worden? (In dagen)"
+        pTooltip="Hoelang mag een boek verlengd worden? (in dagen)"
         tooltipPosition="right"
         tooltipEvent="focus"
       />
@@ -180,7 +181,7 @@
   </div>
   <div class="field">
     <p-iftaLabel>
-      <label for="clientId">Client ID voor oneRoster</label>
+      <label for="clientId">Client ID voor OneRoster</label>
       <textarea
         id="clientId"
         rows="5"

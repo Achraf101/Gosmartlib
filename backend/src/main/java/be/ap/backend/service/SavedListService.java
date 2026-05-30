@@ -4,18 +4,18 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import be.ap.backend.dto.SharedListResponseDTO;
 import be.ap.backend.entity.Book;
 import be.ap.backend.entity.BookList;
 import be.ap.backend.entity.SavedList;
+import be.ap.backend.exception.BookAlreadyInLocationException;
 import be.ap.backend.repository.BookListItemRepository;
 import be.ap.backend.repository.BookListRepository;
 import be.ap.backend.repository.SavedListRepository;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 
@@ -32,7 +32,7 @@ public class SavedListService {
 
     public SavedList saveList(Long userId, Long bookListId) {
         if (savedListRepository.existsByUserIdAndBookListId(userId, bookListId)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "List already saved");
+            throw new BookAlreadyInLocationException("Lijst al opgeslagen");
         }
         SavedList savedList = new SavedList();
         savedList.setUserId(userId);
@@ -67,6 +67,6 @@ public class SavedListService {
 
     public BookList getListByToken(String token) {
         return bookListRepository.findByShareToken(token)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "List not found"));
+            .orElseThrow(() -> new EntityNotFoundException("Lijst niet gevonden"));
     }
 }

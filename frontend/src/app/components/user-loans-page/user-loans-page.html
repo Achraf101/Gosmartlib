@@ -1,8 +1,8 @@
 <app-nav-bar></app-nav-bar>
 <div class="loans-page">
-  <h1>Mijn uitleningen</h1>
+  <h1>Mijn ontleningen</h1>
 
-  <h2>Uitgeleende boeken</h2>
+  <h2>Ontleende boeken</h2>
 
   @if (loading) {
     @for (i of [1, 2, 3]; track i) {
@@ -12,11 +12,21 @@
     <p-table [value]="activeLoans" class="loans-table" stripedRows [paginator]="true" [rows]="5">
       <ng-template pTemplate="header" class="p-datatable-thead">
         <tr class="show-desktop">
-          <th><p>Boeken</p></th>
-          <th><p>Startdatum</p></th>
-          <th><p>Datum binnen te brengen</p></th>
-          <th><p>Status</p></th>
-          <th><p>Acties</p></th>
+          <th>
+            <p>Boeken</p>
+          </th>
+          <th>
+            <p>Startdatum</p>
+          </th>
+          <th>
+            <p>Teruggavedatum</p>
+          </th>
+          <th>
+            <p>Status</p>
+          </th>
+          <th>
+            <p>Acties</p>
+          </th>
         </tr>
       </ng-template>
       <ng-template pTemplate="body" let-loan class="p-datatable-tbody">
@@ -27,7 +37,7 @@
                 <li>
                   <div class="book-info">
                     <div class="cover">
-                      <b-cover [bookCard]="book"></b-cover>
+                      <b-cover [bookInput]="book"></b-cover>
                     </div>
                     <span class="book-title">{{ book.bookTitle }}</span>
                     @if (book.author) {
@@ -44,7 +54,11 @@
           <td>
             <span
               [class.overdue]="isOverdue(loan.end) && loan.status !== 'RETURNED'"
-              [pTooltip]="isOverdue(loan.end) && loan.status !== 'RETURNED' ? 'Terugbrengdatum is gepasseerd' : ''"
+              [pTooltip]="
+                isOverdue(loan.end) && loan.status !== 'RETURNED'
+                  ? 'Teruggavedatum is verstreken'
+                  : ''
+              "
             >
               {{ loan.end | date: 'dd/MM/yyyy' }}
             </span>
@@ -67,10 +81,12 @@
       </ng-template>
     </p-table>
   } @else {
-    <div class="empty-state"><p>Je hebt nog geen boeken uitgeleend.</p></div>
+    <div class="empty-state">
+      <p>Je hebt nog geen boeken ontleend.</p>
+    </div>
   }
 
-  <h2>Uitleenverzoeken</h2>
+  <h2>Ontleenverzoeken</h2>
 
   @if (loading) {
     @for (i of [1, 2, 3]; track i) {
@@ -80,8 +96,12 @@
     <p-table [value]="loanRequests" stripedRows [paginator]="true" [rows]="5" class="loans-table">
       <ng-template pTemplate="header" class="p-datatable-thead">
         <tr class="show-desktop">
-          <th><p>Boeken aangevraagd</p></th>
-          <th><p>Startdatum</p></th>
+          <th>
+            <p>Boeken aangevraagd</p>
+          </th>
+          <th>
+            <p>Startdatum</p>
+          </th>
           <th pSortableColumn="end">
             <p>Einddatum</p>
             <p-sortIcon field="end" />
@@ -90,7 +110,9 @@
             <p>Ingediend</p>
             <p-sortIcon field="created" />
           </th>
-          <th><p>Status</p></th>
+          <th>
+            <p>Status</p>
+          </th>
           <th></th>
         </tr>
       </ng-template>
@@ -102,7 +124,7 @@
                 <li class="book-item">
                   <div class="book-info">
                     <div class="cover">
-                      <b-cover [bookCard]="book"></b-cover>
+                      <b-cover [bookInput]="book"></b-cover>
                     </div>
                     <span class="book-title">{{ book.bookTitle }}</span>
                     @if (book.author) {
@@ -152,11 +174,13 @@
       </ng-template>
     </p-table>
   } @else {
-    <div class="empty-state"><p>Je hebt nog geen uitleenverzoeken.</p></div>
+    <div class="empty-state">
+      <p>Je hebt nog geen ontleenverzoeken.</p>
+    </div>
   }
 
   <p-dialog
-    header="Uitlening verlengen"
+    header="Ontlening verlengen"
     [(visible)]="extendDialogVisible"
     [modal]="true"
     [draggable]="false"
@@ -164,10 +188,10 @@
   >
     <div class="extend-dialog-content">
       <i class="pi pi-calendar-plus extend-icon"></i>
-      <p>Ben je zeker dat je de uitlening wil verlengen?</p>
+      <p>Ben je zeker dat je de ontlening wil verlengen?</p>
       @if (loanToExtend) {
         <p class="extend-date">
-          Nieuwe terugbrengdatum:
+          Nieuwe teruggavedatum:
           <strong>{{ extendedEndDate | date: 'dd/MM/yyyy' }}</strong>
         </p>
       }
@@ -179,11 +203,7 @@
         [text]="true"
         (onClick)="extendDialogVisible = false"
       />
-      <p-button
-        label="Ja, verlengen"
-        icon="pi pi-check"
-        (onClick)="confirmExtend()"
-      />
+      <p-button label="Ja, verlengen" icon="pi pi-check" (onClick)="confirmExtend()" />
     </ng-template>
   </p-dialog>
 </div>

@@ -1,20 +1,41 @@
 <div>
-  <p-button
-    icon="pi pi-receipt"
-    [rounded]="true"
-    (onClick)="visible = true; loadMaxAmounts()"
+  <button
+    (click)="visible = true; loadMaxAmounts()"
     [disabled]="cartService.isEmpty()"
+    pTooltip="Bekijk je ontleenlijst"
+    tooltipPosition="bottom"
     pBadge
-    [outlined]="true"
-  />
+    class="icon-btn"
+  >
+    <i class="pi pi-shopping-cart"></i>
+  </button>
 </div>
 
-<p-dialog header="Uw ontleenlijst" [(visible)]="visible" [modal]="true" [draggable]="false">
+<p-dialog
+  header="Je ontleenlijst"
+  [(visible)]="visible"
+  [modal]="true"
+  [draggable]="false"
+  appendTo="body"
+>
   <div>
     @if (cartService.isEmpty()) {
-      <p>Uw ontleenlijst is leeg.</p>
+      <p>Je ontleenlijst is leeg</p>
     } @else {
       <div>
+        @if (locations.length > 1 && !locationId) {
+          <div class="location-select">
+            <label>Locatie: </label>
+            <p-select
+              [options]="locations"
+              [(ngModel)]="selectedLocationId"
+              optionLabel="name"
+              optionValue="id"
+              placeholder="Selecteer een locatie"
+              (onChange)="onLocationChange($event.value)"
+            />
+          </div>
+        }
         <p-table [value]="cartService.items()" sortField="start" [sortOrder]="-1" stripedRows>
           <ng-template pTemplate="header">
             <tr>
@@ -30,17 +51,28 @@
                 <b-card [bookCard]="item" />
               </td>
               <td>
-                <p-inputnumber
-                  inputId="requestedAmount"
-                  [ngModel]="item.requestedAmount"
-                  (ngModelChange)="updateAmount(item.bookId, $event)"
-                  [min]="1"
-                  [max]="getMaxAmount(item.bookId)"
-                  [showButtons]="true"
-                  buttonLayout="vertical"
-                  [useGrouping]="false"
-                  class="inputnumber"
-                />
+                @if (authService.hasRole('STUDENT')) {
+                  <p-inputnumber
+                    inputId="requestedAmount"
+                    [ngModel]="item.requestedAmount"
+                    [min]="1"
+                    [max]="1"
+                    [disabled]="true"
+                    [inputStyle]="{ width: '3.5rem' }"
+                  />
+                } @else {
+                  <p-inputnumber
+                    inputId="requestedAmount"
+                    [ngModel]="item.requestedAmount"
+                    (ngModelChange)="updateAmount(item.bookId, $event)"
+                    [min]="1"
+                    [max]="getMaxAmount(item.bookId)"
+                    [showButtons]="true"
+                    buttonLayout="vertical"
+                    [useGrouping]="false"
+                    class="inputnumber"
+                  />
+                }
               </td>
               <td>
                 <p-button
@@ -80,7 +112,15 @@
             >
           </small>
         }
-        <p>(Einddatum: {{ calculatedEnd | date: 'dd-MM-yyyy' }})</p>
+        <p>
+          <i
+            class="pi pi-info-circle"
+            pTooltip="De einddatum wordt automatisch berekend op basis van de schoolinstellingen"
+            tooltipPosition="right"
+            style="cursor: pointer; color: var(--primary-color)"
+          ></i>
+          (Einddatum: {{ calculatedEnd | date: 'dd-MM-yyyy' }})
+        </p>
       </form>
     </div>
   }

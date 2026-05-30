@@ -7,15 +7,21 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import be.ap.backend.dto.LocationAvailabilityDTO;
 import be.ap.backend.dto.LocationBookDTO;
 import be.ap.backend.dto.LocationBookDetailDTO;
 import be.ap.backend.dto.SchoolStatsDTO;
 import be.ap.backend.entity.Book;
+import be.ap.backend.entity.BookCopy;
 import be.ap.backend.entity.Location;
 import be.ap.backend.entity.LocationBook;
+import be.ap.backend.enums.CopyStatus;
+import be.ap.backend.repository.BookCopyRepository;
 import be.ap.backend.exception.ArgumentsInvalidException;
 import be.ap.backend.exception.MissingArgumentsException;
+import be.ap.backend.repository.BookRepository;
 import be.ap.backend.repository.LocationBookRepository;
+import be.ap.backend.repository.LocationRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -25,8 +31,12 @@ import lombok.RequiredArgsConstructor;
 public class LocationBookService {
 
     private final LocationBookRepository locationBookRepository;
-
+    private final BookCopyService bookCopyService;
+    private final BookCopyRepository bookCopyRepository;
     private final EntityManager entityManager;
+
+    private final LocationRepository locationRepository;
+    private final BookRepository bookRepository;
 
     public LocationBookDetailDTO createLocationBook(LocationBookDTO dto) {
         if (dto.getLocationId() == null || dto.getBookId() == null) {
@@ -35,23 +45,28 @@ public class LocationBookService {
         if (dto.getAmount() == null || dto.getAmount() < 1) {
             throw new ArgumentsInvalidException("Aantal moet minimaal 1 zijn.");
         }
+
+        LocationBook saved;
         if (locationBookRepository.existsByLocationIdAndBookId(dto.getLocationId(), dto.getBookId())) {
             LocationBook existing = locationBookRepository
                     .findByLocationIdAndBookId(dto.getLocationId(), dto.getBookId())
                     .orElseThrow();
             existing.setAmount(existing.getAmount() + dto.getAmount());
             existing.setCurrentAmount(existing.getCurrentAmount() + dto.getAmount());
-            return toDTO(locationBookRepository.save(existing));
+            saved = locationBookRepository.save(existing);
+        } else {
+            LocationBook newLocationBook = new LocationBook();
+            newLocationBook.setLocation(entityManager.find(Location.class, dto.getLocationId()));
+            newLocationBook.setBook(entityManager.find(Book.class, dto.getBookId()));
+            newLocationBook.setAmount(dto.getAmount());
+            newLocationBook.setCurrentAmount(dto.getAmount());
+            saved = locationBookRepository.save(newLocationBook);
         }
 
-        LocationBook newLocationBook = new LocationBook();
-
-        newLocationBook.setLocation(entityManager.find(Location.class, dto.getLocationId()));
-        newLocationBook.setBook(entityManager.find(Book.class, dto.getBookId()));
-        newLocationBook.setAmount(dto.getAmount());
-        newLocationBook.setCurrentAmount(dto.getAmount());
-
-       return toDTO(locationBookRepository.save(newLocationBook));
+        List<String> newAccessionIds = bookCopyService.createCopies(saved, dto.getAmount());
+        LocationBookDetailDTO result = toDTO(saved);
+        result.setNewAccessionIds(newAccessionIds);
+        return result;
     }
 
     public List<LocationBookDetailDTO> findAll() {
@@ -68,10 +83,18 @@ public class LocationBookService {
     }
 
     public LocationBookDetailDTO getLocationBook(Long locationId, Long bookId) {
+        String bookTitle = bookRepository.findById(bookId)
+                .map(Book::getTitle)
+                .orElse("id=" + bookId);
+
+        String locationName = locationRepository.findById(locationId)
+                .map(Location::getName)
+                .orElse("id=" + locationId);
+
         LocationBook locationBook = locationBookRepository
                 .findByLocationIdAndBookId(locationId, bookId)
                 .orElseThrow(() -> new EntityNotFoundException(
-                        "LocationBook niet gevonden voor locationId=" + locationId + ", bookId=" + bookId));
+                        "Het boek '" + bookTitle + "' is niet aanwezig in '" + locationName + "'."));
         return toDTO(locationBook);
     }
 
@@ -94,9 +117,28 @@ public class LocationBookService {
         return dto;
     }
 
+    public List<LocationAvailabilityDTO> getAvailabilityByBook(Long bookId, Long schoolId) {
+        return locationBookRepository.findByBookIdAndLocationSchoolId(bookId, schoolId).stream()
+                .map(lb -> {
+                    List<BookCopy> copies = bookCopyRepository.findByLocationBookId(lb.getId());
+                    LocationAvailabilityDTO dto = new LocationAvailabilityDTO();
+                    dto.setLocationBookId(lb.getId());
+                    dto.setLocationId(lb.getLocation().getId());
+                    dto.setLocationName(lb.getLocation().getName());
+                    dto.setAmount(lb.getAmount());
+                    dto.setCurrentAmount(lb.getCurrentAmount());
+                    dto.setDamagedCount((int) copies.stream()
+                            .filter(c -> c.getStatus() == CopyStatus.DAMAGED).count());
+                    dto.setNotedCount((int) copies.stream()
+                            .filter(c -> c.getNote() != null && !c.getNote().isBlank()).count());
+                    return dto;
+                })
+                .toList();
+    }
+
     public SchoolStatsDTO getStatsForSchool(Long schoolId) {
-        int total = locationBookRepository.sumAmountBySchoolId(schoolId);
-        int available = locationBookRepository.sumCurrentAmountBySchoolId(schoolId);
-        return new SchoolStatsDTO(total, available);
+        Integer total = locationBookRepository.sumAmountBySchoolId(schoolId);
+        Integer available = locationBookRepository.sumCurrentAmountBySchoolId(schoolId);
+        return new SchoolStatsDTO(total != null ? total : 0, available != null ? available : 0);
     }
 }

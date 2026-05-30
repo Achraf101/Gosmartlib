@@ -7,12 +7,15 @@ import { ApiService } from '../../services/api';
 import { Author } from '../../models/author';
 import { Genre } from '../../models/genre';
 import { Language } from '../../models/language';
-import { Series } from '../../models/series'; // voeg dit model toe
+import { Series } from '../../models/series';
 import { AutoCompleteModule, AutoCompleteCompleteEvent } from 'primeng/autocomplete';
 import { SelectModule } from 'primeng/select';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { Theme } from '../../models/theme';
 import { ThemeService } from '../../services/theme';
+import { TooltipModule } from 'primeng/tooltip';
+import { AuthService } from '../../services/auth';
+import { RadioButton } from 'primeng/radiobutton';
 
 @Component({
   selector: 'app-filter-page',
@@ -24,6 +27,8 @@ import { ThemeService } from '../../services/theme';
     AutoCompleteModule,
     SelectModule,
     InputNumberModule,
+    TooltipModule,
+    RadioButton,
   ],
   templateUrl: './filter-page.html',
   styleUrl: './filter-page.css',
@@ -46,12 +51,14 @@ export class FilterPage implements OnInit {
   pagesMax: number | null = null;
   errorPagesMin: string | null = null;
   errorPagesMax: string | null = null;
+  didacticFilter: boolean | null = null;
 
   constructor(
     private apiService: ApiService,
     private themeService: ThemeService,
     private router: Router,
     private route: ActivatedRoute,
+    protected authService: AuthService,
   ) {}
 
   ngOnInit(): void {
@@ -89,6 +96,7 @@ export class FilterPage implements OnInit {
       }
       if (params['pagesMin']) this.pagesMin = Number(params['pagesMin']);
       if (params['pagesMax']) this.pagesMax = Number(params['pagesMax']);
+      if (params['didactic'] !== undefined) this.didacticFilter = params['didactic'] === 'true';
     });
   }
 
@@ -166,7 +174,7 @@ export class FilterPage implements OnInit {
       return false;
     }
     if (this.pagesMin !== null && this.pagesMax !== null && this.pagesMin > this.pagesMax) {
-      this.errorPagesMin = 'Min moet kleiner zijn dan max.';
+      this.errorPagesMin = 'Min. moet kleiner zijn dan max.';
       return false;
     }
     return true;
@@ -186,6 +194,7 @@ export class FilterPage implements OnInit {
     if (this.selectedClib.length > 0) params['clibs'] = this.selectedClib.join(',');
     if (this.pagesMin !== null) params['pagesMin'] = this.pagesMin;
     if (this.pagesMax !== null) params['pagesMax'] = this.pagesMax;
+    if (this.didacticFilter !== null) params['didactic'] = this.didacticFilter;
 
     this.router.navigate(['/catalogus'], { queryParams: params });
   }
@@ -200,5 +209,6 @@ export class FilterPage implements OnInit {
     this.selectedClib = [];
     this.pagesMin = null;
     this.pagesMax = null;
+    this.didacticFilter = null;
   }
 }

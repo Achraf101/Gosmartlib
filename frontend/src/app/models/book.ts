@@ -99,6 +99,7 @@ export interface BookLookupDTO {
 }
 
 export interface BookFilter {
+  query?: string;
   type?: number[];
   didactic?: boolean;
   genre?: number[];

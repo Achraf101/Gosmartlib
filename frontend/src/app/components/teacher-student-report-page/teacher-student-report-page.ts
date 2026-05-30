@@ -11,6 +11,7 @@ import { Divider } from 'primeng/divider';
 import { StudentReportService } from '../../services/student-report';
 import { StudentReportDTO } from '../../models/student-report';
 import { NavBarComponent } from '../nav-bar/nav-bar';
+import { BookCover } from '../misc/book-cover/book-cover';
 
 @Component({
   selector: 'app-teacher-student-report-page',
@@ -26,6 +27,7 @@ import { NavBarComponent } from '../nav-bar/nav-bar';
     Divider,
     DatePipe,
     NavBarComponent,
+    BookCover,
   ],
   templateUrl: './teacher-student-report-page.html',
   styleUrl: './teacher-student-report-page.css',

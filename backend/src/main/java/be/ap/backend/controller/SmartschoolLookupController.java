@@ -5,6 +5,7 @@ import be.ap.backend.entity.School;
 import be.ap.backend.entity.UserRole;
 import be.ap.backend.repository.SchoolRepository;
 import be.ap.backend.service.SmartschoolLookupService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -54,6 +55,6 @@ public class SmartschoolLookupController {
 
     private School getSchool(Long schoolId) {
         return schoolRepository.findById(schoolId)
-                .orElseThrow(() -> new RuntimeException("School not found: " + schoolId));
+                .orElseThrow(() -> new EntityNotFoundException("School niet gevonden: " + schoolId));
     }
 }

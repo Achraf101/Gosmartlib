@@ -1,7 +1,7 @@
 <div class="book-card" (click)="handleClick()" [style.cursor]="'pointer'">
   <div class="book-info">
     <div class="book-cover">
-      <b-cover [bookCard]="book"></b-cover>
+      <b-cover [bookInput]="book"></b-cover>
     </div>
     <div class="book-info-data">
       <h2 class="book-title">{{ book.title }}</h2>
@@ -13,7 +13,7 @@
           <span> · {{ book.published }}</span>
         }
         @if (book.clib) {
-          <span> · CLIB {{ book.clib }}</span>
+          <span> · Leesniveau {{ book.clib }}</span>
         }
         @if (book.genres && book.genres.length != 0) {
           <div class="book-meta show-desktop">

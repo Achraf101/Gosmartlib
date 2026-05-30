@@ -40,6 +40,7 @@ import { SmartschoolSyncService } from '../../services/smartschool-sync';
 import { ConfirmDialog } from 'primeng/confirmdialog';
 import { ConfirmationService } from 'primeng/api';
 import { AuthService } from '../../services/auth';
+import { ThemeService } from '../../services/theme';
 
 @Component({
   selector: 'app-library-manager-dashboard',
@@ -70,6 +71,7 @@ import { AuthService } from '../../services/auth';
 export class DashboardLibraryManager implements OnInit {
   authorFormVisible = false;
   publisherFormVisible = false;
+  themeFormVisible = false;
   pendingLoanCount = 0;
   isVisible = isVisible;
   syncLoading = false;
@@ -91,6 +93,10 @@ export class DashboardLibraryManager implements OnInit {
   publisherForm = new FormGroup({
     name: new FormControl<string>('', Validators.required),
     description: new FormControl<string | null>(null),
+  });
+
+  themeForm = new FormGroup({
+    name: new FormControl<string>('', Validators.required),
   });
 
   overdueLoans: LoanDTO[] = [];
@@ -118,7 +124,8 @@ export class DashboardLibraryManager implements OnInit {
     private schoolSettingsService: SchoolSettingsService,
     private smartschoolSyncService: SmartschoolSyncService,
     private confirmationService: ConfirmationService,
-    private authService: AuthService,
+    public authService: AuthService,
+    private themeService: ThemeService,
   ) {}
 
   ngOnInit(): void {
@@ -242,12 +249,16 @@ export class DashboardLibraryManager implements OnInit {
     this.router.navigate(['/boek/toevoegen']);
   }
 
+  goToSchools(): void {
+    this.router.navigate(['/school']);
+  }
+
   goToLocation(): void {
     this.router.navigate(['/locatie']);
   }
 
   goToLoanRequests(): void {
-    this.router.navigate(['/uitleenaanvragen']);
+    this.router.navigate(['/ontleenaanvragen']);
   }
 
   goToReviewModeration(): void {
@@ -282,12 +293,6 @@ export class DashboardLibraryManager implements OnInit {
             detail: 'De auteur is succesvol opgeslagen.',
           });
         },
-        error: () =>
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Fout',
-            detail: 'Fout bij opslaan auteur.',
-          }),
       });
     }
   }
@@ -304,12 +309,18 @@ export class DashboardLibraryManager implements OnInit {
             detail: 'De uitgever is succesvol opgeslagen.',
           });
         },
-        error: () =>
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Fout',
-            detail: 'Fout bij opslaan uitgever.',
-          }),
+      });
+    }
+  }
+
+  addTheme(): void {
+    if (this.themeForm.valid) {
+      this.themeService.addTheme(this.themeForm.value as { name: string }).subscribe({
+        next: () => {
+          this.themeFormVisible = false;
+          this.themeForm.reset();
+          this.messageService.add({ severity: 'success', summary: 'Thema toegevoegd' });
+        },
       });
     }
   }
@@ -372,12 +383,6 @@ export class DashboardLibraryManager implements OnInit {
           detail: 'Instellingen bijgewerkt.',
         });
       },
-      error: () =>
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fout',
-          detail: 'Kon instellingen niet opslaan.',
-        }),
     });
   }
 
@@ -412,11 +417,6 @@ export class DashboardLibraryManager implements OnInit {
       },
       error: () => {
         this.syncLoading = false;
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fout',
-          detail: 'Synchronisatie mislukt.',
-        });
       },
     });
   }

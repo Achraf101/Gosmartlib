@@ -9,7 +9,6 @@ import { MessageModule } from 'primeng/message';
 import { DividerModule } from 'primeng/divider';
 import { AccordionModule } from 'primeng/accordion';
 import { AuthService } from '../../services/auth';
-import { Login } from '../../models/login';
 
 @Component({
   selector: 'app-admin-login',

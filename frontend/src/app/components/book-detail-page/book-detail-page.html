@@ -24,7 +24,7 @@
       </h3>
       <div id="book-info-image">
         <div class="img">
-          <b-cover [bookCard]="book"></b-cover>
+          <b-cover [bookInput]="book"></b-cover>
         </div>
         <div id="stars">
           <div class="rating-display">
@@ -45,33 +45,35 @@
             >
           </div>
         </div>
-        <div class="bookmark">
-          <div class="dropdown-list">
-            <p-button
-              label="voeg toe aan lijst"
-              fluid
-              severity="secondary"
-              text
-              size="small"
-              icon="pi pi-plus"
-              (click)="toggleDropdown()"
-            />
+        @if (!authService.hasRole('ADMIN')) {
+          <div class="bookmark">
+            <div class="dropdown-list">
+              <p-button
+                label="voeg toe aan lijst"
+                fluid
+                severity="secondary"
+                text
+                size="small"
+                icon="pi pi-plus"
+                (click)="toggleDropdown()"
+              />
 
-            @if (showDropdown) {
-              <div>
-                @for (list of lists; track $index) {
-                  <p (click)="addToList(list.id)">{{ list.name }}</p>
-                }
-              </div>
-            }
+              @if (showDropdown) {
+                <div>
+                  @for (list of lists; track $index) {
+                    <p (click)="addToList(list.id)">{{ list.name }}</p>
+                  }
+                </div>
+              }
+            </div>
+            <i
+              (click)="toggleFavorite()"
+              class="bookmark pi"
+              [class.pi-bookmark]="!isBookmarked"
+              [class.pi-bookmark-fill]="isBookmarked"
+            ></i>
           </div>
-          <i
-            (click)="toggleFavorite()"
-            class="bookmark pi"
-            [class.pi-bookmark]="!isBookmarked"
-            [class.pi-bookmark-fill]="isBookmarked"
-          ></i>
-        </div>
+        }
       </div>
       <div id="book-info-text">
         <h2 class="show-desktop">{{ book.title }}</h2>
@@ -99,50 +101,70 @@
           </p-accordion-panel>
         </p-accordion>
         <p class="show-desktop">{{ book.description }}</p>
-        <div class="btns">
-          <p-button
-            class="btn"
-            label="Nu Ontlenen"
-            severity="primary"
-            (onClick)="loanFormVisible = true"
-          />
-          <p-button
-            class="btn"
-            label="Toevoegen aan ontlening"
-            severity="primary"
-            (onClick)="cartDialogVisible = true"
-          />
-          @if (iaId) {
+        @if (!authService.hasRole('ADMIN')) {
+          <div class="btns">
             <p-button
               class="btn"
-              label="Boekpreview"
-              severity="secondary"
-              icon="pi pi-book"
-              (onClick)="openPreview()"
+              label="Ontlenen"
+              severity="primary"
+              (onClick)="openLoanDialog()"
             />
-          }
-        </div>
-        <div id="book-available">
-          <p class="avail-title">Beschikbaarheid</p>
-          @if (locationBook) {
-            <p>
-              <span class="avail-label">Status</span>
-              <span class="avail-value" [class.avail-unavailable]="locationBook.current_amount === 0">
-                {{ locationBook.current_amount > 0 ? 'beschikbaar' : 'niet beschikbaar' }}
-              </span>
-            </p>
-            <p>
-              <span class="avail-label">Exemplaren</span>
-              <span class="avail-value">{{ locationBook.current_amount }} / {{ locationBook.amount }} beschikbaar</span>
-            </p>
-          } @else {
-            <p class="avail-value avail-unavailable">Niet beschikbaar op uw locatie.</p>
-          }
-        </div>
+            <p-button
+              class="btn"
+              label="Toevoegen aan ontlening"
+              severity="primary"
+              (onClick)="openCartDialog()"
+            />
+            @if (iaId) {
+              <p-button
+                class="btn"
+                label="Boekpreview"
+                severity="secondary"
+                icon="pi pi-book"
+                (onClick)="openPreview()"
+              />
+            }
+          </div>
+          <div id="book-available">
+            <p class="avail-title">Beschikbaarheid</p>
+            @if (locationAvailability.length === 0) {
+              <p class="avail-value avail-unavailable">Niet beschikbaar in jouw school.</p>
+            } @else {
+              <div class="avail-locations">
+                @for (avail of locationAvailability; track avail.location_id) {
+                  <div class="avail-location-row">
+                    <span class="avail-location-name">{{ avail.location_name }}</span>
+                    <span
+                      class="avail-count"
+                      [class.avail-unavailable]="avail.current_amount === 0"
+                    >
+                      {{ avail.current_amount }} beschikbaar
+                    </span>
+                    @if (avail.damaged_count > 0) {
+                      <span class="avail-badge avail-badge-damaged">
+                        <i class="pi pi-exclamation-triangle"></i>
+                        {{ avail.damaged_count }}
+                        {{ avail.damaged_count === 1 ? 'beschadigd' : 'beschadigd' }}
+                      </span>
+                    }
+                    @if (avail.noted_count > 0) {
+                      <span
+                        class="avail-badge avail-badge-noted avail-badge-clickable"
+                        (click)="openNotesDialog(avail)"
+                      >
+                        <i class="pi pi-info-circle"></i>
+                        <span class="avail-badge-text">{{ avail.noted_count }} {{ avail.noted_count === 1 ? 'notitie' : 'notities' }}</span>
+                      </span>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
       </div>
     </div>
-    <!-- TODO check if user is teacher -->
-    @if (auth.hasRole('LEERKRACHT')) {
+    @if (authService.hasRole('LEERKRACHT')) {
       <div class="material box">
         <div>
           <h2>Lesmateriaal</h2>
@@ -151,7 +173,7 @@
             mode="basic"
             name="file"
             chooseIcon="pi pi-upload"
-            maxFileSize="8000000"
+            maxFileSize="150000000"
             (onSelect)="onFileSelect($event)"
             [customUpload]="true"
             [auto]="false"
@@ -175,7 +197,7 @@
       <table>
         <caption>
           <h2>Details</h2>
-          @if (authService.hasRole('BIBLIOTHEEKBEHEERDER')) {
+          @if (authService.hasRole('BIBLIOTHEEKBEHEERDER') || authService.hasRole('ADMIN')) {
             <p-button label="Bewerken" icon="pi pi-pencil" (onClick)="editBook()" />
           }
         </caption>
@@ -229,7 +251,7 @@
         }
         @if (book.clib) {
           <tr>
-            <td>CLIB niveau</td>
+            <td>Leesniveau</td>
             <td>{{ book.clib }}</td>
           </tr>
         }
@@ -268,7 +290,7 @@
 
     @if (relatedBooks?.length != 0) {
       <div id="related-books" class="box">
-        <h2>Meer van dit:</h2>
+        <h2>Meer van dit</h2>
         <div class="related-scroll">
           @for (bookCard of relatedBooks ?? []; track bookCard.id) {
             <b-card [bookCard]="bookCard"></b-card>
@@ -278,13 +300,26 @@
     }
 
     <p-dialog
-      header="Ontleen aanvraag"
+      header="Ontleenaanvraag"
       [modal]="true"
       [(visible)]="loanFormVisible"
       resizable="false"
     >
       <form [formGroup]="loanForm">
         <div class="loanForm">
+          @if (!locationId) {
+            <div>
+              <p-select
+                [options]="availableLoanLocations"
+                optionLabel="location_name"
+                optionValue="location_id"
+                placeholder="Selecteer een locatie"
+                [(ngModel)]="selectedLoanLocationId"
+                [ngModelOptions]="{ standalone: true }"
+                (onChange)="onLoanLocationChange($event.value)"
+              />
+            </div>
+          }
           <div>
             <p-datepicker
               formControlName="start"
@@ -309,38 +344,41 @@
               @if (loanForm.controls.end.value) {
                 {{ loanForm.controls.end.value | date: 'dd/MM/yyyy' }}
               } @else {
-                (selecteer een start datum)
+                (selecteer een startdatum)
               }
             </span>
           </div>
-          <div>
-            <p-ifta-label>
-              <p-inputNumber
-                inputId="requestedAmount"
-                formControlName="requestedAmount"
-                [showButtons]="true"
-                [min]="0"
-                [max]="locationBook?.current_amount ?? 100"
-                [useGrouping]="false"
-              />
-              <label for="requestedAmount">Aantal</label>
-            </p-ifta-label>
-            @if (
-              loanForm.controls.requestedAmount.invalid && loanForm.controls.requestedAmount.touched
-            ) {
-              <small class="p-error">
-                <p-message severity="error" size="small" variant="simple"
-                  >Geef een geldig aantal in.</p-message
-                >
-              </small>
-            }
-          </div>
+          @if (!authService.hasRole('STUDENT')) {
+            <div>
+              <p-ifta-label>
+                <p-inputNumber
+                  inputId="requestedAmount"
+                  formControlName="requestedAmount"
+                  [showButtons]="true"
+                  [min]="0"
+                  [max]="locationBook?.current_amount ?? 100"
+                  [useGrouping]="false"
+                />
+                <label for="requestedAmount">Aantal</label>
+              </p-ifta-label>
+              @if (
+                loanForm.controls.requestedAmount.invalid &&
+                loanForm.controls.requestedAmount.touched
+              ) {
+                <small class="p-error">
+                  <p-message severity="error" size="small" variant="simple"
+                    >Geef een geldig aantal in.</p-message
+                  >
+                </small>
+              }
+            </div>
+          }
           <div class="btns">
-            <p-button class="btn" label="Annuleer" severity="secondary" (click)="cancelLoan()" />
+            <p-button class="btn" label="Annuleren" severity="secondary" (click)="cancelLoan()" />
             <p-button
               class="btn"
               label="Opslaan"
-              [disabled]="loanForm.invalid"
+              [disabled]="loanForm.invalid || (!locationId && !selectedLoanLocationId)"
               (onClick)="createLoan()"
             />
           </div>
@@ -349,28 +387,30 @@
     </p-dialog>
 
     <p-dialog header="Voeg toe aan ontlening" [(visible)]="cartDialogVisible" [modal]="true">
-      <form [formGroup]="cartForm" class="flex flex-col gap-3">
-        <p-ifta-label>
-          <p-inputnumber
-            formControlName="requestedAmount"
-            inputId="cartAmount"
-            [min]="0"
-            [max]="locationBook?.current_amount ?? 100"
-            [showButtons]="true"
-            [useGrouping]="false"
-          />
-          <label for="cartAmount">Aantal exemplaren</label>
-        </p-ifta-label>
-        @if (
-          cartForm.controls.requestedAmount.invalid && cartForm.controls.requestedAmount.touched
-        ) {
-          <small class="p-error">
-            <p-message severity="error" size="small" variant="simple"
-              >Geef een geldig aantal in.</p-message
-            >
-          </small>
-        }
-      </form>
+      @if (!authService.hasRole('STUDENT')) {
+        <form [formGroup]="cartForm" class="flex flex-col gap-3">
+          <p-ifta-label>
+            <p-inputnumber
+              formControlName="requestedAmount"
+              inputId="cartAmount"
+              [min]="0"
+              [max]="locationBook?.current_amount ?? 100"
+              [showButtons]="true"
+              [useGrouping]="false"
+            />
+            <label for="cartAmount">Aantal exemplaren</label>
+          </p-ifta-label>
+          @if (
+            cartForm.controls.requestedAmount.invalid && cartForm.controls.requestedAmount.touched
+          ) {
+            <small class="p-error">
+              <p-message severity="error" size="small" variant="simple"
+                >Geef een geldig aantal in.</p-message
+              >
+            </small>
+          }
+        </form>
+      }
       <ng-template pTemplate="footer">
         <p-button label="Annuleren" severity="secondary" (onClick)="cancelCart()" />
         <p-button
@@ -434,6 +474,27 @@
     >
       @if (previewUrl) {
         <iframe [src]="previewUrl" class="preview-iframe" frameborder="0" allowfullscreen></iframe>
+      }
+    </p-dialog>
+
+    <p-dialog
+      [header]="'Notities — ' + notesDialogLocationName"
+      [(visible)]="notesDialogVisible"
+      [modal]="true"
+      [resizable]="false"
+      [style]="{ width: '32rem' }"
+    >
+      @if (notesDialogCopies.length === 0) {
+        <p>Laden...</p>
+      } @else {
+        <ul class="notes-list">
+          @for (copy of notesDialogCopies; track copy.id) {
+            <li class="notes-list-item">
+              <span class="notes-accession">{{ copy.accession_id }}</span>
+              <span class="notes-note">{{ copy.note }}</span>
+            </li>
+          }
+        </ul>
       }
     </p-dialog>
 

@@ -10,8 +10,9 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import be.ap.backend.entity.Loan;
-import be.ap.backend.entity.LoanStatus;
+// import be.ap.backend.entity.LoanStatus;
 import jakarta.transaction.Transactional;
+import be.ap.backend.enums.LoanStatus;
 
 @Repository
 public interface LoanRepository extends JpaRepository<Loan, Long> {

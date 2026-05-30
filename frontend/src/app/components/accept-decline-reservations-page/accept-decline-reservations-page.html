@@ -3,64 +3,139 @@
   <p-card>
     <ng-template pTemplate="header">
       <div class="card-header">
-        <h2>Uitleenaanvragen</h2>
-        <span class="subtitle">Openstaande uitleenaanvragen</span>
+        <h2>Ontleenaanvragen</h2>
+        <span class="subtitle">Openstaande ontleenaanvragen</span>
       </div>
     </ng-template>
 
-    <p-table [value]="groupedLoans" [loading]="loading" [paginator]="true" [rows]="5"
-      [rowsPerPageOptions]="[5, 10, 20]">
+    <p-table
+      [value]="groupedLoans"
+      [loading]="loading"
+      [paginator]="true"
+      [rows]="5"
+      [rowsPerPageOptions]="[5, 10, 20]"
+    >
       <ng-template pTemplate="header">
         <tr>
           <th>Datum aangemaakt</th>
           <th>Gebruiker</th>
           <th>Begin-eind datum</th>
+          <th>Boeken</th>
+          <th>Notitie</th>
           <th>Acties</th>
         </tr>
       </ng-template>
 
       <ng-template pTemplate="body" let-item>
         @if (isGroup(item)) {
-        <tr class="group-row">
-          <td>
-            {{ asGroup(item)[0].created | date: 'dd/MM/yyyy HH:mm' }}
-            <span class="group-badge">{{ getTotalBooks(asGroup(item)) }} boeken</span>
-          </td>
-          <td>{{ asGroup(item)[0].username }}</td>
-          <td>{{ asGroup(item)[0].start | date: 'dd/MM/yyyy' }} - {{ asGroup(item)[0].end | date: 'dd/MM/yyyy' }}</td>
-          <td>
-            <div class="actionBtns">
-              <p-button icon="pi pi-check" label="Alles goedkeuren" severity="success" size="small" [outlined]="true"
-                (onClick)="acceptGroup(asGroup(item))" />
-              <p-button icon="pi pi-times" label="Alles weigeren" severity="danger" size="small" [outlined]="true"
-                (onClick)="declineGroup(asGroup(item))" />
-              <p-button icon="pi pi-info-circle" label="Details" severity="info" size="small" [outlined]="true"
-                (onClick)="openGroupDialog(asGroup(item))" />
-            </div>
-          </td>
-        </tr>
+          <tr class="group-row">
+            <td>
+              {{ asGroup(item)[0].created | date: 'dd/MM/yyyy HH:mm' }}
+              <span class="group-badge">{{ getTotalBooks(asGroup(item)) }} boeken</span>
+            </td>
+            <td>{{ asGroup(item)[0].username }}</td>
+            <td>
+              {{ asGroup(item)[0].start | date: 'dd/MM/yyyy' }} -
+              {{ asGroup(item)[0].end | date: 'dd/MM/yyyy' }}
+            </td>
+            <td>
+              <ul class="book-list">
+                @for (loan of asGroup(item); track loan.id) {
+                  @for (book of loan.books; track book.bookId) {
+                    <li>
+                      <span class="book-title">{{ book.bookTitle }}</span>
+                      <span class="book-amount">×{{ book.requestedAmount }}</span>
+                    </li>
+                  }
+                }
+              </ul>
+            </td>
+            <td>—</td>
+            <td>
+              <div class="actionBtns">
+                <p-button
+                  icon="pi pi-check"
+                  label="Alles goedkeuren"
+                  severity="success"
+                  size="small"
+                  [outlined]="true"
+                  (onClick)="acceptGroup(asGroup(item))"
+                />
+                <p-button
+                  icon="pi pi-times"
+                  label="Alles weigeren"
+                  severity="danger"
+                  size="small"
+                  [outlined]="true"
+                  (onClick)="declineGroup(asGroup(item))"
+                />
+              </div>
+            </td>
+          </tr>
         } @else {
-        <tr>
-          <td>{{ asLoan(item).created | date: 'dd/MM/yyyy HH:mm' }}</td>
-          <td>{{ asLoan(item).username }}</td>
-          <td>{{ asLoan(item).start | date: 'dd/MM/yyyy' }} - {{ asLoan(item).end | date: 'dd/MM/yyyy' }}</td>
-          <td>
-            <div class="actionBtns">
-              <p-button icon="pi pi-check" label="Goedkeuren" severity="success" size="small" [outlined]="true"
-                (onClick)="acceptLoan(asLoan(item))" />
-              <p-button icon="pi pi-times" label="Weigeren" severity="danger" size="small" [outlined]="true"
-                (onClick)="declineLoan(asLoan(item))" />
-              <p-button icon="pi pi-info-circle" label="Details" severity="info" size="small" [outlined]="true"
-                (onClick)="selectedLoan = asLoan(item); infoDialogVisible = true" />
-            </div>
-          </td>
-        </tr>
+          <tr>
+            <td>{{ asLoan(item).created | date: 'dd/MM/yyyy HH:mm' }}</td>
+            <td>{{ asLoan(item).username }}</td>
+            <td>
+              {{ asLoan(item).start | date: 'dd/MM/yyyy' }} -
+              {{ asLoan(item).end | date: 'dd/MM/yyyy' }}
+            </td>
+            <td>
+              <ul class="book-list">
+                @for (book of asLoan(item).books; track book.bookId) {
+                  <li>
+                    <span class="book-title">{{ book.bookTitle }}</span>
+                    <span class="book-amount">×{{ book.requestedAmount }}</span>
+                  </li>
+                }
+              </ul>
+            </td>
+            <td>
+              <div class="note-cell">
+                @if (asLoan(item).note) {
+                  <span class="note-text">{{ asLoan(item).note }}</span>
+                } @else {
+                  <span class="empty-note">Geen notitie</span>
+                }
+                <p-button
+                  icon="pi pi-pencil"
+                  severity="secondary"
+                  size="small"
+                  [text]="true"
+                  [rounded]="true"
+                  pTooltip="Notitie bewerken"
+                  tooltipPosition="left"
+                  (onClick)="openNoteDialog(asLoan(item))"
+                />
+              </div>
+            </td>
+            <td>
+              <div class="actionBtns">
+                <p-button
+                  icon="pi pi-check"
+                  label="Goedkeuren"
+                  severity="success"
+                  size="small"
+                  [outlined]="true"
+                  (onClick)="acceptLoan(asLoan(item))"
+                />
+                <p-button
+                  icon="pi pi-times"
+                  label="Weigeren"
+                  severity="danger"
+                  size="small"
+                  [outlined]="true"
+                  (onClick)="declineLoan(asLoan(item))"
+                />
+              </div>
+            </td>
+          </tr>
         }
       </ng-template>
 
       <ng-template pTemplate="emptymessage">
         <tr>
-          <td colspan="4" class="empty-state">
+          <td colspan="6" class="empty-state">
             <i class="pi pi-inbox"></i>
             <span>Geen openstaande reservaties.</span>
           </td>
@@ -71,85 +146,34 @@
 </div>
 
 <!-- Notitie dialog -->
-<p-dialog header="Notitie toevoegen/aanpassen" [(visible)]="noteDialogVisible" [modal]="true" [draggable]="false"
-  [resizable]="false">
-  <textarea rows="5" cols="40" fluid style="resize: vertical" pTextarea [(ngModel)]="note" maxlength="255"></textarea>
+<p-dialog
+  header="Notitie toevoegen/aanpassen"
+  [(visible)]="noteDialogVisible"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+>
+  <textarea
+    rows="5"
+    cols="40"
+    fluid
+    style="resize: vertical"
+    pTextarea
+    [(ngModel)]="note"
+    maxlength="255"
+  ></textarea>
   @if (note.length == 255) {
-  <p-message severity="error" size="small" variant="simple">Maximaal aantal tekens bereikt!</p-message>
+    <p-message severity="error" size="small" variant="simple"
+      >Maximaal aantal tekens bereikt!</p-message
+    >
   }
   <div class="btns">
-    <p-button class="btn" label="Annuleer" severity="secondary" (click)="noteDialogVisible = false" />
+    <p-button
+      class="btn"
+      label="Annuleren"
+      severity="secondary"
+      (click)="noteDialogVisible = false"
+    />
     <p-button class="btn" label="Opslaan" (onClick)="addOrChangeNote()" />
   </div>
-</p-dialog>
-
-<!-- Enkele loan detail dialog -->
-<p-dialog header="Gedetailleerde informatie" [(visible)]="infoDialogVisible" [modal]="true" [draggable]="false"
-  [resizable]="false">
-  @if (selectedLoan) {
-  <div class="info-dialog-content">
-    <section>
-      <h3>Boeken</h3>
-      <ul class="book-list">
-        @for (book of selectedLoan.books; track $index; let index = $index) {
-        <li>
-          <span class="book-index">{{ index + 1 }}.</span>
-          <span class="book-title">{{ book.bookTitle }}</span>
-          <span class="book-amount">Aantal: {{ book.requestedAmount }}</span>
-        </li>
-        }
-      </ul>
-    </section>
-    <section>
-      <h3>Notities</h3>
-      @if (selectedLoan.note) {
-      <p class="note">{{ selectedLoan.note }}</p>
-      } @else {
-      <p class="empty-note">Geen notitie.</p>
-      }
-      <p-button label="Notitie toevoegen/aanpassen" (onClick)="openNoteDialog(selectedLoan)"></p-button>
-    </section>
-  </div>
-  }
-  <div class="btns">
-    <p-button label="Sluiten" severity="secondary" (click)="infoDialogVisible = false" />
-  </div>
-</p-dialog>
-
-<!-- Groep detail dialog -->
-<p-dialog header="Groepsaanvraag details" [(visible)]="groupInfoDialogVisible" [modal]="true" [draggable]="false"
-  [resizable]="false">
-  @if (selectedGroupLoans.length > 0) {
-  <div class="group-dialog-content">
-    @for (loan of selectedGroupLoans; track loan.id; let index = $index) {
-    <div class="group-loan-item">
-      <div class="group-loan-header">
-        <span class="group-loan-title">Boek {{ index + 1 }}: {{ loan.books[0]?.bookTitle }}</span>
-        <span class="group-loan-amount">Aantal: {{ loan.books[0]?.requestedAmount }}</span>
-      </div>
-      <div class="group-loan-actions">
-        <p-button icon="pi pi-check" label="Goedkeuren" severity="success" size="small" [outlined]="true"
-          (onClick)="acceptLoan(loan)" />
-        <p-button icon="pi pi-times" label="Weigeren" severity="danger" size="small" [outlined]="true"
-          (onClick)="declineLoan(loan)" />
-        <p-button icon="pi pi-file-edit" label="Notitie" severity="secondary" size="small" [outlined]="true"
-          (onClick)="openNoteDialog(loan)" />
-      </div>
-      @if (loan.note) {
-      <p class="group-loan-note">📝 {{ loan.note }}</p>
-      }
-    </div>
-    @if (index
-    < selectedGroupLoans.length - 1) { <hr class="group-divider" />
-    }
-    }
-  </div>
-  <div class="btns">
-    <p-button label="Alles goedkeuren" icon="pi pi-check" severity="success"
-      (onClick)="acceptGroup(selectedGroupLoans)" />
-    <p-button label="Alles weigeren" icon="pi pi-times" severity="danger"
-      (onClick)="declineGroup(selectedGroupLoans)" />
-    <p-button label="Sluiten" severity="secondary" (click)="groupInfoDialogVisible = false" />
-  </div>
-  }
 </p-dialog>

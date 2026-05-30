@@ -15,6 +15,8 @@ import { Divider } from 'primeng/divider';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ConfirmPopupModule } from 'primeng/confirmpopup';
 import { ToastModule } from 'primeng/toast';
+import { TooltipModule } from 'primeng/tooltip';
+import { AuthService } from '../../services/auth';
 
 @Component({
   selector: 'app-bookmarked',
@@ -28,6 +30,7 @@ import { ToastModule } from 'primeng/toast';
     Divider,
     ConfirmPopupModule,
     ToastModule,
+    TooltipModule,
   ],
   providers: [ConfirmationService],
   templateUrl: './favorite-page.html',
@@ -53,8 +56,6 @@ export class FavoritePage implements OnInit {
     { breakpoint: '480px', numVisible: 1, numScroll: 1 },
   ];
 
-  private userId = 1;
-
   constructor(
     private bookmarkedService: BookmarkedService,
     private router: Router,
@@ -62,7 +63,12 @@ export class FavoritePage implements OnInit {
     private route: ActivatedRoute,
     private messageService: MessageService,
     private confirmationService: ConfirmationService,
+    private authService: AuthService,
   ) {}
+
+  private get userId(): number {
+    return this.authService.currentUser?.userId ?? 0;
+  }
 
   ngOnInit(): void {
     const token = this.route.snapshot.paramMap.get('token');
@@ -73,13 +79,6 @@ export class FavoritePage implements OnInit {
           this.pendingList = data;
           this.showConfirmPopup = true;
         },
-        error: () =>
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Fout',
-            detail: 'Lijst niet gevonden',
-            life: 3000,
-          }),
       });
     }
 
@@ -129,7 +128,7 @@ export class FavoritePage implements OnInit {
         this.messageService.add({
           severity: 'success',
           summary: 'Succes',
-          detail: 'Boek succesvol verwijdert',
+          detail: 'Boek succesvol verwijderd',
           life: 3000,
         });
       },
@@ -143,7 +142,7 @@ export class FavoritePage implements OnInit {
         this.messageService.add({
           severity: 'success',
           summary: 'Succes',
-          detail: 'Lijst succesvol verwijdert',
+          detail: 'Lijst succesvol verwijderd',
           life: 3000,
         });
       },
@@ -170,7 +169,6 @@ export class FavoritePage implements OnInit {
         this.lists.push(list);
         this.listName = '';
       },
-      error: (err) => console.error(err),
     });
   }
 
@@ -190,7 +188,7 @@ export class FavoritePage implements OnInit {
     this.messageService.add({
       severity: 'success',
       summary: 'Succes',
-      detail: 'link gecopiëerd',
+      detail: 'link gekopieerd',
       life: 3000,
     });
   }
@@ -225,12 +223,6 @@ export class FavoritePage implements OnInit {
       },
       error: (err) => {
         if (err.status === 409) {
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Fout',
-            detail: 'Je hebt deze lijst al in je gedeelde lijsten staan!',
-            life: 3000,
-          });
           this.router.navigate(['/favorieten']);
         }
       },
@@ -251,7 +243,7 @@ export class FavoritePage implements OnInit {
         this.messageService.add({
           severity: 'success',
           summary: 'Succes',
-          detail: 'Lijst succesvol verwijdert',
+          detail: 'Lijst succesvol verwijderd',
           life: 3000,
         });
       },

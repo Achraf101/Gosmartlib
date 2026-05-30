@@ -41,14 +41,16 @@ import { FileSelectEvent, FileUpload, FileUploadModule } from 'primeng/fileuploa
 import { MaterialComponent } from '../material/material';
 import { AuthService } from '../../services/auth';
 import { LocationBook } from '../../models/locationBook';
+import { LocationAvailability } from '../../models/locationBookDetail';
 import { LocationService } from '../../services/location';
 import { LocationBookService } from '../../services/locationbook';
+import { BookCopyDetail } from '../../models/bookCopy';
 import { Location } from '../../models/location';
 import { SchoolService } from '../../services/school';
 import { School } from '../../models/school';
-import { Textarea } from 'primeng/textarea';
 import { BookCover } from '../misc/book-cover/book-cover';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { SelectModule } from 'primeng/select';
 
 @Component({
   selector: 'app-book-detail-page',
@@ -73,6 +75,7 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
     FileUploadModule,
     MaterialComponent,
     BookCover,
+    SelectModule,
   ],
   templateUrl: './book-detail-page.html',
   styleUrl: './book-detail-page.css',
@@ -93,11 +96,15 @@ export class BookDetailPage implements OnInit {
   themesString = '';
   loanFormVisible = false;
   cartDialogVisible = false;
+  selectedLoanLocationId: number | null = null;
   uploadDialogVisible = false;
   pendingFile?: File;
   uploadNote = '';
   previewDialogVisible = false;
   previewUrl: SafeResourceUrl | null = null;
+  notesDialogVisible = false;
+  notesDialogCopies: BookCopyDetail[] = [];
+  notesDialogLocationName = '';
   iaId: string | null = null;
   today = new Date();
   endDate = new Date();
@@ -107,10 +114,8 @@ export class BookDetailPage implements OnInit {
   school?: School;
   location?: Location;
   locationBook?: LocationBook;
-
-  userId = 1;
-  locationId = 1;
-  schoolId = 1;
+  locationAvailability: LocationAvailability[] = [];
+  protected locationId: number | null = null;
 
   readonly placeholder = '/assets/no-cover.svg';
 
@@ -126,22 +131,56 @@ export class BookDetailPage implements OnInit {
     private readonly locationBookService: LocationBookService,
     private readonly materialService: MaterialService,
     private readonly uploadService: UploadService,
-    private readonly schoolService: SchoolService,
-    public auth: AuthService,
     private readonly sanitizer: DomSanitizer,
     private router: Router,
     public authService: AuthService,
+    private readonly schoolService: SchoolService,
   ) {}
+
+  private get userId(): number {
+    return this.authService.currentUser?.userId ?? 0;
+  }
+
+  private get schoolId(): number {
+    return this.authService.currentUser?.schoolId ?? 0;
+  }
 
   ngOnInit(): void {
     this.route.paramMap.subscribe((params) => {
       this.bookId = Number(params.get('id'));
-      this.loadBook();
       this.showDropdown = false;
-      this.bookListService.getListsWithoutBook(this.bookId).subscribe((lists) => {
-        this.lists = lists;
-      });
-      this.loadLocationData();
+
+      const locationParam = this.route.snapshot.queryParamMap.get('location');
+      if (locationParam) {
+        this.locationId = Number(locationParam);
+        this.loadLocationData();
+        this.loadBook();
+        this.bookListService.getListsWithoutBook(this.bookId).subscribe((lists) => {
+          this.lists = lists;
+        });
+      } else {
+        if (this.locationId) {
+          this.loadLocationData();
+          this.loadBook();
+          this.bookListService.getListsWithoutBook(this.bookId).subscribe((lists) => {
+            this.lists = lists;
+          });
+        } else {
+          this.schoolService.getById(this.schoolId).subscribe({
+            next: (school) => {
+              this.school = school;
+              if (school.locations?.length === 1) {
+                this.locationId = school.locations[0].id;
+                this.loadLocationData();
+              }
+            },
+          });
+          this.loadBook();
+          this.bookListService.getListsWithoutBook(this.bookId).subscribe((lists) => {
+            this.lists = lists;
+          });
+        }
+      }
     });
   }
 
@@ -179,20 +218,15 @@ export class BookDetailPage implements OnInit {
 
         this.bookService.getRelated(this.bookId).subscribe({
           next: (relatedBooks) => (this.relatedBooks = relatedBooks),
-          error: () => {
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Fout',
-              detail: 'Probleem met het zoeken van gelijkaardige boeken.',
-              life: 3750,
-            });
-          },
+        });
+
+        this.locationBookService.getAvailabilityByBook(this.bookId).subscribe({
+          next: (availability) => (this.locationAvailability = availability),
         });
 
         if (book.isbn) {
           this.bookService.getIaPreview(this.bookId).subscribe({
             next: (data) => (this.iaId = data.ia_id),
-            error: () => {},
           });
         }
 
@@ -201,12 +235,6 @@ export class BookDetailPage implements OnInit {
       error: () => {
         this.error = 'Boek niet gevonden.';
         this.loading.stop();
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fout',
-          detail: 'Boek niet gevonden.',
-          life: 3000,
-        });
       },
     });
   }
@@ -259,6 +287,16 @@ export class BookDetailPage implements OnInit {
   }
 
   createLoan(): void {
+    const effectiveLocationId = this.locationId ?? this.selectedLoanLocationId;
+    if (!effectiveLocationId) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Geen locatie',
+        detail: 'Selecteer een locatie voor je ontlening.',
+        life: 3000,
+      });
+      return;
+    }
     if (this.loanForm.invalid || !this.book) return;
     const rawValue = this.loanForm.value;
 
@@ -271,7 +309,7 @@ export class BookDetailPage implements OnInit {
 
     const loan: CreateLoanDTO = {
       userId: this.userId,
-      locationId: this.locationId,
+      locationId: effectiveLocationId,
       extended: 0,
       start: this.formatDate(rawValue.start ?? new Date()),
       end: this.formatDate(rawValue.end ?? new Date()),
@@ -292,14 +330,6 @@ export class BookDetailPage implements OnInit {
         this.loanForm.reset();
         this.loanFormVisible = false;
         this.loadLocationData();
-      },
-      error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fout',
-          detail: 'Er is iets misgegaan bij het versturen van dit ontleenverzoek, probeer opnieuw.',
-          life: 3000,
-        });
       },
     });
   }
@@ -336,8 +366,8 @@ export class BookDetailPage implements OnInit {
     } catch (e) {
       const message =
         e instanceof Error && e.message === 'BORROW_LIMIT_REACHED'
-          ? 'U heeft het maximum aantal boeken bereikt.'
-          : 'Dit boek staat al in uw ontleenlijst.';
+          ? 'Je hebt het maximale aantal boeken bereikt.'
+          : 'Dit boek staat al in je ontleenlijst.';
       this.messageService.add({
         severity: 'error',
         summary: 'Fout',
@@ -353,29 +383,29 @@ export class BookDetailPage implements OnInit {
   }
 
   private loadLocationData(): void {
+    if (!this.locationId) return;
+
     this.locationService.getById(this.locationId).subscribe({
       next: (location) => {
         this.location = location;
       },
     });
+
     this.locationBookService.getLocationBook(this.locationId, this.bookId).subscribe({
       next: (locationBook) => {
         this.locationBook = locationBook;
         this.setAmountValidators(locationBook.current_amount);
       },
-      error: () =>
-        this.messageService.add({
-          severity: 'info',
-          summary: '',
-          detail: 'Uw locatie heeft dit boek niet of het is niet meer beschikbaar.',
-          life: 3000,
-        }),
-    });
-  }
-
-  private loadSchoolData(): void {
-    this.schoolService.getById(this.schoolId).subscribe({
-      next: (school) => (this.school = school),
+      error: () => {
+        if (!this.authService.hasRole('ADMIN')) {
+          this.messageService.add({
+            severity: 'info',
+            summary: '',
+            detail: 'Uw locatie heeft dit boek niet of het is niet meer beschikbaar.',
+            life: 3000,
+          });
+        }
+      },
     });
   }
 
@@ -415,13 +445,6 @@ export class BookDetailPage implements OnInit {
         this.materialFetched = false;
         this.getMaterial();
       },
-      error: () =>
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fout',
-          detail: 'Probleem met het uploaden van lesmateriaal.',
-          life: 3200,
-        }),
     });
   }
 
@@ -456,10 +479,60 @@ export class BookDetailPage implements OnInit {
     this.previewDialogVisible = true;
   }
 
+  openCartDialog(): void {
+    if (this.authService.hasRole('STUDENT')) {
+      this.cartForm.patchValue({ requestedAmount: 1 });
+      this.cartForm.controls.requestedAmount.clearValidators();
+      this.cartForm.controls.requestedAmount.updateValueAndValidity();
+    }
+    this.cartDialogVisible = true;
+  }
+
+  openLoanDialog(): void {
+    if (!this.locationId) {
+      this.selectedLoanLocationId = null;
+      this.locationBook = undefined;
+    }
+    if (this.authService.hasRole('STUDENT')) {
+      this.loanForm.patchValue({ requestedAmount: 1 });
+      this.loanForm.controls.requestedAmount.clearValidators();
+      this.loanForm.controls.requestedAmount.updateValueAndValidity();
+    }
+    this.loanFormVisible = true;
+  }
+
+  onLoanLocationChange(locationId: number): void {
+    this.selectedLoanLocationId = locationId;
+    this.locationBookService.getLocationBook(locationId, this.bookId).subscribe({
+      next: (lb) => {
+        this.locationBook = lb;
+        this.setAmountValidators(lb.current_amount);
+      },
+      error: () => {
+        this.locationBook = undefined;
+      },
+    });
+  }
+
+  get availableLoanLocations(): LocationAvailability[] {
+    return this.locationAvailability.filter((l) => l.current_amount > 0);
+  }
+
   getStarFill(position: number): number {
     if (this.ratingValue >= position) return 100;
     if (this.ratingValue <= position - 1) return 0;
     return (this.ratingValue - (position - 1)) * 100;
+  }
+
+  openNotesDialog(avail: LocationAvailability): void {
+    this.notesDialogLocationName = avail.location_name;
+    this.notesDialogCopies = [];
+    this.notesDialogVisible = true;
+    this.locationBookService.getCopiesByLocationBook(avail.location_book_id).subscribe({
+      next: (copies) => {
+        this.notesDialogCopies = copies.filter((c) => c.note && c.note.trim().length > 0);
+      },
+    });
   }
 
   editBook() {

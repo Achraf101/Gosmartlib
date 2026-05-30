@@ -313,13 +313,15 @@ public class DataSeeder implements CommandLineRunner {
     private void seedTestUsers() {
         School school = schoolRepository.findById(1L).orElseThrow(() -> new IllegalStateException("School 1 missing"));
         seedUser("admin", "admin", UserRole.ADMIN, school);
+        seedUser("beheerder", "beheerder", UserRole.BIBLIOTHEEKBEHEERDER, school);
+
     }
 
     private void seedUser(String username, String password, UserRole role, School school) {
-        User user = userRepository.findByUsername(username).orElse(new User());
-        if (user.getPassword() == null) {
-            user.setPassword(passwordEncoder.encode(password));
-        }
+        if (userRepository.findByUsername(username).isPresent())
+            return;
+        User user = new User();
+        user.setPassword(passwordEncoder.encode(password));
         user.setUsername(username);
         user.getRoles().add(role);
         user.setSchool(school);

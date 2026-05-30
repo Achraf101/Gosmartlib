@@ -15,9 +15,9 @@ import be.ap.backend.dto.StudentReportStatsDTO;
 import be.ap.backend.dto.StudentReviewDTO;
 import be.ap.backend.entity.Loan;
 import be.ap.backend.entity.LoanBook;
-import be.ap.backend.entity.LoanStatus;
 import be.ap.backend.entity.Review;
 import be.ap.backend.entity.User;
+import be.ap.backend.enums.LoanStatus;
 import be.ap.backend.repository.LoanRepository;
 import be.ap.backend.repository.ReviewRepository;
 import be.ap.backend.repository.UserRepository;
@@ -114,6 +114,10 @@ public class StudentReportService {
     private BorrowedBookPreviewDTO toPreview(Loan loan, LoanBook lb, LocalDate today) {
         boolean returned = loan.getStatus() == LoanStatus.RETURNED || Boolean.TRUE.equals(loan.getClosed());
         boolean overdue = !returned && loan.getEnd() != null && today.isAfter(loan.getEnd());
+        boolean requested = loan.getStatus() == LoanStatus.REQUESTED;
+        boolean accepted = loan.getStatus() == LoanStatus.ACCEPTED;
+        boolean received = loan.getStatus() == LoanStatus.RECEIVED;
+        boolean declined = loan.getStatus() == LoanStatus.DECLINED;
         return new BorrowedBookPreviewDTO(
                 lb.getBook().getId(),
                 lb.getBook().getTitle(),
@@ -122,7 +126,11 @@ public class StudentReportService {
                 loan.getStart(),
                 loan.getEnd(),
                 returned,
-                overdue);
+                overdue,
+                requested,
+                accepted,
+                received,
+                declined);
     }
 
     private StudentReviewDTO toReviewDTO(Review review) {

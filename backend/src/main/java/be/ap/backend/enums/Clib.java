@@ -1,4 +1,4 @@
-package be.ap.backend.entity;
+package be.ap.backend.enums;
 
 public enum Clib {
     A,

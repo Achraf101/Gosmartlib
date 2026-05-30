@@ -21,7 +21,7 @@ export class Gamification implements OnInit {
     { label: 'Klassiek', icon: '🏛️', required: 15 },
     { label: 'Leesheld', icon: '🦸', required: 25 },
     { label: 'Bibliofiel', icon: '🎓', required: 50 },
-    { label: 'Meestelezer', icon: '👑', required: 75 },
+    { label: 'Meesterlezer', icon: '👑', required: 75 },
     { label: 'Legende', icon: '🌟', required: 100 },
     { label: 'Grootmeester', icon: '🔮', required: 150 },
     { label: 'Onsterfelijke', icon: '⚡', required: 200 },
@@ -42,6 +42,7 @@ export class Gamification implements OnInit {
           completed: c.completed
         }))
       }),
+      error: () => {},
     });
   }
 

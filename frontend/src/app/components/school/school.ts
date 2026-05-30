@@ -5,6 +5,7 @@ import { School } from '../../models/school';
 import { Button } from 'primeng/button';
 import { RouterLink } from '@angular/router';
 import { NavBarComponent } from '../nav-bar/nav-bar';
+import { AuthService } from '../../services/auth';
 import { SmartschoolSyncService } from '../../services/smartschool-sync';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 
@@ -20,6 +21,7 @@ export class SchoolComponent {
   constructor(
     private schoolService: SchoolService,
     private messageService: MessageService,
+    public authService: AuthService,
     private smartschoolSyncService: SmartschoolSyncService,
     private confirmationService: ConfirmationService,
   ) {}
@@ -27,16 +29,18 @@ export class SchoolComponent {
   schools: School[] = [];
 
   ngOnInit(): void {
-    this.schoolService.getAll().subscribe({
-      next: (schools) => (this.schools = schools),
-      error: () =>
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fout',
-          detail: 'Fout bij laden van de scholen.',
-          life: 3000,
-        }),
-    });
+    const user = this.authService.currentUser;
+
+    if (user?.roles.includes('ADMIN')) {
+      this.schoolService.getAll().subscribe({
+        next: (schools) => (this.schools = schools),
+      });
+    }
+    if (user?.roles.includes('BIBLIOTHEEKBEHEERDER')) {
+      this.schoolService.getById(user.schoolId!).subscribe({
+        next: (school) => (this.schools = [school]),
+      });
+    }
   }
 
   syncSmartschool(schoolId: number): void {
@@ -48,14 +52,6 @@ export class SchoolComponent {
           severity: 'success',
           summary: 'Sync voltooid',
           detail: 'Smartschool data is gesynchroniseerd.',
-        });
-      },
-      error: () => {
-        this.syncLoading = false;
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fout',
-          detail: 'Synchronisatie mislukt.',
         });
       },
     });

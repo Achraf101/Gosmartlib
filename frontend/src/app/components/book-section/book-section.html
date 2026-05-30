@@ -31,15 +31,15 @@
   }
   @if (isMonthlySection && isVisible(schoolSettings, 'HOME', 'MONTHLY_BOOK')) {
     <div class="monthly-header">
+      <p-select
+        [(ngModel)]="selectedGrade"
+        [options]="grades"
+        optionLabel="label"
+        optionValue="value"
+        (onChange)="onGradeChange()"
+        styleClass="grade-select"
+      />
       @if (authService.hasRole('BIBLIOTHEEKBEHEERDER')) {
-        <p-select
-          [(ngModel)]="selectedGrade"
-          [options]="grades"
-          optionLabel="label"
-          optionValue="value"
-          (onChange)="onGradeChange()"
-          styleClass="grade-select"
-        />
         <p-button
           label="Wijzig boek"
           icon="pi pi-pencil"
@@ -52,7 +52,7 @@
     @if (!loading.isLoading && monthlyBook) {
       <b-result [book]="monthlyBook"></b-result>
     } @else if (!loading.isLoading) {
-      <div class="empty-msg">Geen boek van de maand ingesteld voor deze graad.</div>
+      <div class="empty-msg">Geen boek van de maand ingesteld voor deze graad</div>
     }
   }
 
