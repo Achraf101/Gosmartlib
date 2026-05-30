@@ -27,10 +27,10 @@ import { adminRedirectGuard } from './guards/admin-redirect.guard';
 import { BegeleidingComponent } from './components/begeleiding/begeleiding';
 import { PromotePageComponent } from './components/promote-page/promote-page';
 import { AccountPage } from './components/account-page/account-page';
+
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: '', canActivate: [adminRedirectGuard], component: HomeComponent },
-
   {
     path: 'school',
     component: SchoolComponent,
