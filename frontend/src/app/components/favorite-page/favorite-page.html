@@ -7,7 +7,7 @@
       <h2>{{ pendingList.list.name }}</h2>
       @if (pendingList.books.length > 0) {
         <p-carousel
-          [value]="getListItems(savedListItems, pendingList.list.id)"
+          [[value]="pendingBooks"
           [numVisible]="4"
           [numScroll]="2"
           [responsiveOptions]="carouselResponsiveOptions"

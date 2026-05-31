@@ -49,6 +49,7 @@ export class FavoritePage implements OnInit {
   pendingList: SharedListResponse | null = null;
   searchToken = '';
   savedLists: SharedListResponse[] = [];
+  pendingBooks: any[] = [];
 
   carouselResponsiveOptions = [
     { breakpoint: '1024px', numVisible: 3, numScroll: 2 },
@@ -77,6 +78,7 @@ export class FavoritePage implements OnInit {
       this.bookListService.getSharedList(token).subscribe({
         next: (data) => {
           this.pendingList = data;
+          this.pendingBooks = data.books as any[];
           this.showConfirmPopup = true;
         },
       });
