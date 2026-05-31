@@ -73,8 +73,23 @@
             <p>Teruggavedatum</p>
           </th>
           <th>
+            <p>Verlengingen</p>
+          </th>
+          <th>
             <p>Status</p>
           </th>
+          <th>
+            <p>
+              Herinnering sturen &nbsp;
+              <i
+                class="pi pi-info-circle"
+                pTooltip="Stuur een extra herinnering via een Smartschool bericht"
+                tooltipPosition="right"
+                style="cursor: pointer; color: var(--primary-color)"
+              >
+              </i>
+            </p>
+            </th>
         </tr>
       </ng-template>
       <ng-template pTemplate="body" let-loan>
@@ -119,10 +134,21 @@
             >
           </td>
           <td>
+            <span>{{ loan.extended }}</span>
+          </td>
+          <td>
             @if (loan.books[0].returnedAmount > 0) {
               <span class="scan-progress">{{ loan.books[0].returnedAmount }}/{{ loan.books[0].receivedAmount }}</span>
             }
             <p-button (onClick)="openManualDialog(loan.id)">Teruggebracht</p-button>
+          </td>
+          <td>
+            <p-button
+              icon="pi pi-bell"
+              variant="text"
+              severity="danger"
+              (onClick)="notify(loan.id)"
+            />
           </td>
         </tr>
       </ng-template>
@@ -166,6 +192,7 @@
   [resizable]="false"
   (onHide)="closeManualDialog()"
 >
+
   @if (pendingLoan && pendingLoan.books[0].receivedAmount > 1) {
     <p class="manual-dialog-hint">
       Exemplaar {{ pendingLoan.books[0].returnedAmount + 1 }} van {{ pendingLoan.books[0].receivedAmount }} — voer het accession ID in.
@@ -183,5 +210,36 @@
   <div class="manual-dialog-btns">
     <p-button label="Annuleren" severity="secondary" (onClick)="closeManualDialog()" />
     <p-button label="Bevestigen" (onClick)="confirmManualReturn()" [disabled]="manualAccessionId.trim() === 'LIB-' || manualAccessionId.trim() === ''" />
+  </div>
+</p-dialog>
+
+<p-dialog
+  header="Staat van het exemplaar"
+  [(visible)]="conditionDialogVisible"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  (onHide)="closeConditionDialog()"
+>
+  @if (conditionHasExisting) {
+    <p class="manual-dialog-hint existing-note-hint">
+      <i class="pi pi-info-circle"></i> Dit exemplaar heeft al een notitie of status. Pas aan indien nodig.
+    </p>
+  } @else {
+    <p class="manual-dialog-hint">Voeg optioneel een notitie toe over de staat van het boek.</p>
+  }
+  <textarea
+    class="condition-note-input"
+    [(ngModel)]="conditionNote"
+    placeholder="Bijv. eerste pagina ontbreekt, kaft beschadigd..."
+    rows="4"
+  ></textarea>
+  <div class="condition-damaged-row">
+    <input type="checkbox" id="damagedCheck" [(ngModel)]="conditionDamaged" />
+    <label for="damagedCheck">Boek is beschadigd</label>
+  </div>
+  <div class="manual-dialog-btns">
+    <p-button label="Annuleren" severity="secondary" (onClick)="closeConditionDialog()" />
+    <p-button label="Bevestigen" (onClick)="confirmConditionDialog()" />
   </div>
 </p-dialog>

@@ -10,6 +10,7 @@ import { LoanDTO, LoanStatus } from '../../models/loan';
 import { LoanService } from '../../services/loan';
 import { MessageService } from 'primeng/api';
 import { TooltipModule } from 'primeng/tooltip';
+import { NotificationService } from '../../services/notification';
 import { LocationBookService } from '../../services/locationbook';
 import { DialogModule } from 'primeng/dialog';
 import { BookCopyDetail } from '../../models/bookCopy';
@@ -46,6 +47,12 @@ export class ReturnPageComponent implements OnInit, AfterViewInit {
   disambigLoans: LoanDTO[] = [];
   pendingCopy: BookCopyDetail | null = null;
 
+  conditionDialogVisible = false;
+  conditionNote = '';
+  conditionDamaged = false;
+  conditionHasExisting = false;
+  private pendingReturn: { loanId: number; copyId: number; fromManual: boolean } | null = null;
+
   private returnedCopyIds = new Map<number, Set<number>>();
 
   get pendingLoan(): LoanDTO | undefined {
@@ -71,6 +78,7 @@ export class ReturnPageComponent implements OnInit, AfterViewInit {
   constructor(
     private loanService: LoanService,
     private messageService: MessageService,
+    private notificationService: NotificationService,
     private locationBookService: LocationBookService,
   ) {}
 
@@ -94,7 +102,13 @@ export class ReturnPageComponent implements OnInit, AfterViewInit {
     });
   }
 
-  private processScanReturn(loanId: number, copyId: number): void {
+  private processScanReturn(
+    loanId: number,
+    copyId: number,
+    note: string,
+    damaged: boolean,
+    fromManual: boolean,
+  ): void {
     const loanSet = this.returnedCopyIds.get(loanId) ?? new Set<number>();
     if (loanSet.has(copyId)) {
       this.messageService.add({
@@ -108,7 +122,7 @@ export class ReturnPageComponent implements OnInit, AfterViewInit {
     loanSet.add(copyId);
     this.returnedCopyIds.set(loanId, loanSet);
 
-    this.loanService.scanReturn(loanId, copyId).subscribe({
+    this.loanService.scanReturn(loanId, copyId, note, damaged).subscribe({
       next: (updatedLoan) => {
         if (updatedLoan.status === LoanStatus.RETURNED) {
           this.loans = this.loans.filter((l) => l.id !== updatedLoan.id);
@@ -129,9 +143,62 @@ export class ReturnPageComponent implements OnInit, AfterViewInit {
             detail: `${book.returnedAmount}/${book.receivedAmount} exemplaren teruggebracht`,
             life: 3000,
           });
+          if (fromManual) {
+            this.pendingLoanId = loanId;
+            this.manualAccessionId = 'LIB-';
+            this.manualDialogVisible = true;
+          } else {
+            setTimeout(() => this.scanInputRef?.nativeElement?.focus(), 0);
+          }
+        }
+      },
+      error: () => {
+        loanSet.delete(copyId);
+        if (fromManual) {
+          this.pendingLoanId = loanId;
+          this.manualAccessionId = 'LIB-';
+          this.manualDialogVisible = true;
+        } else {
+          setTimeout(() => this.scanInputRef?.nativeElement?.focus(), 0);
         }
       },
     });
+  }
+
+  openConditionDialog(
+    loanId: number,
+    copyId: number,
+    fromManual: boolean,
+    existingNote = '',
+    existingDamaged = false,
+  ): void {
+    this.pendingReturn = { loanId, copyId, fromManual };
+    this.conditionNote = existingNote;
+    this.conditionDamaged = existingDamaged;
+    this.conditionHasExisting = !!(existingNote || existingDamaged);
+    this.conditionDialogVisible = true;
+  }
+
+  confirmConditionDialog(): void {
+    if (!this.pendingReturn) return;
+    const { loanId, copyId, fromManual } = this.pendingReturn;
+    this.pendingReturn = null;
+    this.conditionDialogVisible = false;
+    this.processScanReturn(loanId, copyId, this.conditionNote, this.conditionDamaged, fromManual);
+  }
+
+  closeConditionDialog(): void {
+    if (!this.pendingReturn) return;
+    const { fromManual, loanId } = this.pendingReturn;
+    this.conditionDialogVisible = false;
+    this.pendingReturn = null;
+    if (fromManual) {
+      this.pendingLoanId = loanId;
+      this.manualAccessionId = 'LIB-';
+      this.manualDialogVisible = true;
+    } else {
+      setTimeout(() => this.scanInputRef?.nativeElement?.focus(), 0);
+    }
   }
 
   openManualDialog(loanId: number): void {
@@ -144,7 +211,9 @@ export class ReturnPageComponent implements OnInit, AfterViewInit {
     this.manualDialogVisible = false;
     this.pendingLoanId = null;
     this.manualAccessionId = 'LIB-';
-    setTimeout(() => this.scanInputRef?.nativeElement?.focus(), 0);
+    if (!this.conditionDialogVisible) {
+      setTimeout(() => this.scanInputRef?.nativeElement?.focus(), 0);
+    }
   }
 
   confirmManualReturn(): void {
@@ -153,31 +222,9 @@ export class ReturnPageComponent implements OnInit, AfterViewInit {
 
     this.locationBookService.getCopyByAccessionId(id).subscribe({
       next: (copy) => {
-        this.loanService.scanReturn(this.pendingLoanId!, copy.id).subscribe({
-          next: (updatedLoan) => {
-            if (updatedLoan.status === LoanStatus.RETURNED) {
-              this.loans = this.loans.filter((l) => l.id !== updatedLoan.id);
-              this.messageService.add({
-                severity: 'success',
-                summary: 'Succes',
-                detail: 'Boek teruggebracht',
-                life: 3000,
-              });
-              this.closeManualDialog();
-            } else {
-              const idx = this.loans.findIndex((l) => l.id === updatedLoan.id);
-              if (idx !== -1) this.loans[idx] = updatedLoan;
-              const book = updatedLoan.books[0];
-              this.messageService.add({
-                severity: 'info',
-                summary: 'Exemplaar gescand',
-                detail: `${book.returnedAmount}/${book.receivedAmount} exemplaren teruggebracht`,
-                life: 3000,
-              });
-              this.manualAccessionId = 'LIB-';
-            }
-          },
-        });
+        const loanId = this.pendingLoanId!;
+        this.openConditionDialog(loanId, copy.id, true, copy.note ?? '', copy.status === 'DAMAGED');
+        this.manualDialogVisible = false;
       },
     });
   }
@@ -190,9 +237,7 @@ export class ReturnPageComponent implements OnInit, AfterViewInit {
     this.locationBookService.getCopyByAccessionId(id).subscribe({
       next: (copy) => {
         const matchingLoans = this.loans.filter((l) =>
-          l.books.some(
-            (b) => b.bookId === copy.book_id && b.returnedAmount < b.receivedAmount,
-          ),
+          l.books.some((b) => b.bookId === copy.book_id && b.returnedAmount < b.receivedAmount),
         );
         if (matchingLoans.length === 0) {
           this.messageService.add({
@@ -204,26 +249,25 @@ export class ReturnPageComponent implements OnInit, AfterViewInit {
           return;
         }
         if (matchingLoans.length === 1) {
-          this.processScanReturn(matchingLoans[0].id, copy.id);
+          this.openConditionDialog(
+            matchingLoans[0].id,
+            copy.id,
+            false,
+            copy.note ?? '',
+            copy.status === 'DAMAGED',
+          );
           return;
         }
         this.pendingCopy = copy;
         this.disambigLoans = matchingLoans;
         this.disambigDialogVisible = true;
       },
-      error: () => {
-        this.messageService.add({
-          severity: 'warn',
-          summary: 'Niet gevonden',
-          detail: `Exemplaar ${id} niet gevonden.`,
-          life: 3000,
-        });
-      },
     });
   }
 
   selectDisambigLoan(loan: LoanDTO): void {
-    this.processScanReturn(loan.id, this.pendingCopy!.id);
+    const copy = this.pendingCopy!;
+    this.openConditionDialog(loan.id, copy.id, false, copy.note ?? '', copy.status === 'DAMAGED');
     this.closeDisambigDialog();
   }
 
@@ -231,6 +275,21 @@ export class ReturnPageComponent implements OnInit, AfterViewInit {
     this.disambigDialogVisible = false;
     this.disambigLoans = [];
     this.pendingCopy = null;
-    setTimeout(() => this.scanInputRef?.nativeElement?.focus(), 0);
+    if (!this.conditionDialogVisible) {
+      setTimeout(() => this.scanInputRef?.nativeElement?.focus(), 0);
+    }
+  }
+
+  // notify
+  notify(loanId: number) {
+    this.notificationService.notify(loanId).subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          detail: `Bericht verzonden`,
+          life: 3000,
+        });
+      },
+    });
   }
 }

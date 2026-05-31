@@ -19,19 +19,17 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class StudentReportServiceTest {
+class StudentReportServiceTest {
 
     @Mock
     private LoanRepository loanRepository;
@@ -65,31 +63,28 @@ public class StudentReportServiceTest {
         student.setOneRosterId("roster-001");
     }
 
-    /**
-     * Stubs all repository/service calls needed for a minimal valid report,
-     * except countByUserIdAndStartBetween — stub that separately when you need
-     * to capture its arguments.
-     */
     private void stubEmptyReportWithoutCount() {
-        when(loanRepository.findByUserIdWithBooks(eq(5L),
-                anyList())).thenReturn(List.of());
+        when(loanRepository.findByUserIdWithBooks(eq(5L), anyList())).thenReturn(List.of());
         when(reviewRepository.findByUserIdAndHiddenFalse(5L)).thenReturn(List.of());
-        when(loanRepository.findTopGenresByUserId(eq(5L), anyList(), any(),
-                any())).thenReturn(List.of());
+        when(loanRepository.findTopGenresByUserId(eq(5L), anyList(), any(), any()))
+                .thenReturn(List.of());
         when(reviewRepository.findAverageRatingByUserId(5L)).thenReturn(null);
-        when(loanRepository.findReturnedByUserId(5L,
-                LoanStatus.RETURNED)).thenReturn(List.of());
-        when(lookupService.getUser(eq(school), eq("roster-001"), eq(Set.of(UserRole.STUDENT))))
+        when(loanRepository.findReturnedByUserId(5L, LoanStatus.RETURNED))
+                .thenReturn(List.of());
+
+        when(lookupService.getUser(eq(school.getId()), eq("roster-001"), anySet()))
                 .thenReturn(Map.of("givenName", "Anna", "familyName", "De Wolf"));
     }
 
     private void stubEmptyReport() {
-        when(loanRepository.countByUserIdAndStartBetween(eq(5L), anyList(), any(),
-                any())).thenReturn(0);
+        when(loanRepository.countByUserIdAndStartBetween(eq(5L), anyList(), any(), any()))
+                .thenReturn(0);
         stubEmptyReportWithoutCount();
     }
 
-    // ── buildReport ───────────────────────────────────────────────
+    // ─────────────────────────────────────────────
+    // buildReport
+    // ─────────────────────────────────────────────
 
     @Test
     void buildReport_studentNotFound_throwsEntityNotFoundException() {
@@ -123,25 +118,6 @@ public class StudentReportServiceTest {
     }
 
     @Test
-    void buildReport_requestedLoansNotCounted() {
-        when(userRepository.findById(5L)).thenReturn(Optional.of(student));
-        stubEmptyReportWithoutCount();
-
-        @SuppressWarnings("unchecked")
-        ArgumentCaptor<List<LoanStatus>> statusCaptor = (ArgumentCaptor<List<LoanStatus>>) (ArgumentCaptor<?>) ArgumentCaptor
-                .forClass(List.class);
-        when(loanRepository.countByUserIdAndStartBetween(eq(5L),
-                statusCaptor.capture(), any(), any())).thenReturn(0);
-
-        studentReportService.buildReport(5L);
-
-        List<LoanStatus> capturedStatuses = statusCaptor.getValue();
-        assertThat(capturedStatuses).doesNotContain(LoanStatus.REQUESTED);
-        assertThat(capturedStatuses).contains(LoanStatus.ACCEPTED,
-                LoanStatus.RECEIVED, LoanStatus.RETURNED);
-    }
-
-    @Test
     void buildReport_noReturnedLoans_punctualityIsNull() {
         when(userRepository.findById(5L)).thenReturn(Optional.of(student));
         stubEmptyReport();
@@ -157,11 +133,12 @@ public class StudentReportServiceTest {
         when(userRepository.findById(5L)).thenReturn(Optional.of(student));
         stubEmptyReport();
 
-        Loan onTimeLoan = new Loan();
-        onTimeLoan.setEnd(LocalDate.now().minusDays(1));
-        onTimeLoan.setReturnedAt(LocalDate.now().minusDays(2));
-        when(loanRepository.findReturnedByUserId(5L,
-                LoanStatus.RETURNED)).thenReturn(List.of(onTimeLoan));
+        Loan loan = new Loan();
+        loan.setEnd(LocalDate.now().minusDays(1));
+        loan.setReturnedAt(LocalDate.now().minusDays(2));
+
+        when(loanRepository.findReturnedByUserId(5L, LoanStatus.RETURNED))
+                .thenReturn(List.of(loan));
 
         StudentReportDTO result = studentReportService.buildReport(5L);
 
@@ -175,11 +152,12 @@ public class StudentReportServiceTest {
         when(userRepository.findById(5L)).thenReturn(Optional.of(student));
         stubEmptyReport();
 
-        Loan overdueLoan = new Loan();
-        overdueLoan.setEnd(LocalDate.now().minusDays(5));
-        overdueLoan.setReturnedAt(LocalDate.now().minusDays(1));
-        when(loanRepository.findReturnedByUserId(5L,
-                LoanStatus.RETURNED)).thenReturn(List.of(overdueLoan));
+        Loan loan = new Loan();
+        loan.setEnd(LocalDate.now().minusDays(5));
+        loan.setReturnedAt(LocalDate.now().minusDays(1));
+
+        when(loanRepository.findReturnedByUserId(5L, LoanStatus.RETURNED))
+                .thenReturn(List.of(loan));
 
         StudentReportDTO result = studentReportService.buildReport(5L);
 
@@ -191,6 +169,7 @@ public class StudentReportServiceTest {
     void buildReport_averageRatingRoundedToOneDecimal() {
         when(userRepository.findById(5L)).thenReturn(Optional.of(student));
         stubEmptyReport();
+
         when(reviewRepository.findAverageRatingByUserId(5L)).thenReturn(3.666);
 
         StudentReportDTO result = studentReportService.buildReport(5L);
@@ -205,6 +184,30 @@ public class StudentReportServiceTest {
 
         StudentReportDTO result = studentReportService.buildReport(5L);
 
-        assertThat(result.getBorrowedBooksPreview()).hasSizeLessThanOrEqualTo(10);
+        assertThat(result.getBorrowedBooksPreview().size()).isLessThanOrEqualTo(10);
+    }
+
+    @Test
+    void buildReport_countStatuses_doNotIncludeRequested() {
+        when(userRepository.findById(5L)).thenReturn(Optional.of(student));
+        stubEmptyReport();
+
+        studentReportService.buildReport(5L);
+
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<List<LoanStatus>> captor = ArgumentCaptor.forClass(List.class);
+
+        verify(loanRepository, times(4))
+                .countByUserIdAndStartBetween(eq(5L), captor.capture(), any(), any());
+
+        List<List<LoanStatus>> allCalls = captor.getAllValues();
+
+        for (List<LoanStatus> statuses : allCalls) {
+            assertThat(statuses).doesNotContain(LoanStatus.REQUESTED);
+            assertThat(statuses).containsExactlyInAnyOrder(
+                    LoanStatus.ACCEPTED,
+                    LoanStatus.RECEIVED,
+                    LoanStatus.RETURNED);
+        }
     }
 }

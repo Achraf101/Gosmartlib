@@ -9,6 +9,7 @@ import be.ap.backend.repository.ClassroomRepository;
 import be.ap.backend.repository.EnrollmentRepository;
 import be.ap.backend.repository.SchoolRepository;
 import be.ap.backend.repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,7 +38,14 @@ public class SmartschoolSyncService {
 
     private static final int PAGE_SIZE = 100;
 
-    public void syncSchool(School school) {
+    public String syncSchool(Long schoolId) {
+        School school = schoolRepository.findById(schoolId)
+                .orElseThrow(() -> new EntityNotFoundException("School niet gevonden: " + schoolId));
+
+        if (school.getOneRosterClientId() == null || school.getOneRosterClientSecret() == null) {
+            throw new IllegalStateException("Deze school heeft nog geen OneRoster credentials geconfigureerd.");
+        }
+
         log.info("Starting sync for school: {}", school.getSsSubdomain());
         try {
             String baseUrl = "https://" + school.getSsSubdomain() + ".smartschool.be/ims/oneroster/v1p1";
@@ -48,8 +56,10 @@ public class SmartschoolSyncService {
             log.info("Sync completed for school: {}", school.getSsSubdomain());
         } catch (Exception e) {
             log.error("Sync failed for school: {}", school.getSsSubdomain(), e);
-            throw new RuntimeException("Sync failed for school: " + school.getSsSubdomain(), e);
+            throw new RuntimeException("Sync niet geslaagd voor school: " + school.getSsSubdomain(), e);
         }
+
+        return school.getSsSubdomain();
     }
 
     private void syncUsers(School school, String baseUrl) {

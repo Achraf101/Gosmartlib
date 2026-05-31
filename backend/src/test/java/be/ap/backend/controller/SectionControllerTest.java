@@ -14,7 +14,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -30,86 +29,154 @@ public class SectionControllerTest {
     @MockitoBean
     private SectionService sectionService;
 
-    @Autowired
-    private SectionController sectionController;
+    // -------------------------------------------------------------------------
+    // GET /section?schoolId={id}
+    // -------------------------------------------------------------------------
 
     @Test
-    public void getAllSections_returnsStatus200() {
+    void getAllSections_returnsSections() throws Exception {
+        Section section = new Section();
+        section.setId(1L);
+        when(sectionService.getAllSections(1L)).thenReturn(List.of(section));
 
-        when(sectionService.getAllSections(1L)).thenReturn(List.of());
+        mockMvc.perform(get("/section").param("schoolId", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(1));
 
-        List<Section> result = sectionController.getAllSections(1L);
-
-        assertNotNull(result);
         verify(sectionService, times(1)).getAllSections(1L);
     }
 
     @Test
-    public void getBooksBySection_returnsStatus200() {
+    void getAllSections_returnsEmptyList_whenNoSections() throws Exception {
+        when(sectionService.getAllSections(99L)).thenReturn(List.of());
 
+        mockMvc.perform(get("/section").param("schoolId", "99"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isEmpty());
+    }
+
+    // -------------------------------------------------------------------------
+    // GET /section/{id}/books
+    // -------------------------------------------------------------------------
+
+    @Test
+    void getBooksBySection_returnsBooks() throws Exception {
         Book book = new Book();
+        book.setId(1L);
         book.setTitle("Harry Potter en de vuurbeker");
         when(sectionService.getBooksBySection(1L)).thenReturn(List.of(book));
 
-        List<Book> result = sectionController.getBooksBySection(1L);
+        mockMvc.perform(get("/section/1/books"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].title").value("Harry Potter en de vuurbeker"));
 
-        assertNotNull(result);
-        assertEquals("Harry Potter en de vuurbeker", result.get(0).getTitle());
         verify(sectionService, times(1)).getBooksBySection(1L);
     }
 
     @Test
-    public void getBookBySectionAndGrade_returnsBook() {
+    void getBooksBySection_returnsEmptyList_whenNoBooks() throws Exception {
+        when(sectionService.getBooksBySection(1L)).thenReturn(List.of());
 
+        mockMvc.perform(get("/section/1/books"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isEmpty());
+    }
+
+    // -------------------------------------------------------------------------
+    // GET /section/{id}/books/grade?grade={grade}
+    // -------------------------------------------------------------------------
+
+    @Test
+    void getBookBySectionAndGrade_returnsBook() throws Exception {
         Book book = new Book();
+        book.setId(1L);
         book.setTitle("De brief voor de koning");
         when(sectionService.getBookBySectionAndGrade(1L, (byte) 1)).thenReturn(book);
 
-        Book result = sectionController.getBookBySectionAndGrade(1L, (byte) 1);
+        mockMvc.perform(get("/section/1/books/grade").param("grade", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title").value("De brief voor de koning"));
 
-        assertNotNull(result);
-        assertEquals("De brief voor de koning", result.getTitle());
         verify(sectionService, times(1)).getBookBySectionAndGrade(1L, (byte) 1);
     }
 
     @Test
-    public void getBookBySectionAndGrade_returnsNull_whenNoBook() {
-
+    void getBookBySectionAndGrade_returnsNull_whenNoBook() throws Exception {
         when(sectionService.getBookBySectionAndGrade(1L, (byte) 2)).thenReturn(null);
 
-        Book result = sectionController.getBookBySectionAndGrade(1L, (byte) 2);
+        mockMvc.perform(get("/section/1/books/grade").param("grade", "2"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").doesNotExist());
 
-        assertNull(result);
         verify(sectionService, times(1)).getBookBySectionAndGrade(1L, (byte) 2);
     }
 
-    @Test
-    public void setBookOfMonth_returnsBook() {
+    // -------------------------------------------------------------------------
+    // PUT /section/{id}/book?bookId={bookId}&grade={grade}
+    // -------------------------------------------------------------------------
 
+    @Test
+    void setBookOfMonth_returnsBook() throws Exception {
         Book book = new Book();
+        book.setId(2L);
         book.setTitle("Harry Potter en de vuurbeker");
         when(sectionService.setBookOfMonth(1L, 2L, (byte) 1)).thenReturn(book);
 
-        Book result = sectionController.setBookOfMonth(1L, 2L, (byte) 1);
+        mockMvc.perform(put("/section/1/book")
+                .param("bookId", "2")
+                .param("grade", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title").value("Harry Potter en de vuurbeker"));
 
-        assertNotNull(result);
-        assertEquals("Harry Potter en de vuurbeker", result.getTitle());
         verify(sectionService, times(1)).setBookOfMonth(1L, 2L, (byte) 1);
     }
 
-        @Test
-    void setSpotlightBook_success() throws Exception {
+    @Test
+    void setBookOfMonth_returnsNull_whenServiceReturnsNull() throws Exception {
+        when(sectionService.setBookOfMonth(1L, 99L, (byte) 1)).thenReturn(null);
+
+        mockMvc.perform(put("/section/1/book")
+                .param("bookId", "99")
+                .param("grade", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").doesNotExist());
+    }
+
+    // -------------------------------------------------------------------------
+    // PUT /section/{sectionId}/spotlight?bookId={bookId}&ranking={ranking}
+    // -------------------------------------------------------------------------
+
+    @Test
+    void setSpotlightBook_returnsBook() throws Exception {
         Book book = new Book();
         book.setId(1L);
         book.setTitle("De brief voor de koning");
-
         when(sectionService.setSpotlightBook(eq(1L), eq(1L), eq((short) 1))).thenReturn(book);
 
         mockMvc.perform(put("/section/1/spotlight")
                 .param("bookId", "1")
                 .param("ranking", "1"))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title").value("De brief voor de koning"));
+
+        verify(sectionService, times(1)).setSpotlightBook(1L, 1L, (short) 1);
     }
+
+    @Test
+    void setSpotlightBook_returnsNull_whenServiceReturnsNull() throws Exception {
+        when(sectionService.setSpotlightBook(eq(1L), eq(99L), eq((short) 1))).thenReturn(null);
+
+        mockMvc.perform(put("/section/1/spotlight")
+                .param("bookId", "99")
+                .param("ranking", "1"))
+                .andExpect(status().isOk());
+
+        verify(sectionService, times(1)).setSpotlightBook(1L, 99L, (short) 1);
+    }
+
+    // -------------------------------------------------------------------------
+    // GET /section/{id}/spotlight
+    // -------------------------------------------------------------------------
 
     @Test
     void getSpotlightBooks_returnsListOfDTOs() throws Exception {
@@ -117,11 +184,22 @@ public class SectionControllerTest {
         book.setId(1L);
         book.setTitle("De brief voor de koning");
         SectionBookDTO dto = new SectionBookDTO((short) 1, book);
-
         when(sectionService.getSpotlightBooks(eq(1L))).thenReturn(List.of(dto));
 
         mockMvc.perform(get("/section/1/spotlight"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].ranking").value(1));
+                .andExpect(jsonPath("$[0].ranking").value(1))
+                .andExpect(jsonPath("$[0].book.title").value("De brief voor de koning"));
+
+        verify(sectionService, times(1)).getSpotlightBooks(1L);
+    }
+
+    @Test
+    void getSpotlightBooks_returnsEmptyList_whenNoSpotlightBooks() throws Exception {
+        when(sectionService.getSpotlightBooks(eq(1L))).thenReturn(List.of());
+
+        mockMvc.perform(get("/section/1/spotlight"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isEmpty());
     }
 }

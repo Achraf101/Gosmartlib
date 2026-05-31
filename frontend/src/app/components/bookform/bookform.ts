@@ -1,4 +1,13 @@
-import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import {
+  AfterViewChecked,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  Input,
+  OnInit,
+  QueryList,
+  ViewChildren,
+} from '@angular/core';
 import {
   FormsModule,
   ReactiveFormsModule,
@@ -26,6 +35,7 @@ import { Router } from '@angular/router';
 
 import { isbnValidator, maxEntries } from '../../utils/validator';
 import { BookCard, BookDetail, BookLookupDTO, CreateBook } from '../../models/book';
+import { BookCoverInput } from '../../models/bookCoverInput';
 import { Author } from '../../models/author';
 import { Genre } from '../../models/genre';
 import { Publisher } from '../../models/publisher';
@@ -41,6 +51,10 @@ import { LanguageService } from '../../services/language';
 import { BookTypeService } from '../../services/book-type';
 import { UploadService } from '../../services/upload';
 import { SeriesService } from '../../services/series';
+import { LocationService } from '../../services/location';
+import { LocationBookService } from '../../services/locationbook';
+import { Location } from '../../models/location';
+import JsBarcode from 'jsbarcode';
 
 import { CharCounterComponent } from '../char-counter/char-counter';
 import { NavBarComponent } from '../nav-bar/nav-bar';
@@ -80,7 +94,8 @@ import { BookCover } from '../misc/book-cover/book-cover';
   styleUrl: './bookform.css',
   providers: [],
 })
-export class BookformComponent implements OnInit {
+export class BookformComponent implements OnInit, AfterViewChecked {
+  @ViewChildren('barcodesvg') barcodeSvgs!: QueryList<ElementRef<SVGElement>>;
   bookForm = new FormGroup({
     title: new FormControl('', Validators.required),
     author: new FormControl<number | null>(null, Validators.required),
@@ -148,6 +163,14 @@ export class BookformComponent implements OnInit {
   publisherFormVisible: boolean = false;
   seriesFormVisible: boolean = false;
 
+  // Copy-adding (step 4)
+  locations: Location[] = [];
+  selectedCopyLocationId: number | null = null;
+  copyAmount = 1;
+  barcodeDialogVisible = false;
+  newAccessionIds: string[] = [];
+  private barcodesRendered = false;
+
   font_sizes = [
     { name: 'Klein', value: 'KLEIN' },
     { name: 'Medium', value: 'MEDIUM' },
@@ -170,6 +193,8 @@ export class BookformComponent implements OnInit {
     private themeService: ThemeService,
     private router: Router,
     private cdr: ChangeDetectorRef,
+    private locationService: LocationService,
+    private locationBookService: LocationBookService,
   ) {}
 
   ngOnInit() {
@@ -177,16 +202,99 @@ export class BookformComponent implements OnInit {
     this.themeService.getAll().subscribe((t) => (this.themes = t));
     this.publisherService.getAll().subscribe((p) => (this.publishers = p));
     this.authorService.getAll().subscribe((a) => (this.authors = a));
-    this.languageService.getAll().subscribe((l) => (this.languages = l));
+    this.languageService.getAll().subscribe((l) => {
+      this.languages = l;
+      this.bookForm.patchValue({ language: l[0].id });
+    });
     this.bookTypeService.getAll().subscribe((bt) => {
       this.bookTypes = bt;
       this.setDefaultBookType();
     });
     this.seriesService.getAll().subscribe((s) => (this.series = s));
+    this.locationService.getAll().subscribe((l) => (this.locations = l));
     if (this.bookToEdit) {
       this.prefillFromBook(this.bookToEdit);
       this.lookupMethod = 'manual';
     }
+  }
+
+  ngAfterViewChecked(): void {
+    if (this.barcodeDialogVisible && !this.barcodesRendered && this.barcodeSvgs?.length) {
+      this.barcodeSvgs.forEach((ref, i) => {
+        const id = this.newAccessionIds[i];
+        if (id)
+          JsBarcode(ref.nativeElement, id, {
+            format: 'CODE128',
+            displayValue: false,
+            width: 2,
+            height: 60,
+          });
+      });
+      this.barcodesRendered = true;
+    }
+  }
+
+  addCopies(): void {
+    if (!this.newBookId || !this.selectedCopyLocationId || this.copyAmount < 1) return;
+    this.locationBookService
+      .createLocationBook({
+        location_id: this.selectedCopyLocationId,
+        book_id: this.newBookId,
+        amount: this.copyAmount,
+        current_amount: this.copyAmount,
+      })
+      .subscribe({
+        next: (result) => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Succes',
+            detail: `${this.copyAmount} exemplaren aangemaakt.`,
+            life: 3000,
+          });
+          if (result.new_accession_ids?.length) {
+            this.newAccessionIds = result.new_accession_ids;
+            this.barcodesRendered = false;
+            this.barcodeDialogVisible = true;
+          }
+          this.selectedCopyLocationId = null;
+          this.copyAmount = 1;
+        },
+        error: () => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Fout',
+            detail: 'Exemplaren toevoegen mislukt.',
+            life: 3000,
+          });
+        },
+      });
+  }
+
+  closeBarcodeDialog(): void {
+    this.barcodeDialogVisible = false;
+    this.newAccessionIds = [];
+    this.barcodesRendered = false;
+  }
+
+  printBarcodes(): void {
+    const svgElements = this.barcodeSvgs.toArray();
+    const printWindow = window.open('', '_blank', 'width=800,height=600');
+    if (!printWindow) return;
+    const cards = this.newAccessionIds
+      .map((id, i) => {
+        const svgHtml = svgElements[i]?.nativeElement?.outerHTML ?? '';
+        return `<div class="barcode-card">${svgHtml}<span class="accession-label">${id}</span></div>`;
+      })
+      .join('');
+    printWindow.document.write(`<!DOCTYPE html><html><head><title>Barcodes afdrukken</title><style>
+      body{margin:1rem;font-family:monospace}.barcode-grid{display:flex;flex-wrap:wrap;gap:1rem}
+      .barcode-card{display:flex;flex-direction:column;align-items:center;gap:.25rem;padding:.5rem .75rem;border:1px dashed #d1d5db;border-radius:6px;page-break-inside:avoid;break-inside:avoid}
+      .accession-label{font-size:.8rem;letter-spacing:.05em}
+    </style></head><body><div class="barcode-grid">${cards}</div></body></html>`);
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+    printWindow.close();
   }
 
   private setDefaultBookType(): void {
@@ -260,16 +368,11 @@ export class BookformComponent implements OnInit {
     this.lookupCoverUrl = book.cover ?? null;
   }
 
-  get previewBookCard(): BookCard {
-    return (
-      this.bookToEdit ?? {
-        id: 0,
-        title: '',
-        cover: this.lookupCoverUrl ?? undefined,
-        author: { id: 0, name: '' },
-        author_name: '',
-      }
-    );
+  get previewBookCard(): BookCoverInput {
+    return {
+      title: this.bookToEdit?.title ?? this.bookForm.value.title ?? '',
+      cover: this.bookToEdit?.cover ?? this.lookupCoverUrl ?? undefined,
+    };
   }
 
   addAuthor(): void {
@@ -365,8 +468,7 @@ export class BookformComponent implements OnInit {
         this.suggestionCard = {
           id: 0,
           title: result.title ?? '',
-          author: { id: 0, name: result.author_name ?? '' },
-          author_name: result.author_name ?? '',
+          author: { id: 0, name: '' },
           cover: result.cover_url ?? undefined,
         };
         this.isLookingUp = false;

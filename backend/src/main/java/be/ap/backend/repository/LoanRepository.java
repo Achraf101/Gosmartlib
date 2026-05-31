@@ -4,11 +4,14 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import be.ap.backend.entity.Loan;
+// import be.ap.backend.entity.LoanStatus;
+import jakarta.transaction.Transactional;
 import be.ap.backend.enums.LoanStatus;
 
 @Repository
@@ -86,4 +89,13 @@ public interface LoanRepository extends JpaRepository<Loan, Long> {
 
     @Query("SELECT DISTINCT l FROM Loan l LEFT JOIN FETCH l.loanBooks lb LEFT JOIN FETCH lb.book WHERE l.status = :state AND l.location.school.id = :schoolId ORDER BY l.created ASC")
     List<Loan> findByStateAndSchool(@Param("state") LoanStatus state, @Param("schoolId") Long schoolId);
+
+    // get all loans for scheduled job
+    @Query("SELECT l.id FROM Loan l WHERE l.notified = false AND l.end = :tomorrow")
+    List<Long> getDueLoans(@Param("tomorrow") LocalDate tomorrow);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE Loan l SET l.notified = true WHERE l.id = :id")
+    void setNotifiedTrue(@Param("id") Long id);
 }

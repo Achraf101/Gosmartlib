@@ -1,3 +1,4 @@
+<app-nav-bar></app-nav-bar>
 <form [formGroup]="form" (ngSubmit)="onSubmit()">
   <h1>{{ school?.name }}</h1>
   <div class="field">
@@ -6,26 +7,40 @@
       <input id="locationname" pInputText formControlName="name" />
     </p-iftaLabel>
     @if (form.controls.name.invalid && form.controls.name.touched) {
-    <small class="p-error">
-      <p-message severity="error" size="small" variant="simple">Naam is verplicht!</p-message>
-    </small>
+      <small class="p-error">
+        <p-message severity="error" size="small" variant="simple">Naam is verplicht!</p-message>
+      </small>
     }
   </div>
   <div class="field">
     <p-iftaLabel>
       <label for="adres">Adres (optioneel)</label>
-      <textarea id="adres" rows="5" cols="30" pTooltip="Geef het volledige adres, openingsuren, ..."
-        tooltipPosition="right" tooltipEvent="focus" pTextarea formControlName="adres" [autoResize]="true"
-        maxlength="500"></textarea>
+      <textarea
+        id="adres"
+        rows="5"
+        cols="30"
+        pTooltip="Geef het volledige adres, openingsuren, ..."
+        tooltipPosition="right"
+        tooltipEvent="focus"
+        pTextarea
+        formControlName="adres"
+        [autoResize]="true"
+        maxlength="500"
+      ></textarea>
     </p-iftaLabel>
     @if (form.controls.adres.invalid && form.controls.adres.touched) {
-    <small class="p-error">
-      <p-message severity="error" size="small" variant="simple">Maximum 500 tekens</p-message>
-    </small>
+      <small class="p-error">
+        <p-message severity="error" size="small" variant="simple">Maximum 500 tekens</p-message>
+      </small>
     }
     <app-char-counter [text]="form.get('adres')?.value ?? ''" [maxLength]="500"> </app-char-counter>
   </div>
   <div class="btn">
-    <p-button label="Bevestig" (onClick)="onSubmit()" [disabled]="form.invalid" routerLink="/school" />
+    <p-button
+      label="Bevestig"
+      (onClick)="onSubmit()"
+      [disabled]="form.invalid"
+      routerLink="/school"
+    />
   </div>
 </form>

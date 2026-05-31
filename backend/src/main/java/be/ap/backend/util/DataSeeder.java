@@ -1,29 +1,21 @@
 package be.ap.backend.util;
 
-import java.time.Year;
-import java.util.Set;
-
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import be.ap.backend.dto.SchoolDTO;
-import be.ap.backend.entity.Author;
-import be.ap.backend.entity.Book;
 import be.ap.backend.entity.BookType;
 import be.ap.backend.entity.Challenge;
-import be.ap.backend.entity.Location;
 import be.ap.backend.entity.Genre;
 import be.ap.backend.entity.Language;
 import be.ap.backend.entity.School;
 import be.ap.backend.entity.Theme;
 import be.ap.backend.entity.User;
 import be.ap.backend.entity.UserRole;
-import be.ap.backend.repository.AuthorRepository;
 import be.ap.backend.repository.BookRepository;
 import be.ap.backend.repository.BookTypeRepository;
 import be.ap.backend.repository.ChallengeRepository;
-import be.ap.backend.repository.LocationRepository;
 import be.ap.backend.repository.ClassroomRepository;
 import be.ap.backend.repository.GenreRepository;
 import be.ap.backend.repository.LanguageRepository;
@@ -49,19 +41,17 @@ public class DataSeeder implements CommandLineRunner {
     private final LanguageRepository languageRepository;
     private final BookTypeRepository bookTypeRepository;
     private final BookRepository bookRepository;
-    private final AuthorRepository authorRepository;
     private final ChallengeRepository challengeRepository;
     private final ThemeRepository themeRepository;
     private final UserRepository userRepository;
-    private final LocationRepository locationRepository;
     private final SchoolRepository schoolRepository;
     private final PasswordEncoder passwordEncoder;
     private final SchoolService schoolService;
 
     public DataSeeder(LanguageRepository languageRepository,
             BookTypeRepository bookTypeRepository, GenreRepository genreRepository,
-            BookRepository bookRepository, AuthorRepository authorRepository,
-            ThemeRepository themeRepository, UserRepository userRepository, LocationRepository locationRepository,
+            BookRepository bookRepository,
+            ThemeRepository themeRepository, UserRepository userRepository,
             SchoolRepository schoolRepository, PasswordEncoder passwordEncoder,
             ChallengeRepository challengeRepository, ClassroomRepository classroomRepository,
             EncryptionService encryptionService, SchoolService schoolService) {
@@ -69,11 +59,9 @@ public class DataSeeder implements CommandLineRunner {
         this.bookTypeRepository = bookTypeRepository;
         this.genreRepository = genreRepository;
         this.bookRepository = bookRepository;
-        this.authorRepository = authorRepository;
         this.challengeRepository = challengeRepository;
         this.themeRepository = themeRepository;
         this.userRepository = userRepository;
-        this.locationRepository = locationRepository;
         this.schoolRepository = schoolRepository;
         this.passwordEncoder = passwordEncoder;
         this.schoolService = schoolService;
@@ -83,20 +71,18 @@ public class DataSeeder implements CommandLineRunner {
     public void run(String... args) {
         if (!seedingEnabled)
             return;
-
-        seedSchoolsAndLocations();
+        seedAdminSchool();
         seedChallenges();
-        seedTestUsers();
+        seedAdmin();
         seedDatabase();
 
     }
 
     private void seedDatabase() {
         seedLanguages();
-        BookType boek = seedBookTypes();
+        seedBookTypes();
         seedGenres();
         seedThemes();
-        seedBooks(boek);
     }
 
     private void seedLanguages() {
@@ -147,59 +133,6 @@ public class DataSeeder implements CommandLineRunner {
         genreRepository.save(new Genre("Psychologie"));
         genreRepository.save(new Genre("Geschiedenis"));
         genreRepository.save(new Genre("Kunst & cultuur"));
-    }
-
-    private void seedBooks(BookType boek) {
-        Language nl = languageRepository.findByCode("nl");
-
-        Genre roman = genreRepository.findByName("Literaire roman");
-        Genre avontuur = genreRepository.findByName("Avontuur");
-        Genre fantasy = genreRepository.findByName("Fantasy");
-        Genre geschiedenis = genreRepository.findByName("Geschiedenis");
-        Theme avontuurEnOntdekking = themeRepository.findByName("Avontuur & ontdekking");
-        Theme identiteitEnZelfbeeld = themeRepository.findByName("Identiteit & zelfbeeld");
-
-        Author tonke = createAuthor("Tonke Dragt");
-        Author thea = createAuthor("Thea Beckman");
-        Author jk = createAuthor("J.K. Rowling");
-        Author rima = createAuthor("Rima Orie");
-        Author benno = createAuthor("Benno Barnard");
-
-        saveBook("De brief voor de koning",
-                "Vijf jongelingen moeten, voordat ze tot ridder geslagen worden, de nacht biddend en wakend doorbrengen.",
-                true, Year.of(1962), 449, boek, nl, tonke,
-                "eacc8ca9ee1827042fc7835e7de56227.webp",
-                Set.of(roman, avontuur), Set.of(avontuurEnOntdekking));
-
-        saveBook("Harry Potter en de vuurbeker",
-                "Als tovenaar-in-de-dop Harry Potter deelneemt aan een internationaal tovenaarstoernooi, dreigt er onverwacht gevaar.",
-                true, Year.of(2000), 546, boek, nl, jk,
-                "b983a2f49e023bb4e2b8c5370552c0f4.webp",
-                Set.of(fantasy, avontuur), Set.of(avontuurEnOntdekking));
-
-        saveBook("Kruistocht in Spijkerbroek",
-                "Dolf Wega belandt door een tijdmachine plotseling in de kinderkruistocht van 1212.",
-                true, Year.of(1973), 264, boek, nl, thea,
-                "5a6539e1224f4a55659a0136a0de562f.webp",
-                Set.of(roman, avontuur), Set.of(avontuurEnOntdekking));
-
-        saveBook("Geef me de ruimte!",
-                "De lotgevallen van een Vlaams meisje dat van huis wegloopt en in het middeleeuwse Frankrijk een zwervend bestaan gaat leiden.",
-                true, Year.of(1976), 406, boek, nl, thea,
-                "6353feab95305a1264c9430a565515de.webp",
-                Set.of(roman, avontuur), Set.of(identiteitEnZelfbeeld));
-
-        saveBook("De Zwendelprins",
-                "Simran (17) werkt als keukenhulp in het paleis van de maharadja van Suryan als ze wordt ontvoerd door een mysterieuze prins.",
-                true, Year.of(2019), 399, boek, nl, rima,
-                "811278f6a3909b01ed523a55f4b6b817.webp",
-                Set.of(fantasy, avontuur), Set.of(avontuurEnOntdekking));
-
-        saveBook("Een geschiedenis van België voor nieuwsgierige kinderen",
-                "Geschiedenis van België vanaf 1830 tot 2003 in hoofdlijnen.",
-                false, Year.of(2012), 319, boek, nl, benno,
-                "82f15cee848b29e0f9684f691f2f020e.webp",
-                Set.of(geschiedenis), Set.of());
     }
 
     private void seedChallenges() {
@@ -259,35 +192,6 @@ public class DataSeeder implements CommandLineRunner {
         }
     }
 
-    private Book saveBook(String title, String description, boolean fiction,
-            Year published, int pages, BookType bookType, Language language,
-            Author author, String cover, Set<Genre> genres, Set<Theme> themes) {
-        Book book = new Book();
-        book.setTitle(title);
-        book.setDescription(description);
-        book.setFiction(fiction);
-        book.setPublished(published);
-        book.setPages(pages);
-        book.setBookType(bookType);
-        book.setLanguage(language);
-        book.setAuthor(author);
-        book.setCover(cover);
-        book.setGenres(genres);
-        book.setThemes(themes);
-        return bookRepository.save(book);
-    }
-
-    private Author createAuthor(String name) {
-        return authorRepository.findByName(name)
-                .stream()
-                .findFirst()
-                .orElseGet(() -> {
-                    Author author = new Author();
-                    author.setName(name);
-                    return authorRepository.save(author);
-                });
-    }
-
     private void seedThemes() {
         if (themeRepository.count() > 0)
             return;
@@ -310,11 +214,9 @@ public class DataSeeder implements CommandLineRunner {
         themeRepository.save(new Theme("Toekomst & technologie"));
     }
 
-    private void seedTestUsers() {
+    private void seedAdmin() {
         School school = schoolRepository.findById(1L).orElseThrow(() -> new IllegalStateException("School 1 missing"));
         seedUser("admin", "admin", UserRole.ADMIN, school);
-        seedUser("beheerder", "beheerder", UserRole.BIBLIOTHEEKBEHEERDER, school);
-
     }
 
     private void seedUser(String username, String password, UserRole role, School school) {
@@ -328,57 +230,22 @@ public class DataSeeder implements CommandLineRunner {
         userRepository.save(user);
     }
 
-    private void seedSchoolsAndLocations() {
+    private void seedAdminSchool() {
         if (schoolRepository.count() > 0)
             return;
 
         SchoolDTO dto1 = new SchoolDTO();
-        dto1.setName("AP Hogeschool");
+        dto1.setName("Admin School");
         dto1.setAdres("");
         dto1.setContact("");
         dto1.setDescription("");
-        dto1.setSsSubdomain("aphogeschool");
-        dto1.setBorrowLimit(10);
-        dto1.setBorrowPeriod(14);
-        dto1.setExtendLimit(3);
-        dto1.setExtendPeriod(14);
+        dto1.setSsSubdomain("admin");
+        dto1.setBorrowLimit(1);
+        dto1.setBorrowPeriod(1);
+        dto1.setExtendLimit(1);
+        dto1.setExtendPeriod(1);
         dto1.setOneRosterClientId("ec58f0fb-6bd3-48d3-a165-6b73a324d5ad");
         dto1.setOneRosterClientSecret("755b033b7096ad2abe34142df0b67fe974d0e555ab6c0d6c9475e417c2a8");
-        SchoolDTO school1 = schoolService.addSchool(dto1);
-
-        SchoolDTO dto2 = new SchoolDTO();
-        dto2.setName("AP Universiteit");
-        dto2.setAdres("");
-        dto2.setContact("");
-        dto2.setDescription("");
-        dto2.setSsSubdomain("apuniversiteit");
-        dto2.setBorrowLimit(10);
-        dto2.setBorrowPeriod(14);
-        dto2.setExtendLimit(3);
-        dto2.setExtendPeriod(14);
-        dto2.setOneRosterClientId("ec58f0fb-6bd3-48d3-a165-6b73a324d5ad");
-        dto2.setOneRosterClientSecret("755b033b7096ad2abe34142df0b67fe974d0e555ab6c0d6c9475e417c2a8");
-        SchoolDTO school2 = schoolService.addSchool(dto2);
-
-        School savedSchool1 = schoolRepository.findById(school1.getId()).orElseThrow();
-        School savedSchool2 = schoolRepository.findById(school2.getId()).orElseThrow();
-
-        Location location = new Location();
-        location.setSchool(savedSchool1);
-        location.setName("Ellerman");
-        location.setAdres("");
-        locationRepository.save(location);
-
-        Location location1 = new Location();
-        location1.setSchool(savedSchool1);
-        location1.setName("Noorderplaats");
-        location1.setAdres("");
-        locationRepository.save(location1);
-
-        Location imposterLocation = new Location();
-        imposterLocation.setSchool(savedSchool2);
-        imposterLocation.setName("Blok A");
-        imposterLocation.setAdres("");
-        locationRepository.save(imposterLocation);
+        schoolService.addSchool(dto1);
     }
 }

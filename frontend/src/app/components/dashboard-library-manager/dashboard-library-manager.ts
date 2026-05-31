@@ -124,7 +124,7 @@ export class DashboardLibraryManager implements OnInit {
     private schoolSettingsService: SchoolSettingsService,
     private smartschoolSyncService: SmartschoolSyncService,
     private confirmationService: ConfirmationService,
-    private authService: AuthService,
+    public authService: AuthService,
     private themeService: ThemeService,
   ) {}
 
@@ -224,7 +224,6 @@ export class DashboardLibraryManager implements OnInit {
   }
 
   changeBookOfMonth(grade: number): void {
-    console.log(this.monthlyBooks);
     this.router.navigate(['/catalogus'], {
       queryParams: {
         selectMode: true,
@@ -235,7 +234,6 @@ export class DashboardLibraryManager implements OnInit {
   }
 
   changeSpotlightBook(ranking: number): void {
-    console.log(this.spotlightSectionId);
     this.router.navigate(['/catalogus'], {
       queryParams: {
         selectMode: true,

@@ -13,6 +13,7 @@ import { Button } from 'primeng/button';
 import { CharCounterComponent } from '../char-counter/char-counter';
 import { NavBarComponent } from '../nav-bar/nav-bar';
 import { ToastModule } from 'primeng/toast';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-school-edit',
@@ -67,6 +68,7 @@ export class SchoolEditComponent implements OnInit {
     private schoolService: SchoolService,
     private authService: AuthService,
     private messageService: MessageService,
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
@@ -121,6 +123,7 @@ export class SchoolEditComponent implements OnInit {
           detail: 'Schoolgegevens succesvol bijgewerkt!',
           life: 3000,
         });
+        this.router.navigate(['/dashboard/bibliotheek-beheerder']);
       },
       complete: () => (this.loading = false),
     });

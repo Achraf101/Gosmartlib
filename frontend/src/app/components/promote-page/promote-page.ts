@@ -32,7 +32,7 @@ export class PromotePageComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.smartschoolLookupService.getAllTeachersForSchool(1).subscribe({
+    this.smartschoolLookupService.getAllTeachersForSchool(this.schoolId).subscribe({
       next: (data) => {
         this.teachers = data;
         this.loading = false;
@@ -63,5 +63,4 @@ export class PromotePageComponent implements OnInit {
   isPromoting(teacherId: number): boolean {
     return this.promotingIds.has(teacherId);
   }
-  ddRoleForTeacher(teacherId: number) {}
 }

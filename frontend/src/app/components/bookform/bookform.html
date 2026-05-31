@@ -420,29 +420,6 @@
                         <label for="font_size">Lettergrootte (optioneel)</label>
                       </p-iftalabel>
                     </div>
-                    <div class="inputitem">
-                      <p>
-                        Enkel zichtbaar voor deze school?*<br /><span class="subtext"
-                          >(dit verbergt het boek voor andere scholen)</span
-                        >
-                      </p>
-                      <div class="radioBtns">
-                        <p-radiobutton
-                          id="school-no"
-                          [value]="false"
-                          name="school"
-                          formControlName="school"
-                        />
-                        <label for="school-no">Nee</label>
-                        <p-radiobutton
-                          id="school-yes"
-                          [value]="true"
-                          name="school"
-                          formControlName="school"
-                        />
-                        <label for="school-yes">Ja</label>
-                      </div>
-                    </div>
                     <div class="btns">
                       <p-button
                         label="Terug"
@@ -493,16 +470,28 @@
                       <div class="btns btns-center">
                         <p-button
                           label="Volgende boek toevoegen"
+                          severity="secondary"
                           icon="pi pi-plus"
                           (onClick)="resetForm()"
+                        />
+                        <p-button
+                          label="Exemplaren toevoegen"
+                          icon="pi pi-tag"
+                          (onClick)="activateCallback(4)"
                         />
                       </div>
                     } @else {
                       <div class="btns btns-center">
                         <p-button
                           label="Naar boekpagina"
+                          severity="secondary"
                           icon="pi pi-arrow-right"
                           (onClick)="goToBookPage()"
+                        />
+                        <p-button
+                          label="Exemplaren toevoegen"
+                          icon="pi pi-tag"
+                          (onClick)="activateCallback(4)"
                         />
                       </div>
                     }
@@ -510,9 +499,101 @@
                 </p-step-panel>
               </p-step-item>
             </form>
+
+            <p-step-item [value]="4">
+              <p-step>Exemplaren</p-step>
+              <p-step-panel>
+                <ng-template #content let-activateCallback="activateCallback">
+                  <p class="copy-section-hint">
+                    Voeg exemplaren toe aan een locatie. Je kan meerdere locaties toevoegen.
+                  </p>
+                  <div class="inputitem">
+                    <p-iftalabel>
+                      <p-select
+                        fluid
+                        [options]="locations"
+                        optionLabel="name"
+                        optionValue="id"
+                        [(ngModel)]="selectedCopyLocationId"
+                        [ngModelOptions]="{ standalone: true }"
+                        [showClear]="true"
+                        id="copy-location"
+                      />
+                      <label for="copy-location">Locatie</label>
+                    </p-iftalabel>
+                  </div>
+                  <div class="inputitem">
+                    <p-iftalabel>
+                      <p-inputNumber
+                        fluid
+                        [(ngModel)]="copyAmount"
+                        [ngModelOptions]="{ standalone: true }"
+                        [showButtons]="true"
+                        [min]="1"
+                        [max]="100"
+                        [useGrouping]="false"
+                      />
+                      <label>Aantal exemplaren</label>
+                    </p-iftalabel>
+                  </div>
+                  <div class="btns">
+                    <p-button
+                      label="Toevoegen"
+                      icon="pi pi-plus"
+                      [disabled]="!selectedCopyLocationId || copyAmount < 1"
+                      (onClick)="addCopies()"
+                    />
+                  </div>
+                  <hr class="copy-section-divider" />
+                  @if (!bookToEdit) {
+                    <div class="btns btns-center">
+                      <p-button
+                        label="Volgende boek toevoegen"
+                        icon="pi pi-plus"
+                        (onClick)="resetForm()"
+                      />
+                    </div>
+                  } @else {
+                    <div class="btns btns-center">
+                      <p-button
+                        label="Naar boekpagina"
+                        icon="pi pi-arrow-right"
+                        (onClick)="goToBookPage()"
+                      />
+                    </div>
+                  }
+                </ng-template>
+              </p-step-panel>
+            </p-step-item>
           </p-stepper>
         </div>
       </div>
+
+      <p-dialog
+        header="Exemplaren aangemaakt"
+        [(visible)]="barcodeDialogVisible"
+        [modal]="true"
+        [closable]="true"
+        (onHide)="closeBarcodeDialog()"
+      >
+        <div class="barcode-grid">
+          @for (id of newAccessionIds; track id; let i = $index) {
+            <div class="barcode-card">
+              <svg #barcodesvg></svg>
+              <span class="accession-label">{{ id }}</span>
+            </div>
+          }
+        </div>
+        <ng-template #footer>
+          <p-button icon="pi pi-print" label="Afdrukken" size="small" (onClick)="printBarcodes()" />
+          <p-button
+            label="Sluiten"
+            size="small"
+            severity="secondary"
+            (onClick)="closeBarcodeDialog()"
+          />
+        </ng-template>
+      </p-dialog>
 
       <form [formGroup]="authorForm">
         <p-dialog

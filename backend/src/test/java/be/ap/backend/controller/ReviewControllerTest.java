@@ -6,15 +6,15 @@ import be.ap.backend.dto.ReviewDTO;
 import be.ap.backend.dto.ReviewReportDTO;
 import be.ap.backend.entity.ReviewReport;
 import be.ap.backend.entity.UserRole;
+import be.ap.backend.exception.MissingSessionException;
+import be.ap.backend.exception.UnauthorizedAccessException;
 import be.ap.backend.service.ReviewReportService;
 import be.ap.backend.service.ReviewService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -112,7 +112,7 @@ public class ReviewControllerTest {
 
         when(reviewService.addReview(1L, input, 1L)).thenReturn(saved);
 
-        ReviewDTO result = (ReviewDTO) controller.addReview(1L, input).getBody();
+        ReviewDTO result = controller.addReview(1L, input).getBody();
 
         assertNotNull(result);
         assertEquals(1L, result.getId());
@@ -121,7 +121,9 @@ public class ReviewControllerTest {
     }
 
     @Test
-    void givenReviewWithBadWord_whenAddReview_thenReturnBadRequest() {
+    void givenReviewWithBadWord_whenAddReview_thenPropagateIllegalArgumentException() {
+        // IllegalArgumentException is no longer caught by the controller;
+        // it propagates to the exception handler layer.
         asUser(1L);
 
         ReviewDTO input = new ReviewDTO();
@@ -131,14 +133,13 @@ public class ReviewControllerTest {
         when(reviewService.addReview(1L, input, 1L))
                 .thenThrow(new IllegalArgumentException("Je recensie bevat ongepaste taal."));
 
-        ResponseEntity<?> result = controller.addReview(1L, input);
-
-        assertEquals(400, result.getStatusCode().value());
-        assertEquals("Je recensie bevat ongepaste taal.", result.getBody());
+        assertThatThrownBy(() -> controller.addReview(1L, input))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Je recensie bevat ongepaste taal.");
     }
 
     @Test
-    void givenNoSession_whenAddReview_thenReturn401() {
+    void givenNoSession_whenAddReview_thenThrowMissingSessionException() {
         when(sessionContext.getUserId()).thenReturn(null);
 
         ReviewDTO input = new ReviewDTO();
@@ -146,8 +147,8 @@ public class ReviewControllerTest {
         input.setContent("Interessant.");
 
         assertThatThrownBy(() -> controller.addReview(1L, input))
-                .isInstanceOf(ResponseStatusException.class)
-                .hasMessageContaining("401");
+                .isInstanceOf(MissingSessionException.class)
+                .hasMessage("Niet ingelogd.");
     }
 
     // ── deleteReview ──────────────────────────────────────────────
@@ -157,31 +158,30 @@ public class ReviewControllerTest {
         asUser(1L);
         doNothing().when(reviewService).deleteReview(1L, 1L);
 
-        ResponseEntity<?> result = controller.deleteReview(1L);
+        var result = controller.deleteReview(1L);
 
         assertEquals(200, result.getStatusCode().value());
         verify(reviewService, times(1)).deleteReview(1L, 1L);
     }
 
     @Test
-    void givenOtherUsersReview_whenDeleteReview_thenReturnBadRequest() {
+    void givenOtherUsersReview_whenDeleteReview_thenPropagateIllegalArgumentException() {
         asUser(2L);
         doThrow(new IllegalArgumentException("Je kan alleen je eigen recensie verwijderen."))
                 .when(reviewService).deleteReview(1L, 2L);
 
-        ResponseEntity<?> result = controller.deleteReview(1L);
-
-        assertEquals(400, result.getStatusCode().value());
-        assertEquals("Je kan alleen je eigen recensie verwijderen.", result.getBody());
+        assertThatThrownBy(() -> controller.deleteReview(1L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Je kan alleen je eigen recensie verwijderen.");
     }
 
     @Test
-    void givenNoSession_whenDeleteReview_thenReturn401() {
+    void givenNoSession_whenDeleteReview_thenThrowMissingSessionException() {
         when(sessionContext.getUserId()).thenReturn(null);
 
         assertThatThrownBy(() -> controller.deleteReview(1L))
-                .isInstanceOf(ResponseStatusException.class)
-                .hasMessageContaining("401");
+                .isInstanceOf(MissingSessionException.class)
+                .hasMessage("Niet ingelogd.");
     }
 
     // ── reportReview ──────────────────────────────────────────────
@@ -193,16 +193,17 @@ public class ReviewControllerTest {
         CreateReportDTO dto = new CreateReportDTO();
         dto.setNote("Ongepaste inhoud");
 
-        when(reviewReportService.reportReview(1L, 3L, "Ongepaste inhoud")).thenReturn(new ReviewReport());
+        when(reviewReportService.reportReview(1L, 3L, "Ongepaste inhoud"))
+                .thenReturn(new ReviewReport()); // use the actual return type
 
-        ResponseEntity<?> result = controller.reportReview(1L, dto);
+        var result = controller.reportReview(1L, dto);
 
         assertEquals(200, result.getStatusCode().value());
         verify(reviewReportService, times(1)).reportReview(1L, 3L, "Ongepaste inhoud");
     }
 
     @Test
-    void givenOwnReview_whenReportReview_thenReturnBadRequest() {
+    void givenOwnReview_whenReportReview_thenPropagateIllegalArgumentException() {
         asUser(1L);
 
         CreateReportDTO dto = new CreateReportDTO();
@@ -211,22 +212,21 @@ public class ReviewControllerTest {
         doThrow(new IllegalArgumentException("Je kan je eigen recensie niet rapporteren."))
                 .when(reviewReportService).reportReview(1L, 1L, "eigen recensie");
 
-        ResponseEntity<?> result = controller.reportReview(1L, dto);
-
-        assertEquals(400, result.getStatusCode().value());
-        assertEquals("Je kan je eigen recensie niet rapporteren.", result.getBody());
+        assertThatThrownBy(() -> controller.reportReview(1L, dto))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Je kan je eigen recensie niet rapporteren.");
     }
 
     @Test
-    void givenNoSession_whenReportReview_thenReturn401() {
+    void givenNoSession_whenReportReview_thenThrowMissingSessionException() {
         when(sessionContext.getUserId()).thenReturn(null);
 
         CreateReportDTO dto = new CreateReportDTO();
         dto.setNote("Ongepaste inhoud");
 
         assertThatThrownBy(() -> controller.reportReview(1L, dto))
-                .isInstanceOf(ResponseStatusException.class)
-                .hasMessageContaining("401");
+                .isInstanceOf(MissingSessionException.class)
+                .hasMessage("Niet ingelogd.");
     }
 
     // ── getPendingReports ─────────────────────────────────────────
@@ -241,7 +241,7 @@ public class ReviewControllerTest {
 
         when(reviewReportService.getPendingReports()).thenReturn(List.of(report));
 
-        ResponseEntity<List<ReviewReportDTO>> result = controller.getPendingReports();
+        var result = controller.getPendingReports();
 
         assertEquals(200, result.getStatusCode().value());
         assertNotNull(result.getBody());
@@ -250,12 +250,12 @@ public class ReviewControllerTest {
     }
 
     @Test
-    void givenNonLibrarian_whenGetPendingReports_thenReturn403() {
+    void givenNonLibrarian_whenGetPendingReports_thenThrowUnauthorizedAccessException() {
         asNonLibrarian();
 
         assertThatThrownBy(() -> controller.getPendingReports())
-                .isInstanceOf(ResponseStatusException.class)
-                .hasMessageContaining("403");
+                .isInstanceOf(UnauthorizedAccessException.class)
+                .hasMessage("Toegang geweigerd.");
 
         verify(reviewReportService, never()).getPendingReports();
     }
@@ -267,19 +267,19 @@ public class ReviewControllerTest {
         asLibrarian();
         doNothing().when(reviewReportService).acceptReport(1L);
 
-        ResponseEntity<Void> result = controller.acceptReport(1L);
+        var result = controller.acceptReport(1L);
 
         assertEquals(200, result.getStatusCode().value());
         verify(reviewReportService, times(1)).acceptReport(1L);
     }
 
     @Test
-    void givenNonLibrarian_whenAcceptReport_thenReturn403() {
+    void givenNonLibrarian_whenAcceptReport_thenThrowUnauthorizedAccessException() {
         asNonLibrarian();
 
         assertThatThrownBy(() -> controller.acceptReport(1L))
-                .isInstanceOf(ResponseStatusException.class)
-                .hasMessageContaining("403");
+                .isInstanceOf(UnauthorizedAccessException.class)
+                .hasMessage("Toegang geweigerd.");
 
         verify(reviewReportService, never()).acceptReport(any());
     }
@@ -291,19 +291,19 @@ public class ReviewControllerTest {
         asLibrarian();
         doNothing().when(reviewReportService).rejectReport(1L);
 
-        ResponseEntity<Void> result = controller.rejectReport(1L);
+        var result = controller.rejectReport(1L);
 
         assertEquals(200, result.getStatusCode().value());
         verify(reviewReportService, times(1)).rejectReport(1L);
     }
 
     @Test
-    void givenNonLibrarian_whenRejectReport_thenReturn403() {
+    void givenNonLibrarian_whenRejectReport_thenThrowUnauthorizedAccessException() {
         asNonLibrarian();
 
         assertThatThrownBy(() -> controller.rejectReport(1L))
-                .isInstanceOf(ResponseStatusException.class)
-                .hasMessageContaining("403");
+                .isInstanceOf(UnauthorizedAccessException.class)
+                .hasMessage("Toegang geweigerd.");
 
         verify(reviewReportService, never()).rejectReport(any());
     }

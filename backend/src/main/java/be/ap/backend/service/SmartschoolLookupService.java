@@ -4,7 +4,9 @@ import be.ap.backend.entity.User;
 import be.ap.backend.dto.TeacherDTO;
 import be.ap.backend.entity.School;
 import be.ap.backend.entity.UserRole;
+import be.ap.backend.repository.SchoolRepository;
 import be.ap.backend.repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
@@ -24,9 +26,11 @@ public class SmartschoolLookupService {
     private final SmartschoolTokenService tokenService;
     private final RestTemplate restTemplate;
     private final UserRepository userRepository;
+    private final SchoolRepository schoolRepository;
 
     @SuppressWarnings("unchecked")
-    public Map<String, Object> getUser(School school, String oneRosterId, Set<UserRole> roles) {
+    public Map<String, Object> getUser(Long schoolId, String oneRosterId, Set<UserRole> roles) {
+        School school = getSchool(schoolId);
         String endpoint = roles.contains(UserRole.STUDENT) ? "students" : "teachers";
         String url = "https://" + school.getSsSubdomain() + ".smartschool.be/ims/oneroster/v1p1/" + endpoint + "/"
                 + oneRosterId;
@@ -37,7 +41,8 @@ public class SmartschoolLookupService {
     }
 
     @SuppressWarnings("unchecked")
-    public Map<String, Object> getClassroom(School school, String ssId) {
+    public Map<String, Object> getClassroom(Long schoolId, String ssId) {
+        School school = getSchool(schoolId);
         String url = "https://" + school.getSsSubdomain() + ".smartschool.be/ims/oneroster/v1p1/classes/" + ssId;
         Map<String, Object> response = get(school, url);
         if (response == null)
@@ -46,7 +51,8 @@ public class SmartschoolLookupService {
     }
 
     @SuppressWarnings("unchecked")
-    public List<TeacherDTO> getAllTeachersForSchool(School school) {
+    public List<TeacherDTO> getAllTeachersForSchool(Long schoolId) {
+        School school = getSchool(schoolId);
         String url = "https://" + school.getSsSubdomain() + ".smartschool.be/ims/oneroster/v1p1/schools/"
                 + school.getSsId() + "/teachers";
         Map<String, Object> response = get(school, url);
@@ -83,5 +89,10 @@ public class SmartschoolLookupService {
             log.error("GET {} failed: {}", url, e.getMessage());
             return null;
         }
+    }
+
+    private School getSchool(Long schoolId) {
+        return schoolRepository.findById(schoolId)
+                .orElseThrow(() -> new EntityNotFoundException("School niet gevonden: " + schoolId));
     }
 }

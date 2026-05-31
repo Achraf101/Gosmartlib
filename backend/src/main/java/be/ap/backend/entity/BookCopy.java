@@ -33,4 +33,7 @@ public class BookCopy {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private CopyStatus status = CopyStatus.AVAILABLE;
+
+    @Column(columnDefinition = "TEXT")
+    private String note;
 }

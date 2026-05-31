@@ -1,21 +1,15 @@
 package be.ap.backend.controller;
 
-import be.ap.backend.dto.ChallengeDTO;
+import be.ap.backend.config.SessionContext;
 import be.ap.backend.dto.GamificationDTO;
-import be.ap.backend.entity.Challenge;
-import be.ap.backend.entity.UserChallenge;
+import be.ap.backend.exception.MissingSessionException;
 import be.ap.backend.service.GamificationService;
-import jakarta.servlet.http.HttpSession;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
-
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -27,115 +21,89 @@ class GamificationControllerTest {
     private GamificationService gamificationService;
 
     @Mock
-    private HttpSession session;
+    private SessionContext sessionContext;
 
     @InjectMocks
     private GamificationController gamificationController;
 
     private final Long USER_ID = 1L;
-    private final String CURRENT_MONTH = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
 
-    private UserChallenge buildUserChallenge(String conditionType, String conditionValue, boolean completed) {
-        Challenge challenge = new Challenge();
-        challenge.setDescription("Test challenge");
-        challenge.setConditionType(conditionType);
-        challenge.setConditionValue(conditionValue);
-
-        UserChallenge uc = new UserChallenge();
-        uc.setId(1L);
-        uc.setUserId(USER_ID);
-        uc.setChallenge(challenge);
-        uc.setMonth(CURRENT_MONTH);
-        uc.setCompleted(completed);
-        uc.setAssignedAt(LocalDate.now());
-        return uc;
-    }
+    // -------------------------------------------------------------------------
+    // Happy path
+    // -------------------------------------------------------------------------
 
     @Test
     void getGamification_correcteData_wordtTeruggegeven() {
-        UserChallenge uc = buildUserChallenge("language", "fr", false);
+        GamificationDTO dto = new GamificationDTO();
+        dto.setTotalBooks(5);
+        dto.setStreakLevel("5 op rij");
 
-        when(session.getAttribute("userId")).thenReturn(USER_ID);
-        when(gamificationService.getTotalBooks(USER_ID)).thenReturn(5);
-        when(gamificationService.getStreakLevel(5)).thenReturn("5 op rij");
-        when(gamificationService.getChallengesForUser(USER_ID)).thenReturn(List.of(uc));
+        when(sessionContext.getUserId()).thenReturn(USER_ID);
+        when(gamificationService.getGamification(USER_ID)).thenReturn(dto);
 
-        ResponseEntity<GamificationDTO> response = gamificationController.getGamification(session);
+        ResponseEntity<GamificationDTO> response = gamificationController.getGamification();
 
         assertEquals(200, response.getStatusCode().value());
         assertNotNull(response.getBody());
         assertEquals(5, response.getBody().getTotalBooks());
         assertEquals("5 op rij", response.getBody().getStreakLevel());
-        assertEquals(1, response.getBody().getChallenges().size());
     }
 
     @Test
-    void getGamification_challengeDTO_correctGemapped() {
-        UserChallenge uc = buildUserChallenge("genre", "Fantasy", true);
+    void getGamification_delegeertNaarService() {
+        when(sessionContext.getUserId()).thenReturn(USER_ID);
+        GamificationDTO dto = new GamificationDTO();
+        when(gamificationService.getGamification(USER_ID)).thenReturn(dto);
 
-        when(session.getAttribute("userId")).thenReturn(USER_ID);
-        when(gamificationService.getTotalBooks(USER_ID)).thenReturn(3);
-        when(gamificationService.getStreakLevel(3)).thenReturn("Op dreef");
-        when(gamificationService.getChallengesForUser(USER_ID)).thenReturn(List.of(uc));
+        gamificationController.getGamification();
 
-        ResponseEntity<GamificationDTO> response = gamificationController.getGamification(session);
-
-        ChallengeDTO dto = response.getBody().getChallenges().get(0);
-        assertEquals("genre", dto.getConditionType());
-        assertEquals("Fantasy", dto.getConditionValue());
-        assertTrue(dto.isCompleted());
+        verify(gamificationService).getGamification(USER_ID);
     }
 
     @Test
-    void getGamification_checkChallengesWordtAangeroepen() {
-        when(session.getAttribute("userId")).thenReturn(USER_ID);
-        when(gamificationService.getTotalBooks(USER_ID)).thenReturn(0);
-        when(gamificationService.getStreakLevel(0)).thenReturn("Geen level");
-        when(gamificationService.getChallengesForUser(USER_ID)).thenReturn(List.of());
+    void getGamification_geeftServiceResponseTerug() {
+        GamificationDTO expected = new GamificationDTO();
+        expected.setTotalBooks(99);
 
-        gamificationController.getGamification(session);
+        when(sessionContext.getUserId()).thenReturn(USER_ID);
+        when(gamificationService.getGamification(USER_ID)).thenReturn(expected);
 
-        verify(gamificationService).checkChallenges(USER_ID);
+        ResponseEntity<GamificationDTO> response = gamificationController.getGamification();
+
+        assertSame(expected, response.getBody());
+    }
+
+    // -------------------------------------------------------------------------
+    // Missing session
+    // -------------------------------------------------------------------------
+
+    @Test
+    void getGamification_geenUserId_gooidMissingSessionException() {
+        when(sessionContext.getUserId()).thenReturn(null);
+
+        assertThrows(MissingSessionException.class,
+                () -> gamificationController.getGamification());
     }
 
     @Test
-    void getGamification_geenUserId_inSessie_nullWordtDoorgegeven() {
-        when(session.getAttribute("userId")).thenReturn(null);
-        when(gamificationService.getTotalBooks(null)).thenReturn(0);
-        when(gamificationService.getStreakLevel(0)).thenReturn("Geen level");
-        when(gamificationService.getChallengesForUser(null)).thenReturn(List.of());
+    void getGamification_geenUserId_serviceWordtNietAangeroepen() {
+        when(sessionContext.getUserId()).thenReturn(null);
 
-        ResponseEntity<GamificationDTO> response = gamificationController.getGamification(session);
+        try {
+            gamificationController.getGamification();
+        } catch (MissingSessionException ignored) {
+        }
 
-        assertEquals(200, response.getStatusCode().value());
-        verify(gamificationService).getTotalBooks(null);
+        verifyNoInteractions(gamificationService);
     }
 
     @Test
-    void getGamification_geenChallenges_legeListWordtTeruggegeven() {
-        when(session.getAttribute("userId")).thenReturn(USER_ID);
-        when(gamificationService.getTotalBooks(USER_ID)).thenReturn(0);
-        when(gamificationService.getStreakLevel(0)).thenReturn("Geen level");
-        when(gamificationService.getChallengesForUser(USER_ID)).thenReturn(List.of());
+    void getGamification_geenUserId_exceptionBevatJuisteBoodschap() {
+        when(sessionContext.getUserId()).thenReturn(null);
 
-        ResponseEntity<GamificationDTO> response = gamificationController.getGamification(session);
+        MissingSessionException ex = assertThrows(MissingSessionException.class,
+                () -> gamificationController.getGamification());
 
-        assertEquals(0, response.getBody().getChallenges().size());
-    }
-
-    @Test
-    void getGamification_drieChalllenges_allesDrieTeruggegeven() {
-        UserChallenge uc1 = buildUserChallenge("language", "fr", false);
-        UserChallenge uc2 = buildUserChallenge("genre", "Fantasy", true);
-        UserChallenge uc3 = buildUserChallenge("pages", "500", false);
-
-        when(session.getAttribute("userId")).thenReturn(USER_ID);
-        when(gamificationService.getTotalBooks(USER_ID)).thenReturn(10);
-        when(gamificationService.getStreakLevel(10)).thenReturn("Nachtlezer");
-        when(gamificationService.getChallengesForUser(USER_ID)).thenReturn(List.of(uc1, uc2, uc3));
-
-        ResponseEntity<GamificationDTO> response = gamificationController.getGamification(session);
-
-        assertEquals(3, response.getBody().getChallenges().size());
+        assertEquals("Niet ingelogd", ex.getMessage());
     }
 }

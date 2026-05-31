@@ -105,7 +105,7 @@
           <div class="btns">
             <p-button
               class="btn"
-              label="Nu ontlenen"
+              label="Ontlenen"
               severity="primary"
               (onClick)="openLoanDialog()"
             />
@@ -127,28 +127,41 @@
           </div>
           <div id="book-available">
             <p class="avail-title">Beschikbaarheid</p>
-            @if (!locationId) {
-              <p class="avail-value">
-                Selecteer een locatie in de catalogus om beschikbaarheid te zien.
-              </p>
-            } @else if (locationBook) {
-              <p>
-                <span class="avail-label">Status</span>
-                <span
-                  class="avail-value"
-                  [class.avail-unavailable]="locationBook.current_amount === 0"
-                >
-                  {{ locationBook.current_amount > 0 ? 'beschikbaar' : 'niet beschikbaar' }}
-                </span>
-              </p>
-              <p>
-                <span class="avail-label">Exemplaren</span>
-                <span class="avail-value"
-                  >{{ locationBook.current_amount }} / {{ locationBook.amount }} beschikbaar</span
-                >
-              </p>
+            @if (locationAvailability.length === 0) {
+              <p class="avail-value avail-unavailable">Niet beschikbaar in jouw school.</p>
             } @else {
-              <p class="avail-value avail-unavailable">Niet beschikbaar op jouw locatie.</p>
+              <div class="avail-locations">
+                @for (avail of locationAvailability; track avail.location_id) {
+                  <div class="avail-location-row">
+                    <span class="avail-location-name">{{ avail.location_name }}</span>
+                    <span
+                      class="avail-count"
+                      [class.avail-unavailable]="avail.current_amount === 0"
+                    >
+                      {{ avail.current_amount }} beschikbaar
+                    </span>
+                    @if (avail.damaged_count > 0) {
+                      <span class="avail-badge avail-badge-damaged">
+                        <i class="pi pi-exclamation-triangle"></i>
+                        {{ avail.damaged_count }}
+                        {{ avail.damaged_count === 1 ? 'beschadigd' : 'beschadigd' }}
+                      </span>
+                    }
+                    @if (avail.noted_count > 0) {
+                      <span
+                        class="avail-badge avail-badge-noted avail-badge-clickable"
+                        (click)="openNotesDialog(avail)"
+                      >
+                        <i class="pi pi-info-circle"></i>
+                        <span class="avail-badge-text"
+                          >{{ avail.noted_count }}
+                          {{ avail.noted_count === 1 ? 'notitie' : 'notities' }}</span
+                        >
+                      </span>
+                    }
+                  </div>
+                }
+              </div>
             }
           </div>
         }
@@ -297,6 +310,19 @@
     >
       <form [formGroup]="loanForm">
         <div class="loanForm">
+          @if (!locationId) {
+            <div>
+              <p-select
+                [options]="availableLoanLocations"
+                optionLabel="location_name"
+                optionValue="location_id"
+                placeholder="Selecteer een locatie"
+                [(ngModel)]="selectedLoanLocationId"
+                [ngModelOptions]="{ standalone: true }"
+                (onChange)="onLoanLocationChange($event.value)"
+              />
+            </div>
+          }
           <div>
             <p-datepicker
               formControlName="start"
@@ -305,7 +331,6 @@
               [minDate]="today"
               [readonlyInput]="true"
               appendTo="body"
-              (onSelect)="onStartDateSelect($event)"
             />
             @if (loanForm.controls.start.invalid && loanForm.controls.start.touched) {
               <small class="p-error">
@@ -355,7 +380,7 @@
             <p-button
               class="btn"
               label="Opslaan"
-              [disabled]="loanForm.invalid"
+              [disabled]="loanForm.invalid || (!locationId && !selectedLoanLocationId)"
               (onClick)="createLoan()"
             />
           </div>
@@ -451,6 +476,27 @@
     >
       @if (previewUrl) {
         <iframe [src]="previewUrl" class="preview-iframe" frameborder="0" allowfullscreen></iframe>
+      }
+    </p-dialog>
+
+    <p-dialog
+      [header]="'Notities — ' + notesDialogLocationName"
+      [(visible)]="notesDialogVisible"
+      [modal]="true"
+      [resizable]="false"
+      [style]="{ width: '32rem' }"
+    >
+      @if (notesDialogCopies.length === 0) {
+        <p>Laden...</p>
+      } @else {
+        <ul class="notes-list">
+          @for (copy of notesDialogCopies; track copy.id) {
+            <li class="notes-list-item">
+              <span class="notes-accession">{{ copy.accession_id }}</span>
+              <span class="notes-note">{{ copy.note }}</span>
+            </li>
+          }
+        </ul>
       }
     </p-dialog>
 

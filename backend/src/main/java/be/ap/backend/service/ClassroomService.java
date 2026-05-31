@@ -37,7 +37,7 @@ public class ClassroomService {
 
         return enrollmentService.getClassroomsForTeacher(teacherId).stream()
                 .map(c -> {
-                    Map<String, Object> classData = lookupService.getClassroom(c.getSchool(), c.getSsId());
+                    Map<String, Object> classData = lookupService.getClassroom(c.getSchool().getId(), c.getSsId());
                     String name = classData != null ? (String) classData.get("title") : c.getName();
                     return new ClassroomDTO(c.getId(), name, c.getStudents().size());
                 })
@@ -71,7 +71,7 @@ public class ClassroomService {
                 .filter(d -> d != null)
                 .max(Comparator.naturalOrder());
 
-        Map<String, Object> user = lookupService.getUser(student.getSchool(), student.getOneRosterId(),
+        Map<String, Object> user = lookupService.getUser(student.getSchool().getId(), student.getOneRosterId(),
                 student.getRoles());
 
         String firstName = (String) user.get("givenName");

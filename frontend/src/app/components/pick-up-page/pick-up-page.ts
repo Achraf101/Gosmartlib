@@ -5,6 +5,7 @@ import { LoanDTO, LoanStatus } from '../../models/loan';
 import { NavBarComponent } from '../nav-bar/nav-bar';
 import { Skeleton } from 'primeng/skeleton';
 import { TableModule } from 'primeng/table';
+import { TooltipModule } from 'primeng/tooltip';
 import { BookCover } from '../misc/book-cover/book-cover';
 import { DatePipe } from '@angular/common';
 import { Button } from 'primeng/button';
@@ -15,7 +16,17 @@ import { BookCopyDetail } from '../../models/bookCopy';
 
 @Component({
   selector: 'app-pick-up-page',
-  imports: [NavBarComponent, Skeleton, TableModule, BookCover, DatePipe, Button, FormsModule, DialogModule],
+  imports: [
+    NavBarComponent,
+    Skeleton,
+    TableModule,
+    BookCover,
+    DatePipe,
+    Button,
+    FormsModule,
+    TooltipModule,
+    DialogModule,
+  ],
   templateUrl: './pick-up-page.html',
   styleUrl: './pick-up-page.css',
 })
@@ -33,6 +44,12 @@ export class PickUpPageComponent implements OnInit, AfterViewInit {
   disambigDialogVisible = false;
   disambigLoans: LoanDTO[] = [];
   pendingCopy: BookCopyDetail | null = null;
+
+  copyNoteDialogVisible = false;
+  copyNoteDisplay = '';
+  copyIsDamaged = false;
+  copyNoteAccessionId = '';
+  private pendingPickup: { loanId: number; copyId: number; fromManual: boolean } | null = null;
 
   private scannedCopyIds = new Map<number, Set<number>>();
 
@@ -76,7 +93,11 @@ export class PickUpPageComponent implements OnInit, AfterViewInit {
     });
   }
 
-  private processScanPickup(loanId: number, copyId: number): void {
+  private processScanPickup(
+    loanId: number,
+    copyId: number,
+    onDone?: (completed: boolean) => void,
+  ): void {
     const loanSet = this.scannedCopyIds.get(loanId) ?? new Set<number>();
     if (loanSet.has(copyId)) {
       this.messageService.add({
@@ -101,6 +122,7 @@ export class PickUpPageComponent implements OnInit, AfterViewInit {
             detail: 'Boek opgehaald',
             life: 3000,
           });
+          onDone?.(true);
         } else {
           const idx = this.loans.findIndex((l) => l.id === updatedLoan.id);
           if (idx !== -1) this.loans[idx] = updatedLoan;
@@ -111,9 +133,60 @@ export class PickUpPageComponent implements OnInit, AfterViewInit {
             detail: `${book.receivedAmount}/${book.requestedAmount} exemplaren gescand`,
             life: 3000,
           });
+          onDone?.(false);
         }
       },
     });
+  }
+
+  openCopyNoteDialog(
+    loanId: number,
+    copyId: number,
+    note: string,
+    isDamaged: boolean,
+    accessionId: string,
+    fromManual: boolean,
+  ): void {
+    this.pendingPickup = { loanId, copyId, fromManual };
+    this.copyNoteDisplay = note;
+    this.copyIsDamaged = isDamaged;
+    this.copyNoteAccessionId = accessionId;
+    this.copyNoteDialogVisible = true;
+  }
+
+  acknowledgeCopyNote(): void {
+    if (!this.pendingPickup) return;
+    const { loanId, copyId, fromManual } = this.pendingPickup;
+    this.pendingPickup = null;
+    this.copyNoteDialogVisible = false;
+
+    this.processScanPickup(
+      loanId,
+      copyId,
+      fromManual
+        ? (completed) => {
+            if (!completed) {
+              this.pendingLoanId = loanId;
+              this.manualAccessionId = 'LIB-';
+              this.manualDialogVisible = true;
+            }
+          }
+        : undefined,
+    );
+  }
+
+  closeCopyNoteDialog(): void {
+    if (!this.pendingPickup) return;
+    const { fromManual, loanId } = this.pendingPickup;
+    this.copyNoteDialogVisible = false;
+    this.pendingPickup = null;
+    if (fromManual) {
+      this.pendingLoanId = loanId;
+      this.manualAccessionId = 'LIB-';
+      this.manualDialogVisible = true;
+    } else {
+      setTimeout(() => this.scanInputRef?.nativeElement?.focus(), 0);
+    }
   }
 
   openManualDialog(loanId: number): void {
@@ -126,7 +199,9 @@ export class PickUpPageComponent implements OnInit, AfterViewInit {
     this.manualDialogVisible = false;
     this.pendingLoanId = null;
     this.manualAccessionId = 'LIB-';
-    setTimeout(() => this.scanInputRef?.nativeElement?.focus(), 0);
+    if (!this.copyNoteDialogVisible) {
+      setTimeout(() => this.scanInputRef?.nativeElement?.focus(), 0);
+    }
   }
 
   confirmManualPickup(): void {
@@ -135,31 +210,44 @@ export class PickUpPageComponent implements OnInit, AfterViewInit {
 
     this.locationBookService.getCopyByAccessionId(id).subscribe({
       next: (copy) => {
-        this.loanService.scanPickup(this.pendingLoanId!, copy.id).subscribe({
-          next: (updatedLoan) => {
-            if (updatedLoan.status === LoanStatus.RECEIVED) {
-              this.loans = this.loans.filter((l) => l.id !== updatedLoan.id);
-              this.messageService.add({
-                severity: 'success',
-                summary: 'Succes',
-                detail: 'Boek opgehaald',
-                life: 3000,
-              });
-              this.closeManualDialog();
-            } else {
-              const idx = this.loans.findIndex((l) => l.id === updatedLoan.id);
-              if (idx !== -1) this.loans[idx] = updatedLoan;
-              const book = updatedLoan.books[0];
-              this.messageService.add({
-                severity: 'info',
-                summary: 'Exemplaar gescand',
-                detail: `${book.receivedAmount}/${book.requestedAmount} exemplaren gescand`,
-                life: 3000,
-              });
-              this.manualAccessionId = 'LIB-';
-            }
-          },
-        });
+        const loanId = this.pendingLoanId!;
+        if (copy.note || copy.status === 'DAMAGED') {
+          this.openCopyNoteDialog(
+            loanId,
+            copy.id,
+            copy.note ?? '',
+            copy.status === 'DAMAGED',
+            copy.accession_id,
+            true,
+          );
+          this.manualDialogVisible = false;
+        } else {
+          this.loanService.scanPickup(loanId, copy.id).subscribe({
+            next: (updatedLoan) => {
+              if (updatedLoan.status === LoanStatus.RECEIVED) {
+                this.loans = this.loans.filter((l) => l.id !== updatedLoan.id);
+                this.messageService.add({
+                  severity: 'success',
+                  summary: 'Succes',
+                  detail: 'Boek opgehaald',
+                  life: 3000,
+                });
+                this.closeManualDialog();
+              } else {
+                const idx = this.loans.findIndex((l) => l.id === updatedLoan.id);
+                if (idx !== -1) this.loans[idx] = updatedLoan;
+                const book = updatedLoan.books[0];
+                this.messageService.add({
+                  severity: 'info',
+                  summary: 'Exemplaar gescand',
+                  detail: `${book.receivedAmount}/${book.requestedAmount} exemplaren gescand`,
+                  life: 3000,
+                });
+                this.manualAccessionId = 'LIB-';
+              }
+            },
+          });
+        }
       },
     });
   }
@@ -172,9 +260,7 @@ export class PickUpPageComponent implements OnInit, AfterViewInit {
     this.locationBookService.getCopyByAccessionId(id).subscribe({
       next: (copy) => {
         const matchingLoans = this.loans.filter((l) =>
-          l.books.some(
-            (b) => b.bookId === copy.book_id && b.receivedAmount < b.requestedAmount,
-          ),
+          l.books.some((b) => b.bookId === copy.book_id && b.receivedAmount < b.requestedAmount),
         );
         if (matchingLoans.length === 0) {
           this.messageService.add({
@@ -186,33 +272,52 @@ export class PickUpPageComponent implements OnInit, AfterViewInit {
           return;
         }
         if (matchingLoans.length === 1) {
-          this.processScanPickup(matchingLoans[0].id, copy.id);
+          const loan = matchingLoans[0];
+          if (copy.note || copy.status === 'DAMAGED') {
+            this.openCopyNoteDialog(
+              loan.id,
+              copy.id,
+              copy.note ?? '',
+              copy.status === 'DAMAGED',
+              copy.accession_id,
+              false,
+            );
+          } else {
+            this.processScanPickup(loan.id, copy.id);
+          }
           return;
         }
         this.pendingCopy = copy;
         this.disambigLoans = matchingLoans;
         this.disambigDialogVisible = true;
       },
-      error: () => {
-        this.messageService.add({
-          severity: 'warn',
-          summary: 'Niet gevonden',
-          detail: `Exemplaar ${id} niet gevonden.`,
-          life: 3000,
-        });
-      },
     });
   }
 
   selectDisambigLoan(loan: LoanDTO): void {
-    this.processScanPickup(loan.id, this.pendingCopy!.id);
-    this.closeDisambigDialog();
+    const copy = this.pendingCopy!;
+    if (copy.note || copy.status === 'DAMAGED') {
+      this.openCopyNoteDialog(
+        loan.id,
+        copy.id,
+        copy.note ?? '',
+        copy.status === 'DAMAGED',
+        copy.accession_id,
+        false,
+      );
+      this.closeDisambigDialog();
+    } else {
+      this.closeDisambigDialog();
+      this.processScanPickup(loan.id, copy.id);
+    }
   }
 
   closeDisambigDialog(): void {
     this.disambigDialogVisible = false;
     this.disambigLoans = [];
     this.pendingCopy = null;
-    setTimeout(() => this.scanInputRef?.nativeElement?.focus(), 0);
+    if (!this.copyNoteDialogVisible) {
+      setTimeout(() => this.scanInputRef?.nativeElement?.focus(), 0);
+    }
   }
 }

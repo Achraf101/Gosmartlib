@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.validation.annotation.Validated;
 
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.servlet.http.HttpSession;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import be.ap.backend.config.SessionContext;
@@ -20,10 +19,8 @@ import be.ap.backend.dto.BookLookupDTO;
 import be.ap.backend.dto.BookResultDTO;
 import be.ap.backend.dto.CreateBookDTO;
 import be.ap.backend.dto.UpdateBookDTO;
-import be.ap.backend.entity.Book;
 import be.ap.backend.entity.UserRole;
 import be.ap.backend.enums.Clib;
-import be.ap.backend.repository.LocationRepository;
 import be.ap.backend.service.BookService;
 import be.ap.backend.service.IsbnLookupService;
 
@@ -42,13 +39,10 @@ public class BookController {
 
     private final BookService bookService;
     private final IsbnLookupService isbnLookupService;
-    private final LocationRepository locationRepository;
-
     private final SessionContext sessionContext;
 
     @GetMapping
-    public ResponseEntity<Page<Book>> getAll(
-            HttpSession session,
+    public ResponseEntity<Page<BookResultDTO>> getAll(
             @RequestParam(required = false) Boolean full,
             @RequestParam(required = false) Long location,
             @RequestParam(defaultValue = "0") int page,
@@ -57,13 +51,12 @@ public class BookController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Book> getById(@PathVariable Long id) {
+    public ResponseEntity<BookResultDTO> getById(@PathVariable Long id) {
         return ResponseEntity.ok(bookService.getById(id));
     }
 
     @GetMapping("/search/{query}")
-    public ResponseEntity<Page<Book>> search(
-            HttpSession session,
+    public ResponseEntity<Page<BookResultDTO>> search(
             @PathVariable String query,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size) {
@@ -71,13 +64,12 @@ public class BookController {
     }
 
     @GetMapping("/{id}/related")
-    public ResponseEntity<List<BookCardDTO>> getRelated(HttpSession session, @PathVariable Long id) {
+    public ResponseEntity<List<BookCardDTO>> getRelated(@PathVariable Long id) {
         return ResponseEntity.ok(bookService.getRelated(id));
     }
 
     @GetMapping("/filter")
-    public ResponseEntity<Page<Book>> filter(
-            HttpSession session,
+    public ResponseEntity<Page<BookResultDTO>> filter(
             @RequestParam(required = false) String query,
             @RequestParam(required = false) Long location,
             @RequestParam(required = false) List<Long> genres,
@@ -92,27 +84,16 @@ public class BookController {
             @RequestParam(required = false) Boolean didactic,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size) {
-        List<Long> effectiveLocations;
+        boolean isAdmin = sessionContext.hasRole(UserRole.ADMIN);
+        Long schoolId = isAdmin ? null : sessionContext.getSchoolId();
 
-        if (sessionContext.hasRole(UserRole.ADMIN)) {
-            effectiveLocations = location != null
-                    ? List.of(location)
-                    : null;
-        } else {
-            List<Long> ids = getLocationIds();
-            if (location != null && !ids.contains(location)) {
-                return ResponseEntity.ok(Page.empty(PageRequest.of(page, size)));
-            }
-            effectiveLocations = (location != null) ? List.of(location) : ids;
-        }
-
-        return ResponseEntity.ok(bookService.filter(effectiveLocations, genres, language, fiction,
+        return ResponseEntity.ok(bookService.filter(schoolId, isAdmin, location, genres, language, fiction,
                 authorIds, seriesIds, pagesMin, pagesMax, clibs, themes, didactic, query,
                 PageRequest.of(page, size)));
     }
 
     @PostMapping
-    public ResponseEntity<Book> addBook(@RequestBody CreateBookDTO dto) {
+    public ResponseEntity<BookResultDTO> addBook(@RequestBody CreateBookDTO dto) {
         return ResponseEntity.ok(bookService.saveBook(dto));
     }
 
@@ -136,12 +117,7 @@ public class BookController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Book> updateBook(@PathVariable Long id, @RequestBody UpdateBookDTO dto) {
+    public ResponseEntity<BookResultDTO> updateBook(@PathVariable Long id, @RequestBody UpdateBookDTO dto) {
         return ResponseEntity.ok(bookService.updateBook(id, dto));
-    }
-
-    List<Long> getLocationIds() {
-        Long schoolId = sessionContext.getSchoolId();
-        return locationRepository.findIdsBySchoolId(schoolId);
     }
 }

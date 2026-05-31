@@ -13,12 +13,9 @@ export interface BookBase {
   cover?: string;
 }
 
-export interface BookCard extends BookBase {
-  author_name: string;
-}
+export interface BookCard extends BookBase {}
 
 export interface BookResult extends BookBase {
-  author_name: string;
   book_type: BookType;
   series_id?: number;
   series_name?: string;

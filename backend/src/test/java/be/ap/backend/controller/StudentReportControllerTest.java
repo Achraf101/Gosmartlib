@@ -3,6 +3,8 @@ package be.ap.backend.controller;
 import be.ap.backend.config.SessionContext;
 import be.ap.backend.dto.StudentReportDTO;
 import be.ap.backend.entity.UserRole;
+import be.ap.backend.exception.MissingSessionException;
+import be.ap.backend.exception.UnauthorizedAccessException;
 import be.ap.backend.service.ClassroomService;
 import be.ap.backend.service.StudentReportService;
 import org.junit.jupiter.api.DisplayName;
@@ -10,7 +12,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.web.server.ResponseStatusException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -66,54 +67,49 @@ public class StudentReportControllerTest {
     }
 
     @Test
-    @DisplayName("GET /students/{id}/report — teacher without access to student returns 403")
-    void getReport_studentNotInTeachersClass_returns403() {
+    @DisplayName("GET /students/{id}/report — teacher without access to student throws UnauthorizedAccessException")
+    void getReport_studentNotInTeachersClass_throwsUnauthorizedAccessException() {
         asTeacher(1L);
         when(classroomService.teacherCanViewStudent(1L, 99L)).thenReturn(false);
 
         assertThatThrownBy(() -> studentReportController.getReport(99L))
-                .isInstanceOf(ResponseStatusException.class)
-                .hasMessageContaining("403");
+                .isInstanceOf(UnauthorizedAccessException.class);
     }
 
     @Test
-    @DisplayName("GET /students/{id}/report — admin role (non-teacher) returns 403")
-    void getReport_adminRole_returns403() {
+    @DisplayName("GET /students/{id}/report — admin role (non-teacher) throws MissingSessionException")
+    void getReport_adminRole_throwsMissingSessionException() {
         asNonTeacher(2L);
 
         assertThatThrownBy(() -> studentReportController.getReport(5L))
-                .isInstanceOf(ResponseStatusException.class)
-                .hasMessageContaining("403");
+                .isInstanceOf(MissingSessionException.class);
     }
 
     @Test
-    @DisplayName("GET /students/{id}/report — student role (non-teacher) returns 403")
-    void getReport_studentRole_returns403() {
+    @DisplayName("GET /students/{id}/report — student role (non-teacher) throws MissingSessionException")
+    void getReport_studentRole_throwsMissingSessionException() {
         asNonTeacher(3L);
 
         assertThatThrownBy(() -> studentReportController.getReport(5L))
-                .isInstanceOf(ResponseStatusException.class)
-                .hasMessageContaining("403");
+                .isInstanceOf(MissingSessionException.class);
     }
 
     @Test
-    @DisplayName("GET /students/{id}/report — unauthenticated session returns 401")
-    void getReport_notLoggedIn_returns401() {
+    @DisplayName("GET /students/{id}/report — unauthenticated session throws MissingSessionException")
+    void getReport_notLoggedIn_throwsMissingSessionException() {
         notLoggedIn();
 
         assertThatThrownBy(() -> studentReportController.getReport(5L))
-                .isInstanceOf(ResponseStatusException.class)
-                .hasMessageContaining("401");
+                .isInstanceOf(MissingSessionException.class);
     }
 
     @Test
-    @DisplayName("GET /students/{id}/report — session with role but no userId returns 401")
-    void getReport_missingUserId_returns401() {
+    @DisplayName("GET /students/{id}/report — session with role but no userId throws MissingSessionException")
+    void getReport_missingUserId_throwsMissingSessionException() {
         when(sessionContext.getUserId()).thenReturn(null);
         when(sessionContext.hasRole(UserRole.LEERKRACHT)).thenReturn(true);
 
         assertThatThrownBy(() -> studentReportController.getReport(5L))
-                .isInstanceOf(ResponseStatusException.class)
-                .hasMessageContaining("401");
+                .isInstanceOf(MissingSessionException.class);
     }
 }

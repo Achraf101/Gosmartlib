@@ -23,16 +23,18 @@ import be.ap.backend.repository.BookRepository;
 import be.ap.backend.repository.MaterialRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UploadService {
 
     private final BookRepository bookRepository;
 
     private final MaterialRepository materialRepository;
 
-    private static final int idLength = 16;
+    private static final int ID_LENGTH = 16;
 
     @Setter
     @Value("${app.upload-dir}")
@@ -61,6 +63,7 @@ public class UploadService {
             try {
                 Files.deleteIfExists(path);
             } catch (IOException e) {
+                log.error("Kon huidig coverbestand niet verwijderen voor boek {}", bookId, e);
             }
         }
 
@@ -89,10 +92,8 @@ public class UploadService {
         Path coverPath = Paths.get(uploadDir, "cover", fileName);
         try {
             file.transferTo(coverPath);
-        } catch (IllegalStateException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IllegalStateException | IOException e) {
+            log.error("Kon nieuw coverbestand niet opslaan: {}", fileName, e);
         }
 
         CoverDTO cover = new CoverDTO(bookId, fileName);
@@ -126,16 +127,16 @@ public class UploadService {
             Files.createDirectories(coverPath.getParent());
             file.transferTo(coverPath);
         } catch (IllegalStateException | IOException e) {
-            e.printStackTrace();
+            log.error("Kon materiaalbestand niet opslaan voor boek {}", bookId, e);
         }
 
         return m;
     }
 
-    SecureRandom random = new SecureRandom();
+    private final SecureRandom random = new SecureRandom();
 
     public String generateId() {
-        byte[] bytes = new byte[idLength]; // 16 bytes (32 length)
+        byte[] bytes = new byte[ID_LENGTH]; // 16 bytes (32 length)
         random.nextBytes(bytes);
 
         StringBuilder sb = new StringBuilder();

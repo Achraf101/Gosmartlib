@@ -24,6 +24,8 @@ import be.ap.backend.entity.School;
 import be.ap.backend.entity.Loan;
 import be.ap.backend.entity.LoanBook;
 import be.ap.backend.entity.User;
+import be.ap.backend.queue.NotificationTask;
+import be.ap.backend.queue.TaskQueueService;
 import be.ap.backend.enums.CopyStatus;
 import be.ap.backend.enums.LoanStatus;
 import be.ap.backend.repository.BookCopyRepository;
@@ -48,12 +50,13 @@ public class LoanService {
     private final BookCopyRepository bookCopyRepository;
     private final SmartschoolLookupService lookupService;
     private final Executor lookupExecutor;
+    private final TaskQueueService taskQueueService;
 
     public LoanService(LoanRepository loanRepository, EntityManager entityManager,
             LoanBookRepository loanBookRepository, LocationBookRepository locationBookRepository,
-            LocationBookService locationBookService, BookCopyRepository bookCopyRepository,
-            SmartschoolLookupService lookupService,
-            @Qualifier("lookupExecutor") Executor lookupExecutor) {
+            LocationBookService locationBookService, SmartschoolLookupService lookupService,
+            @Qualifier("lookupExecutor") Executor lookupExecutor, TaskQueueService taskQueueService,
+            BookCopyRepository bookCopyRepository) {
         this.loanRepository = loanRepository;
         this.entityManager = entityManager;
         this.loanBookRepository = loanBookRepository;
@@ -62,6 +65,7 @@ public class LoanService {
         this.bookCopyRepository = bookCopyRepository;
         this.lookupService = lookupService;
         this.lookupExecutor = lookupExecutor;
+        this.taskQueueService = taskQueueService;
     }
 
     @Transactional
@@ -181,6 +185,11 @@ public class LoanService {
     }
 
     public LoanDTO updateStatus(Long id, LoanStatus status) {
+        // if received add notification to the queue
+        if (status == LoanStatus.RECEIVED) {
+            taskQueueService.push(new NotificationTask(NotificationTask.Type.LOAN, id));
+        }
+
         Loan loan = loanRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Loan niet gevonden met id: " + id));
         loan.setStatus(status);
@@ -224,12 +233,18 @@ public class LoanService {
 
         if (lb.getReceivedAmount() >= lb.getRequestedAmount()) {
             loan.setStatus(LoanStatus.RECEIVED);
+            // send notification
+            try {
+                taskQueueService.push(new NotificationTask(NotificationTask.Type.LOAN, loanId));
+            } catch (IllegalArgumentException e) {
+                log.warn("Notificatie kon niet verzonden worden voor lening {}: {}", loanId, e.getMessage());
+            }
         }
         return buildDTO(loanRepository.save(loan));
     }
 
     @Transactional
-    public LoanDTO scanReturn(Long loanId, Long bookCopyId) {
+    public LoanDTO scanReturn(Long loanId, Long bookCopyId, String note, boolean damaged) {
         Loan loan = loanRepository.findById(loanId)
                 .orElseThrow(() -> new EntityNotFoundException("Lening niet gevonden: " + loanId));
         BookCopy copy = bookCopyRepository.findById(bookCopyId)
@@ -248,10 +263,20 @@ public class LoanService {
             throw new IllegalArgumentException(
                     "Exemplaar " + copy.getAccessionId() + " is al teruggebracht voor deze uitlening");
         }
+        if (!lb.getScannedCopyIds().isEmpty() && !lb.getScannedCopyIds().contains(bookCopyId)) {
+            throw new IllegalArgumentException(
+                    "Exemplaar " + copy.getAccessionId() + " werd niet uitgeleend voor deze uitlening");
+        }
 
         lb.getReturnedCopyIds().add(bookCopyId);
         lb.setReturnedAmount(lb.getReturnedAmount() + 1);
         loanBookRepository.save(lb);
+
+        if (note != null && !note.isBlank())
+            copy.setNote(note.trim());
+        if (damaged)
+            copy.setStatus(CopyStatus.DAMAGED);
+        bookCopyRepository.save(copy);
 
         if (lb.getReturnedAmount() >= lb.getReceivedAmount()) {
             LocationBook locationBook = locationBookRepository
@@ -315,7 +340,7 @@ public class LoanService {
         Map<String, Object> userInfo = null;
         if (oneRosterId != null) {
             userInfo = lookupService.getUser(
-                    loan.getUser().getSchool(),
+                    loan.getUser().getSchool().getId(),
                     oneRosterId,
                     loan.getUser().getRoles());
         } else {
@@ -384,7 +409,7 @@ public class LoanService {
                 .map(ctx -> CompletableFuture.supplyAsync(() -> {
                     Map<String, Object> userInfo = null;
                     if (ctx.getOneRosterId() != null) {
-                        userInfo = lookupService.getUser(ctx.getSchool(), ctx.getOneRosterId(), ctx.getRoles());
+                        userInfo = lookupService.getUser(ctx.getSchool().getId(), ctx.getOneRosterId(), ctx.getRoles());
                     } else {
                         log.warn("OneRoster ID is null voor loan {}, Smartschool lookup overgeslagen",
                                 ctx.getLoan().getId());

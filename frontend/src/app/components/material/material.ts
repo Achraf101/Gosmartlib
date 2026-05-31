@@ -14,7 +14,6 @@ export class MaterialComponent {
   icon?: string;
 
   ngOnInit() {
-    console.debug(this.material);
     switch (this.getExtension(this.material.file_name.toLocaleLowerCase())) {
       case 'pdf':
         this.icon = 'file-pdf';

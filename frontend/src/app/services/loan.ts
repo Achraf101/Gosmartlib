@@ -79,9 +79,11 @@ export class LoanService {
     });
   }
 
-  scanReturn(id: number, bookCopyId: number): Observable<LoanDTO> {
+  scanReturn(id: number, bookCopyId: number, note = '', damaged = false): Observable<LoanDTO> {
     return this.apiService.put<LoanDTO>(`${this.endpoint}/${id}/scan-return`, {
       book_copy_id: bookCopyId,
+      note: note || null,
+      damaged,
     });
   }
 }

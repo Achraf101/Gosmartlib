@@ -8,7 +8,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -24,6 +23,7 @@ import be.ap.backend.entity.School;
 import be.ap.backend.exception.MissingArgumentsException;
 import be.ap.backend.repository.LocationRepository;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityNotFoundException;
 
 @ExtendWith(MockitoExtension.class)
 public class LocationServiceTest {
@@ -105,7 +105,7 @@ public class LocationServiceTest {
         when(locationRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> locationService.findById(99L))
-                .isInstanceOf(NoSuchElementException.class);
+                .isInstanceOf(EntityNotFoundException.class);
     }
 
     // ── findAll ───────────────────────────────────────────────────

@@ -14,6 +14,7 @@ import { LocationService } from '../../services/location';
 import { Location } from '../../models/location';
 import { SchoolService } from '../../services/school';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { NavBarComponent } from '../nav-bar/nav-bar';
 
 @Component({
   selector: 'app-location',
@@ -28,6 +29,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
     CharCounterComponent,
     SelectModule,
     RouterLink,
+    NavBarComponent,
   ],
   templateUrl: './location.html',
   styleUrl: './location.css',

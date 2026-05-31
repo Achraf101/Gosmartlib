@@ -1,14 +1,21 @@
 package be.ap.backend.service;
 
+import be.ap.backend.dto.LocationAvailabilityDTO;
 import be.ap.backend.dto.LocationBookDTO;
 import be.ap.backend.dto.LocationBookDetailDTO;
+import be.ap.backend.dto.SchoolStatsDTO;
 import be.ap.backend.entity.Author;
 import be.ap.backend.entity.Book;
+import be.ap.backend.entity.BookCopy;
 import be.ap.backend.entity.Location;
 import be.ap.backend.entity.LocationBook;
+import be.ap.backend.enums.CopyStatus;
 import be.ap.backend.exception.ArgumentsInvalidException;
 import be.ap.backend.exception.MissingArgumentsException;
+import be.ap.backend.repository.BookCopyRepository;
+import be.ap.backend.repository.BookRepository;
 import be.ap.backend.repository.LocationBookRepository;
+import be.ap.backend.repository.LocationRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,9 +40,16 @@ public class LocationBookServiceTest {
 
     @Mock
     private LocationBookRepository locationBookRepository;
-
+    @Mock
+    private BookCopyService bookCopyService;
+    @Mock
+    private BookCopyRepository bookCopyRepository;
     @Mock
     private EntityManager entityManager;
+    @Mock
+    private LocationRepository locationRepository;
+    @Mock
+    private BookRepository bookRepository;
 
     @InjectMocks
     private LocationBookService locationBookService;
@@ -48,6 +62,7 @@ public class LocationBookServiceTest {
     void setUp() {
         location = new Location();
         location.setId(1L);
+        location.setName("Bibliotheek A");
 
         Author author = new Author();
         author.setName("Tonke Dragt");
@@ -74,17 +89,18 @@ public class LocationBookServiceTest {
         dto.setLocationId(1L);
         dto.setBookId(1L);
         dto.setAmount(3);
-        dto.setCurrentAmount(3);
 
         when(locationBookRepository.existsByLocationIdAndBookId(1L, 1L)).thenReturn(false);
         when(entityManager.find(Location.class, 1L)).thenReturn(location);
         when(entityManager.find(Book.class, 1L)).thenReturn(book);
         when(locationBookRepository.save(any())).thenReturn(locationBook);
+        when(bookCopyService.createCopies(any(), eq(3))).thenReturn(List.of("ACC-001", "ACC-002", "ACC-003"));
 
         LocationBookDetailDTO result = locationBookService.createLocationBook(dto);
 
         assertThat(result).isNotNull();
         assertThat(result.getAmount()).isEqualTo(3);
+        assertThat(result.getNewAccessionIds()).containsExactly("ACC-001", "ACC-002", "ACC-003");
         verify(locationBookRepository).save(any());
     }
 
@@ -135,21 +151,6 @@ public class LocationBookServiceTest {
     }
 
     @Test
-    void createLocationBook_alreadyExists_throwsBookAlreadyInLocationException() {
-        LocationBookDTO dto = new LocationBookDTO();
-        dto.setLocationId(1L);
-        dto.setBookId(1L);
-        dto.setAmount(2);
-
-        when(locationBookRepository.existsByLocationIdAndBookId(1L, 1L)).thenReturn(true);
-        when(locationBookRepository.findByLocationIdAndBookId(1L, 1L)).thenReturn(Optional.of(locationBook));
-        when(locationBookRepository.save(locationBook)).thenReturn(locationBook);
-
-        org.junit.jupiter.api.Assertions.assertDoesNotThrow(
-                () -> locationBookService.createLocationBook(dto));
-    }
-
-    @Test
     void createLocationBook_alreadyExists_increasesAmountAndCurrentAmount() {
         LocationBookDTO dto = new LocationBookDTO();
         dto.setLocationId(1L);
@@ -159,6 +160,7 @@ public class LocationBookServiceTest {
         when(locationBookRepository.existsByLocationIdAndBookId(1L, 1L)).thenReturn(true);
         when(locationBookRepository.findByLocationIdAndBookId(1L, 1L)).thenReturn(Optional.of(locationBook));
         when(locationBookRepository.save(locationBook)).thenReturn(locationBook);
+        when(bookCopyService.createCopies(any(), eq(2))).thenReturn(List.of("ACC-004", "ACC-005"));
 
         locationBookService.createLocationBook(dto);
 
@@ -177,6 +179,7 @@ public class LocationBookServiceTest {
         when(locationBookRepository.existsByLocationIdAndBookId(1L, 1L)).thenReturn(true);
         when(locationBookRepository.findByLocationIdAndBookId(1L, 1L)).thenReturn(Optional.of(locationBook));
         when(locationBookRepository.save(locationBook)).thenReturn(locationBook);
+        when(bookCopyService.createCopies(any(), eq(4))).thenReturn(List.of());
 
         LocationBookDetailDTO result = locationBookService.createLocationBook(dto);
 
@@ -205,6 +208,16 @@ public class LocationBookServiceTest {
         List<LocationBookDetailDTO> result = locationBookService.findAll();
 
         assertThat(result).isEmpty();
+    }
+
+    @Test
+    void findAll_bookWithoutAuthor_mapsAuthorNameAsNull() {
+        book.setAuthor(null);
+        when(locationBookRepository.findAll()).thenReturn(List.of(locationBook));
+
+        List<LocationBookDetailDTO> result = locationBookService.findAll();
+
+        assertThat(result.get(0).getAuthorName()).isNull();
     }
 
     // ── findByLocation ──────────────────────────────────────────────
@@ -238,6 +251,7 @@ public class LocationBookServiceTest {
 
     @Test
     void getLocationBook_found_returnsDTO() {
+        // bookRepository and locationRepository are not called in the happy path
         when(locationBookRepository.findByLocationIdAndBookId(1L, 1L))
                 .thenReturn(Optional.of(locationBook));
 
@@ -250,13 +264,29 @@ public class LocationBookServiceTest {
 
     @Test
     void getLocationBook_notFound_throwsEntityNotFoundException() {
+        // Both lookups fall back to "id=X" when not found in their respective repos
+        when(bookRepository.findById(99L)).thenReturn(Optional.empty());
+        when(locationRepository.findById(1L)).thenReturn(Optional.empty());
         when(locationBookRepository.findByLocationIdAndBookId(1L, 99L))
                 .thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> locationBookService.getLocationBook(1L, 99L))
                 .isInstanceOf(EntityNotFoundException.class)
-                .hasMessageContaining("locationId=1")
-                .hasMessageContaining("bookId=99");
+                .hasMessageContaining("id=99")
+                .hasMessageContaining("id=1");
+    }
+
+    @Test
+    void getLocationBook_notFound_messageContainsBookTitleAndLocationName() {
+        when(bookRepository.findById(1L)).thenReturn(Optional.of(book));
+        when(locationRepository.findById(1L)).thenReturn(Optional.of(location));
+        when(locationBookRepository.findByLocationIdAndBookId(1L, 1L))
+                .thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> locationBookService.getLocationBook(1L, 1L))
+                .isInstanceOf(EntityNotFoundException.class)
+                .hasMessageContaining("De brief voor de koning")
+                .hasMessageContaining("Bibliotheek A");
     }
 
     // ── updateCurrentAmount ───────────────────────────────────────
@@ -279,5 +309,94 @@ public class LocationBookServiceTest {
         LocationBookDetailDTO result = locationBookService.updateCurrentAmount(locationBook, 3);
 
         assertThat(result.getCurrentAmount()).isEqualTo(0);
+    }
+
+    @Test
+    void updateCurrentAmount_fullAmount_currentAmountBecomesZero() {
+        locationBook.setCurrentAmount(5);
+        when(locationBookRepository.save(locationBook)).thenReturn(locationBook);
+
+        locationBookService.updateCurrentAmount(locationBook, 5);
+
+        assertThat(locationBook.getCurrentAmount()).isEqualTo(0);
+    }
+
+    // ── getAvailabilityByBook ─────────────────────────────────────
+
+    @Test
+    void getAvailabilityByBook_returnsDTOWithCounts() {
+        BookCopy damagedCopy = new BookCopy();
+        damagedCopy.setStatus(CopyStatus.DAMAGED);
+        damagedCopy.setNote(null);
+
+        BookCopy notedCopy = new BookCopy();
+        notedCopy.setStatus(CopyStatus.AVAILABLE);
+        notedCopy.setNote("Omslag beschadigd");
+
+        BookCopy normalCopy = new BookCopy();
+        normalCopy.setStatus(CopyStatus.AVAILABLE);
+        normalCopy.setNote(null);
+
+        when(locationBookRepository.findByBookIdAndLocationSchoolId(1L, 10L))
+                .thenReturn(List.of(locationBook));
+        when(bookCopyRepository.findByLocationBookId(1L))
+                .thenReturn(List.of(damagedCopy, notedCopy, normalCopy));
+
+        List<LocationAvailabilityDTO> result = locationBookService.getAvailabilityByBook(1L, 10L);
+
+        assertThat(result).hasSize(1);
+        LocationAvailabilityDTO dto = result.get(0);
+        assertThat(dto.getLocationId()).isEqualTo(1L);
+        assertThat(dto.getLocationName()).isEqualTo("Bibliotheek A");
+        assertThat(dto.getAmount()).isEqualTo(3);
+        assertThat(dto.getCurrentAmount()).isEqualTo(3);
+        assertThat(dto.getDamagedCount()).isEqualTo(1);
+        assertThat(dto.getNotedCount()).isEqualTo(1);
+    }
+
+    @Test
+    void getAvailabilityByBook_noCopies_countsAreZero() {
+        when(locationBookRepository.findByBookIdAndLocationSchoolId(1L, 10L))
+                .thenReturn(List.of(locationBook));
+        when(bookCopyRepository.findByLocationBookId(1L)).thenReturn(List.of());
+
+        List<LocationAvailabilityDTO> result = locationBookService.getAvailabilityByBook(1L, 10L);
+
+        assertThat(result.get(0).getDamagedCount()).isEqualTo(0);
+        assertThat(result.get(0).getNotedCount()).isEqualTo(0);
+    }
+
+    @Test
+    void getAvailabilityByBook_noLocations_returnsEmptyList() {
+        when(locationBookRepository.findByBookIdAndLocationSchoolId(1L, 10L))
+                .thenReturn(List.of());
+
+        List<LocationAvailabilityDTO> result = locationBookService.getAvailabilityByBook(1L, 10L);
+
+        assertThat(result).isEmpty();
+    }
+
+    // ── getStatsForSchool ─────────────────────────────────────────
+
+    @Test
+    void getStatsForSchool_returnsCorrectTotals() {
+        when(locationBookRepository.sumAmountBySchoolId(10L)).thenReturn(50);
+        when(locationBookRepository.sumCurrentAmountBySchoolId(10L)).thenReturn(30);
+
+        SchoolStatsDTO result = locationBookService.getStatsForSchool(10L);
+
+        assertThat(result.totalBooks()).isEqualTo(50);
+        assertThat(result.availableBooks()).isEqualTo(30);
+    }
+
+    @Test
+    void getStatsForSchool_nullRepositoryResults_defaultToZero() {
+        when(locationBookRepository.sumAmountBySchoolId(10L)).thenReturn(null);
+        when(locationBookRepository.sumCurrentAmountBySchoolId(10L)).thenReturn(null);
+
+        SchoolStatsDTO result = locationBookService.getStatsForSchool(10L);
+
+        assertThat(result.totalBooks()).isEqualTo(0);
+        assertThat(result.availableBooks()).isEqualTo(0);
     }
 }

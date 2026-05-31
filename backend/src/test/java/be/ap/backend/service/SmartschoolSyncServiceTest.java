@@ -3,7 +3,9 @@ package be.ap.backend.service;
 import be.ap.backend.entity.*;
 import be.ap.backend.repository.ClassroomRepository;
 import be.ap.backend.repository.EnrollmentRepository;
+import be.ap.backend.repository.SchoolRepository;
 import be.ap.backend.repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,12 +33,15 @@ class SmartschoolSyncServiceTest {
     @Mock
     private EnrollmentRepository enrollmentRepository;
     @Mock
+    private SchoolRepository schoolRepository;
+    @Mock
     private RestTemplate restTemplate;
 
     @InjectMocks
     private SmartschoolSyncService syncService;
 
     private School school;
+    private static final Long SCHOOL_ID = 1L;
     private static final String SUBDOMAIN = "testschool";
     private static final String ACCESS_TOKEN = "test-token";
 
@@ -44,10 +49,42 @@ class SmartschoolSyncServiceTest {
     void setUp() {
         school = new School();
         school.setSsSubdomain(SUBDOMAIN);
+        school.setOneRosterClientId("client-id");
+        school.setOneRosterClientSecret("client-secret");
 
         ReflectionTestUtils.setField(syncService, "scope", "test-scope");
 
+        lenient().when(schoolRepository.findById(SCHOOL_ID)).thenReturn(Optional.of(school));
         lenient().when(tokenService.getAccessToken(school)).thenReturn(ACCESS_TOKEN);
+    }
+
+    // -------------------------------------------------------------------------
+    // syncSchool — guard clauses
+    // -------------------------------------------------------------------------
+
+    @Test
+    void syncSchool_throwsEntityNotFoundWhenSchoolDoesNotExist() {
+        when(schoolRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> syncService.syncSchool(99L))
+                .isInstanceOf(EntityNotFoundException.class)
+                .hasMessageContaining("99");
+    }
+
+    @Test
+    void syncSchool_throwsIllegalStateWhenClientIdIsNull() {
+        school.setOneRosterClientId(null);
+
+        assertThatThrownBy(() -> syncService.syncSchool(SCHOOL_ID))
+                .isInstanceOf(IllegalStateException.class);
+    }
+
+    @Test
+    void syncSchool_throwsIllegalStateWhenClientSecretIsNull() {
+        school.setOneRosterClientSecret(null);
+
+        assertThatThrownBy(() -> syncService.syncSchool(SCHOOL_ID))
+                .isInstanceOf(IllegalStateException.class);
     }
 
     // -------------------------------------------------------------------------
@@ -56,24 +93,114 @@ class SmartschoolSyncServiceTest {
 
     @Test
     void syncSchool_callsAllThreeSubSyncs() {
+        stubEmptyOrgs();
         stubEmptyPage("students", "users");
         stubEmptyPage("teachers", "users");
         stubEmptyPage("classes", "classes");
         stubEmptyPage("enrollments", "enrollments");
 
-        syncService.syncSchool(school);
+        syncService.syncSchool(SCHOOL_ID);
 
-        verify(restTemplate, atLeast(4)).exchange(anyString(), eq(HttpMethod.GET), any(), eq(Map.class));
+        verify(restTemplate, atLeast(5)).exchange(anyString(), eq(HttpMethod.GET),
+                any(), eq(Map.class));
     }
 
     @Test
-    void syncSchool_completesNormallyWhenAllRequestsFail() {
-        // get() catches all HTTP exceptions and returns null; callers treat null as
-        // "no more pages" and break, so syncSchool never throws.
+    void syncSchool_returnsSubdomainOfSyncedSchool() {
+        stubEmptyOrgs();
+        stubEmptyPage("students", "users");
+        stubEmptyPage("teachers", "users");
+        stubEmptyPage("classes", "classes");
+        stubEmptyPage("enrollments", "enrollments");
+
+        String result = syncService.syncSchool(SCHOOL_ID);
+
+        assertThat(result).isEqualTo(SUBDOMAIN);
+    }
+
+    void syncSchool_wrapsUnexpectedExceptionsInRuntimeException() {
         when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(), eq(Map.class)))
+                .thenThrow(new RuntimeException("unexpected"));
+
+        assertThatNoException().isThrownBy(() -> syncService.syncSchool(SCHOOL_ID));
+
+        verify(userRepository, never()).save(any());
+        verify(classroomRepository, never()).save(any());
+        verify(enrollmentRepository, never()).save(any());
+    }
+
+    // -------------------------------------------------------------------------
+    // resolveAndStoreSsId
+    // -------------------------------------------------------------------------
+
+    @Test
+    void resolveAndStoreSsId_storesSsIdWhenSchoolHasNone() {
+        school.setSsId(null);
+
+        Map<String, Object> org = Map.of("sourcedId", "org-abc");
+        when(restTemplate.exchange(contains("/schools"), eq(HttpMethod.GET), any(), eq(Map.class)))
+                .thenReturn(ResponseEntity.ok(Map.of("orgs", List.of(org))));
+
+        stubEmptyPage("students", "users");
+        stubEmptyPage("teachers", "users");
+        stubEmptyPage("classes", "classes");
+        stubEmptyPage("enrollments", "enrollments");
+
+        syncService.syncSchool(SCHOOL_ID);
+
+        assertThat(school.getSsId()).isEqualTo("org-abc");
+        verify(schoolRepository).save(school);
+    }
+
+    @Test
+    void resolveAndStoreSsId_skipsWhenSsIdAlreadySet() {
+        school.setSsId("existing-id");
+
+        stubEmptyPage("students", "users");
+        stubEmptyPage("teachers", "users");
+        stubEmptyPage("classes", "classes");
+        stubEmptyPage("enrollments", "enrollments");
+
+        syncService.syncSchool(SCHOOL_ID);
+
+        // /schools endpoint must not be called because ssId is already present.
+        verify(restTemplate, never()).exchange(contains("/schools"), eq(HttpMethod.GET),
+                any(), eq(Map.class));
+    }
+
+    @Test
+    void resolveAndStoreSsId_doesNothingWhenOrgsListIsEmpty() {
+        school.setSsId(null);
+
+        when(restTemplate.exchange(contains("/schools"), eq(HttpMethod.GET), any(), eq(Map.class)))
+                .thenReturn(ResponseEntity.ok(Map.of("orgs", List.of())));
+
+        stubEmptyPage("students", "users");
+        stubEmptyPage("teachers", "users");
+        stubEmptyPage("classes", "classes");
+        stubEmptyPage("enrollments", "enrollments");
+
+        syncService.syncSchool(SCHOOL_ID);
+
+        assertThat(school.getSsId()).isNull();
+        verify(schoolRepository, never()).save(any());
+    }
+
+    @Test
+    void resolveAndStoreSsId_doesNothingWhenGetReturnsNull() {
+        school.setSsId(null);
+
+        when(restTemplate.exchange(contains("/schools"), eq(HttpMethod.GET), any(), eq(Map.class)))
                 .thenThrow(new RuntimeException("network error"));
 
-        assertThatNoException().isThrownBy(() -> syncService.syncSchool(school));
+        stubEmptyPage("students", "users");
+        stubEmptyPage("teachers", "users");
+        stubEmptyPage("classes", "classes");
+        stubEmptyPage("enrollments", "enrollments");
+
+        // Should not throw; null response is handled gracefully.
+        assertThatNoException().isThrownBy(() -> syncService.syncSchool(SCHOOL_ID));
+        assertThat(school.getSsId()).isNull();
     }
 
     // -------------------------------------------------------------------------
@@ -83,6 +210,7 @@ class SmartschoolSyncServiceTest {
     @Test
     void syncUsers_createsNewStudentWhenNotInRepository() {
         Map<String, Object> user = buildUserPayload("sor-1", "legacy-1");
+        stubEmptyOrgs();
         stubSinglePage("students", "users", List.of(user));
         stubEmptyPage("teachers", "users");
         stubEmptyPage("classes", "classes");
@@ -91,7 +219,7 @@ class SmartschoolSyncServiceTest {
         when(userRepository.findBySsId("legacy-1")).thenReturn(Optional.empty());
         when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        syncService.syncSchool(school);
+        syncService.syncSchool(SCHOOL_ID);
 
         ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
         verify(userRepository, atLeastOnce()).save(captor.capture());
@@ -112,6 +240,7 @@ class SmartschoolSyncServiceTest {
         existing.setSsId("legacy-1");
 
         Map<String, Object> user = buildUserPayload("sor-new", "legacy-1");
+        stubEmptyOrgs();
         stubSinglePage("students", "users", List.of(user));
         stubEmptyPage("teachers", "users");
         stubEmptyPage("classes", "classes");
@@ -120,7 +249,7 @@ class SmartschoolSyncServiceTest {
         when(userRepository.findBySsId("legacy-1")).thenReturn(Optional.of(existing));
         when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        syncService.syncSchool(school);
+        syncService.syncSchool(SCHOOL_ID);
 
         verify(userRepository, atLeastOnce()).save(existing);
         assertThat(existing.getOneRosterId()).isEqualTo("sor-new");
@@ -131,12 +260,13 @@ class SmartschoolSyncServiceTest {
         Map<String, Object> user = new HashMap<>();
         user.put("sourcedId", null);
 
+        stubEmptyOrgs();
         stubSinglePage("students", "users", List.of(user));
         stubEmptyPage("teachers", "users");
         stubEmptyPage("classes", "classes");
         stubEmptyPage("enrollments", "enrollments");
 
-        syncService.syncSchool(school);
+        syncService.syncSchool(SCHOOL_ID);
 
         verify(userRepository, never()).save(any());
     }
@@ -147,6 +277,7 @@ class SmartschoolSyncServiceTest {
         user.put("sourcedId", "sor-1");
         user.put("metadata", null);
 
+        stubEmptyOrgs();
         stubSinglePage("students", "users", List.of(user));
         stubEmptyPage("teachers", "users");
         stubEmptyPage("classes", "classes");
@@ -154,7 +285,7 @@ class SmartschoolSyncServiceTest {
 
         when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        syncService.syncSchool(school);
+        syncService.syncSchool(SCHOOL_ID);
 
         ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
         verify(userRepository, atLeastOnce()).save(captor.capture());
@@ -169,6 +300,7 @@ class SmartschoolSyncServiceTest {
     @Test
     void syncUsers_syncsTeachersWithCorrectRole() {
         Map<String, Object> teacher = buildUserPayload("sor-t1", "legacy-t1");
+        stubEmptyOrgs();
         stubEmptyPage("students", "users");
         stubSinglePage("teachers", "users", List.of(teacher));
         stubEmptyPage("classes", "classes");
@@ -177,7 +309,7 @@ class SmartschoolSyncServiceTest {
         when(userRepository.findBySsId("legacy-t1")).thenReturn(Optional.empty());
         when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        syncService.syncSchool(school);
+        syncService.syncSchool(SCHOOL_ID);
 
         ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
         verify(userRepository, atLeastOnce()).save(captor.capture());
@@ -191,9 +323,10 @@ class SmartschoolSyncServiceTest {
 
     @Test
     void syncUsers_paginatesUntilPageSmallerThanPageSize() {
-        // Page 1: full page (100 items), page 2: partial page (1 item)
         List<Map<String, Object>> fullPage = buildUserList(100);
         List<Map<String, Object>> lastPage = List.of(buildUserPayload("sor-last", "legacy-last"));
+
+        stubEmptyOrgs();
 
         when(restTemplate.exchange(
                 contains("students"), eq(HttpMethod.GET), any(), eq(Map.class)))
@@ -207,10 +340,10 @@ class SmartschoolSyncServiceTest {
         when(userRepository.findBySsId(anyString())).thenReturn(Optional.empty());
         when(userRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        syncService.syncSchool(school);
+        syncService.syncSchool(SCHOOL_ID);
 
-        // 2 pages × students endpoint
-        verify(restTemplate, atLeast(2)).exchange(contains("students"), eq(HttpMethod.GET), any(), eq(Map.class));
+        verify(restTemplate, atLeast(2)).exchange(contains("students"),
+                eq(HttpMethod.GET), any(), eq(Map.class));
     }
 
     // -------------------------------------------------------------------------
@@ -220,6 +353,7 @@ class SmartschoolSyncServiceTest {
     @Test
     void syncClassrooms_createsNewClassroom() {
         Map<String, Object> cls = Map.of("sourcedId", "class-1");
+        stubEmptyOrgs();
         stubEmptyPage("students", "users");
         stubEmptyPage("teachers", "users");
         stubSinglePage("classes", "classes", List.of(cls));
@@ -228,7 +362,7 @@ class SmartschoolSyncServiceTest {
         when(classroomRepository.findBySsId("class-1")).thenReturn(Optional.empty());
         when(classroomRepository.save(any(Classroom.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        syncService.syncSchool(school);
+        syncService.syncSchool(SCHOOL_ID);
 
         ArgumentCaptor<Classroom> captor = ArgumentCaptor.forClass(Classroom.class);
         verify(classroomRepository, atLeastOnce()).save(captor.capture());
@@ -246,12 +380,13 @@ class SmartschoolSyncServiceTest {
         Map<String, Object> cls = new HashMap<>();
         cls.put("sourcedId", null);
 
+        stubEmptyOrgs();
         stubEmptyPage("students", "users");
         stubEmptyPage("teachers", "users");
         stubSinglePage("classes", "classes", List.of(cls));
         stubEmptyPage("enrollments", "enrollments");
 
-        syncService.syncSchool(school);
+        syncService.syncSchool(SCHOOL_ID);
 
         verify(classroomRepository, never()).save(any());
     }
@@ -262,6 +397,7 @@ class SmartschoolSyncServiceTest {
         existing.setSsId("class-1");
 
         Map<String, Object> cls = Map.of("sourcedId", "class-1");
+        stubEmptyOrgs();
         stubEmptyPage("students", "users");
         stubEmptyPage("teachers", "users");
         stubSinglePage("classes", "classes", List.of(cls));
@@ -270,7 +406,7 @@ class SmartschoolSyncServiceTest {
         when(classroomRepository.findBySsId("class-1")).thenReturn(Optional.of(existing));
         when(classroomRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        syncService.syncSchool(school);
+        syncService.syncSchool(SCHOOL_ID);
 
         verify(classroomRepository).save(existing);
     }
@@ -285,6 +421,7 @@ class SmartschoolSyncServiceTest {
         Classroom classroom = new Classroom();
 
         Map<String, Object> enrollment = buildEnrollmentPayload("enr-1", "sor-u1", "class-1", "student");
+        stubEmptyOrgs();
         stubEmptyPage("students", "users");
         stubEmptyPage("teachers", "users");
         stubEmptyPage("classes", "classes");
@@ -295,7 +432,7 @@ class SmartschoolSyncServiceTest {
         when(enrollmentRepository.findByOneRosterId("enr-1")).thenReturn(Optional.empty());
         when(enrollmentRepository.save(any(Enrollment.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        syncService.syncSchool(school);
+        syncService.syncSchool(SCHOOL_ID);
 
         ArgumentCaptor<Enrollment> captor = ArgumentCaptor.forClass(Enrollment.class);
         verify(enrollmentRepository, atLeastOnce()).save(captor.capture());
@@ -314,6 +451,7 @@ class SmartschoolSyncServiceTest {
     @Test
     void syncEnrollments_setsTeacherRole() {
         Map<String, Object> enrollment = buildEnrollmentPayload("enr-2", "sor-t1", "class-1", "teacher");
+        stubEmptyOrgs();
         stubEmptyPage("students", "users");
         stubEmptyPage("teachers", "users");
         stubEmptyPage("classes", "classes");
@@ -324,7 +462,7 @@ class SmartschoolSyncServiceTest {
         when(enrollmentRepository.findByOneRosterId("enr-2")).thenReturn(Optional.empty());
         when(enrollmentRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        syncService.syncSchool(school);
+        syncService.syncSchool(SCHOOL_ID);
 
         ArgumentCaptor<Enrollment> captor = ArgumentCaptor.forClass(Enrollment.class);
         verify(enrollmentRepository, atLeastOnce()).save(captor.capture());
@@ -340,6 +478,7 @@ class SmartschoolSyncServiceTest {
     @Test
     void syncEnrollments_setsNullRoleForUnknownRoleString() {
         Map<String, Object> enrollment = buildEnrollmentPayload("enr-3", "sor-u1", "class-1", "administrator");
+        stubEmptyOrgs();
         stubEmptyPage("students", "users");
         stubEmptyPage("teachers", "users");
         stubEmptyPage("classes", "classes");
@@ -350,7 +489,7 @@ class SmartschoolSyncServiceTest {
         when(enrollmentRepository.findByOneRosterId("enr-3")).thenReturn(Optional.empty());
         when(enrollmentRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        syncService.syncSchool(school);
+        syncService.syncSchool(SCHOOL_ID);
 
         ArgumentCaptor<Enrollment> captor = ArgumentCaptor.forClass(Enrollment.class);
         verify(enrollmentRepository, atLeastOnce()).save(captor.capture());
@@ -368,12 +507,13 @@ class SmartschoolSyncServiceTest {
         Map<String, Object> enrollment = new HashMap<>();
         enrollment.put("sourcedId", null);
 
+        stubEmptyOrgs();
         stubEmptyPage("students", "users");
         stubEmptyPage("teachers", "users");
         stubEmptyPage("classes", "classes");
         stubSinglePage("enrollments", "enrollments", List.of(enrollment));
 
-        syncService.syncSchool(school);
+        syncService.syncSchool(SCHOOL_ID);
 
         verify(enrollmentRepository, never()).save(any());
     }
@@ -386,6 +526,7 @@ class SmartschoolSyncServiceTest {
         enrollment.put("class", null);
         enrollment.put("role", "student");
 
+        stubEmptyOrgs();
         stubEmptyPage("students", "users");
         stubEmptyPage("teachers", "users");
         stubEmptyPage("classes", "classes");
@@ -394,7 +535,7 @@ class SmartschoolSyncServiceTest {
         when(enrollmentRepository.findByOneRosterId("enr-null")).thenReturn(Optional.empty());
         when(enrollmentRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        syncService.syncSchool(school);
+        syncService.syncSchool(SCHOOL_ID);
 
         ArgumentCaptor<Enrollment> captor = ArgumentCaptor.forClass(Enrollment.class);
         verify(enrollmentRepository, atLeastOnce()).save(captor.capture());
@@ -409,16 +550,13 @@ class SmartschoolSyncServiceTest {
     // -------------------------------------------------------------------------
 
     @Test
-    void get_returnsNullOnRestTemplateException_andSyncCompletesWithoutThrowing() {
-        // get() catches all exceptions internally and returns null.
-        // The callers treat null as "no more pages" and break, so syncSchool finishes
-        // normally.
+    void get_returnsNullOnRestTemplateException_andNothingIsPersisted() {
+
         when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(), eq(Map.class)))
                 .thenThrow(new RuntimeException("timeout"));
 
-        assertThatNoException().isThrownBy(() -> syncService.syncSchool(school));
+        assertThatNoException().isThrownBy(() -> syncService.syncSchool(SCHOOL_ID));
 
-        // Nothing was persisted because every GET returned null
         verify(userRepository, never()).save(any());
         verify(classroomRepository, never()).save(any());
         verify(enrollmentRepository, never()).save(any());
@@ -426,12 +564,13 @@ class SmartschoolSyncServiceTest {
 
     @Test
     void get_sendsBearerTokenHeader() {
+        stubEmptyOrgs();
         stubEmptyPage("students", "users");
         stubEmptyPage("teachers", "users");
         stubEmptyPage("classes", "classes");
         stubEmptyPage("enrollments", "enrollments");
 
-        syncService.syncSchool(school);
+        syncService.syncSchool(SCHOOL_ID);
 
         ArgumentCaptor<HttpEntity<?>> entityCaptor = ArgumentCaptor.forClass(HttpEntity.class);
         verify(restTemplate, atLeastOnce())
@@ -456,7 +595,8 @@ class SmartschoolSyncServiceTest {
         return user;
     }
 
-    private Map<String, Object> buildEnrollmentPayload(String id, String userSorId, String classSorId, String role) {
+    private Map<String, Object> buildEnrollmentPayload(String id, String userSorId,
+            String classSorId, String role) {
         Map<String, Object> enrollment = new HashMap<>();
         enrollment.put("sourcedId", id);
         enrollment.put("user", Map.of("sourcedId", userSorId));
@@ -473,16 +613,27 @@ class SmartschoolSyncServiceTest {
         return list;
     }
 
-    /** Stub a single-page response (fewer items than PAGE_SIZE → loop stops). */
-    private void stubSinglePage(String urlFragment, String responseKey, List<Map<String, Object>> items) {
+    /** Stub the /schools endpoint to return an empty orgs list. */
+    private void stubEmptyOrgs() {
+        lenient().when(restTemplate.exchange(
+                contains("/schools"), eq(HttpMethod.GET), any(), eq(Map.class)))
+                .thenReturn(ResponseEntity.ok(Map.of("orgs", List.of())));
+    }
+
+    /**
+     * Stub a single-page response (fewer items than PAGE_SIZE → pagination loop
+     * stops).
+     */
+    private void stubSinglePage(String urlFragment, String responseKey,
+            List<Map<String, Object>> items) {
         when(restTemplate.exchange(
                 contains(urlFragment), eq(HttpMethod.GET), any(), eq(Map.class)))
                 .thenReturn(ResponseEntity.ok(Map.of(responseKey, items)));
     }
 
-    /** Stub an empty first page so the loop exits immediately. */
+    /** Stub an empty first page so the pagination loop exits immediately. */
     private void stubEmptyPage(String urlFragment, String responseKey) {
-        when(restTemplate.exchange(
+        lenient().when(restTemplate.exchange(
                 contains(urlFragment), eq(HttpMethod.GET), any(), eq(Map.class)))
                 .thenReturn(ResponseEntity.ok(Map.of(responseKey, List.of())));
     }

@@ -41,4 +41,13 @@ public class BookCopyController {
         CopyStatus status = CopyStatus.valueOf(body.get("status"));
         return ResponseEntity.ok(bookCopyService.updateStatus(id, status));
     }
+
+    @DeleteMapping("/by-accession/{accessionId}")
+    public ResponseEntity<Void> deleteByAccessionId(@PathVariable String accessionId) {
+        if (!sessionContext.hasRole(UserRole.BIBLIOTHEEKBEHEERDER) && !sessionContext.hasRole(UserRole.ADMIN)) {
+            throw new UnauthorizedAccessException("Geen toegang.");
+        }
+        bookCopyService.deleteCopy(accessionId);
+        return ResponseEntity.noContent().build();
+    }
 }

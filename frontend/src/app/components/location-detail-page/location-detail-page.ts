@@ -4,6 +4,7 @@ import {
   ElementRef,
   OnInit,
   QueryList,
+  ViewChild,
   ViewChildren,
 } from '@angular/core';
 import { Select } from 'primeng/select';
@@ -17,6 +18,7 @@ import { MessageService } from 'primeng/api';
 import { BookBase } from '../../models/book';
 import { LocationBook } from '../../models/locationBook';
 import { LocationBookService } from '../../services/locationbook';
+import { BookCopyDetail } from '../../models/bookCopy';
 import { NavBarComponent } from '../nav-bar/nav-bar';
 import { BookService } from '../../services/book';
 import { ProgressSpinner } from 'primeng/progressspinner';
@@ -69,7 +71,14 @@ export class LocationDetailPageComponent implements OnInit, AfterViewChecked {
   newAccessionIds: string[] = [];
   private barcodesRendered = false;
 
+  // Delete copy dialog
+  deleteDialogVisible = false;
+  deleteAccessionInput = '';
+  foundCopyForDeletion: BookCopyDetail | null = null;
+  deleteLookupLoading = false;
+
   @ViewChildren('barcodesvg') barcodeSvgs!: QueryList<ElementRef<SVGElement>>;
+  @ViewChild('deleteInput') deleteInputRef!: ElementRef<HTMLInputElement>;
 
   constructor(
     private locationService: LocationService,
@@ -248,6 +257,66 @@ export class LocationDetailPageComponent implements OnInit, AfterViewChecked {
     this.locationBooksPage = event.page ?? 0;
     this.locationBooksRows = event.rows ?? 5;
     this.loadLocationBooks();
+  }
+
+  openDeleteDialog(): void {
+    this.deleteDialogVisible = true;
+    this.deleteAccessionInput = '';
+    this.foundCopyForDeletion = null;
+    setTimeout(() => this.deleteInputRef?.nativeElement?.focus(), 100);
+  }
+
+  lookupCopyForDeletion(): void {
+    const id = this.deleteAccessionInput.trim();
+    if (!id) return;
+    this.deleteLookupLoading = true;
+    this.foundCopyForDeletion = null;
+    this.locationBookService.getCopyByAccessionId(id).subscribe({
+      next: (copy) => {
+        this.foundCopyForDeletion = copy;
+        this.deleteLookupLoading = false;
+      },
+      error: () => {
+        this.deleteLookupLoading = false;
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Niet gevonden',
+          detail: `Exemplaar '${id}' niet gevonden.`,
+          life: 3000,
+        });
+      },
+    });
+  }
+
+  confirmDeleteCopy(): void {
+    if (!this.foundCopyForDeletion) return;
+    const accessionId = this.foundCopyForDeletion.accession_id;
+    this.locationBookService.deleteCopyByAccessionId(accessionId).subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Verwijderd',
+          detail: `Exemplaar ${accessionId} is verwijderd.`,
+          life: 3000,
+        });
+        this.closeDeleteDialog();
+        this.loadLocationBooks();
+      },
+      error: () => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Fout',
+          detail: 'Verwijderen mislukt. Probeer opnieuw.',
+          life: 3000,
+        });
+      },
+    });
+  }
+
+  closeDeleteDialog(): void {
+    this.deleteDialogVisible = false;
+    this.deleteAccessionInput = '';
+    this.foundCopyForDeletion = null;
   }
 
 }

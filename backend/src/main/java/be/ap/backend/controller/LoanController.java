@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import be.ap.backend.config.SessionContext;
 import be.ap.backend.dto.LoanDTO;
 import be.ap.backend.dto.TopBookDTO;
 import be.ap.backend.dto.UpdateNoteDTO;
@@ -21,16 +22,14 @@ import java.util.Map;
 import be.ap.backend.enums.LoanStatus;
 import be.ap.backend.exception.MissingSessionException;
 import be.ap.backend.service.LoanService;
-import jakarta.servlet.http.HttpSession;
+import lombok.AllArgsConstructor;
 
 @RestController
+@AllArgsConstructor
 @RequestMapping("loan")
 public class LoanController {
     private final LoanService loanService;
-
-    public LoanController(LoanService loanService) {
-        this.loanService = loanService;
-    }
+    private final SessionContext sessionContext;
 
     @GetMapping("/requested")
     public ResponseEntity<List<LoanDTO>> getRequested() {
@@ -38,9 +37,9 @@ public class LoanController {
     }
 
     @PostMapping
-    public List<LoanDTO> createLoan(@RequestBody LoanDTO dto, HttpSession session) {
-        Object raw = session.getAttribute("userId");
-        if (raw == null) 
+    public List<LoanDTO> createLoan(@RequestBody LoanDTO dto) {
+        Object raw = sessionContext.getUserId();
+        if (raw == null)
             throw new MissingSessionException("Niet ingelogd");
         Long userId = Long.valueOf(raw.toString());
         dto.setUserId(userId);
@@ -70,13 +69,16 @@ public class LoanController {
             @PathVariable Long id,
             @RequestBody Map<String, Object> body) {
         Long bookCopyId = Long.valueOf(body.get("book_copy_id").toString());
-        return ResponseEntity.ok(loanService.scanReturn(id, bookCopyId));
+        String note = body.get("note") != null ? body.get("note").toString() : null;
+        boolean damaged = Boolean.TRUE.equals(body.get("damaged"));
+        return ResponseEntity.ok(loanService.scanReturn(id, bookCopyId, note, damaged));
     }
 
     @PutMapping("/{id}/pickup")
     public ResponseEntity<LoanDTO> pickupLoan(
             @PathVariable Long id,
             @RequestBody(required = false) Map<String, Object> body) {
+        System.out.println("body: " + body);
         Long bookCopyId = null;
         if (body != null && body.get("book_copy_id") != null) {
             bookCopyId = Long.valueOf(body.get("book_copy_id").toString());
@@ -85,9 +87,9 @@ public class LoanController {
     }
 
     @GetMapping("/user")
-    public ResponseEntity<List<LoanDTO>> getByUserId(HttpSession session) {
-        Object raw = session.getAttribute("userId");
-        if (raw == null) 
+    public ResponseEntity<List<LoanDTO>> getByUserId() {
+        Object raw = sessionContext.getUserId();
+        if (raw == null)
             throw new MissingSessionException("Niet ingelogd");
         Long userId = Long.valueOf(raw.toString());
         return ResponseEntity.ok(loanService.getByUserId(userId));
@@ -105,63 +107,63 @@ public class LoanController {
     }
 
     @GetMapping("/overdue/length")
-    public ResponseEntity<Integer> getOverdueLoansLength(HttpSession session) {
-        Object raw = session.getAttribute("school");
-        if (raw == null) 
+    public ResponseEntity<Integer> getOverdueLoansLength() {
+        Object raw = sessionContext.getSchoolId();
+        if (raw == null)
             throw new MissingSessionException("Niet ingelogd");
         Long schoolId = Long.valueOf(raw.toString());
         return ResponseEntity.ok(loanService.getOverdueLoansLength(schoolId));
     }
 
     @GetMapping("/overdue")
-    public ResponseEntity<List<LoanDTO>> getOverdueLoans(HttpSession session) {
-        Object raw = session.getAttribute("school");
-        if (raw == null) 
+    public ResponseEntity<List<LoanDTO>> getOverdueLoans() {
+        Object raw = sessionContext.getSchoolId();
+        if (raw == null)
             throw new MissingSessionException("Niet ingelogd");
         Long schoolId = Long.valueOf(raw.toString());
         return ResponseEntity.ok(loanService.getOverdueLoans(schoolId));
     }
 
     @GetMapping("/top-books")
-    public ResponseEntity<List<TopBookDTO>> getTopBooksThisMonth(HttpSession session) {
-        Object raw = session.getAttribute("school");
-        if (raw == null) 
+    public ResponseEntity<List<TopBookDTO>> getTopBooksThisMonth() {
+        Object raw = sessionContext.getSchoolId();
+        if (raw == null)
             throw new MissingSessionException("Niet ingelogd");
         Long schoolId = Long.valueOf(raw.toString());
         return ResponseEntity.ok(loanService.getTopBooksThisMonth(schoolId));
     }
 
     @GetMapping("/due-soon/length")
-    public ResponseEntity<Integer> getDueSoonLoansLength(HttpSession session) {
-        Object raw = session.getAttribute("school");
-        if (raw == null) 
+    public ResponseEntity<Integer> getDueSoonLoansLength() {
+        Object raw = sessionContext.getSchoolId();
+        if (raw == null)
             throw new MissingSessionException("Niet ingelogd");
         Long schoolId = Long.valueOf(raw.toString());
         return ResponseEntity.ok(loanService.getDueSoonLoansLength(schoolId));
     }
 
     @GetMapping("/due-soon")
-    public ResponseEntity<List<LoanDTO>> getDueSoonLoans(HttpSession session) {
-        Object raw = session.getAttribute("school");
-        if (raw == null) 
+    public ResponseEntity<List<LoanDTO>> getDueSoonLoans() {
+        Object raw = sessionContext.getSchoolId();
+        if (raw == null)
             throw new MissingSessionException("Niet ingelogd");
         Long schoolId = Long.valueOf(raw.toString());
         return ResponseEntity.ok(loanService.getDueSoonLoans(schoolId));
     }
 
     @GetMapping("/top-genres")
-    public ResponseEntity<List<TopBookDTO>> getTopGenresThisMonth(HttpSession session) {
-        Object raw = session.getAttribute("school");
-        if (raw == null) 
+    public ResponseEntity<List<TopBookDTO>> getTopGenresThisMonth() {
+        Object raw = sessionContext.getSchoolId();
+        if (raw == null)
             throw new MissingSessionException("Niet ingelogd");
         Long schoolId = Long.valueOf(raw.toString());
         return ResponseEntity.ok(loanService.getTopGenresThisMonth(schoolId));
     }
 
     @GetMapping("/state/{state}")
-    public ResponseEntity<List<LoanDTO>> getByStateAndSchool(@PathVariable LoanStatus state, HttpSession session) {
-        Object raw = session.getAttribute("school");
-        if (raw == null) 
+    public ResponseEntity<List<LoanDTO>> getByStateAndSchool(@PathVariable LoanStatus state) {
+        Object raw = sessionContext.getSchoolId();
+        if (raw == null)
             throw new MissingSessionException("Niet ingelogd");
         Long schoolId = Long.valueOf(raw.toString());
         return ResponseEntity.ok(loanService.getByStateAndSchool(state, schoolId));

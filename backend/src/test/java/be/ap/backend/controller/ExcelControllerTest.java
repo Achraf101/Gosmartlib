@@ -13,6 +13,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
 
@@ -24,14 +25,19 @@ import be.ap.backend.util.ExcelTemplateBuilder;
 @ExtendWith(MockitoExtension.class)
 class ExcelControllerTest {
 
-    @Mock private ExcelTemplateBuilder templateBuilder;
-    @Mock private BookBulkUploadService bulkUploadService;
+    @Mock
+    private ExcelTemplateBuilder templateBuilder;
+    @Mock
+    private BookBulkUploadService bulkUploadService;
 
-    @InjectMocks private ExcelController controller;
+    @InjectMocks
+    private ExcelController controller;
+
+    // --- downloadTemplate ---
 
     @Test
     void givenTemplateBuilderSucceeds_whenDownloadTemplate_thenReturnOkWithBytes() throws Exception {
-        byte[] fakeXlsx = new byte[]{1, 2, 3};
+        byte[] fakeXlsx = new byte[] { 1, 2, 3 };
         when(templateBuilder.buildTemplateXlsx()).thenReturn(fakeXlsx);
 
         ResponseEntity<byte[]> response = controller.downloadTemplate();
@@ -40,17 +46,18 @@ class ExcelControllerTest {
         assertArrayEquals(fakeXlsx, response.getBody());
         assertEquals("attachment; filename=book-upload-template.xlsx",
                 response.getHeaders().getFirst("Content-Disposition"));
+        assertEquals(MediaType.APPLICATION_OCTET_STREAM,
+                response.getHeaders().getContentType());
     }
 
     @Test
-    void givenTemplateBuilderThrows_whenDownloadTemplate_thenThrows500() throws Exception {
+    void givenTemplateBuilderThrows_whenDownloadTemplate_thenIOExceptionPropagates() throws Exception {
         when(templateBuilder.buildTemplateXlsx()).thenThrow(new IOException("disk error"));
 
-        var ex = assertThrows(org.springframework.web.server.ResponseStatusException.class,
-                () -> controller.downloadTemplate());
-
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, ex.getStatusCode());
+        assertThrows(IOException.class, () -> controller.downloadTemplate());
     }
+
+    // --- bulkPreview ---
 
     @Test
     void givenValidFile_whenBulkPreview_thenReturnPreviewDTO() throws Exception {
@@ -58,7 +65,7 @@ class ExcelControllerTest {
         dto.addFound(2, "9780141036144", "1984", "George Orwell", null);
         when(bulkUploadService.generatePreview(any(InputStream.class))).thenReturn(dto);
 
-        MockMultipartFile file = new MockMultipartFile("file", new byte[]{1, 2, 3});
+        MockMultipartFile file = new MockMultipartFile("file", new byte[] { 1, 2, 3 });
         ResponseEntity<BulkPreviewDTO> response = controller.bulkPreview(file);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -66,26 +73,36 @@ class ExcelControllerTest {
     }
 
     @Test
-    void givenServiceThrows_whenBulkPreview_thenThrows500() throws Exception {
-        MockMultipartFile file = new MockMultipartFile("file", new byte[]{}) {
+    void givenFileGetInputStreamThrows_whenBulkPreview_thenIOExceptionPropagates() {
+        MockMultipartFile file = new MockMultipartFile("file", new byte[] {}) {
             @Override
             public InputStream getInputStream() throws IOException {
                 throw new IOException("unreadable");
             }
         };
 
-        var ex = assertThrows(org.springframework.web.server.ResponseStatusException.class,
-                () -> controller.bulkPreview(file));
-
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, ex.getStatusCode());
+        assertThrows(IOException.class, () -> controller.bulkPreview(file));
     }
+
+    @Test
+    void givenValidFile_whenBulkPreview_thenServiceReceivesInputStream() throws Exception {
+        BulkPreviewDTO dto = new BulkPreviewDTO();
+        when(bulkUploadService.generatePreview(any(InputStream.class))).thenReturn(dto);
+
+        MockMultipartFile file = new MockMultipartFile("file", new byte[] { 1, 2, 3 });
+        controller.bulkPreview(file);
+
+        verify(bulkUploadService, times(1)).generatePreview(any(InputStream.class));
+    }
+
+    // --- bulkUpload ---
 
     @Test
     void givenValidFile_whenBulkUpload_thenReturnUploadDTO() throws Exception {
         BulkUploadDTO dto = new BulkUploadDTO();
         when(bulkUploadService.processUpload(any(InputStream.class))).thenReturn(dto);
 
-        MockMultipartFile file = new MockMultipartFile("file", new byte[]{1, 2, 3});
+        MockMultipartFile file = new MockMultipartFile("file", new byte[] { 1, 2, 3 });
         ResponseEntity<BulkUploadDTO> response = controller.bulkUpload(file);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -93,17 +110,25 @@ class ExcelControllerTest {
     }
 
     @Test
-    void givenServiceThrows_whenBulkUpload_thenThrows500() throws Exception {
-        MockMultipartFile file = new MockMultipartFile("file", new byte[]{}) {
+    void givenFileGetInputStreamThrows_whenBulkUpload_thenIOExceptionPropagates() {
+        MockMultipartFile file = new MockMultipartFile("file", new byte[] {}) {
             @Override
             public InputStream getInputStream() throws IOException {
                 throw new IOException("unreadable");
             }
         };
 
-        var ex = assertThrows(org.springframework.web.server.ResponseStatusException.class,
-                () -> controller.bulkUpload(file));
+        assertThrows(IOException.class, () -> controller.bulkUpload(file));
+    }
 
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, ex.getStatusCode());
+    @Test
+    void givenValidFile_whenBulkUpload_thenServiceReceivesInputStream() throws Exception {
+        BulkUploadDTO dto = new BulkUploadDTO();
+        when(bulkUploadService.processUpload(any(InputStream.class))).thenReturn(dto);
+
+        MockMultipartFile file = new MockMultipartFile("file", new byte[] { 1, 2, 3 });
+        controller.bulkUpload(file);
+
+        verify(bulkUploadService, times(1)).processUpload(any(InputStream.class));
     }
 }

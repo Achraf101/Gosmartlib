@@ -1,29 +1,52 @@
-{
-  "properties": [
-    {
-      "name": "app.bcrypt-rounds",
-      "type": "java.lang.String",
-      "description": "Amount of rounds for bcrypt algorithm"
-    },
-    {
-      "name": "app.upload-dir",
-      "type": "java.lang.String",
-      "description": "Where the all the file uploads are stored"
-    },
-    {
-      "name": "app.smartschool.client-id",
-      "type": "java.lang.String",
-      "description": "A description for 'app.smartschool.client-id'"
-    },
-    {
-      "name": "app.smartschool.client-secret",
-      "type": "java.lang.String",
-      "description": "A description for 'app.smartschool.client-id'"
-    },
-    {
-      "name": "app.smartschool.callback",
-      "type": "java.lang.String",
-      "description": "A description for 'app.smartschool.client-id'"
-    }
-  ]
-}
+{"properties": [
+  {
+    "name": "app.bcrypt-rounds",
+    "type": "java.lang.String",
+    "description": "Amount of rounds for bcrypt algorithm"
+  },
+  {
+    "name": "app.upload-dir",
+    "type": "java.lang.String",
+    "description": "Where the all the file uploads are stored"
+  },
+  {
+    "name": "app.smartschool.client-id",
+    "type": "java.lang.String",
+    "description": "A description for 'app.smartschool.client-id'"
+  },
+  {
+    "name": "app.smartschool.client-secret",
+    "type": "java.lang.String",
+    "description": "A description for 'app.smartschool.client-id'"
+  },
+  {
+    "name": "app.smartschool.callback",
+    "type": "java.lang.String",
+    "description": "A description for 'app.smartschool.client-id'"
+  },
+  {
+    "name": "app.google-books.api-key",
+    "type": "java.lang.String",
+    "description": "A description for 'app.google-books.api-key'"
+  },
+  {
+    "name": "app.smartschool.oneroster.scope",
+    "type": "java.lang.String",
+    "description": "A description for 'app.smartschool.oneroster.scope'"
+  },
+  {
+    "name": "app.encryption.key",
+    "type": "java.lang.String",
+    "description": "A description for 'app.encryption.key'"
+  },
+  {
+    "name": "app.encryption.version",
+    "type": "java.lang.String",
+    "description": "A description for 'app.encryption.version'"
+  },
+  {
+    "name": "app.domain",
+    "type": "java.lang.String",
+    "description": "The domain where this website is going to be hosted."
+  }
+]}

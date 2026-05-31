@@ -16,7 +16,7 @@ export class ApiService {
 
   post<T>(
     path: string,
-    body: unknown,
+    body?: unknown,
     options?: { responseType?: 'json' | 'text' },
   ): Observable<T> {
     return this.http.post<T>(`${this.baseUrl}/${path}`, body, {
