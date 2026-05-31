@@ -88,18 +88,44 @@ public class ClassroomControllerTest {
                 .hasMessageContaining("403");
     }
 
+    // NEW: teacher role present but getUserId() returns null
+    @Test
+    void getMyClassrooms_teacherRoleButNullUserId_returns403() {
+        when(sessionContext.hasRole(UserRole.LEERKRACHT)).thenReturn(true);
+        when(sessionContext.getUserId()).thenReturn(null);
+
+        assertThatThrownBy(() -> classroomController.getMyClassrooms())
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining("403");
+    }
+
     // ── getStudents ───────────────────────────────────────────────
 
     @Test
     void getStudents_asTeacher_returns200WithStudents() {
         asTeacher(1L);
         when(classroomService.getStudentsForClassroom(1L, 10L))
-                .thenReturn(List.of(new StudentPreviewDTO(2L, "anna", "Anna", null)));
+                .thenReturn(List.of(new StudentPreviewDTO(2L, "Anna", "De Smet", null)));
 
         var response = classroomController.getStudents(10L);
 
         assertThat(response.getStatusCode().value()).isEqualTo(200);
         assertThat(response.getBody()).hasSize(1);
+        assertThat(response.getBody().get(0).getId()).isEqualTo(2L);
+        assertThat(response.getBody().get(0).getFirstName()).isEqualTo("Anna");
+        assertThat(response.getBody().get(0).getLastName()).isEqualTo("De Smet");
+    }
+
+    // NEW: classroom exists but has no students
+    @Test
+    void getStudents_asTeacher_emptyClassroom_returns200() {
+        asTeacher(1L);
+        when(classroomService.getStudentsForClassroom(1L, 10L)).thenReturn(List.of());
+
+        var response = classroomController.getStudents(10L);
+
+        assertThat(response.getStatusCode().value()).isEqualTo(200);
+        assertThat(response.getBody()).isEmpty();
     }
 
     @Test
@@ -136,6 +162,17 @@ public class ClassroomControllerTest {
     @Test
     void getStudents_notLoggedIn_returns403() {
         notLoggedIn();
+
+        assertThatThrownBy(() -> classroomController.getStudents(10L))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining("403");
+    }
+
+    // NEW: teacher role present but getUserId() returns null
+    @Test
+    void getStudents_teacherRoleButNullUserId_returns403() {
+        when(sessionContext.hasRole(UserRole.LEERKRACHT)).thenReturn(true);
+        when(sessionContext.getUserId()).thenReturn(null);
 
         assertThatThrownBy(() -> classroomController.getStudents(10L))
                 .isInstanceOf(ResponseStatusException.class)
