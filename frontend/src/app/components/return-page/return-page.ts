@@ -152,14 +152,8 @@ export class ReturnPageComponent implements OnInit, AfterViewInit {
           }
         }
       },
-      error: (err) => {
+      error: () => {
         loanSet.delete(copyId);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fout',
-          detail: err?.error?.message ?? 'Exemplaar kon niet worden geregistreerd.',
-          life: 4000,
-        });
         if (fromManual) {
           this.pendingLoanId = loanId;
           this.manualAccessionId = 'LIB-';
@@ -171,7 +165,13 @@ export class ReturnPageComponent implements OnInit, AfterViewInit {
     });
   }
 
-  openConditionDialog(loanId: number, copyId: number, fromManual: boolean, existingNote = '', existingDamaged = false): void {
+  openConditionDialog(
+    loanId: number,
+    copyId: number,
+    fromManual: boolean,
+    existingNote = '',
+    existingDamaged = false,
+  ): void {
     this.pendingReturn = { loanId, copyId, fromManual };
     this.conditionNote = existingNote;
     this.conditionDamaged = existingDamaged;
@@ -226,14 +226,6 @@ export class ReturnPageComponent implements OnInit, AfterViewInit {
         this.openConditionDialog(loanId, copy.id, true, copy.note ?? '', copy.status === 'DAMAGED');
         this.manualDialogVisible = false;
       },
-      error: () => {
-        this.messageService.add({
-          severity: 'warn',
-          summary: 'Niet gevonden',
-          detail: `Exemplaar ${id} niet gevonden.`,
-          life: 3000,
-        });
-      },
     });
   }
 
@@ -245,9 +237,7 @@ export class ReturnPageComponent implements OnInit, AfterViewInit {
     this.locationBookService.getCopyByAccessionId(id).subscribe({
       next: (copy) => {
         const matchingLoans = this.loans.filter((l) =>
-          l.books.some(
-            (b) => b.bookId === copy.book_id && b.returnedAmount < b.receivedAmount,
-          ),
+          l.books.some((b) => b.bookId === copy.book_id && b.returnedAmount < b.receivedAmount),
         );
         if (matchingLoans.length === 0) {
           this.messageService.add({
@@ -259,20 +249,18 @@ export class ReturnPageComponent implements OnInit, AfterViewInit {
           return;
         }
         if (matchingLoans.length === 1) {
-          this.openConditionDialog(matchingLoans[0].id, copy.id, false, copy.note ?? '', copy.status === 'DAMAGED');
+          this.openConditionDialog(
+            matchingLoans[0].id,
+            copy.id,
+            false,
+            copy.note ?? '',
+            copy.status === 'DAMAGED',
+          );
           return;
         }
         this.pendingCopy = copy;
         this.disambigLoans = matchingLoans;
         this.disambigDialogVisible = true;
-      },
-      error: () => {
-        this.messageService.add({
-          severity: 'warn',
-          summary: 'Niet gevonden',
-          detail: `Exemplaar ${id} niet gevonden.`,
-          life: 3000,
-        });
       },
     });
   }
