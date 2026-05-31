@@ -234,7 +234,11 @@ public class LoanService {
         if (lb.getReceivedAmount() >= lb.getRequestedAmount()) {
             loan.setStatus(LoanStatus.RECEIVED);
             // send notification
-            taskQueueService.push(new NotificationTask(NotificationTask.Type.LOAN, loanId));
+            try {
+                taskQueueService.push(new NotificationTask(NotificationTask.Type.LOAN, loanId));
+            } catch (IllegalArgumentException e) {
+                log.warn("Notificatie kon niet verzonden worden voor lening {}: {}", loanId, e.getMessage());
+            }
         }
         return buildDTO(loanRepository.save(loan));
     }
