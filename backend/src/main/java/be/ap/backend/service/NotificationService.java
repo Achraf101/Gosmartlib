@@ -33,9 +33,11 @@ import be.ap.backend.repository.LoanBookRepository;
 import be.ap.backend.repository.LoanRepository;
 import be.ap.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class NotificationService {
     private final LoanBookRepository loanBookRepository;
     private final LoanRepository loanRepository;
@@ -50,8 +52,8 @@ public class NotificationService {
     @Value("${app.smartschool.client-secret}")
     private String clientSecret; // needed for images in mail
 
-    private final String loanTitle = "Overzicht van je ontleende boeken";
-    private final String reminderTitle = "Vergeet je boeken niet binnen te brengen!";
+    private static final String LOAN_TITLE = "Overzicht van je ontleende boeken";
+    private static final String REMINDER_TITLE = "Vergeet je boeken niet binnen te brengen!";
 
     public Boolean sendNotification(Long loanId, NotificationTask.Type type) {
         // get user tokens with refresh token (also subdomain)
@@ -78,10 +80,10 @@ public class NotificationService {
         String populatedTemplate = "";
         String title = "";
         if (type == NotificationTask.Type.REMINDER) {
-            title = reminderTitle;
+            title = REMINDER_TITLE;
             populatedTemplate = emailTemplateService.buildReminderEmail(books, l.getEnd());
         } else { // loan (confirmation)
-            title = loanTitle;
+            title = LOAN_TITLE;
             populatedTemplate = emailTemplateService.buildLoanEmail(books, l.getEnd());
         }
 
@@ -127,10 +129,13 @@ public class NotificationService {
             return new TokenRecord(accessToken, newRefreshToken);
 
         } catch (URISyntaxException e) {
+            log.error("Invalid token endpoint URI for subdomain '{}': {}", subdomain, e.getMessage());
             return null;
         } catch (IOException e) {
+            log.error("I/O error during token request for subdomain '{}': {}", subdomain, e.getMessage());
             return null;
         } catch (ParseException e) {
+            log.error("Failed to parse token response for subdomain '{}': {}", subdomain, e.getMessage());
             return null;
         }
     }
@@ -156,7 +161,7 @@ public class NotificationService {
 
         responseFuture.thenAccept(response -> {
         }).exceptionally(ex -> {
-            System.err.println("{message} Error occurred: " + ex.getMessage());
+            log.info("{message} Error occurred: " + ex.getMessage());
             return null;
         });
 

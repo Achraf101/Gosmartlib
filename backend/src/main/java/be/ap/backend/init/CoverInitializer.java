@@ -24,7 +24,6 @@ public class CoverInitializer implements CommandLineRunner {
 
         Resource[] resources = new PathMatchingResourcePatternResolver()
                 .getResources("classpath:covers/*");
-        System.out.println(resources.length);
 
         for (Resource res : resources) {
             if (!res.exists() || res.getFilename() == null)

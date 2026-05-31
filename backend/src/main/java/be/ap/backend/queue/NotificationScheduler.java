@@ -8,9 +8,11 @@ import org.springframework.stereotype.Component;
 
 import be.ap.backend.repository.LoanRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class NotificationScheduler {
 
     private final TaskQueueService taskQueueService;
@@ -20,7 +22,7 @@ public class NotificationScheduler {
     public void scheduleDailyNotifications() {
         // fetch all non notified loans for today (loans that need to be returned
         // tomorrow)
-        
+
         List<Long> dueLoans = loanRepository.getDueLoans(LocalDate.now().plusDays(1));
         // Push them to the queue
         dueLoans.forEach((id) -> {
@@ -29,7 +31,7 @@ public class NotificationScheduler {
                     id));
         });
 
-        System.out.println("cron jobs added to the queue");
+        log.info("cron jobs added to the queue");
 
     }
 }
