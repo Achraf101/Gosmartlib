@@ -6,11 +6,11 @@ import static org.mockito.Mockito.*;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.context.annotation.Import;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import be.ap.backend.config.SessionContext;
 import be.ap.backend.dto.SharedListResponseDTO;
@@ -20,17 +20,16 @@ import be.ap.backend.entity.BookListItem;
 import be.ap.backend.exception.MissingSessionException;
 import be.ap.backend.service.BookListService;
 
-@WebMvcTest(BookListController.class)
-@Import(SessionContext.class) // include only if SessionContext is a plain @Component/@Bean
+@ExtendWith(MockitoExtension.class)
 public class BookListControllerTest {
 
-    @MockitoBean
+    @Mock
     private BookListService bookListService;
 
-    @MockitoBean
+    @Mock
     private SessionContext sessionContext;
 
-    @Autowired
+    @InjectMocks
     private BookListController controller;
 
     // -------------------------------------------------------------------------
@@ -53,7 +52,7 @@ public class BookListControllerTest {
 
         assertNotNull(result.getBody());
         assertEquals("My List", result.getBody().getName());
-        verify(bookListService, times(1)).createList(1L, "My List");
+        verify(bookListService).createList(1L, "My List");
     }
 
     @Test
@@ -83,7 +82,7 @@ public class BookListControllerTest {
 
         assertNotNull(result.getBody());
         assertEquals(1, result.getBody().size());
-        verify(bookListService, times(1)).getListsByOwner(1L);
+        verify(bookListService).getListsByOwner(1L);
     }
 
     @Test
@@ -123,7 +122,7 @@ public class BookListControllerTest {
 
         assertNotNull(result.getBody());
         assertEquals(5L, result.getBody().getBookId());
-        verify(bookListService, times(1)).addBook(1L, 5L);
+        verify(bookListService).addBook(1L, 5L);
     }
 
     // -------------------------------------------------------------------------
@@ -137,7 +136,7 @@ public class BookListControllerTest {
         ResponseEntity<Void> result = controller.removeBook(5L, 1L);
 
         assertEquals(204, result.getStatusCode().value());
-        verify(bookListService, times(1)).removeBook(5L, 1L);
+        verify(bookListService).removeBook(5L, 1L);
     }
 
     // -------------------------------------------------------------------------
@@ -158,7 +157,7 @@ public class BookListControllerTest {
 
         assertNotNull(result.getBody());
         assertEquals("New Name", result.getBody().getName());
-        verify(bookListService, times(1)).renameList(1L, "New Name");
+        verify(bookListService).renameList(1L, "New Name");
     }
 
     // -------------------------------------------------------------------------
@@ -172,7 +171,7 @@ public class BookListControllerTest {
         ResponseEntity<Void> result = controller.deleteList(1L);
 
         assertEquals(204, result.getStatusCode().value());
-        verify(bookListService, times(1)).deleteList(1L);
+        verify(bookListService).deleteList(1L);
     }
 
     // -------------------------------------------------------------------------
@@ -191,7 +190,7 @@ public class BookListControllerTest {
 
         assertNotNull(result.getBody());
         assertEquals("Shared List", result.getBody().getList().getName());
-        verify(bookListService, times(1)).getSharedList("abc123");
+        verify(bookListService).getSharedList("abc123");
     }
 
     // -------------------------------------------------------------------------
@@ -209,7 +208,7 @@ public class BookListControllerTest {
         assertNotNull(result.getBody());
         assertEquals(1, result.getBody().size());
         assertEquals(5L, result.getBody().get(0).getId());
-        verify(bookListService, times(1)).getBooksInList(1L);
+        verify(bookListService).getBooksInList(1L);
     }
 
     @Test
@@ -238,7 +237,7 @@ public class BookListControllerTest {
 
         assertNotNull(result.getBody());
         assertEquals(1, result.getBody().size());
-        verify(bookListService, times(1)).getListsWithoutBook(1L, 5L);
+        verify(bookListService).getListsWithoutBook(1L, 5L);
     }
 
     @Test
@@ -266,7 +265,7 @@ public class BookListControllerTest {
 
         assertNotNull(result.getBody());
         assertEquals("abc123", result.getBody().getShareToken());
-        verify(bookListService, times(1)).generateShareToken(1L, 1L);
+        verify(bookListService).generateShareToken(1L, 1L);
     }
 
     @Test
@@ -294,7 +293,7 @@ public class BookListControllerTest {
 
         assertNotNull(result.getBody());
         assertNull(result.getBody().getShareToken());
-        verify(bookListService, times(1)).removeShareToken(1L, 1L);
+        verify(bookListService).removeShareToken(1L, 1L);
     }
 
     @Test
