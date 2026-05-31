@@ -240,10 +240,10 @@ public class DataSeeder implements CommandLineRunner {
         dto1.setContact("");
         dto1.setDescription("");
         dto1.setSsSubdomain("admin");
-        dto1.setBorrowLimit(0);
-        dto1.setBorrowPeriod(0);
-        dto1.setExtendLimit(0);
-        dto1.setExtendPeriod(0);
+        dto1.setBorrowLimit(1);
+        dto1.setBorrowPeriod(1);
+        dto1.setExtendLimit(1);
+        dto1.setExtendPeriod(1);
         dto1.setOneRosterClientId("ec58f0fb-6bd3-48d3-a165-6b73a324d5ad");
         dto1.setOneRosterClientSecret("755b033b7096ad2abe34142df0b67fe974d0e555ab6c0d6c9475e417c2a8");
         schoolService.addSchool(dto1);
