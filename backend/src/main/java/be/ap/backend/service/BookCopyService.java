@@ -13,6 +13,9 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Service for managing individual book copies.
+ */
 @Service
 @RequiredArgsConstructor
 public class BookCopyService {
@@ -20,6 +23,12 @@ public class BookCopyService {
     private final BookCopyRepository bookCopyRepository;
     private final LocationBookRepository locationBookRepository;
 
+    /**
+     * Creates the given number of copies for a location book, assigning sequential
+     * accession IDs.
+     *
+     * @return the accession IDs of the newly created copies
+     */
     public List<String> createCopies(LocationBook locationBook, int count) {
         int nextSeq = bookCopyRepository.findMaxSequenceNumber() + 1;
         List<BookCopy> copies = new ArrayList<>();
@@ -34,6 +43,9 @@ public class BookCopyService {
         return copies.stream().map(BookCopy::getAccessionId).toList();
     }
 
+    /**
+     * @throws EntityNotFoundException if no copy exists with the given accession ID
+     */
     public BookCopyDetailDTO findByAccessionId(String accessionId) {
         BookCopy copy = bookCopyRepository.findByAccessionId(accessionId)
                 .orElseThrow(() -> new EntityNotFoundException("Exemplaar niet gevonden: " + accessionId));
@@ -47,6 +59,9 @@ public class BookCopyService {
                 .toList();
     }
 
+    /**
+     * @throws EntityNotFoundException if no copy exists with the given ID
+     */
     public BookCopyDetailDTO updateStatus(Long id, CopyStatus status) {
         BookCopy copy = bookCopyRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Exemplaar niet gevonden: " + id));
@@ -54,6 +69,11 @@ public class BookCopyService {
         return toDTO(bookCopyRepository.save(copy));
     }
 
+    /**
+     * Deletes a copy and decrements the stock counts on its location book.
+     *
+     * @throws EntityNotFoundException if no copy exists with the given accession ID
+     */
     public void deleteCopy(String accessionId) {
         BookCopy copy = bookCopyRepository.findByAccessionId(accessionId)
                 .orElseThrow(() -> new EntityNotFoundException("Exemplaar niet gevonden: " + accessionId));

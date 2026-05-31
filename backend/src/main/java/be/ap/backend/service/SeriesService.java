@@ -11,6 +11,9 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Service for managing book series.
+ */
 @Service
 @RequiredArgsConstructor
 public class SeriesService {
@@ -30,21 +33,24 @@ public class SeriesService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * @throws EntityNotFoundException if no series exists with the given ID
+     */
     public SeriesDTO findById(Long id) {
-    return seriesRepository.findById(id)
-            .map(this::convertToDTO)
-            .orElseThrow(() -> new EntityNotFoundException("Series niet gevonden met id: " + id));
-}
+        return seriesRepository.findById(id)
+                .map(this::convertToDTO)
+                .orElseThrow(() -> new EntityNotFoundException("Series niet gevonden met id: " + id));
+    }
 
     public SeriesDTO createSeries(SeriesDTO dto) {
         Series series = new Series();
         series.setName(dto.getName());
         series.setDescription(dto.getDescription());
-        
+
         if (dto.getAuthorId() != null) {
             authorRepository.findById(dto.getAuthorId()).ifPresent(series::setAuthor);
         }
-        
+
         Series saved = seriesRepository.save(series);
         return convertToDTO(saved);
     }

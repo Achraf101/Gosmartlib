@@ -26,6 +26,10 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Service for managing the assignment of books to locations, including stock
+ * and copy tracking.
+ */
 @Service
 @RequiredArgsConstructor
 public class LocationBookService {
@@ -38,6 +42,15 @@ public class LocationBookService {
     private final LocationRepository locationRepository;
     private final BookRepository bookRepository;
 
+    /**
+     * Adds the given number of copies of a book to a location, creating the
+     * location book entry if absent
+     * or incrementing stock if it already exists. Also creates the corresponding
+     * {@link BookCopy} records.
+     *
+     * @throws MissingArgumentsException if location or book ID is missing
+     * @throws ArgumentsInvalidException if the amount is less than 1
+     */
     public LocationBookDetailDTO createLocationBook(LocationBookDTO dto) {
         if (dto.getLocationId() == null || dto.getBookId() == null) {
             throw new MissingArgumentsException("Locatie en boek zijn verplicht.");
@@ -82,6 +95,10 @@ public class LocationBookService {
                 .map(this::toDTO);
     }
 
+    /**
+     * @throws EntityNotFoundException if the book is not present at the given
+     *                                 location
+     */
     public LocationBookDetailDTO getLocationBook(Long locationId, Long bookId) {
         String bookTitle = bookRepository.findById(bookId)
                 .map(Book::getTitle)
@@ -98,6 +115,10 @@ public class LocationBookService {
         return toDTO(locationBook);
     }
 
+    /**
+     * Decrements the current available amount by the given value and persists the
+     * change.
+     */
     public LocationBookDetailDTO updateCurrentAmount(LocationBook locationBook, int requestedAmount) {
         locationBook.setCurrentAmount(locationBook.getCurrentAmount() - requestedAmount);
         return toDTO(locationBookRepository.save(locationBook));
@@ -117,6 +138,11 @@ public class LocationBookService {
         return dto;
     }
 
+    /**
+     * Returns availability details per location for the given book within the given
+     * school,
+     * including damaged and noted copy counts.
+     */
     public List<LocationAvailabilityDTO> getAvailabilityByBook(Long bookId, Long schoolId) {
         return locationBookRepository.findByBookIdAndLocationSchoolId(bookId, schoolId).stream()
                 .map(lb -> {

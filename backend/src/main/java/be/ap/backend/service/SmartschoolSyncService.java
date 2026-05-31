@@ -21,6 +21,10 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Service for synchronising users, classrooms, and enrollments from Smartschool
+ * via the OneRoster API.
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -38,6 +42,17 @@ public class SmartschoolSyncService {
 
     private static final int PAGE_SIZE = 100;
 
+    /**
+     * Runs a full sync for the given school: resolves the school's OneRoster ID if
+     * absent,
+     * then syncs users, classrooms, and enrollments in order.
+     *
+     * @return the school's Smartschool subdomain
+     * @throws EntityNotFoundException if the school does not exist
+     * @throws IllegalStateException   if the school has no OneRoster credentials
+     *                                 configured
+     * @throws RuntimeException        if any sync step fails
+     */
     public String syncSchool(Long schoolId) {
         School school = schoolRepository.findById(schoolId)
                 .orElseThrow(() -> new EntityNotFoundException("School niet gevonden: " + schoolId));
@@ -233,6 +248,10 @@ public class SmartschoolSyncService {
         }
     }
 
+    /**
+     * Fetches the school's OneRoster {@code sourcedId} from Smartschool and
+     * persists it if not already set.
+     */
     @SuppressWarnings("unchecked")
     private void resolveAndStoreSsId(School school, String baseUrl) {
         if (school.getSsId() != null)

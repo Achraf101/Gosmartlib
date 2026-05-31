@@ -14,6 +14,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Service for managing review reports, including submission and moderation.
+ */
 @Service
 @RequiredArgsConstructor
 public class ReviewReportService {
@@ -24,6 +27,13 @@ public class ReviewReportService {
     private final UserRepository userRepository;
     private final SmartschoolLookupService lookupService;
 
+    /**
+     * Files a report against the given review.
+     *
+     * @throws IllegalArgumentException if the review does not exist, the user is
+     *                                  reporting their own review,
+     *                                  or the user has already reported this review
+     */
     public ReviewReport reportReview(Long reviewId, Long userId, String note) {
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new IllegalArgumentException("Recensie niet gevonden."));
@@ -46,6 +56,11 @@ public class ReviewReportService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Accepts the report and force-deletes the associated review.
+     *
+     * @throws IllegalArgumentException if no report exists with the given ID
+     */
     public void acceptReport(Long reportId) {
         ReviewReport report = reviewReportRepository.findById(reportId)
                 .orElseThrow(() -> new IllegalArgumentException("Rapportage niet gevonden."));
@@ -54,6 +69,9 @@ public class ReviewReportService {
         reviewReportRepository.save(report);
     }
 
+    /**
+     * @throws IllegalArgumentException if no report exists with the given ID
+     */
     public void rejectReport(Long reportId) {
         ReviewReport report = reviewReportRepository.findById(reportId)
                 .orElseThrow(() -> new IllegalArgumentException("Rapportage niet gevonden."));

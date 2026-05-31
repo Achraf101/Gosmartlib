@@ -5,10 +5,11 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
 /**
- * Configuratie-eigenschappen voor encryptie binnen de applicatie.
- * 
- * @param key     de encryptiesleutel
- * @param version de versie van de gebruikte encryptieconfiguratie
+ * Configuration properties for application-level encryption settings.
+ *
+ * <p>
+ * Bound to properties prefixed with {@code app.encryption}.
+ * </p>
  */
 @ConfigurationProperties(prefix = "app.encryption")
 @Validated

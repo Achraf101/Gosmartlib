@@ -9,6 +9,10 @@ import jakarta.transaction.Transactional;
 
 public interface BookListItemRepository extends JpaRepository<BookListItem, Long> {
     List<BookListItem> findByBookListId(Long listId);
+
+    /**
+     * Removes the entry for the given book from the given list.
+     */
     @Transactional
     void deleteByBookIdAndBookListId(Long bookId, Long bookListId);
 }

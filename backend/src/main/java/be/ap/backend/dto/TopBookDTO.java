@@ -1,3 +1,7 @@
 package be.ap.backend.dto;
 
-public record TopBookDTO(String title, int count) {}
+/**
+ * DTO representing a frequently borrowed book and its borrow count.
+ */
+public record TopBookDTO(String title, int count) {
+}

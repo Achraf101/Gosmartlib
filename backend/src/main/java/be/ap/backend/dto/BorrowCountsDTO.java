@@ -6,6 +6,15 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * Data transfer object representing aggregated borrowing statistics
+ * over multiple time windows.
+ *
+ * <p>
+ * Used to expose the number of borrows grouped by week, month,
+ * semester, and school year for reporting and analytics purposes.
+ * </p>
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

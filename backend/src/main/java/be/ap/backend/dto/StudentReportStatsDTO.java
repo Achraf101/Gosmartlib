@@ -6,6 +6,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * DTO representing aggregated reading statistics for a student,
+ * including genre preference, average rating, and return punctuality.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

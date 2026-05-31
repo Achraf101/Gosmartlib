@@ -5,6 +5,10 @@ import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+/**
+ * DTO representing a book import row that failed validation,
+ * including the parsed field values and lists of missing or invalid fields.
+ */
 @Data
 @AllArgsConstructor
 public class IncompleteBookDTO {

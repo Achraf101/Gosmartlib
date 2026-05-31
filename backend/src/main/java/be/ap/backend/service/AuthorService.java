@@ -9,6 +9,9 @@ import be.ap.backend.repository.AuthorRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Service for managing authors.
+ */
 @Service
 @RequiredArgsConstructor
 public class AuthorService {
@@ -19,6 +22,9 @@ public class AuthorService {
         return authorRepository.findAll();
     }
 
+    /**
+     * @throws EntityNotFoundException if no author exists with the given ID
+     */
     public Author getById(Long id) {
         return authorRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Auteur niet gevonden met id: " + id));

@@ -12,6 +12,9 @@ import be.ap.backend.dto.PasswordDTO;
 import be.ap.backend.service.AccountService;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Handles account-related operations for authenticated users.
+ */
 @RestController
 @RequestMapping("account")
 @RequiredArgsConstructor
@@ -19,6 +22,16 @@ public class AccountController {
     private final AccountService accountService;
     private final SessionContext session;
 
+    /**
+     * Updates the password of a user.
+     *
+     * <p>
+     * Only users with the ADMIN role are allowed to perform this operation.
+     * </p>
+     *
+     * @param dto request body containing the new password data
+     * @return empty HTTP 200 response if the update succeeds
+     */
     @PutMapping("password")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> updatePassword(@RequestBody PasswordDTO dto) {

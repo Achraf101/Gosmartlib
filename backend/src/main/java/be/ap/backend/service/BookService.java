@@ -42,6 +42,10 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Service for managing books, including creation, retrieval, filtering, and
+ * updates.
+ */
 @Service
 @RequiredArgsConstructor
 public class BookService {
@@ -128,6 +132,13 @@ public class BookService {
         return toDTO(bookRepository.save(book));
     }
 
+    /**
+     * Returns a filtered, paginated page of books.
+     * Non-teacher users never see didactic-only books.
+     * Location scope is derived from the school unless overridden by an admin.
+     *
+     * @throws ArgumentsInvalidException if pagesMin exceeds pagesMax
+     */
     public Page<BookResultDTO> filter(
             Long schoolId,
             boolean isAdmin,
@@ -194,6 +205,9 @@ public class BookService {
         return enrichWithGenresAndThemes(bookRepository.getAllBookResults(pageable));
     }
 
+    /**
+     * @throws EntityNotFoundException if no book exists with the given ID
+     */
     public BookResultDTO updateBook(Long id, UpdateBookDTO dto) {
         Book book = bookRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Boek niet gevonden met id: " + id));
@@ -246,6 +260,11 @@ public class BookService {
         return toDTO(bookRepository.save(book));
     }
 
+    /**
+     * @throws EntityNotFoundException if no book exists with the given ID
+     * @throws ResponseStatusException (403) if a non-admin user's school has no
+     *                                 access to the book's location
+     */
     public BookResultDTO getById(Long id) {
         Book book = bookRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Boek niet gevonden met id: " + id));
@@ -271,6 +290,10 @@ public class BookService {
         return bookRepository.findRelated(id, ids);
     }
 
+    /**
+     * Returns the Internet Archive identifier for the given book's ISBN, if
+     * available.
+     */
     public ResponseEntity<Map<String, String>> getIaPreview(Long id) {
         Book book = bookRepository.findById(id).orElse(null);
         if (book == null || book.getIsbn() == null) {
@@ -286,6 +309,10 @@ public class BookService {
         return locationRepository.findIdsBySchoolId(schoolId);
     }
 
+    /**
+     * Returns a paginated list of books, scoping to the given location and applying
+     * didactic and role-based visibility rules.
+     */
     public Page<BookResultDTO> getAll(Long location, Boolean full, Pageable pageable) {
         Boolean didacticFilter = sessionContext.hasRole(UserRole.LEERKRACHT) ? null : false;
         Page<Book> books;
@@ -313,6 +340,10 @@ public class BookService {
         return enrichWithGenresAndThemes(dtoPage);
     }
 
+    /**
+     * Fetches genres and themes for all books on the page in two bulk queries
+     * and populates the corresponding fields on each DTO.
+     */
     private Page<BookResultDTO> enrichWithGenresAndThemes(Page<BookResultDTO> page) {
         List<Long> bookIds = page.getContent().stream()
                 .map(BookResultDTO::getId)

@@ -7,6 +7,10 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 import java.time.LocalDateTime;
 
+/**
+ * DTO representing a user's review of a book, with a rating between 1 and 5
+ * and an optional comment of up to 500 characters.
+ */
 @Data
 public class ReviewDTO {
     private Long id;

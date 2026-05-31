@@ -20,6 +20,9 @@ public interface LocationRepository extends JpaRepository<Location, Long> {
     @Query("SELECT c FROM Location c WHERE c.school.id = :schoolId")
     List<Location> getLocationBySchoolId(@Param("schoolId") Long schoolId);
 
+    /**
+     * Returns only the IDs of all locations belonging to the given school.
+     */
     @Query("SELECT l.id FROM Location l WHERE l.school.id = :schoolId")
     List<Long> findIdsBySchoolId(@Param("schoolId") Long schoolId);
 }

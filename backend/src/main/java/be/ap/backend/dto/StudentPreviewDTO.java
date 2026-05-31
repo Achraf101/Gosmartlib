@@ -8,6 +8,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * DTO representing a brief student summary with their most recent activity
+ * date.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

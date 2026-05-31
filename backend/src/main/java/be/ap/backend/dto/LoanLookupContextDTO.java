@@ -7,6 +7,10 @@ import be.ap.backend.entity.UserRole;
 import be.ap.backend.entity.Loan;
 import lombok.Data;
 
+/**
+ * Internal context DTO bundling a loan with the resolved user identity and
+ * permissions needed for lookup operations.
+ */
 @Data
 public class LoanLookupContextDTO {
     private Loan loan;

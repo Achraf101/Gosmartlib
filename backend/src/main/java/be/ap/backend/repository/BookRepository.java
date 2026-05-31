@@ -22,6 +22,10 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
     Page<Book> findAll(Pageable pageable);
 
+    /**
+     * Returns all books available at the given locations, optionally filtered by
+     * didactic flag.
+     */
     @Query("""
             SELECT DISTINCT lb.book FROM LocationBook lb
             WHERE lb.location.id IN :locationIds
@@ -35,9 +39,17 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
     boolean existsByIsbn(String isbn);
 
+    /**
+     * Returns all non-null ISBNs in the catalogue. Used for bulk import
+     * deduplication.
+     */
     @Query("SELECT b.isbn FROM Book b WHERE b.isbn IS NOT NULL")
     Set<String> findAllIsbns();
 
+    /**
+     * Returns books that share at least one genre with the given book and are
+     * available at the given locations.
+     */
     @Query("""
             SELECT DISTINCT new be.ap.backend.dto.BookCardDTO(
                 b.id,
@@ -59,6 +71,10 @@ public interface BookRepository extends JpaRepository<Book, Long> {
             """)
     List<BookCardDTO> findRelated(@Param("id") Long id, @Param("locationIds") List<Long> locationIds);
 
+    /**
+     * Full-text search across title, author, genre, series, theme, and ISBN,
+     * scoped to the given locations and optionally filtered by didactic flag.
+     */
     @Query("""
             SELECT DISTINCT b FROM Book b
             LEFT JOIN b.author a
@@ -81,6 +97,10 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     Page<Book> search(@Param("locationIds") List<Long> locationIds, @Param("query") String query,
             @Param("didactic") Boolean didactic, Pageable pageable);
 
+    /**
+     * Returns a paginated list of all books as {@link BookResultDTO}, ordered by
+     * ID.
+     */
     @Query("""
             SELECT new be.ap.backend.dto.BookResultDTO(
                 b.id,
@@ -109,6 +129,9 @@ public interface BookRepository extends JpaRepository<Book, Long> {
             """)
     Page<BookResultDTO> getAllBookResults(Pageable pageable);
 
+    /**
+     * Returns genre projections for the given set of book IDs in a single query.
+     */
     @Query("""
             SELECT b.id as bookId, g.id as genreId, g.name as genreName
             FROM Book b
@@ -117,6 +140,9 @@ public interface BookRepository extends JpaRepository<Book, Long> {
             """)
     List<GenreProjectionDTO> findGenresForBooks(@Param("bookIds") List<Long> bookIds);
 
+    /**
+     * Returns theme projections for the given set of book IDs in a single query.
+     */
     @Query("""
             SELECT b.id as bookId, t.id as themeId, t.name as themeName
             From Book b
@@ -125,6 +151,11 @@ public interface BookRepository extends JpaRepository<Book, Long> {
             """)
     List<ThemeProjectionDTO> findThemesForBooks(@Param("bookIds") List<Long> bookIds);
 
+    /**
+     * Filters books by any combination of location, genre, language, fiction flag,
+     * author,
+     * series, page range, CLIB level, theme, didactic flag, and free-text query.
+     */
     @Query(value = """
             SELECT DISTINCT b FROM Book b
             LEFT JOIN b.author a
@@ -169,6 +200,9 @@ public interface BookRepository extends JpaRepository<Book, Long> {
             @Param("query") String query,
             Pageable pageable);
 
+    /**
+     * Same as {@link #filter} but without location scoping, for admin use.
+     */
     @Query(value = """
             SELECT DISTINCT b FROM Book b
             LEFT JOIN b.author a
@@ -210,11 +244,19 @@ public interface BookRepository extends JpaRepository<Book, Long> {
             @Param("query") String query,
             Pageable pageable);
 
+    /**
+     * Updates the cover filename for the given book. Returns the number of affected
+     * rows.
+     */
     @Modifying
     @Transactional
     @Query("UPDATE Book b SET b.cover = :filename WHERE b.id = :id")
     int updateCover(@Param("id") Long id, @Param("filename") String filename);
 
+    /**
+     * Returns {@code true} if the given book is available at any of the given
+     * locations.
+     */
     @Query("SELECT COUNT(lb) > 0 FROM LocationBook lb WHERE lb.book.id = :bookId AND lb.location.id IN :locationIds")
     boolean existsByIdAndLocationId(@Param("bookId") Long bookId, @Param("locationIds") List<Long> locationIds);
 }

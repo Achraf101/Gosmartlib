@@ -12,6 +12,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * REST controller responsible for queuing notification-related tasks.
+ * <p>
+ * Only users with the role {@code BIBLIOTHEEKBEHEERDER} are authorized to
+ * access these endpoints.
+ * </p>
+ */
 @RestController
 @RequestMapping("notify")
 @RequiredArgsConstructor
@@ -20,7 +27,13 @@ public class NotificationController {
 
     private final TaskQueueService taskQueueService;
 
-
+    /**
+     * Queues a reminder notification for a specific loan.
+     *
+     * @param loanId the identifier of the loan for which a reminder notification
+     *               should be sent
+     * @return {@code true} if the notification task was successfully queued
+     */
     @PostMapping("{loanId}")
     public ResponseEntity<Boolean> addNotification(@PathVariable Long loanId) {
         // send notification

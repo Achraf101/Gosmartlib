@@ -13,6 +13,15 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+/**
+ * REST controller responsible for file uploads related to books.
+ *
+ * <p>
+ * Supports uploading book covers and supplementary materials (e.g. PDFs,
+ * files).
+ * Delegates storage and persistence logic to {@link UploadService}.
+ * </p>
+ */
 @RestController
 @RequestMapping("upload")
 @RequiredArgsConstructor
@@ -20,6 +29,13 @@ public class UploadController {
 
     private final UploadService uploadService;
 
+    /**
+     * Uploads a cover image for a specific book.
+     *
+     * @param file   the uploaded file
+     * @param bookId the target book ID
+     * @return the stored cover metadata
+     */
     @PostMapping("cover")
     public ResponseEntity<CoverDTO> uploadCover(@RequestParam("file") MultipartFile file,
             @RequestParam("book_id") Long bookId) {
@@ -31,6 +47,14 @@ public class UploadController {
         return ResponseEntity.ok(cover);
     }
 
+    /**
+     * Uploads supplementary material for a book.
+     *
+     * @param file   the uploaded file
+     * @param bookId the target book ID
+     * @param note   optional note describing the material
+     * @return persisted material entity
+     */
     @PostMapping("material")
     public ResponseEntity<Material> uploadMaterial(@RequestParam("file") MultipartFile file,
             @RequestParam("book_id") Long bookId,

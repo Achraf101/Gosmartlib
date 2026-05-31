@@ -1,13 +1,7 @@
 package be.ap.backend.exception;
 
 /**
- * Exception die wordt gegooid wanneer vereiste sessie-informatie ontbreekt.
- *
- * <p>
- * Wordt gebruikt wanneer operaties afhankelijk zijn van een actieve
- * gebruikerssessie,
- * maar die sessie niet beschikbaar is of niet correct geïnitialiseerd werd.
- * </p>
+ * Thrown when a required user session is absent or not properly initialised.
  */
 public class MissingSessionException extends RuntimeException {
     public MissingSessionException(String message) {

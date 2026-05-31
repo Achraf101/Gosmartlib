@@ -4,6 +4,10 @@ import be.ap.backend.enums.ReviewReportStatus;
 import lombok.Data;
 import java.time.LocalDateTime;
 
+/**
+ * DTO representing a report filed against a review, including reporter details,
+ * the reported review's content, and the associated book.
+ */
 @Data
 public class ReviewReportDTO {
     private Long id;

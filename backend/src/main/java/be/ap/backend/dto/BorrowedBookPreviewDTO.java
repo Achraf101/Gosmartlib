@@ -8,6 +8,16 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * Data transfer object representing a lightweight preview of a borrowed book
+ * and its current lifecycle state in the lending process.
+ *
+ * <p>
+ * Used for listing borrowed items with summary metadata including dates,
+ * author information, and workflow status flags (requested, accepted,
+ * received, returned, declined, overdue).
+ * </p>
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

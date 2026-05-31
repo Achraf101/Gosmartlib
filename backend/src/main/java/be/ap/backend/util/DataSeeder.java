@@ -27,8 +27,11 @@ import be.ap.backend.service.SchoolService;
 
 import org.springframework.beans.factory.annotation.Value;
 
+/**
+ * Seeds the database with default reference data on startup.
+ * Seeding can be disabled via {@code app.seeding.enabled=false}.
+ */
 @Component
-
 public class DataSeeder implements CommandLineRunner {
 
     @Value("${app.seeding.enabled:true}")
@@ -67,6 +70,11 @@ public class DataSeeder implements CommandLineRunner {
         this.schoolService = schoolService;
     }
 
+    /**
+     * Runs all seed operations in order: admin school, challenges, admin user, and
+     * reference data.
+     * Does nothing if seeding is disabled.
+     */
     @Override
     public void run(String... args) {
         if (!seedingEnabled)

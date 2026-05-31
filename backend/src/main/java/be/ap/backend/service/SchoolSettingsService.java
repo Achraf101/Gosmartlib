@@ -16,6 +16,9 @@ import be.ap.backend.repository.SchoolSettingsRepository;
 import jakarta.persistence.EntityNotFoundException;
 import be.ap.backend.repository.SchoolRepository;
 
+/**
+ * Service for managing per-school UI settings, such as hidden components.
+ */
 @Service
 public class SchoolSettingsService {
 
@@ -28,6 +31,10 @@ public class SchoolSettingsService {
         this.schoolRepository = schoolRepository;
     }
 
+    /**
+     * Returns the current settings for the given school, or a default empty
+     * configuration if none exist.
+     */
     public SchoolSettingsDTO getSettings(Long schoolId) {
         return schoolSettingsRepository.findBySchoolId(schoolId)
                 .map(s -> new SchoolSettingsDTO(
@@ -38,9 +45,12 @@ public class SchoolSettingsService {
                 .orElse(new SchoolSettingsDTO(schoolId, new HashSet<>()));
     }
 
+    /**
+     * @throws EntityNotFoundException if no school exists with the given ID
+     */
     public SchoolSettingsDTO updateSettings(Long schoolId, SchoolSettingsDTO dto) {
         School school = schoolRepository.findById(schoolId)
-            .orElseThrow(() -> new EntityNotFoundException("School niet gevonden met id: " + schoolId));
+                .orElseThrow(() -> new EntityNotFoundException("School niet gevonden met id: " + schoolId));
         SchoolSettings settings = schoolSettingsRepository.findBySchoolId(schoolId)
                 .orElse(new SchoolSettings());
         settings.setSchool(school);

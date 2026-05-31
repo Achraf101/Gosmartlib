@@ -3,6 +3,10 @@ package be.ap.backend.dto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+/**
+ * DTO representing a single row in a book import preview, indicating whether
+ * the ISBN was resolved.
+ */
 @Getter
 @AllArgsConstructor
 public class PreviewItemDTO {

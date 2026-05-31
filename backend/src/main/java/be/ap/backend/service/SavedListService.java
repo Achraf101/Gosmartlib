@@ -18,6 +18,9 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Service for managing a user's saved (bookmarked) reading lists.
+ */
 @Service
 @RequiredArgsConstructor
 public class SavedListService {
@@ -28,6 +31,10 @@ public class SavedListService {
 
     private final EntityManager entityManager;
 
+    /**
+     * @throws BookAlreadyInLocationException if the user has already saved this
+     *                                        list
+     */
     public SavedList saveList(Long userId, Long bookListId) {
         if (savedListRepository.existsByUserIdAndBookListId(userId, bookListId)) {
             throw new BookAlreadyInLocationException("Lijst al opgeslagen");
@@ -46,6 +53,10 @@ public class SavedListService {
         return savedListRepository.existsByUserIdAndBookListId(userId, bookListId);
     }
 
+    /**
+     * Returns all saved lists for the user with their resolved books, skipping any
+     * lists that no longer exist.
+     */
     public List<SharedListResponseDTO> getSavedLists(Long userId) {
         return savedListRepository.findByUserId(userId).stream()
                 .map(saved -> {
@@ -64,6 +75,9 @@ public class SavedListService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * @throws EntityNotFoundException if no list exists with the given share token
+     */
     public BookList getListByToken(String token) {
         return bookListRepository.findByShareToken(token)
                 .orElseThrow(() -> new EntityNotFoundException("Lijst niet gevonden"));

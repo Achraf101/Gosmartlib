@@ -17,6 +17,10 @@ import java.util.Optional;
 public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
     Optional<Enrollment> findByOneRosterId(String oneRosterId);
 
+    /**
+     * Returns all visible classrooms where the given user is enrolled as a teacher,
+     * with enrollments eagerly fetched, ordered by name.
+     */
     @Query("""
             SELECT DISTINCT e.classroom FROM Enrollment e
             LEFT JOIN FETCH e.classroom.enrollments
@@ -31,6 +35,9 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
 
     boolean existsByUserIdAndClassroomId(Long userId, Long classroomId);
 
+    /**
+     * Returns all students enrolled in the given classroom.
+     */
     @Query("SELECT e.user FROM Enrollment e WHERE e.classroom.id = :classroomId AND e.role = 'STUDENT'")
     List<User> findStudentsByClassroomId(@Param("classroomId") Long classroomId);
 

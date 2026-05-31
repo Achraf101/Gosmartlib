@@ -8,6 +8,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * DTO representing a review written by a student, including the associated book
+ * details.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

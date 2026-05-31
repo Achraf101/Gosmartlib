@@ -10,11 +10,17 @@ import java.util.regex.Pattern;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Service for detecting inappropriate content in user-submitted text.
+ */
 @Service
 public class FilterService {
 
     private List<String> badWords;
 
+    /**
+     * Loads the bad word list from {@code badwords.json} on the classpath.
+     */
     @PostConstruct
     public void init() throws Exception {
         ObjectMapper mapper = new ObjectMapper();
@@ -24,6 +30,10 @@ public class FilterService {
         root.properties().forEach(entry -> entry.getValue().forEach(word -> badWords.add(word.asText())));
     }
 
+    /**
+     * Returns {@code true} if the text contains a bad word as a whole word,
+     * using a word-boundary check that handles accented characters.
+     */
     public boolean containsBadWord(String text) {
         if (text == null || text.isBlank())
             return false;
@@ -38,6 +48,9 @@ public class FilterService {
             "((https?|ftp)://|www\\.)[^\\s]{2,}",
             Pattern.CASE_INSENSITIVE);
 
+    /**
+     * Returns {@code true} if the text contains a URL or web address.
+     */
     public boolean containsUrl(String text) {
         if (text == null || text.isBlank())
             return false;

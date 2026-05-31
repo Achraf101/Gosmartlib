@@ -11,6 +11,9 @@ import be.ap.backend.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Service for account self-management operations such as password changes.
+ */
 @Service
 @RequiredArgsConstructor
 public class AccountService {
@@ -18,6 +21,13 @@ public class AccountService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    /**
+     * Updates the password for the given user after verifying the current password.
+     *
+     * @throws MissingSessionException   if {@code userId} is null
+     * @throws EntityNotFoundException   if no user exists with the given ID
+     * @throws ArgumentsInvalidException if the current password does not match
+     */
     public void updatePassword(Long userId, PasswordDTO dto) {
         if (userId == null) {
             throw new MissingSessionException("Geen actieve sessie gevonden.");

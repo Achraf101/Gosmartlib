@@ -7,14 +7,26 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadPoolExecutor;
 
+/**
+ * Configures application-level thread pools for asynchronous task execution.
+ *
+ * <p>
+ * Defines separate executors for lookup operations and sequential queue-based
+ * tasks.
+ * </p>
+ */
 @Configuration
 public class AsyncConfig {
 
     /**
-     * Executor voor asynchrone lookup-taken.
+     * Thread pool for concurrent lookup operations.
      *
-     * @return de threadpool die gebruikt wordt door
-     *         {@code @Async("lookupExecutor")}
+     * <p>
+     * Uses a bounded queue with a CallerRunsPolicy to avoid task rejection under
+     * load.
+     * </p>
+     *
+     * @return executor used by @Async("lookupExecutor") methods
      */
     @Bean(name = "lookupExecutor")
     public Executor lookupExecutor() {
@@ -28,6 +40,15 @@ public class AsyncConfig {
         return executor;
     }
 
+    /**
+     * Single-threaded executor for sequential background task processing.
+     *
+     * <p>
+     * Ensures FIFO execution for queued operations with controlled throughput.
+     * </p>
+     *
+     * @return executor used for serialized background tasks
+     */
     @Bean(name = "queueTaskExecutor")
     public Executor queueTaskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();

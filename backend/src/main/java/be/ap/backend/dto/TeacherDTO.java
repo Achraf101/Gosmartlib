@@ -6,6 +6,9 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+/**
+ * DTO representing a teacher with their basic identity details.
+ */
 @Data
 @AllArgsConstructor
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)

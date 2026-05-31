@@ -9,6 +9,10 @@ import org.springframework.stereotype.Service;
 import be.ap.backend.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Asynchronous processor that drains the notification task queue.
+ * At most one worker runs at a time; concurrent invocations return immediately.
+ */
 @Service
 @RequiredArgsConstructor
 public class TaskProcessor {
@@ -16,6 +20,10 @@ public class TaskProcessor {
     private final AtomicBoolean isProcessing = new AtomicBoolean(false);
     private final NotificationService notificationService;
 
+    /**
+     * Drains and processes all pending tasks in the given queue.
+     * Concurrent calls are silently ignored while a worker is already running.
+     */
     @Async("taskExecutor")
     public void processTasks(BlockingQueue<NotificationTask> taskQueue) {
         // If already processing, a worker is running — just return

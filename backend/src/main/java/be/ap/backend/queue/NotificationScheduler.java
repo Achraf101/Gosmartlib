@@ -10,6 +10,9 @@ import be.ap.backend.repository.LoanRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Scheduler that queues daily loan reminder notifications.
+ */
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -18,6 +21,10 @@ public class NotificationScheduler {
     private final TaskQueueService taskQueueService;
     private final LoanRepository loanRepository;
 
+    /**
+     * Queues a reminder notification for every loan due tomorrow.
+     * Runs daily at 10:00 AM (Europe/Brussels).
+     */
     @Scheduled(cron = "0 0 10 * * *", zone = "Europe/Brussels") // every day at 10:00 AM
     public void scheduleDailyNotifications() {
         // fetch all non notified loans for today (loans that need to be returned

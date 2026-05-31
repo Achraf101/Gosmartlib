@@ -23,6 +23,10 @@ import be.ap.backend.repository.ReviewRepository;
 import be.ap.backend.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 
+/**
+ * Service for building a student's reading report, including borrow counts,
+ * book previews, reviews, and statistics.
+ */
 @Service
 public class StudentReportService {
 
@@ -42,6 +46,11 @@ public class StudentReportService {
         this.lookupService = lookupService;
     }
 
+    /**
+     * Builds a full reading report for the given student.
+     *
+     * @throws EntityNotFoundException if no user exists with the given ID
+     */
     public StudentReportDTO buildReport(Long studentId) {
         User student = userRepository.findById(studentId)
                 .orElseThrow(() -> new EntityNotFoundException("Leerling niet gevonden met id: " + studentId));
@@ -84,6 +93,11 @@ public class StudentReportService {
                 stats);
     }
 
+    /**
+     * Computes aggregated statistics for the given student: favourite genre,
+     * average rating,
+     * and on-time return rate for the current school year.
+     */
     private StudentReportStatsDTO buildStats(Long studentId, LocalDate today) {
         List<Object[]> topGenres = loanRepository.findTopGenresByUserId(
                 studentId, COUNTED_STATUSES, schoolYearStart(today), today);
@@ -102,6 +116,10 @@ public class StudentReportService {
         return new StudentReportStatsDTO(favoriteGenre, averageRating, punctuality, onTime, total);
     }
 
+    /**
+     * Returns {@code true} if the loan was returned on or before its due date.
+     * Loans without a return date are considered on time.
+     */
     private boolean isOnTime(Loan loan) {
         if (loan.getEnd() == null)
             return true;

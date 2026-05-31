@@ -7,13 +7,16 @@ import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Service for enqueuing notification tasks and triggering asynchronous
+ * processing.
+ */
 @Service
 @RequiredArgsConstructor
 public class TaskQueueService {
 
     private final BlockingQueue<NotificationTask> taskQueue = new LinkedBlockingQueue<>();
     private final TaskProcessor taskProcessor;
-
 
     public void push(NotificationTask task) {
         taskQueue.offer(task);

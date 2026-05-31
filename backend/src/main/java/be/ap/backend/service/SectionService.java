@@ -15,6 +15,9 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Service for managing homepage sections and their book assignments.
+ */
 @Service
 @RequiredArgsConstructor
 public class SectionService {
@@ -40,6 +43,12 @@ public class SectionService {
                 .orElse(null);
     }
 
+    /**
+     * Assigns a book as the book of the month for the given grade, replacing any
+     * existing assignment.
+     *
+     * @throws EntityNotFoundException if the section or book does not exist
+     */
     public Book setBookOfMonth(Long sectionId, Long bookId, Byte grade) {
         Section section = sectionRepository.findById(sectionId)
                 .orElseThrow(() -> new EntityNotFoundException("Sectie niet gevonden"));
@@ -60,6 +69,14 @@ public class SectionService {
         return book;
     }
 
+    /**
+     * Assigns a book to a spotlight position, replacing any existing book at that
+     * ranking.
+     *
+     * @throws EntityNotFoundException  if the section or book does not exist
+     * @throws IllegalArgumentException if the book is already in the spotlight
+     *                                  section
+     */
     public Book setSpotlightBook(Long sectionId, Long bookId, Short ranking) {
         Section section = sectionRepository.findById(sectionId)
                 .orElseThrow(() -> new EntityNotFoundException("Sectie niet gevonden"));
@@ -87,10 +104,11 @@ public class SectionService {
         return book;
     }
 
+    /** Returns all spotlight books for the given section, ordered by ranking. */
     public List<SectionBookDTO> getSpotlightBooks(Long sectionId) {
         return sectionBookRepository.findBySectionIdAndGradeIsNullOrderByRankingAsc(sectionId)
-            .stream()
-            .map(sb -> new SectionBookDTO(sb.getRanking(), sb.getBook()))
-            .collect(Collectors.toList());
+                .stream()
+                .map(sb -> new SectionBookDTO(sb.getRanking(), sb.getBook()))
+                .collect(Collectors.toList());
     }
 }

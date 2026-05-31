@@ -17,6 +17,10 @@ import be.ap.backend.repository.SectionRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Service for managing schools, including creation, updates, and credential
+ * handling.
+ */
 @Service
 @RequiredArgsConstructor
 public class SchoolService {
@@ -24,6 +28,14 @@ public class SchoolService {
     private final EncryptionService encryptionService;
     private final SectionRepository sectionRepository;
 
+    /**
+     * Creates a new school, encrypts its OneRoster credentials, and provisions
+     * default sections.
+     *
+     * @throws MissingArgumentsException if required fields are absent
+     * @throws ArgumentsInvalidException if any field violates length or range
+     *                                   constraints
+     */
     public SchoolDTO addSchool(SchoolDTO dto) {
         if (dto.getName() == null) {
             throw new MissingArgumentsException("Schoolnaam is verplicht!");
@@ -78,6 +90,11 @@ public class SchoolService {
         return toDTO(school);
     }
 
+    /**
+     * Returns the decrypted OneRoster credentials for the given school.
+     *
+     * @throws MissingArgumentsException if no school exists with the given ID
+     */
     public OneRosterCredentials getCredentials(Long schoolId) {
         School school = schoolRepository.findById(schoolId)
                 .orElseThrow(() -> new MissingArgumentsException("School niet gevonden"));
@@ -127,6 +144,12 @@ public class SchoolService {
         return dto;
     }
 
+    /**
+     * @throws EntityNotFoundException   if no school exists with the given ID
+     * @throws MissingArgumentsException if required fields are absent
+     * @throws ArgumentsInvalidException if any field violates length or range
+     *                                   constraints
+     */
     public SchoolDTO updateSchool(Long id, SchoolDTO dto) {
         School school = schoolRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("School niet gevonden met id: " + id));
@@ -168,6 +191,10 @@ public class SchoolService {
         return toDTO(schoolRepository.save(school));
     }
 
+    /**
+     * Creates the default "In de kijker" and "Boek van de maand" sections for a new
+     * school.
+     */
     private void createDefaultSections(Long schoolId) {
         Section spotlightedSection = new Section();
         spotlightedSection.setTitle("In de kijker");

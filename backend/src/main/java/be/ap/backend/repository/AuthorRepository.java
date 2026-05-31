@@ -11,7 +11,10 @@ import be.ap.backend.entity.Author;
 public interface AuthorRepository extends JpaRepository<Author, Long> {
 
     List<Author> findByName(String query);
-    
+
+    /**
+     * Returns all authors whose name contains the given string, case-insensitively.
+     */
     @Query("SELECT a FROM Author a WHERE LOWER(a.name) LIKE LOWER(CONCAT('%', :query, '%'))")
     List<Author> searchByName(@Param("query") String query);
 }

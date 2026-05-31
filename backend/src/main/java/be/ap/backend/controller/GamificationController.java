@@ -8,6 +8,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * REST controller for user gamification data.
+ *
+ * <p>
+ * Provides access to progress, points, and gamification-related state
+ * for the currently authenticated user.
+ * </p>
+ */
 @RestController
 @RequestMapping("gamification")
 @RequiredArgsConstructor
@@ -16,6 +24,12 @@ public class GamificationController {
     private final GamificationService gamificationService;
     private final SessionContext sessionContext;
 
+    /**
+     * Retrieves gamification data for the currently authenticated user.
+     *
+     * @return gamification summary DTO
+     * @throws MissingSessionException if no user is present in session
+     */
     @GetMapping
     public ResponseEntity<GamificationDTO> getGamification() {
         Object raw = sessionContext.getUserId();

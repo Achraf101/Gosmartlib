@@ -6,6 +6,14 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * Data transfer object representing a classroom overview.
+ *
+ * <p>
+ * Used to expose basic classroom information including its identifier,
+ * name, and the number of enrolled students.
+ * </p>
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

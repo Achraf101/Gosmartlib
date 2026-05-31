@@ -7,12 +7,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import lombok.RequiredArgsConstructor;
 
 /**
- * Entry point van de backend Spring Boot applicatie.
- *
- * <p>
- * Start de Spring context en bootstrap van alle configuratie,
- * beans en componenten.
- * </p>
+ * Entry point of the Spring Boot application.
  */
 @SpringBootApplication
 @RequiredArgsConstructor

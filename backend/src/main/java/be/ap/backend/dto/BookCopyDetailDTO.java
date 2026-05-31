@@ -3,6 +3,15 @@ package be.ap.backend.dto;
 import be.ap.backend.enums.CopyStatus;
 import lombok.Data;
 
+/**
+ * Detailed data transfer object representing a book copy in a specific
+ * location.
+ *
+ * <p>
+ * Used to expose enriched information about a physical book copy,
+ * including book metadata, location data, and availability status.
+ * </p>
+ */
 @Data
 public class BookCopyDetailDTO {
     private Long id;

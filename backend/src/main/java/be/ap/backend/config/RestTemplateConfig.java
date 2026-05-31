@@ -11,17 +11,22 @@ import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.core5.util.Timeout;
 
 /**
- * Configuratie van HTTP-gerelateerde beans.
+ * Configuration class for HTTP client infrastructure.
+ *
+ * <p>
+ * Defines a customized RestTemplate backed by Apache HttpClient
+ * with explicit connection and response timeouts.
+ * </p>
  */
 @Configuration
 @EnableConfigurationProperties(EncryptionProperties.class)
 public class RestTemplateConfig {
 
     /**
-     * Maakt een {@link RestTemplate} aan met een geconfigureerde Apache HTTP-client
-     * en expliciete time-outs voor uitgaande HTTP-aanroepen.
+     * Creates a RestTemplate configured with Apache HttpClient and strict timeouts
+     * to prevent hanging external HTTP calls.
      *
-     * @return de geconfigureerde {@link RestTemplate}
+     * @return configured RestTemplate instance for outbound HTTP requests
      */
     @Bean
     public RestTemplate restTemplate() {

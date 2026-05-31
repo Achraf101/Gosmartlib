@@ -7,6 +7,15 @@ import be.ap.backend.enums.Clib;
 import be.ap.backend.enums.FontSize;
 import lombok.Data;
 
+/**
+ * Data transfer object used to create a new book entry.
+ *
+ * <p>
+ * Contains all input fields required for book creation, including metadata,
+ * relations (author, publisher, genres, themes), and optional enrichment
+ * fields such as cover and contributors.
+ * </p>
+ */
 @Data
 public class CreateBookDTO {
     private Long bookType;

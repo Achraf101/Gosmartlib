@@ -11,9 +11,17 @@ import be.ap.backend.entity.Classroom;
 
 @Repository
 public interface ClassroomRepository extends JpaRepository<Classroom, Long> {
+    /**
+     * Returns the classroom with the given ID, eagerly fetching its enrollments and
+     * users.
+     */
     @Query("SELECT DISTINCT c FROM Classroom c LEFT JOIN FETCH c.enrollments e LEFT JOIN FETCH e.user WHERE c.id = :id")
     Optional<Classroom> findByIdWithStudents(@Param("id") Long id);
 
+    /**
+     * Returns {@code true} if the given teacher and student share at least one
+     * classroom.
+     */
     @Query("""
             SELECT CASE WHEN COUNT(se) > 0 THEN TRUE ELSE FALSE END
             FROM Enrollment te

@@ -17,6 +17,9 @@ import be.ap.backend.repository.ClassroomRepository;
 import be.ap.backend.repository.LoanRepository;
 import jakarta.persistence.EntityNotFoundException;
 
+/**
+ * Service for classroom-related operations available to teachers.
+ */
 @Service
 public class ClassroomService {
 
@@ -33,6 +36,10 @@ public class ClassroomService {
         this.enrollmentService = enrollmentService;
     }
 
+    /**
+     * Returns all classrooms for the given teacher, with names resolved from
+     * Smartschool.
+     */
     public List<ClassroomDTO> getClassroomsForTeacher(Long teacherId) {
 
         return enrollmentService.getClassroomsForTeacher(teacherId).stream()
@@ -44,6 +51,14 @@ public class ClassroomService {
                 .toList();
     }
 
+    /**
+     * Returns all students in the given classroom, sorted by last name then first
+     * name.
+     *
+     * @throws EntityNotFoundException if the classroom does not exist
+     * @throws SecurityException       if the given teacher is not enrolled in the
+     *                                 classroom
+     */
     public List<StudentPreviewDTO> getStudentsForClassroom(Long teacherId, Long classroomId) {
         Classroom classroom = classroomRepository.findByIdWithStudents(classroomId)
                 .orElseThrow(() -> new EntityNotFoundException("Klas niet gevonden met id: " + classroomId));
@@ -61,6 +76,10 @@ public class ClassroomService {
                 .toList();
     }
 
+    /**
+     * Returns {@code true} if the given teacher and student share at least one
+     * classroom.
+     */
     public boolean teacherCanViewStudent(Long teacherId, Long studentId) {
         return classroomRepository.teacherHasStudent(teacherId, studentId);
     }

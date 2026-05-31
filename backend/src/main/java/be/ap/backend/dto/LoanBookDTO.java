@@ -5,6 +5,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import be.ap.backend.entity.Author;
 import lombok.Data;
 
+/**
+ * DTO representing a book entry within a loan, including copy tracking and
+ * amounts.
+ */
 @Data
 public class LoanBookDTO {
     private Long id;

@@ -13,6 +13,15 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 
+/**
+ * Data transfer object representing a book search/result view.
+ *
+ * <p>
+ * Used as a read model for listing and retrieving books with enriched metadata
+ * such as author, series information, classification, genres, themes, and
+ * ratings.
+ * </p>
+ */
 @Getter
 @Setter
 @NoArgsConstructor

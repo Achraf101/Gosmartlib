@@ -13,6 +13,11 @@ import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Base64;
 
+/**
+ * Service for AES-256-GCM encryption and decryption.
+ * Each encrypt call generates a fresh random nonce, which is prepended to the
+ * ciphertext.
+ */
 @Service
 public class EncryptionService {
 
@@ -30,6 +35,9 @@ public class EncryptionService {
         this.secretKey = new SecretKeySpec(keyBytes, "AES");
     }
 
+    /**
+     * @throws EncryptionException if encryption fails
+     */
     public String encrypt(String plaintext) {
         try {
             byte[] nonce = new byte[NONCE_LENGTH_BYTES];
@@ -49,6 +57,9 @@ public class EncryptionService {
         }
     }
 
+    /**
+     * @throws EncryptionException if decryption fails
+     */
     public String decrypt(String encryptedBase64) {
         try {
             byte[] combined = Base64.getDecoder().decode(encryptedBase64);

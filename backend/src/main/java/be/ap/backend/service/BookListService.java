@@ -23,6 +23,9 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Service for managing user book lists, including sharing via tokens.
+ */
 @Service
 @RequiredArgsConstructor
 public class BookListService {
@@ -54,6 +57,13 @@ public class BookListService {
         return token;
     }
 
+    /**
+     * Generates and persists a unique share token for the given list if one does
+     * not already exist.
+     *
+     * @throws ResponseStatusException (404) if the list does not exist
+     * @throws ResponseStatusException (403) if the user does not own the list
+     */
     public BookList generateShareToken(Long userId, Long listId) {
         BookList list = bookListRepository.findById(listId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "List not found"));
@@ -88,6 +98,9 @@ public class BookListService {
         return bookListRepository.findByShareToken(token);
     }
 
+    /**
+     * @throws EntityNotFoundException if no list exists with the given ID
+     */
     public BookList renameList(Long listId, String newName) {
         BookList list = bookListRepository.findById(listId)
                 .orElseThrow(() -> new EntityNotFoundException("Lijst niet gevonden met id: " + listId));
@@ -122,6 +135,11 @@ public class BookListService {
         return bookListRepository.findListsWithoutBook(userId, bookId);
     }
 
+    /**
+     * Returns the list and its books for the given share token.
+     *
+     * @throws ResponseStatusException (404) if no list exists with the given token
+     */
     public SharedListResponseDTO getSharedList(String token) {
         BookList list = bookListRepository.findByShareToken(token)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "List not found"));
@@ -133,6 +151,13 @@ public class BookListService {
         return new SharedListResponseDTO(list, books);
     }
 
+    /**
+     * Clears the share token and removes all saved-list references for the given
+     * list.
+     *
+     * @throws ResponseStatusException (404) if the list does not exist
+     * @throws ResponseStatusException (403) if the user does not own the list
+     */
     public BookList removeShareToken(Long userId, Long listId) {
         BookList list = bookListRepository.findById(listId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "List not found"));

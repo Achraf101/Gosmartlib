@@ -4,6 +4,10 @@ import lombok.Data;
 
 import java.util.List;
 
+/**
+ * DTO representing a book held at a location, including stock levels and newly
+ * added copy identifiers.
+ */
 @Data
 public class LocationBookDetailDTO {
     private Long id;

@@ -18,6 +18,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * Service for querying user and classroom data from the Smartschool OneRoster
+ * API.
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -28,6 +32,13 @@ public class SmartschoolLookupService {
     private final UserRepository userRepository;
     private final SchoolRepository schoolRepository;
 
+    /**
+     * Returns the OneRoster user record for the given user, routing to the students
+     * or teachers endpoint based on role.
+     *
+     * @return the user data, or {@code null} if the request fails
+     * @throws EntityNotFoundException if the school does not exist
+     */
     @SuppressWarnings("unchecked")
     public Map<String, Object> getUser(Long schoolId, String oneRosterId, Set<UserRole> roles) {
         School school = getSchool(schoolId);
@@ -40,6 +51,12 @@ public class SmartschoolLookupService {
         return (Map<String, Object>) response.getOrDefault("user", response);
     }
 
+    /**
+     * Returns the OneRoster class record for the given Smartschool class ID.
+     *
+     * @return the class data, or {@code null} if the request fails
+     * @throws EntityNotFoundException if the school does not exist
+     */
     @SuppressWarnings("unchecked")
     public Map<String, Object> getClassroom(Long schoolId, String ssId) {
         School school = getSchool(schoolId);
@@ -50,6 +67,13 @@ public class SmartschoolLookupService {
         return (Map<String, Object>) response.get("class");
     }
 
+    /**
+     * Returns all teachers for the given school whose OneRoster ID is known in the
+     * local database.
+     *
+     * @return the list of matched teachers, or an empty list if the request fails
+     * @throws EntityNotFoundException if the school does not exist
+     */
     @SuppressWarnings("unchecked")
     public List<TeacherDTO> getAllTeachersForSchool(Long schoolId) {
         School school = getSchool(schoolId);

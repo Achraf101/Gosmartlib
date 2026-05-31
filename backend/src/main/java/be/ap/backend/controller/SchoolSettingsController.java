@@ -13,6 +13,19 @@ import be.ap.backend.exception.MissingSessionException;
 import be.ap.backend.service.SchoolSettingsService;
 import lombok.AllArgsConstructor;
 
+/**
+ * REST controller for managing school-specific configuration settings.
+ *
+ * <p>
+ * All operations are scoped to the currently authenticated school, which is
+ * resolved from the {@link SessionContext}.
+ * </p>
+ *
+ * <p>
+ * A request without a valid school session will result in a
+ * {@link MissingSessionException}.
+ * </p>
+ */
 @RestController
 @AllArgsConstructor
 @RequestMapping("school-settings")
@@ -21,6 +34,11 @@ public class SchoolSettingsController {
     private final SchoolSettingsService schoolSettingsService;
     private final SessionContext sessionContext;
 
+    /**
+     * Retrieves the settings for the current school.
+     *
+     * @return the current school settings
+     */
     @GetMapping
     public ResponseEntity<SchoolSettingsDTO> getSettings() {
         Object raw = sessionContext.getSchoolId();
@@ -30,6 +48,12 @@ public class SchoolSettingsController {
         return ResponseEntity.ok(schoolSettingsService.getSettings(schoolId));
     }
 
+    /**
+     * Updates the settings for the current school.
+     *
+     * @param dto new settings values
+     * @return the updated settings
+     */
     @PutMapping
     public ResponseEntity<SchoolSettingsDTO> updateSettings(@RequestBody SchoolSettingsDTO dto) {
         Object raw = sessionContext.getSchoolId();

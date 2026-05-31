@@ -11,16 +11,9 @@ import org.springframework.beans.factory.annotation.Value;
 import java.nio.file.*;
 
 /**
- * Initialiseert standaard cover-bestanden bij startup van de applicatie.
- *
- * <p>
- * Bij het opstarten worden resources uit de classpath gekopieerd naar de
- * geconfigureerde uploadmap indien ze nog niet bestaan.
- * </p>
- *
- * <p>
- * Deze operatie is idempotent en overschrijft bestaande bestanden niet.
- * </p>
+ * Copies default cover files from the classpath to the upload directory on
+ * startup.
+ * Existing files are never overwritten.
  */
 @Component
 public class CoverInitializer implements CommandLineRunner {
@@ -29,15 +22,7 @@ public class CoverInitializer implements CommandLineRunner {
     private String uploadDir;
 
     /**
-     * Kopieert default cover-bestanden van de classpath naar de upload directory.
-     *
-     * <p>
-     * Wordt automatisch uitgevoerd bij applicatiestart via
-     * {@link CommandLineRunner}.
-     * </p>
-     *
-     * @throws Exception indien het aanmaken van directories of kopiëren van
-     *                   bestanden faalt
+     * @throws Exception if directory creation or file copying fails
      */
     @Override
     public void run(String... args) throws Exception {

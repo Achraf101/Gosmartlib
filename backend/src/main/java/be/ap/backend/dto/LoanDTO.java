@@ -8,6 +8,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import be.ap.backend.enums.LoanStatus;
 import lombok.Data;
 
+/**
+ * DTO representing a loan, including its period, status, associated books, and
+ * group context.
+ */
 @Data
 public class LoanDTO {
     private Long id;

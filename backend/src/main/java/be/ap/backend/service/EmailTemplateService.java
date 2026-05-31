@@ -14,6 +14,9 @@ import org.springframework.stereotype.Service;
 import be.ap.backend.mapper.BookWithAmount;
 import jakarta.annotation.PostConstruct;
 
+/**
+ * Service for building HTML email bodies from classpath templates.
+ */
 @Service
 public class EmailTemplateService {
 
@@ -26,6 +29,9 @@ public class EmailTemplateService {
 
     private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d MMMM yyyy", new Locale("nl", "BE"));
 
+    /**
+     * Loads HTML templates from the classpath after the bean is initialised.
+     */
     @PostConstruct
     public void loadTemplates() throws IOException {
         loanTemplate = loadFile("templates/loan-overview.html");
@@ -38,6 +44,9 @@ public class EmailTemplateService {
         return new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
     }
 
+    /**
+     * Builds a loan confirmation email listing the borrowed books and return date.
+     */
     public String buildLoanEmail(List<BookWithAmount> books, LocalDate returnDate) {
 
         String formattedDate = returnDate.format(formatter);
@@ -53,6 +62,9 @@ public class EmailTemplateService {
         return template;
     }
 
+    /**
+     * Builds a loan reminder email listing the outstanding books and return date.
+     */
     public String buildReminderEmail(List<BookWithAmount> books, LocalDate returnDate) {
 
         String formattedDate = returnDate.format(formatter);

@@ -7,6 +7,10 @@ import be.ap.backend.enums.Clib;
 import be.ap.backend.enums.FontSize;
 import lombok.Data;
 
+/**
+ * DTO carrying updatable fields for an existing book, including metadata,
+ * classification flags, and related entity references.
+ */
 @Data
 public class UpdateBookDTO {
     private String title;

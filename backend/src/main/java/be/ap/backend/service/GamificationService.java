@@ -20,6 +20,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
+/**
+ * Service for gamification features including reading streaks and monthly
+ * challenges.
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -29,6 +33,10 @@ public class GamificationService {
     private final ChallengeRepository challengeRepository;
     private final UserChallengeRepository userChallengeRepository;
 
+    /**
+     * Returns the total number of books borrowed by the user across accepted,
+     * received, and returned loans.
+     */
     public int getTotalBooks(Long userId) {
         List<Loan> loans = loanRepository.findByUserId(userId);
         return loans.stream()
@@ -39,6 +47,11 @@ public class GamificationService {
                 .sum();
     }
 
+    /**
+     * Returns the full gamification summary for the user, including streak level
+     * and this month's challenges.
+     * Also triggers a completion check on all active challenges.
+     */
     public GamificationDTO getGamification(Long userId) {
         int totalBooks = getTotalBooks(userId);
         String streakLevel = getStreakLevel(totalBooks);
@@ -64,6 +77,9 @@ public class GamificationService {
         return result;
     }
 
+    /**
+     * Maps a total book count to a named streak level.
+     */
     public String getStreakLevel(int totalBooks) {
         if (totalBooks >= 100)
             return "Legendarische lezer";
@@ -86,6 +102,10 @@ public class GamificationService {
         return "Geen level";
     }
 
+    /**
+     * Returns the user's challenges for the current month, assigning three new ones
+     * if none exist yet.
+     */
     public List<UserChallenge> getChallengesForUser(Long userId) {
         String currentMonth = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
 
@@ -115,6 +135,10 @@ public class GamificationService {
         }
     }
 
+    /**
+     * Evaluates all incomplete challenges for the current month and marks any that
+     * the user has now fulfilled.
+     */
     public void checkChallenges(Long userId) {
         List<Loan> loans = loanRepository.findByUserId(userId);
         String currentMonth = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));

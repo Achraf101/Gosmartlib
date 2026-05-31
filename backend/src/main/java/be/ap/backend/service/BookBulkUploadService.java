@@ -46,6 +46,16 @@ import be.ap.backend.repository.PublisherRepository;
 import be.ap.backend.repository.ThemeRepository;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Service for bulk-importing books from an Excel spreadsheet.
+ *
+ * <p>
+ * Supports two modes per row: ISBN lookup (title + author provided) and manual
+ * entry.
+ * Rows that are valid are saved immediately; incomplete or invalid rows are
+ * collected
+ * and returned for user review.
+ */
 @Slf4j
 @Service
 public class BookBulkUploadService {
@@ -81,6 +91,10 @@ public class BookBulkUploadService {
         this.isbnLookupService = isbnLookupService;
     }
 
+    /**
+     * Generates a preview of an upload file by resolving each ISBN against the
+     * external lookup service.
+     */
     public BulkPreviewDTO generatePreview(InputStream inputStream) {
         BulkPreviewDTO result = new BulkPreviewDTO();
 
@@ -90,10 +104,12 @@ public class BookBulkUploadService {
             Set<String> seen = new HashSet<>();
             for (int i = 1; i <= sheet.getLastRowNum(); i++) {
                 Row row = sheet.getRow(i);
-                if (row == null) continue;
+                if (row == null)
+                    continue;
 
                 String isbn = getCellIsbn(row, 0);
-                if (isbn.isBlank() || !seen.add(isbn)) continue;
+                if (isbn.isBlank() || !seen.add(isbn))
+                    continue;
 
                 int rowNum = i + 1;
                 Optional<BookLookupDTO> lookup = isbnLookupService.lookup(isbn);
@@ -112,6 +128,10 @@ public class BookBulkUploadService {
         return result;
     }
 
+    /**
+     * Processes an upload file, saving valid books and collecting incomplete or
+     * skipped rows.
+     */
     public BulkUploadDTO processUpload(InputStream inputStream) {
         Map<String, Author> authorMap = loadAuthors();
         Map<String, Publisher> publisherMap = loadPublishers();
@@ -131,7 +151,8 @@ public class BookBulkUploadService {
 
             for (int i = 1; i <= sheet.getLastRowNum(); i++) {
                 Row row = sheet.getRow(i);
-                if (row == null) continue;
+                if (row == null)
+                    continue;
 
                 processRow(row, i + 1, result, authorMap, publisherMap, bookTypeMap,
                         genreMap, languageMap, languageByCode, themeMap,
@@ -145,17 +166,21 @@ public class BookBulkUploadService {
         return result;
     }
 
+    /**
+     * Processes a single spreadsheet row, delegating to ISBN lookup or manual entry
+     * as appropriate.
+     */
     private void processRow(Row row, int rowNum, BulkUploadDTO result,
-                           Map<String, Author> authorMap,
-                           Map<String, Publisher> publisherMap,
-                           Map<String, BookType> bookTypeMap,
-                           Map<String, Genre> genreMap,
-                           Map<String, Language> languageMap,
-                           Map<String, Language> languageByCode,
-                           Map<String, Theme> themeMap,
-                           Set<String> existingIsbns,
-                           Set<String> seenIsbns,
-                           Map<String, BookLookupDTO> lookupCache) {
+            Map<String, Author> authorMap,
+            Map<String, Publisher> publisherMap,
+            Map<String, BookType> bookTypeMap,
+            Map<String, Genre> genreMap,
+            Map<String, Language> languageMap,
+            Map<String, Language> languageByCode,
+            Map<String, Theme> themeMap,
+            Set<String> existingIsbns,
+            Set<String> seenIsbns,
+            Map<String, BookLookupDTO> lookupCache) {
 
         String isbn = getCellIsbn(row, 0);
         String title = getCellString(row, 1);
@@ -199,14 +224,18 @@ public class BookBulkUploadService {
                 genreMap, languageMap, themeMap);
     }
 
+    /**
+     * Resolves a row via the external ISBN lookup service and saves the book if all
+     * required fields are present.
+     */
     private void processIsbnLookup(int rowNum, String isbn, String title, String authorName,
-                                   String fiction, String bookTypeName, String genresRaw,
-                                   String themesRaw, String fontSize, String didactic,
-                                   String schoolOnly, String clib, BulkUploadDTO result,
-                                   Map<String, Author> authorMap, Map<String, Publisher> publisherMap,
-                                   Map<String, BookType> bookTypeMap,
-                                   Map<String, Language> languageByCode, Set<String> seenIsbns,
-                                   Map<String, BookLookupDTO> lookupCache) {
+            String fiction, String bookTypeName, String genresRaw,
+            String themesRaw, String fontSize, String didactic,
+            String schoolOnly, String clib, BulkUploadDTO result,
+            Map<String, Author> authorMap, Map<String, Publisher> publisherMap,
+            Map<String, BookType> bookTypeMap,
+            Map<String, Language> languageByCode, Set<String> seenIsbns,
+            Map<String, BookLookupDTO> lookupCache) {
 
         BookLookupDTO lookup = lookupCache.computeIfAbsent(isbn,
                 key -> isbnLookupService.lookup(key).orElse(null));
@@ -259,15 +288,19 @@ public class BookBulkUploadService {
         result.incrementAdded();
     }
 
+    /**
+     * Builds and saves a book from manually entered spreadsheet data, collecting
+     * validation errors.
+     */
     private void processManualEntry(int rowNum, String isbn, String title, String authorName,
-                                    String description, String didactic, String publisherName,
-                                    String clib, String fiction, String bookTypeName,
-                                    String genresRaw, String yearStr, String languageName,
-                                    String pageStr, String themesRaw, String fontSize,
-                                    String schoolOnly, String cover, BulkUploadDTO result,
-                                    Map<String, Author> authorMap, Map<String, Publisher> publisherMap,
-                                    Map<String, BookType> bookTypeMap, Map<String, Genre> genreMap,
-                                    Map<String, Language> languageMap, Map<String, Theme> themeMap) {
+            String description, String didactic, String publisherName,
+            String clib, String fiction, String bookTypeName,
+            String genresRaw, String yearStr, String languageName,
+            String pageStr, String themesRaw, String fontSize,
+            String schoolOnly, String cover, BulkUploadDTO result,
+            Map<String, Author> authorMap, Map<String, Publisher> publisherMap,
+            Map<String, BookType> bookTypeMap, Map<String, Genre> genreMap,
+            Map<String, Language> languageMap, Map<String, Theme> themeMap) {
 
         Author author = authorMap.get(authorName.toLowerCase());
         if (author == null) {
@@ -276,16 +309,18 @@ public class BookBulkUploadService {
         }
 
         if (!validateBooleanField(didactic, "Didactisch materiaal", rowNum, result) ||
-            !validateBooleanField(fiction, "Fictie", rowNum, result) ||
-            !validateBooleanField(schoolOnly, "Enkel zichtbaar voor deze school", rowNum, result)) {
+                !validateBooleanField(fiction, "Fictie", rowNum, result) ||
+                !validateBooleanField(schoolOnly, "Enkel zichtbaar voor deze school", rowNum, result)) {
             return;
         }
 
         Integer year = parseYear(yearStr, rowNum, result);
-        if (year == null && !yearStr.isBlank()) return;
+        if (year == null && !yearStr.isBlank())
+            return;
 
         Integer pages = parsePages(pageStr, rowNum, result);
-        if (pages == null && !pageStr.isBlank()) return;
+        if (pages == null && !pageStr.isBlank())
+            return;
 
         BookType bookType = bookTypeName.isBlank() ? null : bookTypeMap.get(bookTypeName.toLowerCase());
         Language language = languageName.isBlank() ? null : languageMap.get(languageName.toLowerCase());
@@ -300,7 +335,8 @@ public class BookBulkUploadService {
         boolean publisherInvalid = false;
         if (!publisherName.isBlank()) {
             publisher = publisherMap.get(publisherName.toLowerCase());
-            if (publisher == null) publisherInvalid = true;
+            if (publisher == null)
+                publisherInvalid = true;
         }
 
         boolean clibInvalid = !clib.isBlank() &&
@@ -311,15 +347,24 @@ public class BookBulkUploadService {
         List<String> missingFields = new ArrayList<>();
         List<String> invalidFields = new ArrayList<>();
 
-        if (description.isBlank()) missingFields.add("beschrijving");
-        if (bookType == null) missingFields.add("boektype");
-        if (genres.isEmpty()) missingFields.add("genres");
-        if (language == null) missingFields.add("taal");
-        if (!unknownGenres.isEmpty()) invalidFields.add("genres: onbekend: " + String.join(", ", unknownGenres));
-        if (!unknownThemes.isEmpty()) invalidFields.add("themas: onbekend: " + String.join(", ", unknownThemes));
-        if (publisherInvalid) invalidFields.add("uitgever: onbekend: " + publisherName);
-        if (clibInvalid) invalidFields.add("clib: ongeldige waarde: " + clib);
-        if (fontSizeInvalid) invalidFields.add("lettergrootte: ongeldige waarde: " + fontSize);
+        if (description.isBlank())
+            missingFields.add("beschrijving");
+        if (bookType == null)
+            missingFields.add("boektype");
+        if (genres.isEmpty())
+            missingFields.add("genres");
+        if (language == null)
+            missingFields.add("taal");
+        if (!unknownGenres.isEmpty())
+            invalidFields.add("genres: onbekend: " + String.join(", ", unknownGenres));
+        if (!unknownThemes.isEmpty())
+            invalidFields.add("themas: onbekend: " + String.join(", ", unknownThemes));
+        if (publisherInvalid)
+            invalidFields.add("uitgever: onbekend: " + publisherName);
+        if (clibInvalid)
+            invalidFields.add("clib: ongeldige waarde: " + clib);
+        if (fontSizeInvalid)
+            invalidFields.add("lettergrootte: ongeldige waarde: " + fontSize);
 
         if (!missingFields.isEmpty() || !invalidFields.isEmpty()) {
             result.addIncomplete(new IncompleteBookDTO(
@@ -345,11 +390,16 @@ public class BookBulkUploadService {
         }
     }
 
+    /**
+     * Constructs a {@link Book} entity from the provided field values.
+     * Returns {@code null} and records an error if an enum field contains an
+     * invalid value.
+     */
     private Book createBook(String title, Author author, String description, String fiction,
-                           BookType bookType, List<Genre> genres, List<Theme> themes,
-                           Language language, Integer year, Integer pages, String isbn,
-                           Publisher publisher, String clib, String fontSize, String cover,
-                           int rowNum, BulkUploadDTO result) {
+            BookType bookType, List<Genre> genres, List<Theme> themes,
+            Language language, Integer year, Integer pages, String isbn,
+            Publisher publisher, String clib, String fontSize, String cover,
+            int rowNum, BulkUploadDTO result) {
 
         Book book = new Book();
         book.setTitle(title);
@@ -360,10 +410,14 @@ public class BookBulkUploadService {
         book.setGenres(new HashSet<>(genres));
         book.setThemes(new HashSet<>(themes));
         book.setLanguage(language);
-        if (year != null) book.setPublished(Year.of(year));
-        if (pages != null) book.setPages(pages);
-        if (!isbn.isBlank()) book.setIsbn(isbn);
-        if (publisher != null) book.setPublisher(publisher);
+        if (year != null)
+            book.setPublished(Year.of(year));
+        if (pages != null)
+            book.setPages(pages);
+        if (!isbn.isBlank())
+            book.setIsbn(isbn);
+        if (publisher != null)
+            book.setPublisher(publisher);
 
         if (!clib.isBlank()) {
             try {
@@ -431,6 +485,10 @@ public class BookBulkUploadService {
                 .collect(Collectors.toMap(t -> t.getName().toLowerCase(), t -> t, (a, b) -> a));
     }
 
+    /**
+     * Returns the author from the cache, creating and persisting a new one if
+     * absent.
+     */
     private Author getOrCreateAuthor(String authorName, String lookupName, Map<String, Author> authorMap) {
         Author author = authorMap.get(authorName.toLowerCase());
         if (author == null) {
@@ -442,10 +500,14 @@ public class BookBulkUploadService {
         return author;
     }
 
+    /**
+     * Populates optional book fields (description, publisher, language, etc.) from
+     * an ISBN lookup result.
+     */
     private void populateBookFromLookup(Book book, BookLookupDTO lookup, String bookTypeName,
-                                       Map<String, Publisher> publisherMap,
-                                       Map<String, BookType> bookTypeMap,
-                                       Map<String, Language> languageByCode) {
+            Map<String, Publisher> publisherMap,
+            Map<String, BookType> bookTypeMap,
+            Map<String, Language> languageByCode) {
         if (lookup.getDescription() != null) {
             book.setDescription(lookup.getDescription().length() > 1000
                     ? lookup.getDescription().substring(0, 1000)
@@ -459,61 +521,90 @@ public class BookBulkUploadService {
         }
         if (lookup.getCoverUrl() != null) {
             String saved = uploadService.saveCoverFromUrl(lookup.getCoverUrl());
-            if (saved != null) book.setCover(saved);
+            if (saved != null)
+                book.setCover(saved);
         }
         if (lookup.getPublisherName() != null) {
             Publisher p = publisherMap.get(lookup.getPublisherName().toLowerCase());
-            if (p != null) book.setPublisher(p);
+            if (p != null)
+                book.setPublisher(p);
         }
         if (!bookTypeName.isBlank()) {
             BookType bt = bookTypeMap.get(bookTypeName.toLowerCase());
-            if (bt != null) book.setBookType(bt);
+            if (bt != null)
+                book.setBookType(bt);
         }
         if (lookup.getLanguageCode() != null) {
             Language lang = languageByCode.get(lookup.getLanguageCode().toLowerCase());
-            if (lang != null) book.setLanguage(lang);
+            if (lang != null)
+                book.setLanguage(lang);
         }
     }
 
+    /**
+     * Returns the names of required fields that are missing from the given book.
+     */
     private List<String> validateBook(Book book) {
         List<String> missingFields = new ArrayList<>();
-        if (book.getBookType() == null) missingFields.add("boektype");
-        if (book.getGenres() == null || book.getGenres().isEmpty()) missingFields.add("genres");
-        if (book.getLanguage() == null) missingFields.add("taal");
-        if (book.getDescription() == null || book.getDescription().isBlank()) missingFields.add("beschrijving");
+        if (book.getBookType() == null)
+            missingFields.add("boektype");
+        if (book.getGenres() == null || book.getGenres().isEmpty())
+            missingFields.add("genres");
+        if (book.getLanguage() == null)
+            missingFields.add("taal");
+        if (book.getDescription() == null || book.getDescription().isBlank())
+            missingFields.add("beschrijving");
         return missingFields;
     }
 
+    /**
+     * Resolves a comma-separated genre string against the genre map, returning
+     * unrecognised names.
+     */
     private List<String> resolveGenres(String genresRaw, Map<String, Genre> genreMap, List<Genre> genres) {
         Set<String> genreNameSet = new LinkedHashSet<>();
         for (String token : genresRaw.split(",")) {
-            if (!token.isBlank()) genreNameSet.add(token.trim().toLowerCase());
+            if (!token.isBlank())
+                genreNameSet.add(token.trim().toLowerCase());
         }
 
         List<String> unknownGenres = new ArrayList<>();
         for (String name : genreNameSet) {
             Genre genre = genreMap.get(name);
-            if (genre == null) unknownGenres.add(name);
-            else genres.add(genre);
+            if (genre == null)
+                unknownGenres.add(name);
+            else
+                genres.add(genre);
         }
         return unknownGenres;
     }
 
+    /**
+     * Resolves a comma-separated theme string against the theme map, returning
+     * unrecognised names.
+     */
     private List<String> resolveThemes(String themesRaw, Map<String, Theme> themeMap, List<Theme> themes) {
         Set<String> themeNameSet = new LinkedHashSet<>();
         for (String token : themesRaw.split(",")) {
-            if (!token.isBlank()) themeNameSet.add(token.trim().toLowerCase());
+            if (!token.isBlank())
+                themeNameSet.add(token.trim().toLowerCase());
         }
 
         List<String> unknownThemes = new ArrayList<>();
         for (String name : themeNameSet) {
             Theme theme = themeMap.get(name);
-            if (theme == null) unknownThemes.add(name);
-            else themes.add(theme);
+            if (theme == null)
+                unknownThemes.add(name);
+            else
+                themes.add(theme);
         }
         return unknownThemes;
     }
 
+    /**
+     * Validates that a boolean field is blank, "JA", or "NEE"; records an error and
+     * returns false otherwise.
+     */
     private boolean validateBooleanField(String value, String fieldName, int rowNum, BulkUploadDTO result) {
         if (!value.isBlank() && !value.equalsIgnoreCase("JA") && !value.equalsIgnoreCase("NEE")) {
             result.addError(rowNum, fieldName + " moet JA of NEE zijn");
@@ -523,7 +614,8 @@ public class BookBulkUploadService {
     }
 
     private Integer parseYear(String yearStr, int rowNum, BulkUploadDTO result) {
-        if (yearStr.isBlank()) return null;
+        if (yearStr.isBlank())
+            return null;
         try {
             return Integer.parseInt(yearStr.replace(".0", "").trim());
         } catch (NumberFormatException e) {
@@ -533,7 +625,8 @@ public class BookBulkUploadService {
     }
 
     private Integer parsePages(String pageStr, int rowNum, BulkUploadDTO result) {
-        if (pageStr.isBlank()) return null;
+        if (pageStr.isBlank())
+            return null;
         try {
             int pages = Integer.parseInt(pageStr.replace(".0", "").trim());
             if (pages < 1) {
@@ -548,10 +641,16 @@ public class BookBulkUploadService {
     }
 
     private boolean parseBoolean(String value, boolean defaultValue) {
-        if (value.isBlank()) return defaultValue;
+        if (value.isBlank())
+            return defaultValue;
         return value.equalsIgnoreCase("JA");
     }
 
+    /**
+     * Returns the "Books" sheet from the workbook.
+     *
+     * @throws ResponseStatusException (400) if the sheet is absent
+     */
     private Sheet getValidatedSheet(Workbook wb) {
         Sheet sheet = wb.getSheet("Books");
         if (sheet == null) {
@@ -564,12 +663,14 @@ public class BookBulkUploadService {
 
     private String getCellString(Row row, int cellIndex) {
         Cell cell = row.getCell(cellIndex, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
-        if (cell == null) return "";
+        if (cell == null)
+            return "";
 
         return switch (cell.getCellType()) {
             case STRING -> cell.getStringCellValue().trim();
             case NUMERIC -> {
-                if (DateUtil.isCellDateFormatted(cell)) yield "";
+                if (DateUtil.isCellDateFormatted(cell))
+                    yield "";
                 yield new DataFormatter().formatCellValue(cell).trim();
             }
             case BOOLEAN -> String.valueOf(cell.getBooleanCellValue());
@@ -580,7 +681,8 @@ public class BookBulkUploadService {
 
     private String getCellIsbn(Row row, int cellIndex) {
         Cell cell = row.getCell(cellIndex, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
-        if (cell == null) return "";
+        if (cell == null)
+            return "";
 
         return switch (cell.getCellType()) {
             case STRING -> cell.getStringCellValue().trim();

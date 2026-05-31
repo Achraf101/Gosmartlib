@@ -13,6 +13,15 @@ import be.ap.backend.entity.UserRole;
 import be.ap.backend.exception.MissingSessionException;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Exposes information about the currently authenticated user based on the HTTP
+ * session.
+ *
+ * <p>
+ * Returns a DTO containing identity and profile data stored in the session
+ * context.
+ * </p>
+ */
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
@@ -20,6 +29,15 @@ public class CurrentUserController {
 
     private final SessionContext sessionContext;
 
+    /**
+     * Retrieves the current authenticated user from the session.
+     *
+     * <p>
+     * Throws an exception if no valid session is present.
+     * </p>
+     *
+     * @return DTO containing the current user's session data
+     */
     @GetMapping("/current-user")
     public ResponseEntity<CurrentUserDTO> getCurrentUser() {
         if (sessionContext.getUserId() == null) {

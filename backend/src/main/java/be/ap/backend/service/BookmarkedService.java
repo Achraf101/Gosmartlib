@@ -15,6 +15,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+/**
+ * Service for managing bookmarked books per user.
+ */
 @RequiredArgsConstructor
 @Service
 public class BookmarkedService {
@@ -39,6 +42,13 @@ public class BookmarkedService {
         return bookmarkedRepository.existsByUserIdAndBookId(userId, bookId);
     }
 
+    /**
+     * Adds or removes the bookmark for the given user and book.
+     *
+     * @return {@code true} if the book was bookmarked, {@code false} if it was
+     *         removed
+     * @throws EntityNotFoundException if the user or book does not exist
+     */
     @Transactional
     public boolean toggleBookmarked(Long userId, Long bookId) {
         if (bookmarkedRepository.existsByUserIdAndBookId(userId, bookId)) {

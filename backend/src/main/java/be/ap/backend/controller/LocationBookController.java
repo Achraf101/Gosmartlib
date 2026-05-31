@@ -21,6 +21,10 @@ import be.ap.backend.exception.MissingSessionException;
 import be.ap.backend.service.LocationBookService;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * REST controller for managing location-book relations.
+ * Handles book inventory per location and school-level availability/statistics.
+ */
 @RestController
 @RequestMapping("locationbook")
 @RequiredArgsConstructor
@@ -29,16 +33,35 @@ public class LocationBookController {
     private final LocationBookService locationBookService;
     private final SessionContext sessionContext;
 
+    /**
+     * Creates a new location-book relation.
+     *
+     * @param dto location-book data
+     * @return created location-book details
+     */
     @PostMapping
     public ResponseEntity<LocationBookDetailDTO> createLocationBook(@RequestBody LocationBookDTO dto) {
         return ResponseEntity.ok(locationBookService.createLocationBook(dto));
     }
 
+    /**
+     * Retrieves all location-book entries.
+     *
+     * @return list of all location-book details
+     */
     @GetMapping
     public ResponseEntity<List<LocationBookDetailDTO>> getAll() {
         return ResponseEntity.ok(locationBookService.findAll());
     }
 
+    /**
+     * Retrieves paginated books for a specific location.
+     *
+     * @param locationId location id
+     * @param page       page index
+     * @param size       page size
+     * @return paginated list of location-book details
+     */
     @GetMapping("/location/{locationId}")
     public ResponseEntity<Page<LocationBookDetailDTO>> getByLocation(
             @PathVariable Long locationId,
@@ -47,6 +70,13 @@ public class LocationBookController {
         return ResponseEntity.ok(locationBookService.findByLocation(locationId, page, size));
     }
 
+    /**
+     * Retrieves a specific book in a specific location.
+     *
+     * @param locationId location id
+     * @param bookId     book id
+     * @return location-book detail
+     */
     @GetMapping("/{locationId}/books/{bookId}")
     public ResponseEntity<LocationBookDetailDTO> getLocationBook(
             @PathVariable Long locationId,
@@ -54,6 +84,12 @@ public class LocationBookController {
         return ResponseEntity.ok(locationBookService.getLocationBook(locationId, bookId));
     }
 
+    /**
+     * Retrieves availability of a book across locations for the current school.
+     *
+     * @param bookId book id
+     * @return list of availability per location
+     */
     @GetMapping("/book/{bookId}")
     public ResponseEntity<List<LocationAvailabilityDTO>> getAvailabilityByBook(
             @PathVariable Long bookId) {
@@ -64,6 +100,11 @@ public class LocationBookController {
         return ResponseEntity.ok(locationBookService.getAvailabilityByBook(bookId, schoolId));
     }
 
+    /**
+     * Retrieves aggregated statistics for the current school.
+     *
+     * @return school statistics
+     */
     @GetMapping("/stats")
     public ResponseEntity<SchoolStatsDTO> getSchoolStats() {
         Object raw = sessionContext.getSchoolId();

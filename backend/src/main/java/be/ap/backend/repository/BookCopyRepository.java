@@ -18,6 +18,10 @@ public interface BookCopyRepository extends JpaRepository<BookCopy, Long> {
 
     List<BookCopy> findByLocationBookIdAndStatus(Long locationBookId, CopyStatus status);
 
+    /**
+     * Returns the highest numeric suffix across all accession IDs,
+     * or 0 if no copies exist. Used to generate the next accession ID.
+     */
     @Query(value = "SELECT COALESCE(MAX(CAST(SUBSTRING(accession_id, 5) AS UNSIGNED)), 0) FROM book_copy", nativeQuery = true)
     int findMaxSequenceNumber();
 }

@@ -39,6 +39,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Service handling the Smartschool OAuth2 authorization code flow.
+ */
 @Service
 @RequiredArgsConstructor
 public class OAuthService {
@@ -56,6 +59,13 @@ public class OAuthService {
     @Value("${app.smartschool.callback}")
     private String callback;
 
+    /**
+     * Exchanges the authorization code for tokens, resolves the user, and creates
+     * an authenticated session.
+     *
+     * @return a redirect to "/" on success, or an appropriate error response if any
+     *         step fails
+     */
     public ResponseEntity<?> handleCallback(String code, String originplatform, HttpServletRequest httpRequest)
             throws Exception {
         AuthorizationCode authCode = new AuthorizationCode(code);
@@ -110,6 +120,10 @@ public class OAuthService {
         return ResponseEntity.status(HttpStatus.FOUND).header("Location", "/").build();
     }
 
+    /**
+     * Creates an authenticated HTTP session for the given user, storing identity
+     * and role attributes.
+     */
     private void createSession(HttpServletRequest httpRequest, User user, School school, Long locationId,
             String firstName, String lastName, String email) {
         HttpSession session = httpRequest.getSession(true);
@@ -132,6 +146,12 @@ public class OAuthService {
         session.setAttribute("email", email);
     }
 
+    /**
+     * Fetches the Smartschool user ID from the userinfo endpoint using the given
+     * access token.
+     *
+     * @return the Smartschool user ID, or {@code null} if the request fails
+     */
     private String getSsId(Tokens tokens, String userInfoUrl) {
         RestTemplate rest = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();

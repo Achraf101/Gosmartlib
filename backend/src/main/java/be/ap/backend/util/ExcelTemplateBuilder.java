@@ -9,34 +9,23 @@ import java.util.zip.ZipOutputStream;
 import org.springframework.stereotype.Component;
 
 /**
- * Bouwt een minimalistisch Excel (.xlsx) template in-memory zonder externe
+ * Builds a minimal in-memory Excel (.xlsx) import template without external
  * libraries.
  *
  * <p>
- * De gegenereerde file is een geldige ZIP-structuur volgens de
- * OOXML-specificatie
- * en bevat een vooraf gedefinieerde worksheet met kolomheaders voor
- * boekmetadata.
- * </p>
- *
- * <p>
- * Dit wordt gebruikt om gebruikers een downloadbaar import-template aan te
- * bieden.
+ * The generated file is a valid OOXML ZIP archive containing a single "Books"
+ * worksheet
+ * with predefined column headers for book metadata.
  * </p>
  */
 @Component
 public class ExcelTemplateBuilder {
 
     /**
-     * Genereert een Excel-template (.xlsx) als byte-array.
+     * Generates the Excel template as a byte array.
      *
-     * <p>
-     * De output is een volledig opgebouwd ZIP-archief met minimale OOXML-structuur
-     * en één worksheet ("Books") met vooraf gedefinieerde kolommen.
-     * </p>
-     *
-     * @return de gegenereerde Excel-file als byte-array
-     * @throws IOException indien het schrijven naar de ZIP-stream faalt
+     * @return the generated {@code .xlsx} file as a byte array
+     * @throws IOException if writing to the ZIP stream fails
      */
     public byte[] buildTemplateXlsx() throws IOException {
         String sheetXml = buildSheetXml();

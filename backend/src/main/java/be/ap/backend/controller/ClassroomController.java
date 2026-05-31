@@ -15,6 +15,14 @@ import be.ap.backend.dto.StudentPreviewDTO;
 import be.ap.backend.entity.UserRole;
 import be.ap.backend.service.ClassroomService;
 
+/**
+ * REST controller for managing classrooms.
+ *
+ * <p>
+ * Provides endpoints for teachers to access their classrooms
+ * and retrieve student information within a classroom.
+ * </p>
+ */
 @RestController
 @RequestMapping("classrooms")
 public class ClassroomController {
@@ -28,12 +36,31 @@ public class ClassroomController {
 
     }
 
+    /**
+     * Retrieves all classrooms assigned to the currently authenticated teacher.
+     *
+     * @return list of classroom DTOs
+     * @throws ResponseStatusException if the user is not a teacher or not
+     *                                 authenticated
+     */
     @GetMapping
     public ResponseEntity<List<ClassroomDTO>> getMyClassrooms() {
         Long teacherId = requireTeacher();
         return ResponseEntity.ok(classroomService.getClassroomsForTeacher(teacherId));
     }
 
+    /**
+     * Retrieves all students for a specific classroom.
+     *
+     * <p>
+     * Access is restricted to the teacher owning the classroom.
+     * </p>
+     *
+     * @param id classroom identifier
+     * @return list of student preview DTOs
+     * @throws ResponseStatusException if access is forbidden or user is not
+     *                                 authenticated
+     */
     @GetMapping("/{id}/students")
     public ResponseEntity<List<StudentPreviewDTO>> getStudents(@PathVariable Long id) {
         Long teacherId = requireTeacher();
@@ -44,6 +71,13 @@ public class ClassroomController {
         }
     }
 
+    /**
+     * Validates that the current user is authenticated and has teacher role.
+     *
+     * @return the authenticated user ID
+     * @throws ResponseStatusException if the user is not authenticated or not a
+     *                                 teacher
+     */
     private Long requireTeacher() {
         if (!sessionContext.hasRole(UserRole.LEERKRACHT)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Alleen leerkrachten hebben toegang.");

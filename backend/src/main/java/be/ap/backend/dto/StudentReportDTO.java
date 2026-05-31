@@ -8,6 +8,11 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * DTO representing a full reading report for a student, including borrow
+ * history,
+ * a book preview, reviews, and aggregated statistics.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

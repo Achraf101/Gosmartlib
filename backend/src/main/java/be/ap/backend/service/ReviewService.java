@@ -12,6 +12,10 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Service for managing book reviews, including content filtering and rating
+ * updates.
+ */
 @Service
 @RequiredArgsConstructor
 public class ReviewService {
@@ -26,10 +30,18 @@ public class ReviewService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Adds a review for the given book after validating content for bad words and
+     * URLs.
+     * Updates the book's aggregate rating after saving.
+     *
+     * @throws EntityNotFoundException  if the book does not exist
+     * @throws IllegalArgumentException if the review content contains inappropriate
+     *                                  language or URLs
+     */
     public ReviewDTO addReview(Long bookId, ReviewDTO dto, Long userId) {
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new EntityNotFoundException("Boek niet gevonden"));
-
 
         Review review = new Review();
         review.setBook(book);
@@ -50,6 +62,13 @@ public class ReviewService {
         return toDTO(saved);
     }
 
+    /**
+     * Deletes the given review if it belongs to the requesting user.
+     * Updates the book's aggregate rating after deletion.
+     *
+     * @throws IllegalArgumentException if the review does not exist or does not
+     *                                  belong to the user
+     */
     public void deleteReview(Long reviewId, Long userId) {
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new IllegalArgumentException("Recensie niet gevonden."));
@@ -60,6 +79,12 @@ public class ReviewService {
         updateBookRating(review.getBook().getId());
     }
 
+    /**
+     * Deletes the given review without ownership checks, for use by moderators.
+     * Updates the book's aggregate rating after deletion.
+     *
+     * @throws IllegalArgumentException if the review does not exist
+     */
     public void forceDeleteReview(Long reviewId) {
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new IllegalArgumentException("Recensie niet gevonden."));
@@ -68,6 +93,10 @@ public class ReviewService {
         updateBookRating(bookId);
     }
 
+    /**
+     * Recalculates and persists the average rating and review count for the given
+     * book.
+     */
     void updateBookRating(Long bookId) {
         Double avg = reviewRepository.findAverageRatingByBookId(bookId);
         Long count = reviewRepository.findReviewCountByBookId(bookId);

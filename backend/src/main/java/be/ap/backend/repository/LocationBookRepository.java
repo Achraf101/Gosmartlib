@@ -23,9 +23,15 @@ public interface LocationBookRepository extends JpaRepository<LocationBook, Long
 
     List<LocationBook> findByBookIdAndLocationSchoolId(Long bookId, Long schoolId);
 
+    /**
+     * Returns the total stock across all locations for the given school.
+     */
     @Query("SELECT SUM(cb.amount) FROM LocationBook cb WHERE cb.location.school.id = :schoolId")
     Integer sumAmountBySchoolId(@Param("schoolId") Long schoolId);
 
+    /**
+     * Returns the total available stock across all locations for the given school.
+     */
     @Query("SELECT SUM(cb.currentAmount) FROM LocationBook cb WHERE cb.location.school.id = :schoolId")
     Integer sumCurrentAmountBySchoolId(@Param("schoolId") Long schoolId);
 }

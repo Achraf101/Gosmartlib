@@ -14,16 +14,24 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Service for looking up Internet Archive identifiers via the Open Library API.
+ */
 @Service
 @RequiredArgsConstructor
 public class OpenLibraryService {
 
     private final ObjectMapper objectMapper;
 
+    /**
+     * Returns the first Internet Archive identifier for the given ISBN, if
+     * available.
+     */
     public Optional<String> getIaIdentifier(String isbn) {
         try {
             String body = fetchResponse(isbn);
-            if (body == null) return Optional.empty();
+            if (body == null)
+                return Optional.empty();
 
             JsonNode root = objectMapper.readTree(body);
             JsonNode docs = root.path("docs");
@@ -43,6 +51,11 @@ public class OpenLibraryService {
         }
     }
 
+    /**
+     * Fetches the raw Open Library search response for the given ISBN.
+     *
+     * @return the response body, or {@code null} if the HTTP status is not 200
+     */
     protected String fetchResponse(String isbn) throws Exception {
         URL url = new URI("https://openlibrary.org/search.json?isbn=" + isbn + "&fields=ia&limit=1")
                 .toURL();

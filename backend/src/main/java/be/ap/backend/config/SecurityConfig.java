@@ -21,8 +21,13 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 /**
- * Configureert de beveiliging van de applicatie, waaronder authenticatie,
- * autorisatie en sessiebeheer.
+ * Central security configuration for authentication, authorization, and session
+ * handling.
+ *
+ * <p>
+ * Defines form login, logout behavior, session management, and role-based
+ * access rules.
+ * </p>
  */
 @Configuration
 @EnableWebSecurity
@@ -34,10 +39,10 @@ public class SecurityConfig {
     private final UserService userService;
 
     /**
-     * Publiceert HTTP-sessie-events zodat Spring Security wijzigingen in sessies
-     * kan opvolgen.
+     * Publishes HTTP session lifecycle events to allow Spring Security
+     * to track session creation and destruction.
      *
-     * @return de publisher voor HTTP-sessie-events
+     * @return event publisher for HTTP session monitoring
      */
     @Bean
     public HttpSessionEventPublisher httpSessionEventPublisher() {
@@ -49,12 +54,16 @@ public class SecurityConfig {
     }
 
     /**
-     * Configureert de security filter chain met authenticatie, autorisatieregels,
-     * login- en logoutafhandeling.
+     * Configures the Spring Security filter chain.
      *
-     * @param http de {@link HttpSecurity} configuratie
-     * @return de geconfigureerde security filter chain
-     * @throws Exception wanneer de securityconfiguratie niet kan worden opgebouwd
+     * <p>
+     * Includes authentication rules, session policy, login/logout handlers,
+     * and exception handling for unauthorized access.
+     * </p>
+     *
+     * @param http Spring Security HTTP configuration
+     * @return configured security filter chain
+     * @throws Exception if security configuration fails
      */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -110,10 +119,10 @@ public class SecurityConfig {
     }
 
     /**
-     * Maakt de password encoder aan die gebruikt wordt voor het hashen en
-     * verifiëren van wachtwoorden.
+     * Provides a BCrypt-based password encoder used for hashing and verifying
+     * passwords.
      *
-     * @return de geconfigureerde password encoder
+     * @return configured PasswordEncoder instance
      */
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -121,11 +130,11 @@ public class SecurityConfig {
     }
 
     /**
-     * Configureert de authenticatieprovider die gebruikersgegevens ophaalt via
-     * de {@link UserService} en wachtwoorden valideert met de geconfigureerde
-     * password encoder.
+     * Configures the authentication provider that delegates user lookup to
+     * UserService
+     * and validates credentials using the configured password encoder.
      *
-     * @return de geconfigureerde authenticatieprovider
+     * @return configured DaoAuthenticationProvider
      */
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {

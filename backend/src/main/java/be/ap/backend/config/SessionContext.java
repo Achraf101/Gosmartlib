@@ -10,11 +10,11 @@ import be.ap.backend.entity.UserRole;
 import jakarta.servlet.http.HttpSession;
 
 /**
- * Request-scoped wrapper rond de huidige HTTP-sessie.
+ * Request-scoped wrapper around the HTTP session.
  *
  * <p>
- * Biedt typeveilige toegang tot gebruikersgegevens die tijdens de
- * authenticatie in de sessie worden opgeslagen.
+ * Provides typed access to authentication-related session attributes
+ * stored during login.
  * </p>
  */
 @Component
@@ -28,9 +28,9 @@ public class SessionContext {
     }
 
     /**
-     * Haalt de ID van de aangemelde gebruiker uit de sessie.
+     * Retrieves the authenticated user's ID from the session.
      *
-     * @return de gebruikers-ID of {@code null} indien niet aanwezig
+     * @return user ID if present, otherwise {@code null}
      */
     public Long getUserId() {
         Object raw = session.getAttribute("userId");
@@ -39,16 +39,20 @@ public class SessionContext {
         return (Long) raw;
     }
 
+    /**
+     * Stores the authenticated user's ID in the session.
+     *
+     * @param id the user ID to store
+     */
     public void setUserId(Long id) {
         session.setAttribute("userId", id);
     }
 
     /**
-     * Haalt de rollen van de huidige gebruiker op uit de sessie en zet deze
-     * om naar {@link UserRole}-waarden.
+     * Retrieves the user's roles from the session and converts them to
+     * {@link UserRole}.
      *
-     * @return de rollen van de gebruiker of een lege set indien geen rollen
-     *         beschikbaar zijn
+     * @return roles of the user, or an empty set if none are present
      */
     public Set<UserRole> getRoles() {
         Object raw = session.getAttribute("roles");
@@ -63,20 +67,14 @@ public class SessionContext {
 
     }
 
-    /**
-     * Controleert of de huidige gebruiker een bepaalde rol heeft.
-     *
-     * @param role de te controleren rol
-     * @return {@code true} indien de gebruiker de rol bezit, anders {@code false}
-     */
     public boolean hasRole(UserRole role) {
         return getRoles().contains(role);
     }
 
     /**
-     * Slaat de rollen van de gebruiker op in de sessie.
+     * Stores the user's roles in the session.
      *
-     * @param roles de rollen die moeten worden opgeslagen
+     * @param roles roles to store
      */
     public void setRole(Set<UserRole> roles) {
         Set<String> roleStrings = roles.stream()

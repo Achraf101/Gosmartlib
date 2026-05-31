@@ -20,6 +20,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import be.ap.backend.dto.BookLookupDTO;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Service for looking up book metadata by ISBN via the Google Books API.
+ */
 @Service
 @RequiredArgsConstructor
 public class IsbnLookupService {
@@ -28,6 +31,14 @@ public class IsbnLookupService {
 
     private final ObjectMapper objectMapper;
 
+    /**
+     * Looks up book metadata for the given ISBN.
+     * Descriptions are truncated to 500 characters; subtitles are appended to the
+     * title.
+     *
+     * @return the book metadata, or empty if the ISBN was not found or the request
+     *         failed
+     */
     public Optional<BookLookupDTO> lookup(String isbn) {
         try {
             String cleanIsbn = isbn.replaceAll("[^0-9Xx]", "");

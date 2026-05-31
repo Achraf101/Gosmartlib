@@ -16,16 +16,12 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 /**
- * Centrale exception handler voor de REST API.
+ * Global exception handler for the REST API.
  *
  * <p>
- * Vertaalt exceptions uit de applicatielaag naar consistente HTTP-responses
- * met bijhorende statuscodes en foutberichten.
- * </p>
- *
- * <p>
- * Alle niet-afgevangen exceptions worden hier omgezet naar een
- * generieke 500 response.
+ * Translates application-layer exceptions into consistent HTTP responses
+ * with appropriate status codes and error messages. All uncaught exceptions
+ * fall through to a generic 500 response.
  * </p>
  */
 @RestControllerAdvice
@@ -54,10 +50,6 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<String> handleIllegalArgument(IllegalArgumentException e) {
-        log.error("IllegalArgumentException: ", e); // add this line
-        log.error("IllegalArgumentException stack trace: ", e);
-        System.err.println("IAE caught: " + e.getMessage());
-        e.printStackTrace();
         return ResponseEntity.badRequest().body(e.getMessage());
     }
 

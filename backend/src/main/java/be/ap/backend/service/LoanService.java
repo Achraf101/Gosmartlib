@@ -39,6 +39,10 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.Executor;
 
+/**
+ * Service for managing loans, including creation, status transitions,
+ * pickup/return scanning, and reporting.
+ */
 @Service
 @Slf4j
 public class LoanService {
@@ -68,6 +72,16 @@ public class LoanService {
         this.taskQueueService = taskQueueService;
     }
 
+    /**
+     * Creates one loan per book in the DTO, validating dates, availability, and
+     * school policy.
+     * Stock is decremented for each book and loans are grouped by a shared ID when
+     * more than one book is requested.
+     *
+     * @throws IllegalArgumentException if any validation rule is violated
+     * @throws EntityNotFoundException  if the user, location, or any book cannot be
+     *                                  found
+     */
     @Transactional
     public List<LoanDTO> createLoan(LoanDTO dto) {
         if (dto.getUserId() == null) {
@@ -173,6 +187,10 @@ public class LoanService {
         return toDTOs(loanRepository.findByStatusWithBooks(LoanStatus.REQUESTED));
     }
 
+    /**
+     * @throws IllegalArgumentException if the note exceeds 255 characters
+     * @throws EntityNotFoundException  if no loan exists with the given ID
+     */
     public LoanDTO updateNote(Long id, String note) {
         Loan loan = loanRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Loan niet gevonden met id: " + id));
@@ -184,6 +202,13 @@ public class LoanService {
         return buildDTO(loanRepository.save(loan));
     }
 
+    /**
+     * Updates the loan status and restores stock when the loan is declined or
+     * returned.
+     * Queues a loan notification when the status transitions to RECEIVED.
+     *
+     * @throws EntityNotFoundException if no loan exists with the given ID
+     */
     public LoanDTO updateStatus(Long id, LoanStatus status) {
         // if received add notification to the queue
         if (status == LoanStatus.RECEIVED) {
@@ -205,6 +230,16 @@ public class LoanService {
         return buildDTO(loanRepository.save(loan));
     }
 
+    /**
+     * Records a pickup scan for a specific book copy, advancing the received count.
+     * Transitions the loan to RECEIVED and queues a notification when all copies
+     * are scanned.
+     *
+     * @throws IllegalArgumentException if the copy does not match the loan's book,
+     *                                  is already scanned, or all copies are
+     *                                  already received
+     * @throws EntityNotFoundException  if the loan or copy cannot be found
+     */
     @Transactional
     public LoanDTO scanPickup(Long loanId, Long bookCopyId) {
         Loan loan = loanRepository.findById(loanId)
@@ -243,6 +278,16 @@ public class LoanService {
         return buildDTO(loanRepository.save(loan));
     }
 
+    /**
+     * Records a return scan for a specific book copy, advancing the returned count.
+     * Marks the copy as damaged if requested and transitions the loan to RETURNED
+     * when all copies are back.
+     *
+     * @throws IllegalArgumentException if the copy does not match, is already
+     *                                  returned, or was not part of the loan
+     * @throws EntityNotFoundException  if the loan, copy, or location book cannot
+     *                                  be found
+     */
     @Transactional
     public LoanDTO scanReturn(Long loanId, Long bookCopyId, String note, boolean damaged) {
         Loan loan = loanRepository.findById(loanId)
@@ -288,6 +333,13 @@ public class LoanService {
         return buildDTO(loanRepository.save(loan));
     }
 
+    /**
+     * Marks the loan as RECEIVED, assigning the given copy or the first available
+     * copy per book if none is specified.
+     *
+     * @throws EntityNotFoundException if the loan or any required entity cannot be
+     *                                 found
+     */
     @Transactional
     public LoanDTO pickupLoan(Long loanId, Long bookCopyId) {
         Loan loan = loanRepository.findById(loanId)
@@ -319,6 +371,9 @@ public class LoanService {
         return toDTOs(loanRepository.findByUserId(userId));
     }
 
+    /**
+     * @throws RuntimeException if no loan exists with the given ID
+     */
     public void deleteLoan(Long id) {
         if (!loanRepository.existsById(id)) {
             throw new RuntimeException("Uitlening niet gevonden!");
@@ -441,6 +496,7 @@ public class LoanService {
 
     }
 
+    /** Returns the top 5 most borrowed books for the current month. */
     public List<TopBookDTO> getTopBooksThisMonth(Long schoolId) {
         LocalDate from = LocalDate.now().withDayOfMonth(1);
         LocalDate to = LocalDate.now();
@@ -471,6 +527,7 @@ public class LoanService {
                 schoolId);
     }
 
+    /** Returns the top 5 most borrowed genres for the current month. */
     public List<TopBookDTO> getTopGenresThisMonth(Long schoolId) {
         LocalDate from = LocalDate.now().withDayOfMonth(1);
         LocalDate to = LocalDate.now();
@@ -482,6 +539,14 @@ public class LoanService {
                 .toList();
     }
 
+    /**
+     * Extends the loan's end date by the school's extension period and increments
+     * the extension counter.
+     *
+     * @throws IllegalArgumentException if the loan status does not allow extension
+     *                                  or the extension limit is reached
+     * @throws EntityNotFoundException  if no loan exists with the given ID
+     */
     public LoanDTO extendLoan(Long id) {
         Loan loan = loanRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Lening niet gevonden met id: " + id));

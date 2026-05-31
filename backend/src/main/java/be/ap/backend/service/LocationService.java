@@ -14,6 +14,9 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Service for managing locations.
+ */
 @Service
 @RequiredArgsConstructor
 public class LocationService {
@@ -22,6 +25,9 @@ public class LocationService {
 
     private final EntityManager entityManager;
 
+    /**
+     * @throws MissingArgumentsException if no school ID is provided
+     */
     public LocationDTO createLocation(LocationDTO dto) {
         if (dto.getSchoolId() == null) {
             throw new MissingArgumentsException("School is verplicht!");
@@ -37,6 +43,9 @@ public class LocationService {
         return toDTO(locationRepository.save(location));
     }
 
+    /**
+     * @throws EntityNotFoundException if no location exists with the given ID
+     */
     public LocationDTO findById(Long id) {
         Location location = locationRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Locatie niet gevonden met id: " + id));
@@ -61,6 +70,9 @@ public class LocationService {
         return dto;
     }
 
+    /**
+     * @throws EntityNotFoundException if no school exists with the given ID
+     */
     public List<LocationDTO> getLocationsBySchool(Long schoolId) {
         School school = schoolRepository.findById(schoolId)
                 .orElseThrow(() -> new EntityNotFoundException("School niet gevonden"));

@@ -1,12 +1,7 @@
 package be.ap.backend.exception;
 
 /**
- * Exception die wordt gegooid wanneer encryptie- of decryptieoperaties falen.
- *
- * <p>
- * Wordt gebruikt om onderliggende cryptografische fouten te encapsuleren
- * zonder implementatiedetails naar hogere lagen bloot te stellen.
- * </p>
+ * Thrown when an encryption or decryption operation fails.
  */
 public class EncryptionException extends RuntimeException {
     public EncryptionException(String message, Throwable cause) {

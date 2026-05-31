@@ -2,6 +2,9 @@ package be.ap.backend.dto;
 
 import lombok.Data;
 
+/**
+ * DTO representing the availability of a book at a specific location.
+ */
 @Data
 public class LocationAvailabilityDTO {
     private Long locationBookId;

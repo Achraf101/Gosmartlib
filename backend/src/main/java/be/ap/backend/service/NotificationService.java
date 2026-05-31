@@ -35,6 +35,10 @@ import be.ap.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Service for sending loan notifications to users via Smartschool.
+ * Obtains a fresh access token using the stored refresh token before each send.
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -55,6 +59,14 @@ public class NotificationService {
     private static final String LOAN_TITLE = "Overzicht van je ontleende boeken";
     private static final String REMINDER_TITLE = "Vergeet je boeken niet binnen te brengen!";
 
+    /**
+     * Sends a loan confirmation or reminder email to the user associated with the
+     * given loan.
+     * The user's refresh token is updated after a successful token exchange.
+     *
+     * @return {@code true} if the message was dispatched, {@code false} if the loan
+     *         was not found or token exchange failed
+     */
     public Boolean sendNotification(Long loanId, NotificationTask.Type type) {
         // get user tokens with refresh token (also subdomain)
 
@@ -98,7 +110,12 @@ public class NotificationService {
         return state;
     }
 
-    // get access token from smartschool
+    /**
+     * Exchanges the given refresh token for a new access/refresh token pair via the
+     * Smartschool OAuth endpoint.
+     *
+     * @return the new token pair, or {@code null} if the exchange failed
+     */
     private TokenRecord getAccessToken(String refreshToken, String subdomain) {
 
         try {

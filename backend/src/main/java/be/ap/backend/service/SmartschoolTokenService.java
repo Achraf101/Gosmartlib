@@ -15,6 +15,10 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Service for obtaining and caching OneRoster access tokens per school.
+ * Tokens are refreshed automatically 60 seconds before expiry.
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -30,6 +34,10 @@ public class SmartschoolTokenService {
     private final ConcurrentHashMap<Long, String> tokenCache = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<Long, Instant> expiryCache = new ConcurrentHashMap<>();
 
+    /**
+     * Returns a valid access token for the given school, fetching a new one if the
+     * cached token is absent or near expiry.
+     */
     public String getAccessToken(School school) {
         Long schoolId = school.getId();
 

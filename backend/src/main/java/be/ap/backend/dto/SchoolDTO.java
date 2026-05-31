@@ -6,6 +6,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Data;
 
+/**
+ * DTO representing a school, including its loan policy settings,
+ * OneRoster integration credentials, and associated locations.
+ */
 @Data
 public class SchoolDTO {
     private Long id;

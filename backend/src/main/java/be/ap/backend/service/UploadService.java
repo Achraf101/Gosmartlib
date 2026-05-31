@@ -25,6 +25,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Service for storing and managing uploaded files (covers and materials) on
+ * disk.
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -146,6 +150,11 @@ public class UploadService {
         return sb.toString();
     }
 
+    /**
+     * Downloads a cover image from the given URL and saves it to disk.
+     *
+     * @return the generated filename, or {@code null} if the download or save fails
+     */
     public String saveCoverFromUrl(String imageUrl) {
         try {
             URI uri = new URI(imageUrl);

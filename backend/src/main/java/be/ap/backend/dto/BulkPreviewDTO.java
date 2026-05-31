@@ -5,6 +5,15 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * Data transfer object representing the preview result of a bulk book upload.
+ *
+ * <p>
+ * Collects row-level import results, including whether a book was found
+ * by ISBN and its resolved metadata. Also provides aggregated counts
+ * for successful and failed lookups.
+ * </p>
+ */
 public class BulkPreviewDTO {
 
     private final List<PreviewItemDTO> items = new ArrayList<>();
@@ -17,10 +26,21 @@ public class BulkPreviewDTO {
         items.add(new PreviewItemDTO(row, isbn, false, null, null, null));
     }
 
-    public List<PreviewItemDTO> getItems()  { return items; }
-    public int getTotal()                   { return items.size(); }
+    public List<PreviewItemDTO> getItems() {
+        return items;
+    }
+
+    public int getTotal() {
+        return items.size();
+    }
+
     @JsonProperty("foundCount")
-    public int getFoundCount()              { return (int) items.stream().filter(PreviewItemDTO::isFound).count(); }
+    public int getFoundCount() {
+        return (int) items.stream().filter(PreviewItemDTO::isFound).count();
+    }
+
     @JsonProperty("notFoundCount")
-    public int getNotFoundCount()           { return getTotal() - getFoundCount(); }
+    public int getNotFoundCount() {
+        return getTotal() - getFoundCount();
+    }
 }
