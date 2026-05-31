@@ -1,11 +1,14 @@
 package be.ap.backend.controller;
 
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.util.Optional;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,125 +17,104 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 
+import be.ap.backend.config.SessionContext;
 import be.ap.backend.config.TestSecurityConfig;
-import be.ap.backend.entity.User;
-import be.ap.backend.repository.UserRepository;
+import be.ap.backend.dto.PasswordDTO;
+import be.ap.backend.exception.ArgumentsInvalidException;
+import be.ap.backend.exception.GlobalExceptionHandler;
+import be.ap.backend.service.AccountService;
+import jakarta.persistence.EntityNotFoundException;
 
 @WebMvcTest(AccountController.class)
 @AutoConfigureMockMvc
-@Import(TestSecurityConfig.class)
+@Import({ TestSecurityConfig.class, GlobalExceptionHandler.class })
 class AccountControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @MockitoBean
-    private UserRepository userRepository;
+    private AccountService accountService;
 
     @MockitoBean
-    private PasswordEncoder passwordEncoder;
+    private SessionContext session;
 
-    private User mockUser;
+    private static final String ENDPOINT = "/account/password";
+    private static final String VALID_BODY = """
+            {
+                "currentPassword": "currentPass",
+                "newPassword": "newPass123"
+            }
+            """;
 
     @BeforeEach
     void setUp() {
-        mockUser = new User();
-        mockUser.setId(1L);
-        mockUser.setPassword("hashed_password");
+        lenient().when(session.getUserId()).thenReturn(1L); // lenient avoids UnnecessaryStubbingException
     }
 
     @Test
     @WithMockUser(roles = "ADMIN")
     void updatePassword_success() throws Exception {
-        when(userRepository.findById(1L)).thenReturn(Optional.of(mockUser));
-        when(passwordEncoder.matches("currentPass", "hashed_password")).thenReturn(true);
-        when(passwordEncoder.encode("newPass123")).thenReturn("new_hashed_password");
+        doNothing().when(accountService).updatePassword(any(Long.class), any(PasswordDTO.class));
 
-        mockMvc.perform(put("/account/password")
-                .sessionAttr("userId", 1L)
+        mockMvc.perform(put(ENDPOINT)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                        {
-                            "currentPassword": "currentPass",
-                            "newPassword": "newPass123"
-                        }
-                        """))
+                .content(VALID_BODY))
                 .andExpect(status().isOk());
 
-        verify(userRepository).save(mockUser);
+        verify(accountService).updatePassword(1L, new PasswordDTO("currentPass", "newPass123"));
     }
 
     @Test
     @WithMockUser(roles = "ADMIN")
     void updatePassword_userNotFound_returns404() throws Exception {
-        when(userRepository.findById(1L)).thenReturn(Optional.empty());
+        doThrow(new EntityNotFoundException("Gebruiker niet gevonden."))
+                .when(accountService).updatePassword(any(Long.class), any(PasswordDTO.class));
 
-        mockMvc.perform(put("/account/password")
-                .sessionAttr("userId", 1L)
+        mockMvc.perform(put(ENDPOINT)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                        {
-                            "currentPassword": "currentPass",
-                            "newPassword": "newPass123"
-                        }
-                        """))
+                .content(VALID_BODY))
                 .andExpect(status().isNotFound());
 
-        verify(userRepository, never()).save(any());
+        verify(accountService).updatePassword(eq(1L), any(PasswordDTO.class));
     }
 
     @Test
     @WithMockUser(roles = "ADMIN")
     void updatePassword_wrongCurrentPassword_returns400() throws Exception {
-        when(userRepository.findById(1L)).thenReturn(Optional.of(mockUser));
-        when(passwordEncoder.matches("wrongPass", "hashed_password")).thenReturn(false);
+        doThrow(new ArgumentsInvalidException("Huidig wachtwoord is onjuist."))
+                .when(accountService).updatePassword(any(Long.class), any(PasswordDTO.class));
 
-        mockMvc.perform(put("/account/password")
-                .sessionAttr("userId", 1L)
+        mockMvc.perform(put(ENDPOINT)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                        {
-                            "currentPassword": "wrongPass",
-                            "newPassword": "newPass123"
-                        }
-                        """))
+                .content(VALID_BODY))
                 .andExpect(status().isBadRequest());
 
-        verify(userRepository, never()).save(any());
+        verify(accountService).updatePassword(eq(1L), any(PasswordDTO.class));
     }
 
     @Test
-    void updatePassword_notAuthenticated_returns400() throws Exception {
-        mockMvc.perform(put("/account/password")
+    void updatePassword_notAuthenticated_returns401() throws Exception {
+        mockMvc.perform(put(ENDPOINT)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                        {
-                            "currentPassword": "currentPass",
-                            "newPassword": "newPass123"
-                        }
-                        """))
-                .andExpect(status().isForbidden());
+                .content(VALID_BODY))
+                .andExpect(status().isUnauthorized());
+
+        verify(accountService, never()).updatePassword(any(), any());
     }
 
     @Test
     @WithMockUser(roles = "USER")
     void updatePassword_wrongRole_returns403() throws Exception {
-        mockMvc.perform(put("/account/password")
-                .sessionAttr("userId", 1L)
+        mockMvc.perform(put(ENDPOINT)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                        {
-                            "currentPassword": "currentPass",
-                            "newPassword": "newPass123"
-                        }
-                        """))
+                .content(VALID_BODY))
                 .andExpect(status().isForbidden());
+
+        verify(accountService, never()).updatePassword(any(), any());
     }
 }

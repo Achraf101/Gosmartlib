@@ -1,197 +1,307 @@
-// package be.ap.backend.controller;
+package be.ap.backend.controller;
 
-// import static org.junit.jupiter.api.Assertions.*;
-// import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-// import java.util.List;
+import java.util.List;
 
-// import org.junit.jupiter.api.Test;
-// import org.springframework.beans.factory.annotation.Autowired;
-// import org.springframework.boot.test.context.SpringBootTest;
-// import org.springframework.http.ResponseEntity;
-// import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-// import be.ap.backend.dto.SharedListResponseDTO;
-// import be.ap.backend.entity.BookList;
-// import be.ap.backend.entity.BookListItem;
-// import be.ap.backend.service.BookListService;
-// import jakarta.servlet.http.HttpSession;
+import be.ap.backend.config.SessionContext;
+import be.ap.backend.dto.SharedListResponseDTO;
+import be.ap.backend.entity.Book;
+import be.ap.backend.entity.BookList;
+import be.ap.backend.entity.BookListItem;
+import be.ap.backend.exception.MissingSessionException;
+import be.ap.backend.service.BookListService;
 
-// @SpringBootTest
-// public class BookListControllerTest {
+@WebMvcTest(BookListController.class)
+@Import(SessionContext.class) // include only if SessionContext is a plain @Component/@Bean
+public class BookListControllerTest {
 
-// @MockitoBean
-// private BookListService bookListService;
+    @MockitoBean
+    private BookListService bookListService;
 
-// @Autowired
-// private BookListController controller;
+    @MockitoBean
+    private SessionContext sessionContext;
 
-// private HttpSession mockSession(Long userId) {
-// HttpSession session = mock(HttpSession.class);
-// when(session.getAttribute("userId")).thenReturn(userId);
-// return session;
-// }
+    @Autowired
+    private BookListController controller;
 
-// @Test
-// void givenSessionAndName_whenCreateList_thenReturnCreatedList() {
-// BookList list = new BookList();
-// list.setId(1L);
-// list.setName("My List");
-// when(bookListService.createList(1L, "My List")).thenReturn(list);
+    // -------------------------------------------------------------------------
+    // createList
+    // -------------------------------------------------------------------------
 
-// BookListController.CreateListRequest request = new
-// BookListController.CreateListRequest();
-// request.setName("My List");
+    @Test
+    void givenAuthenticatedUser_whenCreateList_thenReturnCreatedList() {
+        when(sessionContext.getUserId()).thenReturn(1L);
 
-// ResponseEntity<BookList> result = controller.createList(mockSession(1L),
-// request);
+        BookList list = new BookList();
+        list.setId(1L);
+        list.setName("My List");
+        when(bookListService.createList(1L, "My List")).thenReturn(list);
 
-// assertNotNull(result.getBody());
-// assertEquals("My List", result.getBody().getName());
-// verify(bookListService, times(1)).createList(1L, "My List");
-// }
+        BookListController.CreateListRequest request = new BookListController.CreateListRequest();
+        request.setName("My List");
 
-// @Test
-// void givenSession_whenGetMyLists_thenReturnLists() {
-// BookList list = new BookList();
-// list.setId(1L);
-// when(bookListService.getListsByOwner(1L)).thenReturn(List.of(list));
+        ResponseEntity<BookList> result = controller.createList(request);
 
-// ResponseEntity<List<BookList>> result =
-// controller.getMyLists(mockSession(1L));
+        assertNotNull(result.getBody());
+        assertEquals("My List", result.getBody().getName());
+        verify(bookListService, times(1)).createList(1L, "My List");
+    }
 
-// assertNotNull(result.getBody());
-// assertEquals(1, result.getBody().size());
-// verify(bookListService, times(1)).getListsByOwner(1L);
-// }
+    @Test
+    void givenNoSession_whenCreateList_thenThrowMissingSessionException() {
+        when(sessionContext.getUserId()).thenReturn(null);
 
-// @Test
-// void givenSession_whenGetMyLists_thenReturnEmpty_whenNoLists() {
-// when(bookListService.getListsByOwner(1L)).thenReturn(List.of());
+        BookListController.CreateListRequest request = new BookListController.CreateListRequest();
+        request.setName("My List");
 
-// ResponseEntity<List<BookList>> result =
-// controller.getMyLists(mockSession(1L));
+        assertThrows(MissingSessionException.class, () -> controller.createList(request));
+        verifyNoInteractions(bookListService);
+    }
 
-// assertNotNull(result.getBody());
-// assertTrue(result.getBody().isEmpty());
-// }
+    // -------------------------------------------------------------------------
+    // getMyLists
+    // -------------------------------------------------------------------------
 
-// @Test
-// void givenListIdAndBookId_whenAddBook_thenReturnBookListItem() {
-// BookListItem item = new BookListItem();
-// item.setBookListId(1L);
-// item.setBookId(5L);
-// when(bookListService.addBook(1L, 5L)).thenReturn(item);
+    @Test
+    void givenAuthenticatedUser_whenGetMyLists_thenReturnLists() {
+        when(sessionContext.getUserId()).thenReturn(1L);
 
-// BookListController.AddBookRequest request = new
-// BookListController.AddBookRequest();
-// request.setBookId(5L);
+        BookList list = new BookList();
+        list.setId(1L);
+        when(bookListService.getListsByOwner(1L)).thenReturn(List.of(list));
 
-// ResponseEntity<BookListItem> result = controller.addBook(mockSession(1L), 1L,
-// request);
+        ResponseEntity<List<BookList>> result = controller.getMyLists();
 
-// assertNotNull(result.getBody());
-// assertEquals(5L, result.getBody().getBookId());
-// verify(bookListService, times(1)).addBook(1L, 5L);
-// }
+        assertNotNull(result.getBody());
+        assertEquals(1, result.getBody().size());
+        verify(bookListService, times(1)).getListsByOwner(1L);
+    }
 
-// @Test
-// void givenListIdAndBookId_whenRemoveBook_thenReturn204() {
-// doNothing().when(bookListService).removeBook(5L, 1L);
+    @Test
+    void givenAuthenticatedUser_whenGetMyLists_thenReturnEmptyList_whenNoLists() {
+        when(sessionContext.getUserId()).thenReturn(1L);
+        when(bookListService.getListsByOwner(1L)).thenReturn(List.of());
 
-// ResponseEntity<Void> result = controller.removeBook(mockSession(1L), 5L, 1L);
+        ResponseEntity<List<BookList>> result = controller.getMyLists();
 
-// assertEquals(204, result.getStatusCode().value());
-// verify(bookListService, times(1)).removeBook(5L, 1L);
-// }
+        assertNotNull(result.getBody());
+        assertTrue(result.getBody().isEmpty());
+    }
 
-// @Test
-// void givenListIdAndName_whenRenameList_thenReturnUpdatedList() {
-// BookList list = new BookList();
-// list.setId(1L);
-// list.setName("New Name");
-// when(bookListService.renameList(1L, "New Name")).thenReturn(list);
+    @Test
+    void givenNoSession_whenGetMyLists_thenThrowMissingSessionException() {
+        when(sessionContext.getUserId()).thenReturn(null);
 
-// BookListController.CreateListRequest request = new
-// BookListController.CreateListRequest();
-// request.setName("New Name");
+        assertThrows(MissingSessionException.class, () -> controller.getMyLists());
+        verifyNoInteractions(bookListService);
+    }
 
-// ResponseEntity<BookList> result = controller.renameList(mockSession(1L), 1L,
-// request);
+    // -------------------------------------------------------------------------
+    // addBook
+    // -------------------------------------------------------------------------
 
-// assertNotNull(result.getBody());
-// assertEquals("New Name", result.getBody().getName());
-// verify(bookListService, times(1)).renameList(1L, "New Name");
-// }
+    @Test
+    void givenListIdAndBookId_whenAddBook_thenReturnBookListItem() {
+        BookListItem item = new BookListItem();
+        item.setBookListId(1L);
+        item.setBookId(5L);
+        when(bookListService.addBook(1L, 5L)).thenReturn(item);
 
-// @Test
-// void givenListId_whenDeleteList_thenReturn204() {
-// doNothing().when(bookListService).deleteList(1L);
+        BookListController.AddBookRequest request = new BookListController.AddBookRequest();
+        request.setBookId(5L);
 
-// ResponseEntity<Void> result = controller.deleteList(mockSession(1L), 1L);
+        ResponseEntity<BookListItem> result = controller.addBook(1L, request);
 
-// assertEquals(204, result.getStatusCode().value());
-// verify(bookListService, times(1)).deleteList(1L);
-// }
+        assertNotNull(result.getBody());
+        assertEquals(5L, result.getBody().getBookId());
+        verify(bookListService, times(1)).addBook(1L, 5L);
+    }
 
-// @Test
-// void givenToken_whenGetSharedList_thenReturnSharedListResponse() {
-// BookList list = new BookList();
-// list.setId(1L);
-// list.setName("Shared List");
-// SharedListResponseDTO response = new SharedListResponseDTO(list, List.of());
-// when(bookListService.getSharedList("abc123")).thenReturn(response);
+    // -------------------------------------------------------------------------
+    // removeBook
+    // -------------------------------------------------------------------------
 
-// ResponseEntity<SharedListResponseDTO> result =
-// controller.getSharedList("abc123");
+    @Test
+    void givenListIdAndBookId_whenRemoveBook_thenReturn204() {
+        doNothing().when(bookListService).removeBook(5L, 1L);
 
-// assertNotNull(result.getBody());
-// assertEquals("Shared List", result.getBody().getList().getName());
-// verify(bookListService, times(1)).getSharedList("abc123");
-// }
+        ResponseEntity<Void> result = controller.removeBook(5L, 1L);
 
-// @Test
-// void givenSessionAndListId_whenGenerateShareToken_thenReturnListWithToken() {
-// BookList list = new BookList();
-// list.setId(1L);
-// list.setShareToken("abc123");
-// when(bookListService.generateShareToken(1L, 1L)).thenReturn(list);
+        assertEquals(204, result.getStatusCode().value());
+        verify(bookListService, times(1)).removeBook(5L, 1L);
+    }
 
-// ResponseEntity<BookList> result =
-// controller.generateShareToken(mockSession(1L), 1L);
+    // -------------------------------------------------------------------------
+    // renameList
+    // -------------------------------------------------------------------------
 
-// assertNotNull(result.getBody());
-// assertEquals("abc123", result.getBody().getShareToken());
-// verify(bookListService, times(1)).generateShareToken(1L, 1L);
-// }
+    @Test
+    void givenListIdAndName_whenRenameList_thenReturnUpdatedList() {
+        BookList list = new BookList();
+        list.setId(1L);
+        list.setName("New Name");
+        when(bookListService.renameList(1L, "New Name")).thenReturn(list);
 
-// @Test
-// void givenSessionAndListId_whenRemoveShareToken_thenReturnListWithNullToken()
-// {
-// BookList list = new BookList();
-// list.setId(1L);
-// list.setShareToken(null);
-// when(bookListService.removeShareToken(1L, 1L)).thenReturn(list);
+        BookListController.CreateListRequest request = new BookListController.CreateListRequest();
+        request.setName("New Name");
 
-// ResponseEntity<BookList> result =
-// controller.removeShareToken(mockSession(1L), 1L);
+        ResponseEntity<BookList> result = controller.renameList(1L, request);
 
-// assertNotNull(result.getBody());
-// assertNull(result.getBody().getShareToken());
-// verify(bookListService, times(1)).removeShareToken(1L, 1L);
-// }
+        assertNotNull(result.getBody());
+        assertEquals("New Name", result.getBody().getName());
+        verify(bookListService, times(1)).renameList(1L, "New Name");
+    }
 
-// @Test
-// void givenSessionAndBookId_whenGetListsWithoutBook_thenReturnLists() {
-// BookList list = new BookList();
-// list.setId(1L);
-// when(bookListService.getListsWithoutBook(1L, 5L)).thenReturn(List.of(list));
+    // -------------------------------------------------------------------------
+    // deleteList
+    // -------------------------------------------------------------------------
 
-// ResponseEntity<List<BookList>> result =
-// controller.getListsWithoutBook(mockSession(1L), 5L);
+    @Test
+    void givenListId_whenDeleteList_thenReturn204() {
+        doNothing().when(bookListService).deleteList(1L);
 
-// assertNotNull(result.getBody());
-// assertEquals(1, result.getBody().size());
-// verify(bookListService, times(1)).getListsWithoutBook(1L, 5L);
-// }
-// }
+        ResponseEntity<Void> result = controller.deleteList(1L);
+
+        assertEquals(204, result.getStatusCode().value());
+        verify(bookListService, times(1)).deleteList(1L);
+    }
+
+    // -------------------------------------------------------------------------
+    // getSharedList
+    // -------------------------------------------------------------------------
+
+    @Test
+    void givenToken_whenGetSharedList_thenReturnSharedListResponse() {
+        BookList list = new BookList();
+        list.setId(1L);
+        list.setName("Shared List");
+        SharedListResponseDTO response = new SharedListResponseDTO(list, List.of());
+        when(bookListService.getSharedList("abc123")).thenReturn(response);
+
+        ResponseEntity<SharedListResponseDTO> result = controller.getSharedList("abc123");
+
+        assertNotNull(result.getBody());
+        assertEquals("Shared List", result.getBody().getList().getName());
+        verify(bookListService, times(1)).getSharedList("abc123");
+    }
+
+    // -------------------------------------------------------------------------
+    // getBooksInList
+    // -------------------------------------------------------------------------
+
+    @Test
+    void givenListId_whenGetBooksInList_thenReturnBooks() {
+        Book book = new Book();
+        book.setId(5L);
+        when(bookListService.getBooksInList(1L)).thenReturn(List.of(book));
+
+        ResponseEntity<List<Book>> result = controller.getBooksInList(1L);
+
+        assertNotNull(result.getBody());
+        assertEquals(1, result.getBody().size());
+        assertEquals(5L, result.getBody().get(0).getId());
+        verify(bookListService, times(1)).getBooksInList(1L);
+    }
+
+    @Test
+    void givenListIdWithNoBooks_whenGetBooksInList_thenReturnEmptyList() {
+        when(bookListService.getBooksInList(1L)).thenReturn(List.of());
+
+        ResponseEntity<List<Book>> result = controller.getBooksInList(1L);
+
+        assertNotNull(result.getBody());
+        assertTrue(result.getBody().isEmpty());
+    }
+
+    // -------------------------------------------------------------------------
+    // getListsWithoutBook
+    // -------------------------------------------------------------------------
+
+    @Test
+    void givenAuthenticatedUserAndBookId_whenGetListsWithoutBook_thenReturnLists() {
+        when(sessionContext.getUserId()).thenReturn(1L);
+
+        BookList list = new BookList();
+        list.setId(1L);
+        when(bookListService.getListsWithoutBook(1L, 5L)).thenReturn(List.of(list));
+
+        ResponseEntity<List<BookList>> result = controller.getListsWithoutBook(5L);
+
+        assertNotNull(result.getBody());
+        assertEquals(1, result.getBody().size());
+        verify(bookListService, times(1)).getListsWithoutBook(1L, 5L);
+    }
+
+    @Test
+    void givenNoSession_whenGetListsWithoutBook_thenThrowMissingSessionException() {
+        when(sessionContext.getUserId()).thenReturn(null);
+
+        assertThrows(MissingSessionException.class, () -> controller.getListsWithoutBook(5L));
+        verifyNoInteractions(bookListService);
+    }
+
+    // -------------------------------------------------------------------------
+    // generateShareToken
+    // -------------------------------------------------------------------------
+
+    @Test
+    void givenAuthenticatedUserAndListId_whenGenerateShareToken_thenReturnListWithToken() {
+        when(sessionContext.getUserId()).thenReturn(1L);
+
+        BookList list = new BookList();
+        list.setId(1L);
+        list.setShareToken("abc123");
+        when(bookListService.generateShareToken(1L, 1L)).thenReturn(list);
+
+        ResponseEntity<BookList> result = controller.generateShareToken(1L);
+
+        assertNotNull(result.getBody());
+        assertEquals("abc123", result.getBody().getShareToken());
+        verify(bookListService, times(1)).generateShareToken(1L, 1L);
+    }
+
+    @Test
+    void givenNoSession_whenGenerateShareToken_thenThrowMissingSessionException() {
+        when(sessionContext.getUserId()).thenReturn(null);
+
+        assertThrows(MissingSessionException.class, () -> controller.generateShareToken(1L));
+        verifyNoInteractions(bookListService);
+    }
+
+    // -------------------------------------------------------------------------
+    // removeShareToken
+    // -------------------------------------------------------------------------
+
+    @Test
+    void givenAuthenticatedUserAndListId_whenRemoveShareToken_thenReturnListWithNullToken() {
+        when(sessionContext.getUserId()).thenReturn(1L);
+
+        BookList list = new BookList();
+        list.setId(1L);
+        list.setShareToken(null);
+        when(bookListService.removeShareToken(1L, 1L)).thenReturn(list);
+
+        ResponseEntity<BookList> result = controller.removeShareToken(1L);
+
+        assertNotNull(result.getBody());
+        assertNull(result.getBody().getShareToken());
+        verify(bookListService, times(1)).removeShareToken(1L, 1L);
+    }
+
+    @Test
+    void givenNoSession_whenRemoveShareToken_thenThrowMissingSessionException() {
+        when(sessionContext.getUserId()).thenReturn(null);
+
+        assertThrows(MissingSessionException.class, () -> controller.removeShareToken(1L));
+        verifyNoInteractions(bookListService);
+    }
+}
