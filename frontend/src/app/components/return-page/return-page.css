@@ -1,6 +1,6 @@
 .loans-page {
   padding: 2rem;
-  max-width: 1100px;
+  max-width: 1400px;
   margin: 0 auto;
 }
 
@@ -131,6 +131,11 @@ button {
   color: var(--p-pink-900);
 }
 
+
+.overdue {
+  color: var(--red-500);
+  font-weight: 600;
+}
 
 .scan-progress {
   display: block;
