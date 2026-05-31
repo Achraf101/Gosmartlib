@@ -22,7 +22,6 @@ import be.ap.backend.dto.CreateBookDTO;
 import be.ap.backend.dto.UpdateBookDTO;
 import be.ap.backend.entity.UserRole;
 import be.ap.backend.enums.Clib;
-import be.ap.backend.repository.LocationRepository;
 import be.ap.backend.service.BookService;
 import be.ap.backend.service.IsbnLookupService;
 
@@ -41,13 +40,10 @@ public class BookController {
 
     private final BookService bookService;
     private final IsbnLookupService isbnLookupService;
-    private final LocationRepository locationRepository;
-
     private final SessionContext sessionContext;
 
     @GetMapping
     public ResponseEntity<Page<BookResultDTO>> getAll(
-            HttpSession session,
             @RequestParam(required = false) Boolean full,
             @RequestParam(required = false) Long location,
             @RequestParam(defaultValue = "0") int page,
@@ -76,7 +72,6 @@ public class BookController {
 
     @GetMapping("/filter")
     public ResponseEntity<Page<BookResultDTO>> filter(
-            HttpSession session,
             @RequestParam(required = false) String query,
             @RequestParam(required = false) Long location,
             @RequestParam(required = false) List<Long> genres,
@@ -91,21 +86,10 @@ public class BookController {
             @RequestParam(required = false) Boolean didactic,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size) {
-        List<Long> effectiveLocations;
+        boolean isAdmin = sessionContext.hasRole(UserRole.ADMIN);
+        Long schoolId = isAdmin ? null : sessionContext.getSchoolId();
 
-        if (sessionContext.hasRole(UserRole.ADMIN)) {
-            effectiveLocations = location != null
-                    ? List.of(location)
-                    : null;
-        } else {
-            List<Long> ids = getLocationIds();
-            if (location != null && !ids.contains(location)) {
-                return ResponseEntity.ok(Page.empty(PageRequest.of(page, size)));
-            }
-            effectiveLocations = (location != null) ? List.of(location) : ids;
-        }
-
-        return ResponseEntity.ok(bookService.filter(effectiveLocations, genres, language, fiction,
+        return ResponseEntity.ok(bookService.filter(schoolId, isAdmin, location, genres, language, fiction,
                 authorIds, seriesIds, pagesMin, pagesMax, clibs, themes, didactic, query,
                 PageRequest.of(page, size)));
     }
@@ -137,10 +121,5 @@ public class BookController {
     @PutMapping("/{id}")
     public ResponseEntity<BookResultDTO> updateBook(@PathVariable Long id, @RequestBody UpdateBookDTO dto) {
         return ResponseEntity.ok(bookService.updateBook(id, dto));
-    }
-
-    List<Long> getLocationIds() {
-        Long schoolId = sessionContext.getSchoolId();
-        return locationRepository.findIdsBySchoolId(schoolId);
     }
 }

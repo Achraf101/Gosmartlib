@@ -98,7 +98,7 @@ public class OAuthService {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("School niet gevonden.");
         }
 
-        Map<String, Object> orUser = lookupService.getUser(school, user.getOneRosterId(), user.getRoles());
+        Map<String, Object> orUser = lookupService.getUser(school.getId(), user.getOneRosterId(), user.getRoles());
 
         String firstName = orUser != null ? (String) orUser.get("givenName") : "";
         String lastName = orUser != null ? (String) orUser.get("familyName") : "";

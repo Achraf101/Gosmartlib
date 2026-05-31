@@ -1,11 +1,8 @@
 package be.ap.backend.controller;
 
 import be.ap.backend.dto.TeacherDTO;
-import be.ap.backend.entity.School;
 import be.ap.backend.entity.UserRole;
-import be.ap.backend.repository.SchoolRepository;
 import be.ap.backend.service.SmartschoolLookupService;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,16 +17,14 @@ import java.util.Set;
 public class SmartschoolLookupController {
 
     private final SmartschoolLookupService lookupService;
-    private final SchoolRepository schoolRepository;
 
     @GetMapping("/{schoolId}/users/{ssId}")
     public ResponseEntity<Map<String, Object>> getUser(
             @PathVariable Long schoolId,
             @PathVariable String ssId,
             @RequestParam String role) {
-        School school = getSchool(schoolId);
         UserRole userRole = "student".equalsIgnoreCase(role) ? UserRole.STUDENT : UserRole.LEERKRACHT;
-        Map<String, Object> user = lookupService.getUser(school, ssId, Set.of(userRole));
+        Map<String, Object> user = lookupService.getUser(schoolId, ssId, Set.of(userRole));
         if (user == null)
             return ResponseEntity.notFound().build();
         return ResponseEntity.ok(user);
@@ -39,8 +34,7 @@ public class SmartschoolLookupController {
     public ResponseEntity<Map<String, Object>> getClass(
             @PathVariable Long schoolId,
             @PathVariable String ssId) {
-        School school = getSchool(schoolId);
-        Map<String, Object> classroom = lookupService.getClassroom(school, ssId);
+        Map<String, Object> classroom = lookupService.getClassroom(schoolId, ssId);
         if (classroom == null)
             return ResponseEntity.notFound().build();
         return ResponseEntity.ok(classroom);
@@ -48,13 +42,7 @@ public class SmartschoolLookupController {
 
     @GetMapping("/{schoolId}/teachers")
     public ResponseEntity<List<TeacherDTO>> getAllTeachersForSchool(@PathVariable Long schoolId) {
-        School school = getSchool(schoolId);
-        List<TeacherDTO> teachers = lookupService.getAllTeachersForSchool(school);
+        List<TeacherDTO> teachers = lookupService.getAllTeachersForSchool(schoolId);
         return ResponseEntity.ok(teachers);
-    }
-
-    private School getSchool(Long schoolId) {
-        return schoolRepository.findById(schoolId)
-                .orElseThrow(() -> new EntityNotFoundException("School niet gevonden: " + schoolId));
     }
 }

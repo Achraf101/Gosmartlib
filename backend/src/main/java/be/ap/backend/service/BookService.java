@@ -129,7 +129,9 @@ public class BookService {
     }
 
     public Page<BookResultDTO> filter(
-            List<Long> locationIds,
+            Long schoolId,
+            boolean isAdmin,
+            Long requestedLocation,
             List<Long> genres,
             Long language,
             Boolean fiction,
@@ -142,6 +144,17 @@ public class BookService {
             Boolean didactic,
             String query,
             Pageable pageable) {
+        List<Long> effectiveLocations;
+
+        if (isAdmin) {
+            effectiveLocations = requestedLocation != null ? List.of(requestedLocation) : null;
+        } else {
+            List<Long> schoolLocationIds = locationRepository.findIdsBySchoolId(schoolId);
+            if (requestedLocation != null && !schoolLocationIds.contains(requestedLocation)) {
+                return Page.empty(pageable);
+            }
+            effectiveLocations = requestedLocation != null ? List.of(requestedLocation) : schoolLocationIds;
+        }
 
         if (!sessionContext.hasRole(UserRole.LEERKRACHT)) {
             didactic = false;
@@ -158,20 +171,20 @@ public class BookService {
             themes = null;
         if (query != null && query.isBlank())
             query = null;
-        if (locationIds != null && locationIds.isEmpty())
-            locationIds = null;
+        if (effectiveLocations != null && effectiveLocations.isEmpty())
+            effectiveLocations = null;
 
         if (pagesMin != null && pagesMax != null && pagesMin > pagesMax) {
             throw new ArgumentsInvalidException("pagesMin moet kleiner zijn dan pagesMax");
         }
 
-        if (locationIds == null) {
+        if (effectiveLocations == null) {
             Page<BookResultDTO> dtoPage = bookRepository.filterAdmin(genres, language, fiction, authorIds,
                     seriesIds, pagesMin, pagesMax, clibs, themes, didactic, query, pageable).map(this::toDTO);
             return enrichWithGenresAndThemes(dtoPage);
         }
 
-        Page<BookResultDTO> dtoPage = bookRepository.filter(locationIds, genres, language, fiction,
+        Page<BookResultDTO> dtoPage = bookRepository.filter(effectiveLocations, genres, language, fiction,
                 authorIds, seriesIds, pagesMin, pagesMax, clibs, themes, didactic, query,
                 pageable).map(this::toDTO);
         return enrichWithGenresAndThemes(dtoPage);
@@ -234,19 +247,14 @@ public class BookService {
     }
 
     public BookResultDTO getById(Long id) {
-        if (sessionContext.hasRole(UserRole.ADMIN)) {
-            return toDTO(bookRepository.findById(id)
-                    .orElseThrow(() -> new EntityNotFoundException("Boek niet gevonden met id: " + id)));
-        }
-
         Book book = bookRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Boek niet gevonden met id: " + id));
 
-        Long schoolId = sessionContext.getSchoolId();
-        List<Long> locationIds = locationRepository.findIdsBySchoolId(schoolId);
-        boolean hasAccess = bookRepository.existsByIdAndLocationId(id, locationIds);
-        if (!hasAccess)
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        if (!sessionContext.hasRole(UserRole.ADMIN)) {
+            List<Long> locationIds = locationRepository.findIdsBySchoolId(sessionContext.getSchoolId());
+            if (!bookRepository.existsByIdAndLocationId(id, locationIds))
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
 
         return toDTO(book);
     }
@@ -292,9 +300,7 @@ public class BookService {
             Long schoolId = sessionContext.getSchoolId();
             List<Long> ids = locationRepository.findIdsBySchoolId(schoolId);
 
-            if (Boolean.TRUE.equals(full)) {
-                books = bookRepository.findAll(pageable);
-            } else if (location == null || ids.contains(location)) {
+            if (location == null || ids.contains(location)) {
                 List<Long> effectiveIds = (location != null) ? List.of(location) : ids;
                 books = bookRepository.findAllByLocationAndDidactic(effectiveIds, didacticFilter, pageable);
             } else {

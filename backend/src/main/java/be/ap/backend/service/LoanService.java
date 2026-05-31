@@ -186,7 +186,7 @@ public class LoanService {
 
     public LoanDTO updateStatus(Long id, LoanStatus status) {
         // if received add notification to the queue
-        if(status == LoanStatus.RECEIVED) {
+        if (status == LoanStatus.RECEIVED) {
             taskQueueService.push(new NotificationTask(NotificationTask.Type.LOAN, id));
         }
 
@@ -336,7 +336,7 @@ public class LoanService {
         Map<String, Object> userInfo = null;
         if (oneRosterId != null) {
             userInfo = lookupService.getUser(
-                    loan.getUser().getSchool(),
+                    loan.getUser().getSchool().getId(),
                     oneRosterId,
                     loan.getUser().getRoles());
         } else {
@@ -405,7 +405,7 @@ public class LoanService {
                 .map(ctx -> CompletableFuture.supplyAsync(() -> {
                     Map<String, Object> userInfo = null;
                     if (ctx.getOneRosterId() != null) {
-                        userInfo = lookupService.getUser(ctx.getSchool(), ctx.getOneRosterId(), ctx.getRoles());
+                        userInfo = lookupService.getUser(ctx.getSchool().getId(), ctx.getOneRosterId(), ctx.getRoles());
                     } else {
                         log.warn("OneRoster ID is null voor loan {}, Smartschool lookup overgeslagen",
                                 ctx.getLoan().getId());
