@@ -78,6 +78,7 @@ public class LoanController {
     public ResponseEntity<LoanDTO> pickupLoan(
             @PathVariable Long id,
             @RequestBody(required = false) Map<String, Object> body) {
+        System.out.println("body: " + body);
         Long bookCopyId = null;
         if (body != null && body.get("book_copy_id") != null) {
             bookCopyId = Long.valueOf(body.get("book_copy_id").toString());
