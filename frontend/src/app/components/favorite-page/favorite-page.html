@@ -8,7 +8,7 @@
       <p>Aantal boeken: {{ pendingBooks.length }}</p>
       @if (pendingList.books.length > 0) {
         <p-carousel
-          [[value]="pendingBooks"
+          [value]="pendingBooks"
           [numVisible]="4"
           [numScroll]="2"
           [responsiveOptions]="carouselResponsiveOptions"
