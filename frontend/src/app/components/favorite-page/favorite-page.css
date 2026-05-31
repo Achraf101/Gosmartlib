@@ -126,6 +126,10 @@ i {
   justify-content: flex-start;
 }
 
+.popup .book-card {
+  height: clamp(200px, 30vh, 350px);
+}
+
 @media (min-width: 800px) {
   .book-card-list {
     gap: 5%;
