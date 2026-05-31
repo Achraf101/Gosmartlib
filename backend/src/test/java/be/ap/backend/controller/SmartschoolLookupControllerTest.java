@@ -1,282 +1,205 @@
-// package be.ap.backend.controller;
-
-// import be.ap.backend.dto.TeacherDTO;
-// import be.ap.backend.entity.School;
-// import be.ap.backend.entity.UserRole;
-// import be.ap.backend.repository.SchoolRepository;
-// import be.ap.backend.service.SmartschoolLookupService;
-// import org.junit.jupiter.api.BeforeEach;
-// import org.junit.jupiter.api.Test;
-// import org.junit.jupiter.api.extension.ExtendWith;
-// import org.mockito.InjectMocks;
-// import org.mockito.Mock;
-// import org.mockito.junit.jupiter.MockitoExtension;
-// import org.springframework.http.HttpStatus;
-// import org.springframework.http.ResponseEntity;
-
-// import java.util.List;
-// import java.util.Map;
-// import java.util.Optional;
-// import java.util.Set;
-
-// import static org.assertj.core.api.Assertions.assertThat;
-// import static org.assertj.core.api.Assertions.assertThatThrownBy;
-// import static org.mockito.Mockito.*;
-
-// @ExtendWith(MockitoExtension.class)
-// class SmartschoolLookupControllerTest {
-
-// @Mock
-// private SmartschoolLookupService lookupService;
-
-// @Mock
-// private SchoolRepository schoolRepository;
-
-// @InjectMocks
-// private SmartschoolLookupController controller;
-
-// private School school;
-
-// @BeforeEach
-// void setUp() {
-// school = new School();
-// }
-
-// // -------------------------------------------------------------------------
-// // getUser
-// // -------------------------------------------------------------------------
-
-// @Test
-// void getUser_returnsOk_whenUserFound() {
-// Long schoolId = 1L;
-// String ssId = "user-42";
-// Map<String, Object> userData = Map.of("id", ssId, "role", "student");
-
-// when(schoolRepository.findById(schoolId)).thenReturn(Optional.of(school));
-// when(lookupService.getUser(school, ssId,
-// Set.of(UserRole.STUDENT))).thenReturn(userData);
-
-// ResponseEntity<Map<String, Object>> response = controller.getUser(schoolId,
-// ssId, "student");
-
-// assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-// assertThat(response.getBody()).isEqualTo(userData);
-// verify(lookupService).getUser(school, ssId, Set.of(UserRole.STUDENT));
-// }
-
-// @Test
-// void getUser_returnsNotFound_whenServiceReturnsNull() {
-// Long schoolId = 1L;
-// String ssId = "user-99";
-
-// when(schoolRepository.findById(schoolId)).thenReturn(Optional.of(school));
-// when(lookupService.getUser(school, ssId,
-// Set.of(UserRole.LEERKRACHT))).thenReturn(null);
-
-// ResponseEntity<Map<String, Object>> response = controller.getUser(schoolId,
-// ssId, "teacher");
-
-// assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-// assertThat(response.getBody()).isNull();
-// }
-
-// @Test
-// void getUser_throwsRuntimeException_whenSchoolNotFound() {
-// Long schoolId = 999L;
-// when(schoolRepository.findById(schoolId)).thenReturn(Optional.empty());
-
-// assertThatThrownBy(() -> controller.getUser(schoolId, "any-ss-id",
-// "student"))
-// .isInstanceOf(RuntimeException.class)
-// .hasMessageContaining("School not found: 999");
-
-// verifyNoInteractions(lookupService);
-// }
-
-// @Test
-// void getUser_mapsStudentRole_toStudentUserRole() {
-// Long schoolId = 1L;
-// String ssId = "user-7";
-
-// when(schoolRepository.findById(schoolId)).thenReturn(Optional.of(school));
-// when(lookupService.getUser(school, ssId,
-// Set.of(UserRole.STUDENT))).thenReturn(Map.of("id", ssId));
+package be.ap.backend.controller;
 
-// controller.getUser(schoolId, ssId, "student");
+import be.ap.backend.dto.TeacherDTO;
+import be.ap.backend.entity.UserRole;
+import be.ap.backend.service.SmartschoolLookupService;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
-// verify(lookupService).getUser(school, ssId, Set.of(UserRole.STUDENT));
-// verifyNoMoreInteractions(lookupService);
-// }
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-// @Test
-// void getUser_mapsNonStudentRole_toLeerkrachtUserRole() {
-// // Any role string other than "student" (case-insensitive) maps to
-// LEERKRACHT.
-// Long schoolId = 1L;
-// String ssId = "user-8";
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.*;
 
-// when(schoolRepository.findById(schoolId)).thenReturn(Optional.of(school));
-// when(lookupService.getUser(school, ssId,
-// Set.of(UserRole.LEERKRACHT))).thenReturn(Map.of("id", ssId));
+@ExtendWith(MockitoExtension.class)
+class SmartschoolLookupControllerTest {
 
-// controller.getUser(schoolId, ssId, "admin");
+    @Mock
+    private SmartschoolLookupService lookupService;
 
-// verify(lookupService).getUser(school, ssId, Set.of(UserRole.LEERKRACHT));
-// verifyNoMoreInteractions(lookupService);
-// }
+    @InjectMocks
+    private SmartschoolLookupController controller;
 
-// @Test
-// void getUser_roleComparison_isCaseInsensitive() {
-// // "STUDENT" in uppercase must still resolve to UserRole.STUDENT.
-// Long schoolId = 1L;
-// String ssId = "user-9";
+    // -------------------------------------------------------------------------
+    // getUser
+    // -------------------------------------------------------------------------
 
-// when(schoolRepository.findById(schoolId)).thenReturn(Optional.of(school));
-// when(lookupService.getUser(school, ssId,
-// Set.of(UserRole.STUDENT))).thenReturn(Map.of("id", ssId));
+    @Test
+    void getUser_returnsOk_whenUserFound() {
+        Long schoolId = 1L;
+        String ssId = "user-42";
+        Map<String, Object> userData = Map.of("id", ssId, "role", "student");
 
-// controller.getUser(schoolId, ssId, "STUDENT");
+        when(lookupService.getUser(schoolId, ssId, Set.of(UserRole.STUDENT)))
+                .thenReturn(userData);
 
-// verify(lookupService).getUser(school, ssId, Set.of(UserRole.STUDENT));
-// }
+        ResponseEntity<Map<String, Object>> response = controller.getUser(schoolId, ssId, "student");
 
-// // -------------------------------------------------------------------------
-// // getClass (classroom lookup)
-// // -------------------------------------------------------------------------
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isEqualTo(userData);
+        verify(lookupService).getUser(schoolId, ssId, Set.of(UserRole.STUDENT));
+    }
 
-// @Test
-// void getClass_returnsOk_whenClassroomFound() {
-// Long schoolId = 2L;
-// String ssId = "class-A1";
-// Map<String, Object> classData = Map.of("id", ssId, "name", "1A");
+    @Test
+    void getUser_returnsNotFound_whenServiceReturnsNull() {
+        Long schoolId = 1L;
+        String ssId = "user-99";
 
-// when(schoolRepository.findById(schoolId)).thenReturn(Optional.of(school));
-// when(lookupService.getClassroom(school, ssId)).thenReturn(classData);
+        when(lookupService.getUser(schoolId, ssId, Set.of(UserRole.LEERKRACHT)))
+                .thenReturn(null);
 
-// ResponseEntity<Map<String, Object>> response = controller.getClass(schoolId,
-// ssId);
+        ResponseEntity<Map<String, Object>> response = controller.getUser(schoolId, ssId, "teacher");
 
-// assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-// assertThat(response.getBody()).isEqualTo(classData);
-// verify(lookupService).getClassroom(school, ssId);
-// }
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(response.getBody()).isNull();
+    }
 
-// @Test
-// void getClass_returnsNotFound_whenServiceReturnsNull() {
-// Long schoolId = 2L;
-// String ssId = "class-unknown";
+    @Test
+    void getUser_mapsStudentRole_toStudentUserRole() {
+        Long schoolId = 1L;
+        String ssId = "user-7";
 
-// when(schoolRepository.findById(schoolId)).thenReturn(Optional.of(school));
-// when(lookupService.getClassroom(school, ssId)).thenReturn(null);
+        when(lookupService.getUser(schoolId, ssId, Set.of(UserRole.STUDENT)))
+                .thenReturn(Map.of("id", ssId));
 
-// ResponseEntity<Map<String, Object>> response = controller.getClass(schoolId,
-// ssId);
+        controller.getUser(schoolId, ssId, "student");
 
-// assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-// assertThat(response.getBody()).isNull();
-// }
+        verify(lookupService).getUser(schoolId, ssId, Set.of(UserRole.STUDENT));
+        verifyNoMoreInteractions(lookupService);
+    }
 
-// @Test
-// void getClass_throwsRuntimeException_whenSchoolNotFound() {
-// Long schoolId = 888L;
-// when(schoolRepository.findById(schoolId)).thenReturn(Optional.empty());
+    @Test
+    void getUser_mapsNonStudentRole_toLeerkrachtUserRole() {
+        Long schoolId = 1L;
+        String ssId = "user-8";
 
-// assertThatThrownBy(() -> controller.getClass(schoolId, "class-X"))
-// .isInstanceOf(RuntimeException.class)
-// .hasMessageContaining("School not found: 888");
+        when(lookupService.getUser(schoolId, ssId, Set.of(UserRole.LEERKRACHT)))
+                .thenReturn(Map.of("id", ssId));
 
-// verifyNoInteractions(lookupService);
-// }
+        controller.getUser(schoolId, ssId, "admin");
 
-// @Test
-// void getClass_delegatesCorrectSsIdToService() {
-// Long schoolId = 2L;
-// String ssId = "class-B2";
+        verify(lookupService).getUser(schoolId, ssId, Set.of(UserRole.LEERKRACHT));
+        verifyNoMoreInteractions(lookupService);
+    }
 
-// when(schoolRepository.findById(schoolId)).thenReturn(Optional.of(school));
-// when(lookupService.getClassroom(school, ssId)).thenReturn(Map.of("id",
-// ssId));
+    @Test
+    void getUser_roleComparison_isCaseInsensitive() {
+        Long schoolId = 1L;
+        String ssId = "user-9";
 
-// controller.getClass(schoolId, ssId);
+        when(lookupService.getUser(schoolId, ssId, Set.of(UserRole.STUDENT)))
+                .thenReturn(Map.of("id", ssId));
 
-// verify(lookupService).getClassroom(school, ssId);
-// verifyNoMoreInteractions(lookupService);
-// }
+        controller.getUser(schoolId, ssId, "STUDENT");
 
-// // -------------------------------------------------------------------------
-// // getAllTeachersForSchool
-// // -------------------------------------------------------------------------
+        verify(lookupService).getUser(schoolId, ssId, Set.of(UserRole.STUDENT));
+    }
 
-// @Test
-// void getAllTeachersForSchool_returnsOk_withTeacherList() {
-// Long schoolId = 3L;
-// List<TeacherDTO> teachers = List.of(mock(TeacherDTO.class),
-// mock(TeacherDTO.class));
+    @Test
+    void getUser_passesCorrectSchoolIdToService() {
+        Long schoolId = 42L;
+        String ssId = "user-10";
 
-// when(schoolRepository.findById(schoolId)).thenReturn(Optional.of(school));
-// when(lookupService.getAllTeachersForSchool(school)).thenReturn(teachers);
+        when(lookupService.getUser(schoolId, ssId, Set.of(UserRole.STUDENT)))
+                .thenReturn(Map.of("id", ssId));
 
-// ResponseEntity<List<TeacherDTO>> response =
-// controller.getAllTeachersForSchool(schoolId);
+        controller.getUser(schoolId, ssId, "student");
 
-// assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-// assertThat(response.getBody()).isEqualTo(teachers);
-// verify(lookupService).getAllTeachersForSchool(school);
-// }
+        verify(lookupService).getUser(schoolId, ssId, Set.of(UserRole.STUDENT));
+    }
 
-// @Test
-// void getAllTeachersForSchool_returnsOk_withEmptyList() {
-// Long schoolId = 3L;
+    // -------------------------------------------------------------------------
+    // getClass (classroom lookup)
+    // -------------------------------------------------------------------------
 
-// when(schoolRepository.findById(schoolId)).thenReturn(Optional.of(school));
-// when(lookupService.getAllTeachersForSchool(school)).thenReturn(List.of());
+    @Test
+    void getClass_returnsOk_whenClassroomFound() {
+        Long schoolId = 2L;
+        String ssId = "class-A1";
+        Map<String, Object> classData = Map.of("id", ssId, "name", "1A");
 
-// ResponseEntity<List<TeacherDTO>> response =
-// controller.getAllTeachersForSchool(schoolId);
+        when(lookupService.getClassroom(schoolId, ssId)).thenReturn(classData);
 
-// assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-// assertThat(response.getBody()).isEmpty();
-// }
+        ResponseEntity<Map<String, Object>> response = controller.getClass(schoolId, ssId);
 
-// @Test
-// void getAllTeachersForSchool_throwsRuntimeException_whenSchoolNotFound() {
-// Long schoolId = 777L;
-// when(schoolRepository.findById(schoolId)).thenReturn(Optional.empty());
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isEqualTo(classData);
+        verify(lookupService).getClassroom(schoolId, ssId);
+    }
 
-// assertThatThrownBy(() -> controller.getAllTeachersForSchool(schoolId))
-// .isInstanceOf(RuntimeException.class)
-// .hasMessageContaining("School not found: 777");
+    @Test
+    void getClass_returnsNotFound_whenServiceReturnsNull() {
+        Long schoolId = 2L;
+        String ssId = "class-unknown";
 
-// verifyNoInteractions(lookupService);
-// }
+        when(lookupService.getClassroom(schoolId, ssId)).thenReturn(null);
 
-// @Test
-// void getAllTeachersForSchool_delegatesCorrectSchoolToService() {
-// Long schoolId = 3L;
+        ResponseEntity<Map<String, Object>> response = controller.getClass(schoolId, ssId);
 
-// when(schoolRepository.findById(schoolId)).thenReturn(Optional.of(school));
-// when(lookupService.getAllTeachersForSchool(school)).thenReturn(List.of());
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(response.getBody()).isNull();
+    }
 
-// controller.getAllTeachersForSchool(schoolId);
+    @Test
+    void getClass_delegatesCorrectArgumentsToService() {
+        Long schoolId = 2L;
+        String ssId = "class-B2";
 
-// verify(schoolRepository).findById(schoolId);
-// verify(lookupService).getAllTeachersForSchool(school);
-// verifyNoMoreInteractions(lookupService);
-// }
+        when(lookupService.getClassroom(schoolId, ssId))
+                .thenReturn(Map.of("id", ssId));
 
-// // -------------------------------------------------------------------------
-// // getSchool (private helper — tested indirectly)
-// // -------------------------------------------------------------------------
+        controller.getClass(schoolId, ssId);
 
-// @Test
-// void getSchool_usesRepositoryFindById_withCorrectId() {
-// Long schoolId = 42L;
-// when(schoolRepository.findById(schoolId)).thenReturn(Optional.of(school));
-// when(lookupService.getUser(school, "u",
-// Set.of(UserRole.STUDENT))).thenReturn(Map.of());
+        verify(lookupService).getClassroom(schoolId, ssId);
+        verifyNoMoreInteractions(lookupService);
+    }
 
-// controller.getUser(schoolId, "u", "student");
+    // -------------------------------------------------------------------------
+    // getAllTeachersForSchool
+    // -------------------------------------------------------------------------
 
-// verify(schoolRepository).findById(schoolId);
-// }
-// }
+    @Test
+    void getAllTeachersForSchool_returnsOk_withTeacherList() {
+        Long schoolId = 3L;
+        List<TeacherDTO> teachers = List.of(mock(TeacherDTO.class), mock(TeacherDTO.class));
+
+        when(lookupService.getAllTeachersForSchool(schoolId)).thenReturn(teachers);
+
+        ResponseEntity<List<TeacherDTO>> response = controller.getAllTeachersForSchool(schoolId);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isEqualTo(teachers);
+        verify(lookupService).getAllTeachersForSchool(schoolId);
+    }
+
+    @Test
+    void getAllTeachersForSchool_returnsOk_withEmptyList() {
+        Long schoolId = 3L;
+
+        when(lookupService.getAllTeachersForSchool(schoolId)).thenReturn(List.of());
+
+        ResponseEntity<List<TeacherDTO>> response = controller.getAllTeachersForSchool(schoolId);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isEmpty();
+    }
+
+    @Test
+    void getAllTeachersForSchool_delegatesCorrectSchoolIdToService() {
+        Long schoolId = 3L;
+
+        when(lookupService.getAllTeachersForSchool(schoolId)).thenReturn(List.of());
+
+        controller.getAllTeachersForSchool(schoolId);
+
+        verify(lookupService).getAllTeachersForSchool(schoolId);
+        verifyNoMoreInteractions(lookupService);
+    }
+}

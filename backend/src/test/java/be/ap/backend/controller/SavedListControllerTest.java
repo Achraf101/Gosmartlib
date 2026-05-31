@@ -1,113 +1,168 @@
-// package be.ap.backend.controller;
+package be.ap.backend.controller;
 
-// import static org.junit.jupiter.api.Assertions.*;
-// import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-// import java.util.List;
+import java.util.List;
 
-// import org.junit.jupiter.api.Test;
-// import org.springframework.beans.factory.annotation.Autowired;
-// import org.springframework.boot.test.context.SpringBootTest;
-// import org.springframework.http.ResponseEntity;
-// import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
 
-// import be.ap.backend.dto.SharedListResponseDTO;
-// import be.ap.backend.entity.BookList;
-// import be.ap.backend.entity.SavedList;
-// import be.ap.backend.service.SavedListService;
-// import jakarta.servlet.http.HttpSession;
+import be.ap.backend.config.SessionContext;
+import be.ap.backend.dto.SharedListResponseDTO;
+import be.ap.backend.entity.BookList;
+import be.ap.backend.entity.SavedList;
+import be.ap.backend.service.SavedListService;
 
-// @SpringBootTest
-// public class SavedListControllerTest {
+@WebMvcTest(controllers = SavedListController.class)
+@AutoConfigureMockMvc(addFilters = false) // skip Spring Security filter chain
+public class SavedListControllerTest {
 
-// @MockitoBean
-// private SavedListService savedListService;
+    @Autowired
+    private MockMvc mockMvc;
 
-// @Autowired
-// private SavedListController controller;
+    @MockitoBean
+    private SavedListService savedListService;
 
-// private HttpSession mockSession(Long userId) {
-// HttpSession session = mock(HttpSession.class);
-// when(session.getAttribute("userId")).thenReturn(userId);
-// return session;
-// }
+    @MockitoBean
+    private SessionContext sessionContext;
 
-// @Test
-// void givenSession_whenGetSavedLists_thenReturnSavedLists() {
-// BookList list = new BookList();
-// list.setId(1L);
-// list.setName("Shared List");
-// SharedListResponseDTO response = new SharedListResponseDTO(list, List.of());
-// when(savedListService.getSavedLists(1L)).thenReturn(List.of(response));
+    // ── GET /saved-lists ───────────────────────────────────────────────────────
 
-// ResponseEntity<List<SharedListResponseDTO>> result =
-// controller.getSavedLists(mockSession(1L));
+    @Test
+    void givenLoggedInUser_whenGetSavedLists_thenReturnSavedLists() throws Exception {
+        when(sessionContext.getUserId()).thenReturn(1L);
 
-// assertNotNull(result.getBody());
-// assertEquals(1, result.getBody().size());
-// verify(savedListService, times(1)).getSavedLists(1L);
-// }
+        BookList bookList = new BookList();
+        bookList.setId(1L);
+        bookList.setName("Shared List");
+        SharedListResponseDTO dto = new SharedListResponseDTO(bookList, List.of());
+        when(savedListService.getSavedLists(1L)).thenReturn(List.of(dto));
 
-// @Test
-// void givenSession_whenGetSavedLists_thenReturnEmpty_whenNone() {
-// when(savedListService.getSavedLists(1L)).thenReturn(List.of());
+        mockMvc.perform(get("/saved-lists"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1));
 
-// ResponseEntity<List<SharedListResponseDTO>> result =
-// controller.getSavedLists(mockSession(1L));
+        verify(savedListService).getSavedLists(1L);
+    }
 
-// assertNotNull(result.getBody());
-// assertTrue(result.getBody().isEmpty());
-// }
+    @Test
+    void givenLoggedInUser_whenGetSavedLists_thenReturnEmptyList_whenNone() throws Exception {
+        when(sessionContext.getUserId()).thenReturn(1L);
+        when(savedListService.getSavedLists(1L)).thenReturn(List.of());
 
-// @Test
-// void givenSessionAndToken_whenSaveList_thenReturnSavedList() {
-// BookList list = new BookList();
-// list.setId(1L);
-// SavedList savedList = new SavedList();
-// savedList.setUserId(1L);
-// savedList.setBookListId(1L);
+        mockMvc.perform(get("/saved-lists"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
 
-// when(savedListService.getListByToken("abc123")).thenReturn(list);
-// when(savedListService.saveList(1L, 1L)).thenReturn(savedList);
+        verify(savedListService).getSavedLists(1L);
+    }
 
-// ResponseEntity<SavedList> result = controller.saveList(mockSession(1L),
-// "abc123");
+    @Test
+    void givenNoSession_whenGetSavedLists_thenThrowMissingSessionException() throws Exception {
+        when(sessionContext.getUserId()).thenReturn(null);
 
-// assertNotNull(result.getBody());
-// assertEquals(1L, result.getBody().getUserId());
-// verify(savedListService, times(1)).getListByToken("abc123");
-// verify(savedListService, times(1)).saveList(1L, 1L);
-// }
+        mockMvc.perform(get("/saved-lists"))
+                .andExpect(status().isUnauthorized());
 
-// @Test
-// void givenSessionAndBookListId_whenUnsaveList_thenReturn204() {
-// doNothing().when(savedListService).unsaveList(1L, 1L);
+        verifyNoInteractions(savedListService);
+    }
 
-// ResponseEntity<Void> result = controller.unsaveList(mockSession(1L), 1L);
+    // ── POST /saved-lists/{token} ──────────────────────────────────────────────
 
-// assertEquals(204, result.getStatusCode().value());
-// verify(savedListService, times(1)).unsaveList(1L, 1L);
-// }
+    @Test
+    void givenLoggedInUserAndToken_whenSaveList_thenReturnSavedList() throws Exception {
+        when(sessionContext.getUserId()).thenReturn(1L);
 
-// @Test
-// void givenSessionAndBookListId_whenIsSaved_thenReturnTrue() {
-// when(savedListService.isSaved(1L, 1L)).thenReturn(true);
+        BookList bookList = new BookList();
+        bookList.setId(1L);
+        SavedList savedList = new SavedList();
+        savedList.setUserId(1L);
+        savedList.setBookListId(1L);
 
-// ResponseEntity<Boolean> result = controller.isSaved(mockSession(1L), 1L);
+        when(savedListService.getListByToken("abc123")).thenReturn(bookList);
+        when(savedListService.saveList(1L, 1L)).thenReturn(savedList);
 
-// assertNotNull(result.getBody());
-// assertTrue(result.getBody());
-// verify(savedListService, times(1)).isSaved(1L, 1L);
-// }
+        mockMvc.perform(post("/saved-lists/abc123"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.userId").value(1))
+                .andExpect(jsonPath("$.bookListId").value(1));
 
-// @Test
-// void givenSessionAndBookListId_whenIsSaved_thenReturnFalse_whenNotSaved() {
-// when(savedListService.isSaved(1L, 99L)).thenReturn(false);
+        verify(savedListService).getListByToken("abc123");
+        verify(savedListService).saveList(1L, 1L);
+    }
 
-// ResponseEntity<Boolean> result = controller.isSaved(mockSession(1L), 99L);
+    @Test
+    void givenNoSession_whenSaveList_thenThrowMissingSessionException() throws Exception {
+        when(sessionContext.getUserId()).thenReturn(null);
 
-// assertNotNull(result.getBody());
-// assertFalse(result.getBody());
-// verify(savedListService, times(1)).isSaved(1L, 99L);
-// }
-// }
+        mockMvc.perform(post("/saved-lists/abc123"))
+                .andExpect(status().isUnauthorized());
+
+        verifyNoInteractions(savedListService);
+    }
+
+    // ── DELETE /saved-lists/{bookListId} ──────────────────────────────────────
+
+    @Test
+    void givenLoggedInUser_whenUnsaveList_thenReturn204() throws Exception {
+        when(sessionContext.getUserId()).thenReturn(1L);
+        doNothing().when(savedListService).unsaveList(1L, 1L);
+
+        mockMvc.perform(delete("/saved-lists/1"))
+                .andExpect(status().isNoContent());
+
+        verify(savedListService).unsaveList(1L, 1L);
+    }
+
+    @Test
+    void givenNoSession_whenUnsaveList_thenThrowMissingSessionException() throws Exception {
+        when(sessionContext.getUserId()).thenReturn(null);
+
+        mockMvc.perform(delete("/saved-lists/1"))
+                .andExpect(status().isUnauthorized());
+
+        verifyNoInteractions(savedListService);
+    }
+
+    // ── GET /saved-lists/{bookListId}/exists ──────────────────────────────────
+
+    @Test
+    void givenLoggedInUser_whenIsSaved_thenReturnTrue() throws Exception {
+        when(sessionContext.getUserId()).thenReturn(1L);
+        when(savedListService.isSaved(1L, 1L)).thenReturn(true);
+
+        mockMvc.perform(get("/saved-lists/1/exists"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("true"));
+
+        verify(savedListService).isSaved(1L, 1L);
+    }
+
+    @Test
+    void givenLoggedInUser_whenIsSaved_thenReturnFalse_whenNotSaved() throws Exception {
+        when(sessionContext.getUserId()).thenReturn(1L);
+        when(savedListService.isSaved(1L, 99L)).thenReturn(false);
+
+        mockMvc.perform(get("/saved-lists/99/exists"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("false"));
+
+        verify(savedListService).isSaved(1L, 99L);
+    }
+
+    @Test
+    void givenNoSession_whenIsSaved_thenThrowMissingSessionException() throws Exception {
+        when(sessionContext.getUserId()).thenReturn(null);
+
+        mockMvc.perform(get("/saved-lists/1/exists"))
+                .andExpect(status().isUnauthorized());
+
+        verifyNoInteractions(savedListService);
+    }
+}

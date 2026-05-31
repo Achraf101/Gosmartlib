@@ -16,9 +16,11 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(SchoolController.class)
@@ -43,12 +45,15 @@ public class SchoolControllerTest {
         return dto;
     }
 
+    // -------------------------------------------------------------------------
+    // POST /school
+    // -------------------------------------------------------------------------
+
     @Test
     void addSchool_shouldReturnCreatedSchool() throws Exception {
         SchoolDTO input = buildDTO(null, "AP Hogeschool");
         SchoolDTO saved = buildDTO(1L, "AP Hogeschool");
 
-        // Service accepts SchoolDTO, not School
         when(schoolService.addSchool(any(SchoolDTO.class))).thenReturn(saved);
 
         mockMvc.perform(post("/school")
@@ -74,6 +79,10 @@ public class SchoolControllerTest {
                 .andExpect(jsonPath("$.name").value("Thomas More"));
     }
 
+    // -------------------------------------------------------------------------
+    // GET /school
+    // -------------------------------------------------------------------------
+
     @Test
     void getAll_shouldReturnListOfSchools() throws Exception {
         when(schoolService.getAll()).thenReturn(List.of(
@@ -98,6 +107,10 @@ public class SchoolControllerTest {
                 .andExpect(jsonPath("$.length()").value(0));
     }
 
+    // -------------------------------------------------------------------------
+    // GET /school/{id}
+    // -------------------------------------------------------------------------
+
     @Test
     void findById_shouldReturn200WhenFound() throws Exception {
         when(schoolService.findById(1L)).thenReturn(Optional.of(buildDTO(1L, "AP Hogeschool")));
@@ -114,5 +127,54 @@ public class SchoolControllerTest {
 
         mockMvc.perform(get("/school/99"))
                 .andExpect(status().isNotFound());
+    }
+
+    // -------------------------------------------------------------------------
+    // PUT /school/{id}
+    // -------------------------------------------------------------------------
+
+    @Test
+    void updateSchool_shouldReturnUpdatedSchool() throws Exception {
+        SchoolDTO input = buildDTO(null, "AP Hogeschool Updated");
+        SchoolDTO updated = buildDTO(1L, "AP Hogeschool Updated");
+
+        when(schoolService.updateSchool(eq(1L), any(SchoolDTO.class))).thenReturn(updated);
+
+        mockMvc.perform(put("/school/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(input)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.name").value("AP Hogeschool Updated"));
+    }
+
+    @Test
+    void updateSchool_shouldPassCorrectIdToService() throws Exception {
+        SchoolDTO input = buildDTO(null, "Thomas More Renamed");
+        SchoolDTO updated = buildDTO(5L, "Thomas More Renamed");
+
+        when(schoolService.updateSchool(eq(5L), any(SchoolDTO.class))).thenReturn(updated);
+
+        mockMvc.perform(put("/school/5")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(input)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(5))
+                .andExpect(jsonPath("$.name").value("Thomas More Renamed"));
+    }
+
+    @Test
+    void updateSchool_shouldPreserveLocationsInResponse() throws Exception {
+        SchoolDTO input = buildDTO(null, "AP Hogeschool");
+        SchoolDTO updated = buildDTO(1L, "AP Hogeschool");
+
+        when(schoolService.updateSchool(eq(1L), any(SchoolDTO.class))).thenReturn(updated);
+
+        mockMvc.perform(put("/school/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(input)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.locations").isArray())
+                .andExpect(jsonPath("$.locations.length()").value(0));
     }
 }

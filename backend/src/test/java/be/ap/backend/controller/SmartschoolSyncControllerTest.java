@@ -1,140 +1,95 @@
-// package be.ap.backend.controller;
+package be.ap.backend.controller;
 
-// import be.ap.backend.entity.School;
-// import be.ap.backend.repository.SchoolRepository;
-// import be.ap.backend.service.SmartschoolSyncService;
-// import jakarta.servlet.ServletException;
+import be.ap.backend.service.SmartschoolSyncService;
+import jakarta.servlet.ServletException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-// import org.junit.jupiter.api.BeforeEach;
-// import org.junit.jupiter.api.Test;
-// import org.junit.jupiter.api.extension.ExtendWith;
-// import org.mockito.InjectMocks;
-// import org.mockito.Mock;
-// import org.mockito.junit.jupiter.MockitoExtension;
-// import org.springframework.test.web.servlet.MockMvc;
-// import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-// import java.util.Optional;
+@ExtendWith(MockitoExtension.class)
+class SmartschoolSyncControllerTest {
 
-// import static org.junit.jupiter.api.Assertions.assertEquals;
-// import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-// import static org.junit.jupiter.api.Assertions.assertThrows;
-// import static org.mockito.Mockito.*;
-// import static
-// org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-// import static
-// org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+    @Mock
+    private SmartschoolSyncService syncService;
 
-// @ExtendWith(MockitoExtension.class)
-// class SmartschoolSyncControllerTest {
+    @InjectMocks
+    private SmartschoolSyncController controller;
 
-// @Mock
-// private SmartschoolSyncService syncService;
+    private MockMvc mockMvc;
 
-// @Mock
-// private SchoolRepository schoolRepository;
+    @BeforeEach
+    void setUp() {
+        mockMvc = MockMvcBuilders
+                .standaloneSetup(controller)
+                .build();
+    }
 
-// @InjectMocks
-// private SmartschoolSyncController controller;
+    @Test
+    void sync_validSchoolId_returns200WithSubdomain() throws Exception {
+        when(syncService.syncSchool(1L)).thenReturn("school-a");
 
-// private MockMvc mockMvc;
+        mockMvc.perform(post("/smartschool/sync/1"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Sync completed for school: school-a"));
 
-// @BeforeEach
-// void setUp() {
-// mockMvc = MockMvcBuilders
-// .standaloneSetup(controller)
-// .build();
-// }
+        verify(syncService, times(1)).syncSchool(1L);
+    }
 
-// // --- Helper ---
+    @Test
+    void sync_serviceReturnsSubdomain_responseContainsThatSubdomain() throws Exception {
+        when(syncService.syncSchool(42L)).thenReturn("my-school");
 
-// private School buildSchool(Long id, String clientId, String clientSecret,
-// String subdomain) {
-// School school = new School();
-// school.setId(id);
-// school.setOneRosterClientId(clientId);
-// school.setOneRosterClientSecret(clientSecret);
-// school.setSsSubdomain(subdomain);
-// return school;
-// }
+        mockMvc.perform(post("/smartschool/sync/42"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Sync completed for school: my-school"));
 
-// // --- Tests ---
+        verify(syncService, times(1)).syncSchool(42L);
+    }
 
-// @Test
-// void sync_schoolNotFound_throwsRuntimeException() {
-// when(schoolRepository.findById(99L)).thenReturn(Optional.empty());
+    @Test
+    void sync_serviceThrowsRuntimeException_propagatesAsServletException() {
+        when(syncService.syncSchool(1L)).thenThrow(new RuntimeException("Sync failed"));
 
-// assertThrows(
-// jakarta.servlet.ServletException.class,
-// () -> mockMvc.perform(post("/smartschool/sync/99")));
+        ServletException ex = assertThrows(
+                ServletException.class,
+                () -> mockMvc.perform(post("/smartschool/sync/1")));
 
-// verifyNoInteractions(syncService);
-// }
+        assertInstanceOf(RuntimeException.class, ex.getCause());
+        assertEquals("Sync failed", ex.getCause().getMessage());
+        verify(syncService, times(1)).syncSchool(1L);
+    }
 
-// @Test
-// void sync_missingClientId_returns400() throws Exception {
-// School school = buildSchool(1L, null, "secret", "school-a");
-// when(schoolRepository.findById(1L)).thenReturn(Optional.of(school));
+    @Test
+    void sync_serviceThrowsIllegalArgumentException_propagatesAsServletException() {
+        when(syncService.syncSchool(99L)).thenThrow(new IllegalArgumentException("School not found"));
 
-// mockMvc.perform(post("/smartschool/sync/1"))
-// .andExpect(status().isBadRequest())
-// .andExpect(content().string("School has no OneRoster credentials
-// configured"));
+        ServletException ex = assertThrows(
+                ServletException.class,
+                () -> mockMvc.perform(post("/smartschool/sync/99")));
 
-// verifyNoInteractions(syncService);
-// }
+        assertInstanceOf(IllegalArgumentException.class, ex.getCause());
+        assertEquals("School not found", ex.getCause().getMessage());
+        verify(syncService, times(1)).syncSchool(99L);
+    }
 
-// @Test
-// void sync_missingClientSecret_returns400() throws Exception {
-// School school = buildSchool(1L, "clientId", null, "school-a");
-// when(schoolRepository.findById(1L)).thenReturn(Optional.of(school));
+    @Test
+    void sync_callsServiceWithCorrectSchoolId() throws Exception {
+        when(syncService.syncSchool(7L)).thenReturn("some-school");
 
-// mockMvc.perform(post("/smartschool/sync/1"))
-// .andExpect(status().isBadRequest())
-// .andExpect(content().string("School has no OneRoster credentials
-// configured"));
+        mockMvc.perform(post("/smartschool/sync/7"))
+                .andExpect(status().isOk());
 
-// verifyNoInteractions(syncService);
-// }
-
-// @Test
-// void sync_bothCredentialsMissing_returns400() throws Exception {
-// School school = buildSchool(1L, null, null, "school-a");
-// when(schoolRepository.findById(1L)).thenReturn(Optional.of(school));
-
-// mockMvc.perform(post("/smartschool/sync/1"))
-// .andExpect(status().isBadRequest())
-// .andExpect(content().string("School has no OneRoster credentials
-// configured"));
-
-// verifyNoInteractions(syncService);
-// }
-
-// @Test
-// void sync_validSchool_returns200AndCallsService() throws Exception {
-// School school = buildSchool(1L, "clientId", "secret", "school-a");
-// when(schoolRepository.findById(1L)).thenReturn(Optional.of(school));
-
-// mockMvc.perform(post("/smartschool/sync/1"))
-// .andExpect(status().isOk())
-// .andExpect(content().string("Sync completed for school: school-a"));
-
-// verify(syncService, times(1)).syncSchool(school);
-// }
-
-// @Test
-// void sync_serviceThrowsException_propagatesAsServletException() {
-// School school = buildSchool(1L, "clientId", "secret", "school-a");
-// when(schoolRepository.findById(1L)).thenReturn(Optional.of(school));
-// doThrow(new RuntimeException("Sync
-// failed")).when(syncService).syncSchool(school);
-
-// ServletException ex = assertThrows(
-// jakarta.servlet.ServletException.class,
-// () -> mockMvc.perform(post("/smartschool/sync/1")));
-
-// assertInstanceOf(RuntimeException.class, ex.getCause());
-// assertEquals("Sync failed", ex.getCause().getMessage());
-// verify(syncService, times(1)).syncSchool(school);
-// }
-// }
+        verify(syncService).syncSchool(7L);
+        verifyNoMoreInteractions(syncService);
+    }
+}
