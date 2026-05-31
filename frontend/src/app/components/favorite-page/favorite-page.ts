@@ -312,4 +312,7 @@ export class FavoritePage implements OnInit {
       },
     });
   }
+  getListItems(map: Map<number, BookResult[]>, id: number): BookResult[] {
+    return map.get(id) ?? [];
+  }
 }

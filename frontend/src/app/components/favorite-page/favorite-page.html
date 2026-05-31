@@ -5,9 +5,9 @@
   <div class="popup-overlay">
     <div class="popup">
       <h2>{{ pendingList.list.name }}</h2>
-      @if ((listItems.get(pendingList.list.id) ?? []).length > 0) {
+      @if (pendingList.books.length > 0) {
         <p-carousel
-          [value]="listItems.get(pendingList.list.id) ?? []"
+          [value]="getListItems(savedListItems, pendingList.list.id)"
           [numVisible]="4"
           [numScroll]="2"
           [responsiveOptions]="carouselResponsiveOptions"
@@ -15,11 +15,6 @@
           <ng-template pTemplate="item" let-book>
             <div class="book-card">
               <b-card [bookCard]="book"></b-card>
-              <i
-                (click)="deleteFromList(pendingList.list.id, book.id); $event.stopPropagation()"
-                class="bookmark pi"
-                [class.pi-times]="true"
-              ></i>
             </div>
           </ng-template>
         </p-carousel>
@@ -121,7 +116,7 @@
     <div class="book-card-list">
       @if ((listItems.get(list.id) ?? []).length > 0) {
         <p-carousel
-          [value]="listItems.get(list.id) ?? []"
+          [value]="getListItems(listItems, list.id)"
           [numVisible]="4"
           [numScroll]="2"
           [responsiveOptions]="carouselResponsiveOptions"
@@ -177,7 +172,7 @@
       <div class="book-card-list">
         @if ((savedListItems.get(saved.list.id) ?? []).length > 0) {
           <p-carousel
-            [value]="savedListItems.get(saved.list.id) ?? []"
+            [value]="getListItems(savedListItems, saved.list.id)"
             [numVisible]="4"
             [numScroll]="2"
             [responsiveOptions]="carouselResponsiveOptions"
