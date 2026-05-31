@@ -37,6 +37,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<String> handleIllegalArgument(IllegalArgumentException e) {
+        log.error("IllegalArgumentException: ", e); // add this line
         return ResponseEntity.badRequest().body(e.getMessage());
     }
 
