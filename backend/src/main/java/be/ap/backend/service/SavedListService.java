@@ -16,7 +16,6 @@ import be.ap.backend.repository.BookListRepository;
 import be.ap.backend.repository.SavedListRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -27,8 +26,7 @@ public class SavedListService {
     private final BookListRepository bookListRepository;
     private final BookListItemRepository bookListItemRepository;
 
-    @PersistenceContext
-    private EntityManager entityManager;
+    private final EntityManager entityManager;
 
     public SavedList saveList(Long userId, Long bookListId) {
         if (savedListRepository.existsByUserIdAndBookListId(userId, bookListId)) {
@@ -50,23 +48,24 @@ public class SavedListService {
 
     public List<SharedListResponseDTO> getSavedLists(Long userId) {
         return savedListRepository.findByUserId(userId).stream()
-            .map(saved -> {
-                BookList list = bookListRepository.findById(saved.getBookListId())
-                    .orElse(null);
-                if (list == null) return null;
-                List<Book> books = bookListItemRepository.findByBookListId(list.getId())
-                    .stream()
-                    .map(item -> entityManager.find(Book.class, item.getBookId()))
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toList());
-                return new SharedListResponseDTO(list, books);
-            })
-            .filter(Objects::nonNull)
-            .collect(Collectors.toList());
+                .map(saved -> {
+                    BookList list = bookListRepository.findById(saved.getBookListId())
+                            .orElse(null);
+                    if (list == null)
+                        return null;
+                    List<Book> books = bookListItemRepository.findByBookListId(list.getId())
+                            .stream()
+                            .map(item -> entityManager.find(Book.class, item.getBookId()))
+                            .filter(Objects::nonNull)
+                            .collect(Collectors.toList());
+                    return new SharedListResponseDTO(list, books);
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
     public BookList getListByToken(String token) {
         return bookListRepository.findByShareToken(token)
-            .orElseThrow(() -> new EntityNotFoundException("Lijst niet gevonden"));
+                .orElseThrow(() -> new EntityNotFoundException("Lijst niet gevonden"));
     }
 }
