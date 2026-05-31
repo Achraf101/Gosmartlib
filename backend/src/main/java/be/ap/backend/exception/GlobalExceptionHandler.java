@@ -38,6 +38,9 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<String> handleIllegalArgument(IllegalArgumentException e) {
         log.error("IllegalArgumentException: ", e); // add this line
+        log.error("IllegalArgumentException stack trace: ", e);
+        System.err.println("IAE caught: " + e.getMessage());
+        e.printStackTrace();
         return ResponseEntity.badRequest().body(e.getMessage());
     }
 
