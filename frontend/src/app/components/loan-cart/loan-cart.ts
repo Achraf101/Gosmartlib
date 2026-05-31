@@ -96,6 +96,12 @@ export class LoanCartComponent {
         this.loadMaxAmounts();
       },
     });
+    this.checkoutForm.controls.start.valueChanges.subscribe((date) => {
+      if (!date || !this.school) return;
+      const end = new Date(date);
+      end.setDate(end.getDate() + this.school.borrowPeriod);
+      this.calculatedEnd = end;
+    });
   }
 
   onLocationChange(locationId: number): void {
@@ -138,12 +144,6 @@ export class LoanCartComponent {
   });
 
   calculatedEnd: Date | null = null;
-
-  onStartDateSelect(date: Date) {
-    const end = new Date(date);
-    end.setDate(end.getDate() + (this.school?.borrowPeriod ?? 14));
-    this.calculatedEnd = end;
-  }
 
   updateAmount(bookId: number, amount: number): void {
     console.log('updateAmount aangeroepen', bookId, amount);

@@ -146,6 +146,23 @@ export class BookDetailPage implements OnInit {
   }
 
   ngOnInit(): void {
+    this.schoolService.getById(this.schoolId).subscribe({
+      next: (school) => {
+        this.school = school;
+        if (!this.locationId && school.locations?.length === 1) {
+          this.locationId = school.locations[0].id;
+          this.loadLocationData();
+        }
+      },
+    });
+
+    this.loanForm.controls.start.valueChanges.subscribe((date) => {
+      if (!date || !this.school) return;
+      const end = new Date(date);
+      end.setDate(end.getDate() + this.school.borrowPeriod);
+      this.loanForm.controls.end.setValue(end, { emitEvent: false });
+    });
+
     this.route.paramMap.subscribe((params) => {
       this.bookId = Number(params.get('id'));
       this.showDropdown = false;
@@ -279,12 +296,6 @@ export class BookDetailPage implements OnInit {
       Validators.pattern('^[0-9]*$'),
     ]),
   });
-
-  onStartDateSelect(date: Date) {
-    const end = new Date(date);
-    end.setDate(end.getDate() + (this.school?.borrowPeriod ?? 14));
-    this.loanForm.controls.end.setValue(end);
-  }
 
   createLoan(): void {
     const effectiveLocationId = this.locationId ?? this.selectedLoanLocationId;
