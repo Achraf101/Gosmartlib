@@ -16,11 +16,6 @@ export class BookCardComponent {
   scrollTop() {
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
   }
-  ngOnInit() {
-    if (!this.bookCard?.author) {
-      console.warn('BookCardComponent: missing author on', this.bookCard);
-    }
-  }
 }
 
 type Size = 'small' | 'medium' | 'large';

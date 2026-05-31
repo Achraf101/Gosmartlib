@@ -91,8 +91,6 @@ export class LoanCartComponent {
           this.selectedLocationId = this.locationId;
         }
 
-        console.log('locationId na init:', this.locationId);
-        console.log('locations na init:', this.locations);
         this.loadMaxAmounts();
       },
     });
@@ -146,7 +144,6 @@ export class LoanCartComponent {
   calculatedEnd: Date | null = null;
 
   updateAmount(bookId: number, amount: number): void {
-    console.log('updateAmount aangeroepen', bookId, amount);
     if (amount < 1) return;
 
     const max = this.getMaxAmount(bookId);

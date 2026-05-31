@@ -224,7 +224,6 @@ export class DashboardLibraryManager implements OnInit {
   }
 
   changeBookOfMonth(grade: number): void {
-    console.log(this.monthlyBooks);
     this.router.navigate(['/catalogus'], {
       queryParams: {
         selectMode: true,
@@ -235,7 +234,6 @@ export class DashboardLibraryManager implements OnInit {
   }
 
   changeSpotlightBook(ranking: number): void {
-    console.log(this.spotlightSectionId);
     this.router.navigate(['/catalogus'], {
       queryParams: {
         selectMode: true,

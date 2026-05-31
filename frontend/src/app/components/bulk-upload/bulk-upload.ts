@@ -145,7 +145,13 @@ export class BulkUpload {
     setTimeout(() => {
       this.barcodeSvgs.forEach((ref, i) => {
         const id = this.newAccessionIds[i];
-        if (id) JsBarcode(ref.nativeElement, id, { format: 'CODE128', displayValue: false, width: 2, height: 60 });
+        if (id)
+          JsBarcode(ref.nativeElement, id, {
+            format: 'CODE128',
+            displayValue: false,
+            width: 2,
+            height: 60,
+          });
       });
     }, 0);
   }
@@ -153,25 +159,37 @@ export class BulkUpload {
   addCopiesForBook(bookId: number): void {
     const state = this.copyState[bookId];
     if (!state?.locationId || state.amount < 1) return;
-    this.locationBookService.createLocationBook({
-      location_id: state.locationId,
-      book_id: bookId,
-      amount: state.amount,
-      current_amount: state.amount,
-    }).subscribe({
-      next: (result) => {
-        this.messageService.add({ severity: 'success', summary: 'Succes', detail: `${state.amount} exemplaren aangemaakt.`, life: 3000 });
-        if (result.new_accession_ids?.length) {
-          this.newAccessionIds = result.new_accession_ids;
-          this.barcodeDialogVisible = true;
-        }
-        this.doneCopyBooks.add(bookId);
-        this.copyState[bookId] = { locationId: null, amount: 1 };
-      },
-      error: () => {
-        this.messageService.add({ severity: 'error', summary: 'Fout', detail: 'Exemplaren aanmaken mislukt.', life: 3000 });
-      },
-    });
+    this.locationBookService
+      .createLocationBook({
+        location_id: state.locationId,
+        book_id: bookId,
+        amount: state.amount,
+        current_amount: state.amount,
+      })
+      .subscribe({
+        next: (result) => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Succes',
+            detail: `${state.amount} exemplaren aangemaakt.`,
+            life: 3000,
+          });
+          if (result.new_accession_ids?.length) {
+            this.newAccessionIds = result.new_accession_ids;
+            this.barcodeDialogVisible = true;
+          }
+          this.doneCopyBooks.add(bookId);
+          this.copyState[bookId] = { locationId: null, amount: 1 };
+        },
+        error: () => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Fout',
+            detail: 'Exemplaren aanmaken mislukt.',
+            life: 3000,
+          });
+        },
+      });
   }
 
   closeBarcodeDialog(): void {
@@ -183,10 +201,12 @@ export class BulkUpload {
     const svgElements = this.barcodeSvgs.toArray();
     const printWindow = window.open('', '_blank', 'width=800,height=600');
     if (!printWindow) return;
-    const cards = this.newAccessionIds.map((id, i) => {
-      const svgHtml = svgElements[i]?.nativeElement?.outerHTML ?? '';
-      return `<div class="barcode-card">${svgHtml}<span class="accession-label">${id}</span></div>`;
-    }).join('');
+    const cards = this.newAccessionIds
+      .map((id, i) => {
+        const svgHtml = svgElements[i]?.nativeElement?.outerHTML ?? '';
+        return `<div class="barcode-card">${svgHtml}<span class="accession-label">${id}</span></div>`;
+      })
+      .join('');
     printWindow.document.write(`<!DOCTYPE html><html><head><title>Barcodes afdrukken</title><style>
       body{margin:1rem;font-family:monospace}.barcode-grid{display:flex;flex-wrap:wrap;gap:1rem}
       .barcode-card{display:flex;flex-direction:column;align-items:center;gap:.25rem;padding:.5rem .75rem;border:1px dashed #d1d5db;border-radius:6px;page-break-inside:avoid;break-inside:avoid}
@@ -261,16 +281,6 @@ export class BulkUpload {
       .pipe(timeout(LOOKUP_TIMEOUT_MS))
       .subscribe({
         next: (result) => {
-          console.log('Preview result:', result);
-          console.log(
-            'Found:',
-            result.foundCount,
-            'Not found:',
-            result.notFoundCount,
-            'Total:',
-            result.total,
-          );
-
           this.preview = result;
           this.isPreviewing = false;
         },
@@ -386,8 +396,6 @@ export class BulkUpload {
       }
 
       if (book.themes_raw && this.themes) {
-        console.log('themes_raw:', book.themes_raw, 'themes:', this.themes);
-
         const names = book.themes_raw
           .split(',')
           .map((n) => n.trim().toLowerCase())
@@ -413,8 +421,6 @@ export class BulkUpload {
   }
 
   submitCompletion(book: IncompleteBookDTO): void {
-    console.log('isbn:', book.isbn, 'missing_fields:', book.missing_fields);
-
     const key = this.getCompletionKey(book);
     const c = this.completions[key];
 
@@ -451,8 +457,6 @@ export class BulkUpload {
         const bookType = this.bookTypes?.find((bt) => bt.id === c.bookTypes?.[0]);
         const language = this.languages?.find((l) => l.id === c.language?.[0]);
         const publisher = results['publisher']?.[0];
-
-        console.log('Extracted:', { author, bookType, language, publisher });
 
         if (!author) {
           this.messageService.add({
@@ -588,7 +592,6 @@ export class BulkUpload {
     const hasFiction = !!c.fiction;
 
     if (hasDescription && hasBookType && hasGenres && hasLanguage && hasFiction) {
-      console.log('Auto-submitting complete book:', book.title);
       this.submitCompletion(book);
     }
   }
