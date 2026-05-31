@@ -5,8 +5,7 @@
   <div class="popup-overlay">
     <div class="popup">
       <h2>{{ pendingList.list.name }}</h2>
-      <p>Aantal boeken: {{ pendingBooks.length }}</p>
-      @if (pendingList.books.length > 0) {
+      @if (pendingBooks.length > 0) {
         <p-carousel
           [value]="pendingBooks"
           [numVisible]="4"
