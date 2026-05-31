@@ -127,7 +127,7 @@ i {
 }
 
 .popup .book-card {
-  height: clamp(200px, 30vh, 350px);
+  height: clamp(380px, 42vh, 450px);
 }
 
 @media (min-width: 800px) {
