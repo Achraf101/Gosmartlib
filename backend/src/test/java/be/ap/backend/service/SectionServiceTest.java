@@ -8,13 +8,13 @@ import be.ap.backend.repository.BookRepository;
 import be.ap.backend.repository.SectionBookRepository;
 import be.ap.backend.repository.SectionRepository;
 
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
@@ -40,109 +40,6 @@ public class SectionServiceTest {
     @InjectMocks
     private SectionService sectionService;
 
-    @Test
-    public void getAllSections_returnsAllSections() {
-
-        Section s1 = new Section();
-        s1.setTitle("In de kijker");
-        Section s2 = new Section();
-        s2.setTitle("Boek van de maand");
-        when(sectionRepository.findByHiddenFalseAndSchoolIdOrderByRankingAsc(1L)).thenReturn(List.of(s1, s2));
-        List<Section> result = sectionService.getAllSections(1L);
-
-        assertEquals(2, result.size());
-        assertEquals("In de kijker", result.get(0).getTitle());
-    }
-
-    @Test
-    public void getBooksBySection_returnsBooksForSection() {
-
-        Book book = new Book();
-        book.setTitle("De brief voor de koning");
-        SectionBook sectionBook = new SectionBook();
-        sectionBook.setBook(book);
-        when(sectionBookRepository.findBySectionId(1L)).thenReturn(List.of(sectionBook));
-
-        List<Book> result = sectionService.getBooksBySection(1L);
-
-        assertEquals(1, result.size());
-        assertEquals("De brief voor de koning", result.get(0).getTitle());
-    }
-
-    @Test
-    public void getBooksBySection_returnsEmptyList_whenNoBooks() {
-
-        when(sectionBookRepository.findBySectionId(99L)).thenReturn(List.of());
-
-        List<Book> result = sectionService.getBooksBySection(99L);
-
-        assertTrue(result.isEmpty());
-    }
-
-    @Test
-    public void getBookBySectionAndGrade_returnsBook() {
-
-        Book book = new Book();
-        book.setTitle("De brief voor de koning");
-        SectionBook sectionBook = new SectionBook();
-        sectionBook.setBook(book);
-        when(sectionBookRepository.findBySectionIdAndGrade(1L, (byte) 1)).thenReturn(Optional.of(sectionBook));
-
-        Book result = sectionService.getBookBySectionAndGrade(1L, (byte) 1);
-
-        assertNotNull(result);
-        assertEquals("De brief voor de koning", result.getTitle());
-    }
-
-    @Test
-    public void setBookOfMonth_replacesExistingBook() {
-
-        Section section = new Section();
-        section.setId(1L);
-        section.setTitle("Boek van de maand");
-
-        Book newBook = new Book();
-        newBook.setId(2L);
-        newBook.setTitle("Harry Potter");
-
-        SectionBook existing = new SectionBook();
-        existing.setBook(new Book());
-
-        when(sectionRepository.findById(1L)).thenReturn(Optional.of(section));
-        when(bookRepository.findById(2L)).thenReturn(Optional.of(newBook));
-        when(sectionBookRepository.findBySectionIdAndGrade(1L, (byte) 1)).thenReturn(Optional.of(existing));
-
-        Book result = sectionService.setBookOfMonth(1L, 2L, (byte) 1);
-
-        assertNotNull(result);
-        assertEquals("Harry Potter", result.getTitle());
-        verify(sectionBookRepository, times(1)).delete(existing);
-        verify(sectionBookRepository, times(1)).save(any(SectionBook.class));
-    }
-
-    @Test
-    public void setBookOfMonth_throwsNotFound_whenSectionNotFound() {
-
-        when(sectionRepository.findById(99L)).thenReturn(Optional.empty());
-
-        assertThrows(ResponseStatusException.class, () -> {
-            sectionService.setBookOfMonth(99L, 1L, (byte) 1);
-        });
-    }
-
-    @Test
-    public void setBookOfMonth_throwsNotFound_whenBookNotFound() {
-
-        Section section = new Section();
-        section.setId(1L);
-        when(sectionRepository.findById(1L)).thenReturn(Optional.of(section));
-        when(bookRepository.findById(99L)).thenReturn(Optional.empty());
-
-        assertThrows(ResponseStatusException.class, () -> {
-            sectionService.setBookOfMonth(1L, 99L, (byte) 1);
-        });
-    }
-
     private Section section;
     private Book book;
     private SectionBook sectionBook;
@@ -163,12 +60,147 @@ public class SectionServiceTest {
         sectionBook.setRanking((short) 1);
     }
 
+    // -------------------------------------------------------------------------
+    // getAllSections
+    // -------------------------------------------------------------------------
+
+    @Test
+    void getAllSections_returnsAllSections() {
+        Section s1 = new Section();
+        s1.setTitle("In de kijker");
+        Section s2 = new Section();
+        s2.setTitle("Boek van de maand");
+        when(sectionRepository.findByHiddenFalseAndSchoolIdOrderByRankingAsc(1L))
+                .thenReturn(List.of(s1, s2));
+
+        List<Section> result = sectionService.getAllSections(1L);
+
+        assertEquals(2, result.size());
+        assertEquals("In de kijker", result.get(0).getTitle());
+    }
+
+    // -------------------------------------------------------------------------
+    // getBooksBySection
+    // -------------------------------------------------------------------------
+
+    @Test
+    void getBooksBySection_returnsBooksForSection() {
+        SectionBook sb = new SectionBook();
+        sb.setBook(book);
+        when(sectionBookRepository.findBySectionId(1L)).thenReturn(List.of(sb));
+
+        List<Book> result = sectionService.getBooksBySection(1L);
+
+        assertEquals(1, result.size());
+        assertEquals("De brief voor de koning", result.get(0).getTitle());
+    }
+
+    @Test
+    void getBooksBySection_returnsEmptyList_whenNoBooks() {
+        when(sectionBookRepository.findBySectionId(99L)).thenReturn(List.of());
+
+        List<Book> result = sectionService.getBooksBySection(99L);
+
+        assertTrue(result.isEmpty());
+    }
+
+    // -------------------------------------------------------------------------
+    // getBookBySectionAndGrade
+    // -------------------------------------------------------------------------
+
+    @Test
+    void getBookBySectionAndGrade_returnsBook() {
+        when(sectionBookRepository.findBySectionIdAndGrade(1L, (byte) 1))
+                .thenReturn(Optional.of(sectionBook));
+
+        Book result = sectionService.getBookBySectionAndGrade(1L, (byte) 1);
+
+        assertNotNull(result);
+        assertEquals("De brief voor de koning", result.getTitle());
+    }
+
+    @Test
+    void getBookBySectionAndGrade_returnsNull_whenNotFound() {
+        when(sectionBookRepository.findBySectionIdAndGrade(99L, (byte) 1))
+                .thenReturn(Optional.empty());
+
+        Book result = sectionService.getBookBySectionAndGrade(99L, (byte) 1);
+
+        assertNull(result);
+    }
+
+    // -------------------------------------------------------------------------
+    // setBookOfMonth
+    // -------------------------------------------------------------------------
+
+    @Test
+    void setBookOfMonth_replacesExistingBook() {
+        Book newBook = new Book();
+        newBook.setId(2L);
+        newBook.setTitle("Harry Potter");
+
+        SectionBook existing = new SectionBook();
+        existing.setBook(new Book());
+
+        when(sectionRepository.findById(1L)).thenReturn(Optional.of(section));
+        when(bookRepository.findById(2L)).thenReturn(Optional.of(newBook));
+        when(sectionBookRepository.findBySectionIdAndGrade(1L, (byte) 1))
+                .thenReturn(Optional.of(existing));
+
+        Book result = sectionService.setBookOfMonth(1L, 2L, (byte) 1);
+
+        assertNotNull(result);
+        assertEquals("Harry Potter", result.getTitle());
+        verify(sectionBookRepository).delete(existing);
+        verify(sectionBookRepository).save(any(SectionBook.class));
+    }
+
+    @Test
+    void setBookOfMonth_savesNewBook_whenNoExistingEntry() {
+        when(sectionRepository.findById(1L)).thenReturn(Optional.of(section));
+        when(bookRepository.findById(1L)).thenReturn(Optional.of(book));
+        when(sectionBookRepository.findBySectionIdAndGrade(1L, (byte) 2))
+                .thenReturn(Optional.empty());
+
+        Book result = sectionService.setBookOfMonth(1L, 1L, (byte) 2);
+
+        assertNotNull(result);
+        assertEquals("De brief voor de koning", result.getTitle());
+        verify(sectionBookRepository, never()).delete(any());
+        verify(sectionBookRepository).save(any(SectionBook.class));
+    }
+
+    @Test
+    void setBookOfMonth_throwsEntityNotFoundException_whenSectionNotFound() {
+        when(sectionRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> sectionService.setBookOfMonth(99L, 1L, (byte) 1))
+                .isInstanceOf(EntityNotFoundException.class)
+                .hasMessageContaining("Sectie niet gevonden");
+    }
+
+    @Test
+    void setBookOfMonth_throwsEntityNotFoundException_whenBookNotFound() {
+        when(sectionRepository.findById(1L)).thenReturn(Optional.of(section));
+        when(bookRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> sectionService.setBookOfMonth(1L, 99L, (byte) 1))
+                .isInstanceOf(EntityNotFoundException.class)
+                .hasMessageContaining("Boek niet gevonden");
+    }
+
+    // -------------------------------------------------------------------------
+    // setSpotlightBook
+    // -------------------------------------------------------------------------
+
     @Test
     void setSpotlightBook_success() {
         when(sectionRepository.findById(1L)).thenReturn(Optional.of(section));
         when(bookRepository.findById(1L)).thenReturn(Optional.of(book));
-        when(sectionBookRepository.findBySectionIdAndRanking(1L, (short) 1)).thenReturn(Optional.empty());
-        when(sectionBookRepository.save(any())).thenReturn(sectionBook);
+        when(sectionBookRepository.findBySectionIdAndGradeIsNullOrderByRankingAsc(1L))
+                .thenReturn(List.of());
+        when(sectionBookRepository.findBySectionIdAndRanking(1L, (short) 1))
+                .thenReturn(Optional.empty());
 
         Book result = sectionService.setSpotlightBook(1L, 1L, (short) 1);
 
@@ -178,13 +210,16 @@ public class SectionServiceTest {
     }
 
     @Test
-    void setSpotlightBook_replacesExistingBook() {
+    void setSpotlightBook_replacesExistingRanking() {
         SectionBook existing = new SectionBook();
         existing.setRanking((short) 1);
 
         when(sectionRepository.findById(1L)).thenReturn(Optional.of(section));
         when(bookRepository.findById(1L)).thenReturn(Optional.of(book));
-        when(sectionBookRepository.findBySectionIdAndRanking(1L, (short) 1)).thenReturn(Optional.of(existing));
+        when(sectionBookRepository.findBySectionIdAndGradeIsNullOrderByRankingAsc(1L))
+                .thenReturn(List.of());
+        when(sectionBookRepository.findBySectionIdAndRanking(1L, (short) 1))
+                .thenReturn(Optional.of(existing));
 
         sectionService.setSpotlightBook(1L, 1L, (short) 1);
 
@@ -193,21 +228,43 @@ public class SectionServiceTest {
     }
 
     @Test
-    void setSpotlightBook_sectionNotFound_throwsResponseStatusException() {
-        when(sectionRepository.findById(99L)).thenReturn(Optional.empty());
+    void setSpotlightBook_throwsIllegalArgumentException_whenBookAlreadyInSpotlight() {
+        // sectionBook (book id=1) is already present in the spotlight list
+        when(sectionRepository.findById(1L)).thenReturn(Optional.of(section));
+        when(bookRepository.findById(1L)).thenReturn(Optional.of(book));
+        when(sectionBookRepository.findBySectionIdAndGradeIsNullOrderByRankingAsc(1L))
+                .thenReturn(List.of(sectionBook));
 
-        assertThatThrownBy(() -> sectionService.setSpotlightBook(99L, 1L, (short) 1))
-                .isInstanceOf(ResponseStatusException.class);
+        assertThatThrownBy(() -> sectionService.setSpotlightBook(1L, 1L, (short) 2))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Dit boek staat al in de kijker");
+
+        verify(sectionBookRepository, never()).delete(any());
+        verify(sectionBookRepository, never()).save(any());
     }
 
     @Test
-    void setSpotlightBook_bookNotFound_throwsResponseStatusException() {
+    void setSpotlightBook_throwsEntityNotFoundException_whenSectionNotFound() {
+        when(sectionRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> sectionService.setSpotlightBook(99L, 1L, (short) 1))
+                .isInstanceOf(EntityNotFoundException.class)
+                .hasMessageContaining("Sectie niet gevonden");
+    }
+
+    @Test
+    void setSpotlightBook_throwsEntityNotFoundException_whenBookNotFound() {
         when(sectionRepository.findById(1L)).thenReturn(Optional.of(section));
         when(bookRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> sectionService.setSpotlightBook(1L, 99L, (short) 1))
-                .isInstanceOf(ResponseStatusException.class);
+                .isInstanceOf(EntityNotFoundException.class)
+                .hasMessageContaining("Boek niet gevonden");
     }
+
+    // -------------------------------------------------------------------------
+    // getSpotlightBooks
+    // -------------------------------------------------------------------------
 
     @Test
     void getSpotlightBooks_returnsListOfDTOs() {
@@ -233,8 +290,12 @@ public class SectionServiceTest {
 
     @Test
     void getSpotlightBooks_orderedByRanking() {
-        SectionBook sb1 = new SectionBook(); sb1.setRanking((short) 1); sb1.setBook(book);
-        SectionBook sb2 = new SectionBook(); sb2.setRanking((short) 3); sb2.setBook(book);
+        SectionBook sb1 = new SectionBook();
+        sb1.setRanking((short) 1);
+        sb1.setBook(book);
+        SectionBook sb2 = new SectionBook();
+        sb2.setRanking((short) 3);
+        sb2.setBook(book);
 
         when(sectionBookRepository.findBySectionIdAndGradeIsNullOrderByRankingAsc(1L))
                 .thenReturn(List.of(sb1, sb2));

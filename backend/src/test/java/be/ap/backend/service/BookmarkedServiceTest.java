@@ -7,10 +7,13 @@ import static org.mockito.Mockito.*;
 import java.util.List;
 import java.util.Optional;
 
+import jakarta.persistence.EntityNotFoundException;
+
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import be.ap.backend.dto.BookmarkedDTO;
 import be.ap.backend.entity.Author;
@@ -21,19 +24,19 @@ import be.ap.backend.repository.BookRepository;
 import be.ap.backend.repository.BookmarkedRepository;
 import be.ap.backend.repository.UserRepository;
 
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 public class BookmarkedServiceTest {
 
-    @MockitoBean
+    @Mock
     private BookmarkedRepository bookmarkedRepository;
 
-    @MockitoBean
+    @Mock
     private BookRepository bookRepository;
 
-    @MockitoBean
+    @Mock
     private UserRepository userRepository;
 
-    @Autowired
+    @InjectMocks
     private BookmarkedService bookmarkedService;
 
     @Test
@@ -48,7 +51,7 @@ public class BookmarkedServiceTest {
         book.setAuthor(author);
 
         User user = mock(User.class);
-        when(user.getId()).thenReturn(1L);
+        // removed: when(user.getId()).thenReturn(1L);
 
         Bookmarked bookmarked = new Bookmarked();
         bookmarked.setId(1L);
@@ -76,14 +79,14 @@ public class BookmarkedServiceTest {
     }
 
     @Test
-    void isBookmarkedd_returnsTrue_whenExists() {
+    void isBookmarked_returnsTrue_whenExists() {
         when(bookmarkedRepository.existsByUserIdAndBookId(1L, 1L)).thenReturn(true);
 
         assertTrue(bookmarkedService.isBookmarked(1L, 1L));
     }
 
     @Test
-    void isBookmarkedd_returnsFalse_whenNotExists() {
+    void isBookmarked_returnsFalse_whenNotExists() {
         when(bookmarkedRepository.existsByUserIdAndBookId(1L, 99L)).thenReturn(false);
 
         assertFalse(bookmarkedService.isBookmarked(1L, 99L));
@@ -102,7 +105,7 @@ public class BookmarkedServiceTest {
     @Test
     void toggleBookmarked_addsBookmark_whenNotExists() {
         User user = mock(User.class);
-        when(user.getId()).thenReturn(1L);
+        // removed: when(user.getId()).thenReturn(1L);
 
         Book book = new Book();
         book.setId(1L);
@@ -123,20 +126,20 @@ public class BookmarkedServiceTest {
         when(bookmarkedRepository.existsByUserIdAndBookId(1L, 1L)).thenReturn(false);
         when(userRepository.findById(1L)).thenReturn(Optional.empty());
 
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(EntityNotFoundException.class,
                 () -> bookmarkedService.toggleBookmarked(1L, 1L));
     }
 
     @Test
     void toggleBookmarked_throwsException_whenBookNotFound() {
         User user = mock(User.class);
-        when(user.getId()).thenReturn(1L);
+        // removed: when(user.getId()).thenReturn(1L);
 
         when(bookmarkedRepository.existsByUserIdAndBookId(1L, 99L)).thenReturn(false);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(bookRepository.findById(99L)).thenReturn(Optional.empty());
 
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(EntityNotFoundException.class,
                 () -> bookmarkedService.toggleBookmarked(1L, 99L));
     }
 }

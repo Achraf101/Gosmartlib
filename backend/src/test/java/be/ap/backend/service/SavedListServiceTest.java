@@ -8,36 +8,48 @@ import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.web.server.ResponseStatusException;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import be.ap.backend.dto.SharedListResponseDTO;
+import be.ap.backend.entity.Book;
 import be.ap.backend.entity.BookList;
+import be.ap.backend.entity.BookListItem;
 import be.ap.backend.entity.SavedList;
+import be.ap.backend.exception.BookAlreadyInLocationException;
 import be.ap.backend.repository.BookListItemRepository;
 import be.ap.backend.repository.BookListRepository;
 import be.ap.backend.repository.SavedListRepository;
 
-@SpringBootTest
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityNotFoundException;
+
+@ExtendWith(MockitoExtension.class)
 public class SavedListServiceTest {
 
-    @MockitoBean
+    @Mock
     private SavedListRepository savedListRepository;
 
-    @MockitoBean
+    @Mock
     private BookListRepository bookListRepository;
 
-    @MockitoBean
+    @Mock
     private BookListItemRepository bookListItemRepository;
 
-    @Autowired
+    @Mock
+    private EntityManager entityManager;
+
+    @InjectMocks
     private SavedListService savedListService;
+
+    // --- saveList ---
 
     @Test
     void givenUserIdAndBookListId_whenSaveList_thenReturnSavedList() {
         when(savedListRepository.existsByUserIdAndBookListId(1L, 1L)).thenReturn(false);
+
         SavedList savedList = new SavedList();
         savedList.setUserId(1L);
         savedList.setBookListId(1L);
@@ -47,16 +59,19 @@ public class SavedListServiceTest {
 
         assertNotNull(result);
         assertEquals(1L, result.getUserId());
+        assertEquals(1L, result.getBookListId());
         verify(savedListRepository, times(1)).save(any());
     }
 
     @Test
-    void givenAlreadySaved_whenSaveList_thenThrowConflict() {
+    void givenAlreadySaved_whenSaveList_thenThrowBookAlreadyInLocationException() {
         when(savedListRepository.existsByUserIdAndBookListId(1L, 1L)).thenReturn(true);
 
-        assertThrows(ResponseStatusException.class, () -> savedListService.saveList(1L, 1L));
+        assertThrows(BookAlreadyInLocationException.class, () -> savedListService.saveList(1L, 1L));
         verify(savedListRepository, never()).save(any());
     }
+
+    // --- unsaveList ---
 
     @Test
     void givenUserIdAndBookListId_whenUnsaveList_thenCallDelete() {
@@ -67,30 +82,32 @@ public class SavedListServiceTest {
         verify(savedListRepository, times(1)).deleteByUserIdAndBookListId(1L, 1L);
     }
 
+    // --- isSaved ---
+
     @Test
-    void givenUserIdAndBookListId_whenIsSaved_thenReturnTrue() {
+    void givenExistingSavedEntry_whenIsSaved_thenReturnTrue() {
         when(savedListRepository.existsByUserIdAndBookListId(1L, 1L)).thenReturn(true);
 
-        boolean result = savedListService.isSaved(1L, 1L);
-
-        assertTrue(result);
+        assertTrue(savedListService.isSaved(1L, 1L));
         verify(savedListRepository, times(1)).existsByUserIdAndBookListId(1L, 1L);
     }
 
     @Test
-    void givenUserIdAndBookListId_whenIsSaved_thenReturnFalse_whenNotSaved() {
+    void givenNoSavedEntry_whenIsSaved_thenReturnFalse() {
         when(savedListRepository.existsByUserIdAndBookListId(1L, 99L)).thenReturn(false);
 
-        boolean result = savedListService.isSaved(1L, 99L);
-
-        assertFalse(result);
+        assertFalse(savedListService.isSaved(1L, 99L));
+        verify(savedListRepository, times(1)).existsByUserIdAndBookListId(1L, 99L);
     }
 
+    // --- getSavedLists ---
+
     @Test
-    void givenUserId_whenGetSavedLists_thenReturnMappedResponses() {
+    void givenUserIdWithNoItems_whenGetSavedLists_thenReturnEmptyBookList() {
         SavedList saved = new SavedList();
         saved.setUserId(1L);
         saved.setBookListId(1L);
+
         BookList list = new BookList();
         list.setId(1L);
         list.setName("Shared List");
@@ -104,10 +121,67 @@ public class SavedListServiceTest {
         assertNotNull(result);
         assertEquals(1, result.size());
         assertEquals("Shared List", result.get(0).getList().getName());
+        assertTrue(result.get(0).getBooks().isEmpty());
     }
 
     @Test
-    void givenUserId_whenGetSavedLists_thenSkipNullLists() {
+    void givenUserIdWithItems_whenGetSavedLists_thenReturnMappedBooksViaEntityManager() {
+        SavedList saved = new SavedList();
+        saved.setUserId(1L);
+        saved.setBookListId(1L);
+
+        BookList list = new BookList();
+        list.setId(1L);
+        list.setName("List With Books");
+
+        BookListItem item = new BookListItem();
+        item.setBookId(42L);
+        item.setBookListId(1L);
+
+        Book book = new Book();
+        book.setId(42L);
+
+        when(savedListRepository.findByUserId(1L)).thenReturn(List.of(saved));
+        when(bookListRepository.findById(1L)).thenReturn(Optional.of(list));
+        when(bookListItemRepository.findByBookListId(1L)).thenReturn(List.of(item));
+        when(entityManager.find(Book.class, 42L)).thenReturn(book);
+
+        List<SharedListResponseDTO> result = savedListService.getSavedLists(1L);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals(1, result.get(0).getBooks().size());
+        assertEquals(42L, result.get(0).getBooks().get(0).getId());
+    }
+
+    @Test
+    void givenItemWithUnresolvableBookId_whenGetSavedLists_thenSkipNullBook() {
+        SavedList saved = new SavedList();
+        saved.setUserId(1L);
+        saved.setBookListId(1L);
+
+        BookList list = new BookList();
+        list.setId(1L);
+        list.setName("List With Missing Book");
+
+        BookListItem item = new BookListItem();
+        item.setBookId(999L);
+        item.setBookListId(1L);
+
+        when(savedListRepository.findByUserId(1L)).thenReturn(List.of(saved));
+        when(bookListRepository.findById(1L)).thenReturn(Optional.of(list));
+        when(bookListItemRepository.findByBookListId(1L)).thenReturn(List.of(item));
+        when(entityManager.find(Book.class, 999L)).thenReturn(null);
+
+        List<SharedListResponseDTO> result = savedListService.getSavedLists(1L);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertTrue(result.get(0).getBooks().isEmpty());
+    }
+
+    @Test
+    void givenBookListNotFound_whenGetSavedLists_thenSkipEntry() {
         SavedList saved = new SavedList();
         saved.setUserId(1L);
         saved.setBookListId(99L);
@@ -122,10 +196,24 @@ public class SavedListServiceTest {
     }
 
     @Test
-    void givenToken_whenGetListByToken_thenReturnList() {
+    void givenNoSavedLists_whenGetSavedLists_thenReturnEmptyList() {
+        when(savedListRepository.findByUserId(1L)).thenReturn(List.of());
+
+        List<SharedListResponseDTO> result = savedListService.getSavedLists(1L);
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        verifyNoInteractions(bookListRepository, bookListItemRepository, entityManager);
+    }
+
+    // --- getListByToken ---
+
+    @Test
+    void givenValidToken_whenGetListByToken_thenReturnList() {
         BookList list = new BookList();
         list.setId(1L);
         list.setShareToken("abc123");
+
         when(bookListRepository.findByShareToken("abc123")).thenReturn(Optional.of(list));
 
         BookList result = savedListService.getListByToken("abc123");
@@ -135,9 +223,9 @@ public class SavedListServiceTest {
     }
 
     @Test
-    void givenInvalidToken_whenGetListByToken_thenThrowNotFound() {
+    void givenInvalidToken_whenGetListByToken_thenThrowEntityNotFoundException() {
         when(bookListRepository.findByShareToken("invalid")).thenReturn(Optional.empty());
 
-        assertThrows(ResponseStatusException.class, () -> savedListService.getListByToken("invalid"));
+        assertThrows(EntityNotFoundException.class, () -> savedListService.getListByToken("invalid"));
     }
 }

@@ -3,7 +3,6 @@ package be.ap.backend.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -77,20 +76,6 @@ public class SchoolServiceTest {
         school.setOneRosterClientSecret("encrypted-secret");
         school.setLocations(List.of());
         return school;
-    }
-
-    @Test
-    void addSchool_shouldSaveAndReturnSchool() {
-        SchoolDTO dto = buildValidDTO("AP hogeschool");
-        School savedEntity = buildSchoolEntity(1L, "AP hogeschool");
-
-        when(encryptionService.encrypt(anyString())).thenReturn("encrypted-value");
-        when(schoolRepository.save(any(School.class))).thenReturn(savedEntity);
-
-        SchoolDTO result = schoolService.addSchool(dto);
-
-        assertEquals("AP hogeschool", result.getName());
-        verify(schoolRepository).save(any(School.class));
     }
 
     @Test

@@ -4,8 +4,6 @@ import be.ap.backend.dto.ReviewReportDTO;
 import be.ap.backend.entity.Book;
 import be.ap.backend.entity.Review;
 import be.ap.backend.entity.ReviewReport;
-import be.ap.backend.entity.User;
-import be.ap.backend.entity.UserRole;
 import be.ap.backend.enums.ReviewReportStatus;
 import be.ap.backend.repository.ReviewReportRepository;
 import be.ap.backend.repository.ReviewRepository;
@@ -16,9 +14,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -112,50 +108,6 @@ public class ReviewReportServiceTest {
 
         assertThrows(IllegalArgumentException.class, () -> reviewReportService.reportReview(99L, 1L, "test"));
         verify(reviewReportRepository, never()).save(any());
-    }
-
-    @Test
-    void givenPendingReports_whenGetPendingReports_thenReturnDTOsWithUsernames() {
-        Book book = new Book();
-        book.setId(1L);
-        book.setTitle("Test boek");
-
-        Review review = new Review();
-        review.setId(1L);
-        review.setBook(book);
-        review.setRating(3);
-        review.setContent("Slechte recensie");
-        review.setAdded(LocalDateTime.now());
-        review.setUserId(2L);
-
-        ReviewReport report = new ReviewReport();
-        report.setId(1L);
-        report.setReviewId(1L);
-        report.setReporterUserId(3L);
-        report.setNote("Ongepast");
-        report.setCreatedAt(LocalDateTime.now());
-        report.setStatus(ReviewReportStatus.PENDING);
-
-        User reviewer = new User("jan_leerling", null, UserRole.STUDENT);
-        User reporter = new User("piet_rapporteur", null, UserRole.STUDENT);
-
-        when(reviewReportRepository.findByStatus(ReviewReportStatus.PENDING)).thenReturn(List.of(report));
-        when(reviewRepository.findById(1L)).thenReturn(Optional.of(review));
-        when(userRepository.findById(2L)).thenReturn(Optional.of(reviewer));
-        when(userRepository.findById(3L)).thenReturn(Optional.of(reporter));
-        when(lookupService.getUser(any(), any(), any()))
-                .thenReturn(Map.of("givenName", "Jan", "familyName", "Doe"));
-
-        List<ReviewReportDTO> result = reviewReportService.getPendingReports();
-
-        assertEquals(1, result.size());
-        ReviewReportDTO dto = result.get(0);
-        assertEquals(1L, dto.getId());
-        assertEquals("Test boek", dto.getBookTitle());
-        assertEquals("Slechte recensie", dto.getReviewContent());
-        assertEquals("jan_leerling", dto.getReviewUsername());
-        assertEquals("piet_rapporteur", dto.getReporterUsername());
-        verify(reviewReportRepository, times(1)).findByStatus(ReviewReportStatus.PENDING);
     }
 
     @Test

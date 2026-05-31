@@ -33,9 +33,7 @@ export class NavBarComponent {
 
   changeRole() {
     // post update to controller
-    if(this.selectRole)
-      this.updateRole(this.selectRole);
-    
+    if (this.selectRole) this.updateRole(this.selectRole);
   }
 
   setCurrentRole(userRoles: string[] | undefined): void {
@@ -53,7 +51,6 @@ export class NavBarComponent {
   updateRole(role: string) {
     this.http.post(`/api/session/${role}`, null).subscribe({
       next: () => this.router.navigate(['/']),
-      error: (err) => console.error(err),
     });
   }
 
