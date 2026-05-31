@@ -12,13 +12,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import be.ap.backend.config.SessionContext;
 import be.ap.backend.dto.LocationAvailabilityDTO;
 import be.ap.backend.dto.LocationBookDTO;
 import be.ap.backend.dto.LocationBookDetailDTO;
 import be.ap.backend.dto.SchoolStatsDTO;
 import be.ap.backend.exception.MissingSessionException;
 import be.ap.backend.service.LocationBookService;
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -27,6 +27,7 @@ import lombok.RequiredArgsConstructor;
 public class LocationBookController {
 
     private final LocationBookService locationBookService;
+    private final SessionContext sessionContext;
 
     @PostMapping
     public ResponseEntity<LocationBookDetailDTO> createLocationBook(@RequestBody LocationBookDTO dto) {
@@ -55,9 +56,8 @@ public class LocationBookController {
 
     @GetMapping("/book/{bookId}")
     public ResponseEntity<List<LocationAvailabilityDTO>> getAvailabilityByBook(
-            @PathVariable Long bookId,
-            HttpSession session) {
-        Object raw = session.getAttribute("school");
+            @PathVariable Long bookId) {
+        Object raw = sessionContext.getSchoolId();
         if (raw == null)
             throw new MissingSessionException("Niet ingelogd");
         Long schoolId = Long.valueOf(raw.toString());
@@ -65,9 +65,9 @@ public class LocationBookController {
     }
 
     @GetMapping("/stats")
-    public ResponseEntity<SchoolStatsDTO> getSchoolStats(HttpSession session) {
-        Object raw = session.getAttribute("school");
-        if (raw == null) 
+    public ResponseEntity<SchoolStatsDTO> getSchoolStats() {
+        Object raw = sessionContext.getSchoolId();
+        if (raw == null)
             throw new MissingSessionException("Niet ingelogd");
         Long schoolId = Long.valueOf(raw.toString());
         return ResponseEntity.ok(locationBookService.getStatsForSchool(schoolId));

@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.validation.annotation.Validated;
 
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.servlet.http.HttpSession;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import be.ap.backend.config.SessionContext;
@@ -58,7 +57,6 @@ public class BookController {
 
     @GetMapping("/search/{query}")
     public ResponseEntity<Page<BookResultDTO>> search(
-            HttpSession session,
             @PathVariable String query,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size) {
@@ -66,7 +64,7 @@ public class BookController {
     }
 
     @GetMapping("/{id}/related")
-    public ResponseEntity<List<BookCardDTO>> getRelated(HttpSession session, @PathVariable Long id) {
+    public ResponseEntity<List<BookCardDTO>> getRelated(@PathVariable Long id) {
         return ResponseEntity.ok(bookService.getRelated(id));
     }
 
