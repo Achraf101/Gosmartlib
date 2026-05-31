@@ -37,14 +37,13 @@ public class BookResultDTO {
     private int rating;
     private int ratingCount;
 
-    public BookResultDTO(Long id, String title, String cover, AuthorDTO author, BookType bookType,
+    public BookResultDTO(Long id, String title, String cover, String authorName, BookType bookType,
             Long seriesId, String seriesName, Integer seriesNumber, Language language,
             Year published, String description, boolean fiction, Clib clib,
             int pages, int rating, int ratingCount) {
         this.id = id;
         this.title = title;
         this.cover = cover;
-        this.author = author;
         this.bookType = bookType;
         this.seriesId = seriesId;
         this.seriesName = seriesName;

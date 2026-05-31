@@ -300,7 +300,9 @@ public class BookService {
             Long schoolId = sessionContext.getSchoolId();
             List<Long> ids = locationRepository.findIdsBySchoolId(schoolId);
 
-            if (location == null || ids.contains(location)) {
+            if (Boolean.TRUE.equals(full) && sessionContext.hasRole(UserRole.BIBLIOTHEEKBEHEERDER)) {
+                books = bookRepository.findAll(pageable);
+            } else if (location == null || ids.contains(location)) {
                 List<Long> effectiveIds = (location != null) ? List.of(location) : ids;
                 books = bookRepository.findAllByLocationAndDidactic(effectiveIds, didacticFilter, pageable);
             } else {
