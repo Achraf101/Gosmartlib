@@ -10,6 +10,7 @@ import { LoanDTO, LoanStatus } from '../../models/loan';
 import { LoanService } from '../../services/loan';
 import { MessageService } from 'primeng/api';
 import { TooltipModule } from 'primeng/tooltip';
+import { NotificationService } from '../../services/notification';
 import { LocationBookService } from '../../services/locationbook';
 import { DialogModule } from 'primeng/dialog';
 import { BookCopyDetail } from '../../models/bookCopy';
@@ -77,6 +78,7 @@ export class ReturnPageComponent implements OnInit, AfterViewInit {
   constructor(
     private loanService: LoanService,
     private messageService: MessageService,
+    private notificationService: NotificationService,
     private locationBookService: LocationBookService,
   ) {}
 
@@ -288,5 +290,18 @@ export class ReturnPageComponent implements OnInit, AfterViewInit {
     if (!this.conditionDialogVisible) {
       setTimeout(() => this.scanInputRef?.nativeElement?.focus(), 0);
     }
+  }
+
+  // notify
+  notify(loanId: number) {
+    this.notificationService.notify(loanId).subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          detail: `Bericht verzonden`,
+          life: 3000,
+        });
+      },
+    });
   }
 }

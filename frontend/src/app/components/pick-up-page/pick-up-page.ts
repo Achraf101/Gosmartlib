@@ -5,6 +5,7 @@ import { LoanDTO, LoanStatus } from '../../models/loan';
 import { NavBarComponent } from '../nav-bar/nav-bar';
 import { Skeleton } from 'primeng/skeleton';
 import { TableModule } from 'primeng/table';
+import { TooltipModule } from 'primeng/tooltip';
 import { BookCover } from '../misc/book-cover/book-cover';
 import { DatePipe } from '@angular/common';
 import { Button } from 'primeng/button';
@@ -15,7 +16,17 @@ import { BookCopyDetail } from '../../models/bookCopy';
 
 @Component({
   selector: 'app-pick-up-page',
-  imports: [NavBarComponent, Skeleton, TableModule, BookCover, DatePipe, Button, FormsModule, DialogModule],
+  imports: [
+    NavBarComponent,
+    Skeleton,
+    TableModule,
+    BookCover,
+    DatePipe,
+    Button,
+    FormsModule,
+    TooltipModule,
+    DialogModule,
+  ],
   templateUrl: './pick-up-page.html',
   styleUrl: './pick-up-page.css',
 })

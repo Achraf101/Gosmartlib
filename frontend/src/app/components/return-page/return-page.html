@@ -78,6 +78,18 @@
           <th>
             <p>Status</p>
           </th>
+          <th>
+            <p>
+              Herinnering sturen &nbsp;
+              <i
+                class="pi pi-info-circle"
+                pTooltip="Stuur een extra herinnering via een Smartschool bericht"
+                tooltipPosition="right"
+                style="cursor: pointer; color: var(--primary-color)"
+              >
+              </i>
+            </p>
+            </th>
         </tr>
       </ng-template>
       <ng-template pTemplate="body" let-loan>
@@ -129,6 +141,14 @@
               <span class="scan-progress">{{ loan.books[0].returnedAmount }}/{{ loan.books[0].receivedAmount }}</span>
             }
             <p-button (onClick)="openManualDialog(loan.id)">Teruggebracht</p-button>
+          </td>
+          <td>
+            <p-button
+              icon="pi pi-bell"
+              variant="text"
+              severity="danger"
+              (onClick)="notify(loan.id)"
+            />
           </td>
         </tr>
       </ng-template>

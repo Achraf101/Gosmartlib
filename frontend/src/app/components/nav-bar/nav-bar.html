@@ -3,6 +3,9 @@
     <img src="assets/logo.png" alt="GO! Antwerpen" class="logo" routerLink="/" />
   </div>
   <div class="header-right">
+    @if(!authService.hasRole('STUDENT')) {
+      <p-select [options]="roles" (onChange)="changeRole()" [(ngModel)]="selectRole"></p-select>
+    }
     @if (!authService.hasRole('ADMIN')) {
       <app-loan-cart style="font-size: 1.2rem" />
     }

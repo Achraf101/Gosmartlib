@@ -5,7 +5,7 @@ info:
 
 http:
   method: POST
-  url: https://localhost:8080/api/upload/cover
+  url: http://localhost:8080/api/upload/cover
   body:
     type: multipart-form
     data:

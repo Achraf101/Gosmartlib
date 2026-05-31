@@ -24,6 +24,8 @@ import be.ap.backend.entity.School;
 import be.ap.backend.entity.Loan;
 import be.ap.backend.entity.LoanBook;
 import be.ap.backend.entity.User;
+import be.ap.backend.queue.NotificationTask;
+import be.ap.backend.queue.TaskQueueService;
 import be.ap.backend.enums.CopyStatus;
 import be.ap.backend.enums.LoanStatus;
 import be.ap.backend.repository.BookCopyRepository;
@@ -48,12 +50,13 @@ public class LoanService {
     private final BookCopyRepository bookCopyRepository;
     private final SmartschoolLookupService lookupService;
     private final Executor lookupExecutor;
+    private final TaskQueueService taskQueueService;
 
     public LoanService(LoanRepository loanRepository, EntityManager entityManager,
             LoanBookRepository loanBookRepository, LocationBookRepository locationBookRepository,
-            LocationBookService locationBookService, BookCopyRepository bookCopyRepository,
-            SmartschoolLookupService lookupService,
-            @Qualifier("lookupExecutor") Executor lookupExecutor) {
+            LocationBookService locationBookService, SmartschoolLookupService lookupService,
+            @Qualifier("lookupExecutor") Executor lookupExecutor, TaskQueueService taskQueueService,
+            BookCopyRepository bookCopyRepository) {
         this.loanRepository = loanRepository;
         this.entityManager = entityManager;
         this.loanBookRepository = loanBookRepository;
@@ -62,6 +65,7 @@ public class LoanService {
         this.bookCopyRepository = bookCopyRepository;
         this.lookupService = lookupService;
         this.lookupExecutor = lookupExecutor;
+        this.taskQueueService = taskQueueService;
     }
 
     @Transactional
@@ -181,6 +185,11 @@ public class LoanService {
     }
 
     public LoanDTO updateStatus(Long id, LoanStatus status) {
+        // if received add notification to the queue
+        if(status == LoanStatus.RECEIVED) {
+            taskQueueService.push(new NotificationTask(NotificationTask.Type.LOAN, id));
+        }
+
         Loan loan = loanRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Loan niet gevonden met id: " + id));
         loan.setStatus(status);
@@ -224,6 +233,8 @@ public class LoanService {
 
         if (lb.getReceivedAmount() >= lb.getRequestedAmount()) {
             loan.setStatus(LoanStatus.RECEIVED);
+            // send notification
+            taskQueueService.push(new NotificationTask(NotificationTask.Type.LOAN, loanId));
         }
         return buildDTO(loanRepository.save(loan));
     }

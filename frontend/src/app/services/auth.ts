@@ -3,7 +3,6 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap, switchMap, catchError, of } from 'rxjs';
 import { Router } from '@angular/router';
 import { AuthUser } from '../models/auth';
-import { TeacherDTO } from '../models/teacher';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
